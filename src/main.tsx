@@ -5,23 +5,15 @@ import { Button } from "@/components/ui/button"
 
 
 import {
-    createBrowserRouter,
+    createBrowserRouter, Outlet,
     RouterProvider,
 } from "react-router-dom";
-import Root from "./routes/Root.tsx";
+import Auth from "@/routes/Auth.tsx";
 
 const router = createBrowserRouter([
     {
         path: "/",
-        element: <Root />,
-        children: [
-            {
-                path: "/",
-                element: <>
-                    <Button>Hello</Button>
-                </>
-            }
-        ]
+        element: <Auth />,
     },
 ])
 
