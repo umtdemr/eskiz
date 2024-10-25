@@ -1,5 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import './index.css'
+import { Button } from "@/components/ui/button"
+
 
 import {
     createBrowserRouter,
@@ -14,7 +17,9 @@ const router = createBrowserRouter([
         children: [
             {
                 path: "/",
-                element: <div>hello world</div>
+                element: <>
+                    <Button>Hello</Button>
+                </>
             }
         ]
     },
