@@ -5,6 +5,8 @@ import { buttonVariants } from "@/components/ui/button"
 import {z} from "zod";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
+import { DefaultError, useMutation } from "@tanstack/react-query";
+import { LoaderCircle } from 'lucide-react';
 import {
     Form,
     FormControl,
@@ -13,13 +15,39 @@ import {
     FormLabel,
     FormMessage
 } from "@/components/ui/form.tsx";
+import {LoginRequest} from "@/types/Auth.ts";
+import {API_ENDPOINTS} from "@/helpers/Constant.ts";
 
 const formSchema = z.object({
     email: z.string().email(),
-    password: z.string()
+    password: z.string(),
+    api: z.any()
 })
 
 export default function Login() {
+    const mutation = useMutation<unknown, DefaultError, LoginRequest>({
+        mutationFn: (formData) => {
+            return fetch(API_ENDPOINTS.LOGIN, {
+                method: "POST",
+                body: JSON.stringify(formData)
+            })
+        },
+        onSuccess: data => {
+            if (data.status === 401) {
+                form.setError("password", { type: "custom", message: "Invalid credentials" })
+                return
+            }
+            
+            if (data.status === 201) {
+                // TODO: SET AUTH TOKEN AND REDIRECT
+                console.log('redirecting...')
+            }
+        },
+        onError: () => {
+            form.setError("api", { type: "hey", message: "could not login: unknown error. please try again later." })
+        }
+    })
+    
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
@@ -29,7 +57,7 @@ export default function Login() {
     })
 
     function onSubmit(values: z.infer<typeof formSchema>) {
-        console.log('>> submit with', values)
+        mutation.mutate({ email: values.email, password: values.password })
     }
     
     return (
@@ -37,7 +65,6 @@ export default function Login() {
             <div className="flex flex-col space-y-2">
                 <h1 className="text-2xl font-semibold tracking-tight text-center">
                     Login
-                    {import.meta.env.VITE_SOME_KEY}
                 </h1>
                 <div>
                     <Form {...form}>
@@ -49,7 +76,7 @@ export default function Login() {
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="john_doe@icloud.com" {...field} />
+                                            <Input placeholder="john_doe@icloud.com" {...field} disabled={mutation.isPending} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -62,13 +89,23 @@ export default function Login() {
                                     <FormItem>
                                         <FormLabel>Password</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="password" {...field} />
+                                            <Input placeholder="password" {...field} disabled={mutation.isPending} />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                            <Button type="submit" className="block w-full">Login</Button>
+                            
+                            {form.formState.errors.api ? <p className="text-[0.8rem] font-medium text-destructive">
+                                {form.formState.errors.api.message}
+                            </p> : null}
+                            
+                            <Button disabled={mutation.isPending} type="submit" className="w-full flex">
+                                {
+                                    mutation.isPending && <LoaderCircle className="animate-spin" />
+                                }
+                                Login
+                            </Button>
                         </form>
                     </Form> 
                 </div>
