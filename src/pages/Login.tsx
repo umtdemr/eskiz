@@ -44,7 +44,7 @@ export default function Login() {
             }
         },
         onError: () => {
-            form.setError("api", { type: "hey", message: "could not login: unknown error. please try again later." })
+            form.setError("api", { type: "custom", message: "could not login: unknown error. please try again later." })
         }
     })
     
