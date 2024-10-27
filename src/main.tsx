@@ -1,7 +1,8 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import './index.css'
-import { Button } from "@/components/ui/button"
 
 
 import {
@@ -9,16 +10,43 @@ import {
     RouterProvider,
 } from "react-router-dom";
 import Auth from "@/routes/Auth.tsx";
+import Login from "@/pages/Login.tsx";
+import Register from "@/pages/Register.tsx";
+import { Toaster } from "react-hot-toast";
 
 const router = createBrowserRouter([
     {
         path: "/",
         element: <Auth />,
+        children: [
+            {
+                path: "/",
+                element: <Login />
+            },
+            {
+                path: "/login",
+                element: <Login />
+            },
+            {
+                path: "/register",
+                element: <Register />
+            },
+        ]
     },
 ])
 
+const queryClient = new QueryClient()
+
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <RouterProvider router={router} />
+      <QueryClientProvider client={queryClient}>
+          <Toaster 
+              position="bottom-center"
+              reverseOrder={false}
+          />
+          <RouterProvider router={router} />
+          <ReactQueryDevtools />
+      </QueryClientProvider>
   </StrictMode>,
 )

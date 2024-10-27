@@ -1,6 +1,4 @@
-import {Button} from "@/components/ui/button.tsx";
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import {Outlet} from "react-router-dom";
 
 
 export default function Auth() {
@@ -16,36 +14,12 @@ export default function Auth() {
                         <p className="text-lg">
                             &ldquo;Just another collaboration app&rdquo;
                         </p>
-                        <footer className="text-sm">Ümit Demir</footer>
+                        <footer className="text-sm">WB TEAM</footer>
                     </blockquote>
                 </div>
             </div>
             <div className="lg:p-8">
-                <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-                    <div className="flex flex-col space-y-2 text-center">
-                        <h1 className="text-2xl font-semibold tracking-tight">
-                            Create an account
-                        </h1>
-                        <div>
-                            <div className="grid w-full text-left max-w-sm gap-1.5 my-5">
-                                <Label htmlFor="fullName" className={'text-sm font-light'}>Full Name</Label>
-                                <Input type="text" id="fullName" placeholder="Email" />
-                            </div>
-                            <div className="grid w-full text-left max-w-sm gap-1.5 my-5">
-                                <Label htmlFor="email" className={'text-sm font-light'}>Email</Label>
-                                <Input type="email" id="email" placeholder="Email" />
-                            </div>
-                            <div className="grid w-full text-left max-w-sm gap-1.5 my-5">
-                                <Label htmlFor="password" className={'text-sm font-light'}>Password</Label>
-                                <Input type="password" id="password" placeholder="password" />
-                            </div>
-                        </div>
-                        <Button>Sign up</Button>
-                    </div>
-                    <p className="px-8 text-center text-sm text-muted-foreground">
-                        By clicking continue, you agree to our terms of conditions.
-                    </p>
-                </div>
+                <Outlet />
             </div>
         </div>
     )
