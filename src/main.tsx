@@ -12,6 +12,7 @@ import {
 import Auth from "@/routes/Auth.tsx";
 import Login from "@/pages/Login.tsx";
 import Register from "@/pages/Register.tsx";
+import { Toaster } from "react-hot-toast";
 
 const router = createBrowserRouter([
     {
@@ -40,6 +41,10 @@ const queryClient = new QueryClient()
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
       <QueryClientProvider client={queryClient}>
+          <Toaster 
+              position="bottom-center"
+              reverseOrder={false}
+          />
           <RouterProvider router={router} />
           <ReactQueryDevtools />
       </QueryClientProvider>

@@ -18,6 +18,7 @@ import {DefaultError, useMutation} from "@tanstack/react-query";
 import {RegisterRequest} from "@/types/Auth.ts";
 import {API_ENDPOINTS} from "@/helpers/Constant.ts";
 import {LoaderCircle} from "lucide-react";
+import { toast } from "react-hot-toast"
 
 const formSchema = z.object({
     full_name: z.string().min(2, { message: "Full name must have minumum 2 characters" }).max(50, { message: "Full name must be less than 50 characters" }),
@@ -64,8 +65,8 @@ export default function Register() {
             }
             
             if (data.status === 201) {
-                // TODO: handle showing toast message
                 navigate('/')
+                toast.success("You have successfully registered")
             }
         },
         onError: () => {
@@ -134,7 +135,7 @@ export default function Register() {
                                     <FormItem>
                                         <FormLabel>Password</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="password" {...field} disabled={mutation.isPending} />
+                                            <Input type="password" placeholder="password" {...field} disabled={mutation.isPending} />
                                         </FormControl>
                                         <FormDescription>
                                             Your strong password.
