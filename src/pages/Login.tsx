@@ -37,6 +37,7 @@ export default function Login() {
             <div className="flex flex-col space-y-2">
                 <h1 className="text-2xl font-semibold tracking-tight text-center">
                     Login
+                    {import.meta.env.VITE_SOME_KEY}
                 </h1>
                 <div>
                     <Form {...form}>
@@ -67,7 +68,7 @@ export default function Login() {
                                     </FormItem>
                                 )}
                             />
-                            <Button type="submit" className="block w-full">Register</Button>
+                            <Button type="submit" className="block w-full">Login</Button>
                         </form>
                     </Form> 
                 </div>
