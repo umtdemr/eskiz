@@ -10,8 +10,8 @@ import {
     RouterProvider,
 } from "react-router-dom";
 import Auth from "@/routes/Auth.tsx";
-import Login from "@/pages/Login.tsx";
-import Register from "@/pages/Register.tsx";
+import Login from "@/pages/Auth/Login.tsx";
+import Register from "@/pages/Auth/Register.tsx";
 import { Toaster } from "react-hot-toast";
 
 const router = createBrowserRouter([
