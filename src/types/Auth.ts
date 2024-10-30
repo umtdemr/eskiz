@@ -8,3 +8,13 @@ export type RegisterRequest = {
     email: string,
     password: string
 }
+
+
+export type AuthTokenSuccessResponse = {
+    expiry: string,
+    token: string
+}
+
+export type EnvelopeAuthTokenSuccessResponse = {
+    authentication_token: AuthTokenSuccessResponse
+}
