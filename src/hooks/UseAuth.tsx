@@ -1,8 +1,11 @@
 import {EnvelopeAuthTokenSuccessResponse} from "@/types/Auth.ts";
 import {addTokenToCookies} from "@/helpers/AuthHelper.ts";
 import {API_ENDPOINTS} from "@/helpers/Constant.ts";
+import {useBoundStore} from "@/store/store.ts";
 
 export default function useAuth() {
+    const setUserEmail = useBoundStore((state) => state.changeUserData) 
+    
     const login = async (data: EnvelopeAuthTokenSuccessResponse) => {
         addTokenToCookies(data.authentication_token)
 
@@ -15,7 +18,9 @@ export default function useAuth() {
             }
         })
         
-        console.log(userData)
+        const userJsonData = await userData.json()
+        setUserEmail(userJsonData.user)
+        return true
     }
     
     return {

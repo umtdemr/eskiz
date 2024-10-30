@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom'
+import {Link, redirect, useNavigate} from 'react-router-dom'
 import { Button } from "@/components/ui/button.tsx";
 import { Input } from "@/components/ui/input.tsx"
 import { buttonVariants } from "@/components/ui/button.tsx"
@@ -28,6 +28,7 @@ const formSchema = z.object({
 
 export default function Login() {
     const { login } = useAuth();
+    const navigate = useNavigate();
     
     const mutation = useMutation<unknown, DefaultError, LoginRequest>({
         mutationFn: (formData) => {
@@ -43,11 +44,10 @@ export default function Login() {
             }
             
             if (data.status === 201) {
-                // TODO: SET AUTH TOKEN AND REDIRECT
-                console.log('redirecting...')
                 try {
                     const jsonData = await data.json()
                     await login(jsonData)
+                    navigate('/boards')
                 } catch (err) {
                     console.error(err)
                     toast.error('sorry but we couldn\'t log you in. try again later')

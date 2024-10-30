@@ -13,6 +13,8 @@ import Auth from "@/routes/Auth.tsx";
 import Login from "@/pages/Auth/Login.tsx";
 import Register from "@/pages/Auth/Register.tsx";
 import { Toaster } from "react-hot-toast";
+import Root from "@/routes/Root.tsx";
+import Boards from "@/pages/Boards.tsx";
 
 const router = createBrowserRouter([
     {
@@ -33,6 +35,10 @@ const router = createBrowserRouter([
             },
         ]
     },
+    {
+        path: "/boards",
+        element: <Boards />
+    }
 ])
 
 const queryClient = new QueryClient()
