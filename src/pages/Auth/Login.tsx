@@ -47,7 +47,7 @@ export default function Login() {
                 console.log('redirecting...')
                 try {
                     const jsonData = await data.json()
-                    login(jsonData)
+                    await login(jsonData)
                 } catch (err) {
                     console.error(err)
                     toast.error('sorry but we couldn\'t log you in. try again later')
