@@ -15,6 +15,7 @@ import Register from "@/pages/Auth/Register.tsx";
 import { Toaster } from "react-hot-toast";
 import Root from "@/routes/Root.tsx";
 import Boards from "@/pages/Boards.tsx";
+import PrivateRoute from "@/routes/PrivateRoute.tsx";
 
 const router = createBrowserRouter([
     {
@@ -37,7 +38,13 @@ const router = createBrowserRouter([
     },
     {
         path: "/boards",
-        element: <Boards />
+        element: <PrivateRoute />,
+        children: [
+            {
+                path: "/boards",
+                element: <Boards />
+            }
+        ]
     }
 ])
 

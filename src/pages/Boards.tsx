@@ -1,10 +1,9 @@
 import {useBoundStore} from "@/store/store.ts";
+import {useShallow} from "zustand/react/shallow";
 
 export default function Boards() {
-    const userData  = useBoundStore((state) => state.userData.email)
+    const user = useBoundStore(useShallow((state) => state.userData))
     return (
-        <>
-            here it is: { userData }
-        </>
+        <span>Welcome {user.full_name}</span>
     )
 }
