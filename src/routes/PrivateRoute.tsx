@@ -1,10 +1,11 @@
-import {Outlet, useNavigate} from 'react-router-dom';
+import {useNavigate} from 'react-router-dom';
 import useAuth from "@/hooks/UseAuth.tsx";
 import {useEffect, useRef} from "react";
 import {toast} from "react-hot-toast";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
-export default function PrivateRoute() {
+
+export default function PrivateRoute({ children }) {
     const { tryLoginWithCookie, isLoggedIn, isLoginFailed } = useAuth();
     const setNavigatedToLogin = useBoundStore(useShallow((state) => state.setNavigatedToLogin))
     const isLoggingTried = useRef(false)
@@ -26,7 +27,7 @@ export default function PrivateRoute() {
 
     if (isLoggedIn) {
         return (
-            <Outlet />
+            <>{children}</>
         )
     }
 }
