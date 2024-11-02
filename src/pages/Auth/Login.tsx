@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom'
+import {Link, redirect, useNavigate} from 'react-router-dom'
 import { Button } from "@/components/ui/button.tsx";
-import { Input } from "@/components/ui/input"
-import { buttonVariants } from "@/components/ui/button"
+import { Input } from "@/components/ui/input.tsx"
+import { buttonVariants } from "@/components/ui/button.tsx"
 import {z} from "zod";
 import {useForm} from "react-hook-form";
 import {zodResolver} from "@hookform/resolvers/zod";
@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/form.tsx";
 import {LoginRequest} from "@/types/Auth.ts";
 import {API_ENDPOINTS} from "@/helpers/Constant.ts";
+import useAuth from "@/hooks/UseAuth.tsx";
+import {toast} from "react-hot-toast";
 
 const formSchema = z.object({
     email: z.string().email(),
@@ -25,6 +27,9 @@ const formSchema = z.object({
 })
 
 export default function Login() {
+    const { login } = useAuth();
+    const navigate = useNavigate();
+    
     const mutation = useMutation<unknown, DefaultError, LoginRequest>({
         mutationFn: (formData) => {
             return fetch(API_ENDPOINTS.LOGIN, {
@@ -32,15 +37,21 @@ export default function Login() {
                 body: JSON.stringify(formData)
             })
         },
-        onSuccess: data => {
+        onSuccess: async data => {
             if (data.status === 401) {
                 form.setError("password", { type: "custom", message: "Invalid credentials" })
                 return
             }
             
             if (data.status === 201) {
-                // TODO: SET AUTH TOKEN AND REDIRECT
-                console.log('redirecting...')
+                try {
+                    const jsonData = await data.json()
+                    await login(jsonData)
+                    navigate('/boards')
+                } catch (err) {
+                    console.error(err)
+                    toast.error('sorry but we couldn\'t log you in. try again later')
+                }
             }
         },
         onError: () => {

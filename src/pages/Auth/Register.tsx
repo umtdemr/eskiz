@@ -8,7 +8,7 @@ import {
     FormItem,
     FormLabel,
     FormMessage,
-} from "@/components/ui/form"
+} from "@/components/ui/form.tsx"
 import { Link, useNavigate } from "react-router-dom";
 
 import { z } from "zod"
