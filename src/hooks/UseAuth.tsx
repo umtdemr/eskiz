@@ -1,8 +1,10 @@
 import {EnvelopeAuthTokenSuccessResponse, UserGetMeReqResponse, UserPublicData} from "@/types/Auth.ts";
-import {addTokenToCookies} from "@/helpers/AuthHelper.ts";
+import {addTokenToCookies, removeTokenFromCookies} from "@/helpers/AuthHelper.ts";
 import {API_ENDPOINTS} from "@/helpers/Constant.ts";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
+import {useNavigate} from "react-router-dom";
+import {initialUserData} from "@/store/userSlice.ts";
 
 export default function useAuth() {
     const setUserData = useBoundStore(useShallow((state) => state.changeUserData))
@@ -10,9 +12,17 @@ export default function useAuth() {
     const isLoggedIn = useBoundStore(useShallow((state) => state.userData.email.length > 0))
     const isLoginFailed = useBoundStore(useShallow((state) => state.loginFailed))
     
+    const navigate = useNavigate()
+    
     const login = async (data: EnvelopeAuthTokenSuccessResponse) => {
         addTokenToCookies(data.authentication_token)
         return fetchUserData(data.authentication_token.token)
+    }
+    
+    const logout = () => {
+        setUserData(initialUserData)
+        removeTokenFromCookies()
+        navigate('/');
     }
     
     const fetchUserData = async (token: string) => {
@@ -70,6 +80,7 @@ export default function useAuth() {
         tryLoginWithCookie,
         isLoggedIn,
         isLoginFailed,
-        isTokenExist
+        isTokenExist,
+        logout
     }
 }

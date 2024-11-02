@@ -17,6 +17,7 @@ import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
 import {LogOut, PresentationIcon, Trash, User} from "lucide-react";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
+import useAuth from "@/hooks/UseAuth.tsx";
 
 const sidebarItems = [
     {
@@ -45,6 +46,7 @@ const sidebarItems = [
 
 export default function BoardsSidebar() {
     const userData = useBoundStore(useShallow((state) => state.userData));
+    const { logout } = useAuth()
 
     return (
         <Sidebar>
@@ -102,7 +104,7 @@ export default function BoardsSidebar() {
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => {console.log('log out')}}>
+                                <DropdownMenuItem onClick={() => { logout() }}>
                                     <LogOut />
                                     Logout
                                 </DropdownMenuItem>
