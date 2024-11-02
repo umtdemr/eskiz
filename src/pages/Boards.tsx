@@ -1,13 +1,16 @@
 import {Button} from "@/components/ui/button.tsx";
-import {MousePointer2, Plus} from "lucide-react";
-import {useQuery} from "@tanstack/react-query";
+import {LoaderCircle, MousePointer2, Plus} from "lucide-react";
+import {useMutation, useQuery} from "@tanstack/react-query";
 import {API_ENDPOINTS} from "@/helpers/Constant.ts";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
 import {BoardList} from "@/components/board/boardList/BoardList.tsx";
+import {toast} from "react-hot-toast";
+import {useNavigate} from "react-router-dom";
 
 export default function BoardsPage() {
     const token = useBoundStore(useShallow((state) => state.token))
+    const navigate = useNavigate();
 
     const boardsQuery = useQuery({
         queryKey: ['board_results', token],
@@ -30,13 +33,45 @@ export default function BoardsPage() {
         },
     })
     
+    const createBoard = useMutation({
+        mutationFn: () => {
+            return fetch(API_ENDPOINTS.CREATE_BOARD, {
+                method: 'POST',
+                credentials: 'omit',
+                mode: 'cors',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+        },
+        onSuccess: async (response) => {
+            const data = await response.json()
+            if (response.status !== 201) {
+                toast.error('error while creating the board. try again later', { id: 'board-err' })
+                return
+            }
+            navigate(`/boards/${data.board.slug_id}/`)
+        },
+        onError: (error) => {
+            toast.error('error while creating the board: ' + error, { id: 'board-err' })
+        }
+    })
+    
     return (
         <>
             <div className=''>
                 <div className='flex justify-between'>
                     <span className='text-xl font-bold'>All boards</span>
-                    <Button className='bg-indigo-600 hover:bg-indigo-500'>
-                        <Plus /> create new
+                    <Button 
+                        onClick={() => createBoard.mutate()}
+                        disabled={createBoard.isPending}
+                        className='bg-indigo-600 hover:bg-indigo-500'>
+                        {
+                            createBoard.isPending 
+                                ? <LoaderCircle className='animate-spin' />
+                                : <Plus />
+                        }
+                         create new
                     </Button>
                 </div>
                 
