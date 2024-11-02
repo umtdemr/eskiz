@@ -17,6 +17,7 @@ import Root from "@/routes/Root.tsx";
 import PrivateRoute from "@/routes/PrivateRoute.tsx";
 import BoardsRoute from "@/routes/Boards.tsx";
 import BoardsPage from "@/pages/Boards.tsx";
+import SingleBoard from "@/pages/SingleBoard.tsx";
 
 const router = createBrowserRouter([
     {
@@ -44,8 +45,12 @@ const router = createBrowserRouter([
             {
                 path: "/boards",
                 element: <BoardsPage />,
-            }
+            },
         ]
+    },
+    {
+        path: "/boards/:id",
+        element: <PrivateRoute><SingleBoard /></PrivateRoute>
     }
 ])
 
