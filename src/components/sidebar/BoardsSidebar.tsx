@@ -48,12 +48,9 @@ export default function BoardsSidebar() {
 
     return (
         <Sidebar>
-            <SidebarHeader>
-                <span>Whiteboard</span>
-            </SidebarHeader>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupContent>
+                    <SidebarGroupContent className='mt-10'>
                         <SidebarMenu>
                             {
                                 sidebarItems.map(item => (
