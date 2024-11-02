@@ -8,6 +8,7 @@ import {useShallow} from "zustand/react/shallow";
 export default function PrivateRoute({ children }) {
     const { tryLoginWithCookie, isLoggedIn, isLoginFailed } = useAuth();
     const setNavigatedToLogin = useBoundStore(useShallow((state) => state.setNavigatedToLogin))
+    const token = useBoundStore(useShallow((state) => state.token))
     const isLoggingTried = useRef(false)
     const navigate = useNavigate()
     
@@ -25,7 +26,7 @@ export default function PrivateRoute({ children }) {
         tryLoginWithCookie()
     }
 
-    if (isLoggedIn) {
+    if (isLoggedIn && token) {
         return (
             <>{children}</>
         )

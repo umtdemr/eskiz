@@ -8,6 +8,8 @@ interface UserSlice {
     changeUserData: (val: UserPublicData) => void
     setLoginFailed: (val: boolean) => void,
     setNavigatedToLogin: (val: boolean) => void,
+    token: string,
+    setToken: (val: string) => void
 }
 
 export const initialUserData: UserPublicData = {
@@ -15,7 +17,7 @@ export const initialUserData: UserPublicData = {
     full_name: "",
     email: "",
     authProvider: "email",
-    created_at: new Date(), 
+    created_at: new Date(),
 }
 
 
@@ -26,5 +28,7 @@ export const createUserSlice: StateCreator<UserSlice, [], [], UserSlice> =
         navigatedToLogin: false,
         changeUserData: (val: UserPublicData) => set((state) => ({ userData: val })),
         setLoginFailed: (val: boolean) => set((state) => ({ loginFailed: val })),
-        setNavigatedToLogin: (val: boolean) => set((state) => ({ navigatedToLogin: val }))
+        setNavigatedToLogin: (val: boolean) => set((state) => ({ navigatedToLogin: val })),
+        token: '',
+        setToken: (val: string) => set((state) => ({ token: val })),
     })

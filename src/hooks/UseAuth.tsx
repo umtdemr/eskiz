@@ -11,16 +11,19 @@ export default function useAuth() {
     const setLoginFailed = useBoundStore(useShallow((state) => state.setLoginFailed))
     const isLoggedIn = useBoundStore(useShallow((state) => state.userData.email.length > 0))
     const isLoginFailed = useBoundStore(useShallow((state) => state.loginFailed))
+    const setToken = useBoundStore(useShallow((state) => state.setToken))
     
     const navigate = useNavigate()
     
     const login = async (data: EnvelopeAuthTokenSuccessResponse) => {
         addTokenToCookies(data.authentication_token)
+        setToken(data.authentication_token.token)
         return fetchUserData(data.authentication_token.token)
     }
     
     const logout = () => {
         setUserData(initialUserData)
+        setToken('');
         removeTokenFromCookies()
         navigate('/');
     }
@@ -59,6 +62,7 @@ export default function useAuth() {
             const regexResult=  regexp.exec(document.cookie);
             if (regexResult) {
                 await fetchUserData(regexResult[1])
+                setToken(regexResult[1])
             } else {
                 setLoginFailed(true);
             }
