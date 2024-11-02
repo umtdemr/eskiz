@@ -10,9 +10,14 @@ import {
     RouterProvider,
 } from "react-router-dom";
 import Auth from "@/routes/Auth.tsx";
-import Login from "@/pages/Login.tsx";
-import Register from "@/pages/Register.tsx";
+import Login from "@/pages/Auth/Login.tsx";
+import Register from "@/pages/Auth/Register.tsx";
 import { Toaster } from "react-hot-toast";
+import Root from "@/routes/Root.tsx";
+import PrivateRoute from "@/routes/PrivateRoute.tsx";
+import BoardsRoute from "@/routes/Boards.tsx";
+import BoardsPage from "@/pages/Boards.tsx";
+import SingleBoard from "@/pages/SingleBoard.tsx";
 
 const router = createBrowserRouter([
     {
@@ -33,6 +38,20 @@ const router = createBrowserRouter([
             },
         ]
     },
+    {
+        path: "/boards",
+        element: <PrivateRoute><BoardsRoute /></PrivateRoute>,
+        children: [
+            {
+                path: "/boards",
+                element: <BoardsPage />,
+            },
+        ]
+    },
+    {
+        path: "/boards/:id",
+        element: <PrivateRoute><SingleBoard /></PrivateRoute>
+    }
 ])
 
 const queryClient = new QueryClient()
