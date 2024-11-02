@@ -1,11 +1,35 @@
+import {Button} from "@/components/ui/button.tsx";
+import {MousePointer2, Plus} from "lucide-react";
+import {useQuery} from "@tanstack/react-query";
+import {API_ENDPOINTS} from "@/helpers/Constant.ts";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
-import {Button} from "@/components/ui/button.tsx";
-import {Plus} from "lucide-react";
-import {Badge} from "@/components/ui/badge.tsx";
+import {BoardList} from "@/components/board/boardList/BoardList.tsx";
 
 export default function BoardsPage() {
-    const user = useBoundStore(useShallow((state) => state.userData))
+    const token = useBoundStore(useShallow((state) => state.token))
+
+    const boardsQuery = useQuery({
+        queryKey: ['board_results', token],
+        queryFn: async () => {
+            const boardResponse = await fetch(API_ENDPOINTS.BOARDS, {
+                method: 'GET',
+                credentials: 'omit',
+                mode: 'cors',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+
+            if (!boardResponse.ok) {
+                throw new Error('Network response was not ok')
+            }
+            
+            const jsonResponse = await boardResponse.json()
+            return jsonResponse.board_results
+        },
+    })
+    
     return (
         <>
             <div className=''>
@@ -31,25 +55,41 @@ export default function BoardsPage() {
                 </div>
 
 
-                {/*Board lists*/}
                 <div className='flex mt-10 flex-wrap gap-x-5 gap-y-10'>
                     {
-                        Array.from(Array(10).keys()).map(i => (
-                            <div key={i} className='rounded-b shadow-md w-[300px] border-2 border-white hover:border-zinc-200 cursor-pointer select-none'>
-                                <div className='h-36 relative flex justify-center items-center' style={{ backgroundSize: '15px 15px', backgroundImage: 'radial-gradient(circle, #999 1px, rgba(0 0 0 / 0%) 1px)'}}>
-                                    <Badge className='absolute right-2 top-2 select-none'>
-                                        owner
-                                    </Badge>
-                                    <span className='text-sm tracking-widest font-black font-mono border-2 rounded-xl bg-yellow-100 p-5'>
-                                        WB
+                        boardsQuery.isError ? (
+                            <div
+                                className='w-full relative flex h-40'
+                                style={{ backgroundSize: '40px 40px', backgroundImage: 'radial-gradient(circle, #999 1px, rgba(0 0 0 / 0%) 1px)'}}>
+                                <div className='w-full flex justify-center items-center'>
+                                    <span className='border-2 p-2 border-blue-200 font-mono text-sm'>
+                                        We couldn't load the boards. Try again later.
+                                    </span>
+                                    <MousePointer2 className='absolute left-[60%] lg:left-[57%] top-[59%] fill-red-500 stroke-red-500' />
+                                    <span className='absolute left-[61%] top-[74%] lg:left-[58%]  border-2 rounded-xl p-2 text-xs border-red-500 shadow-md text-white bg-red-500'>
+                                        Penelope
                                     </span>
                                 </div>
-                                <div className='p-5'>
-                                    <h2 className='text-md font-bold'>My whiteboard</h2>
-                                    <span className='text-xs '>24 oct 2024</span>
+                            </div>
+                        ) : null
+                    }
+                    {
+                        boardsQuery.isSuccess ? (
+                            boardsQuery.data.length ? <BoardList boards={boardsQuery.data} />
+                                : <div 
+                                    className='w-full relative flex h-40' 
+                                    style={{ backgroundSize: '40px 40px', backgroundImage: 'radial-gradient(circle, #999 1px, rgba(0 0 0 / 0%) 1px)'}}>
+                                    <div className='w-full flex justify-center items-center'>
+                                        <span className='border-2 p-2 border-blue-200 font-mono text-sm'>
+                                            You don't have any board. Create one.
+                                        </span>
+                                        <MousePointer2 className='absolute left-[60%] lg:left-[57%] top-[59%] fill-red-500 stroke-red-500' />
+                                        <span className='absolute left-[61%] top-[74%] lg:left-[58%]  border-2 rounded-xl p-2 text-xs border-red-500 shadow-md text-white bg-red-500'>
+                                            Penelope
+                                        </span>
+                                    </div>
                                 </div>
-                            </div> 
-                        ))
+                        ) : null
                     }
                 </div>
             </div>
