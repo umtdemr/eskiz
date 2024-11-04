@@ -7,6 +7,7 @@ import {useShallow} from "zustand/react/shallow";
 import {BoardList} from "@/components/board/boardList/BoardList.tsx";
 import {toast} from "react-hot-toast";
 import {useNavigate} from "react-router-dom";
+import BoardsListSkeleton from "@/components/board/boardList/BoardsListSkeleton.tsx";
 
 export default function BoardsPage() {
     const token = useBoundStore(useShallow((state) => state.token))
@@ -107,6 +108,9 @@ export default function BoardsPage() {
                                 </div>
                             </div>
                         ) : null
+                    }
+                    {
+                        boardsQuery.isPending ? <BoardsListSkeleton /> : null
                     }
                     {
                         boardsQuery.isSuccess ? (
