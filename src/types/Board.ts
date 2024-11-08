@@ -1,6 +1,6 @@
 export type BoardResult = {
     name: string,
-    slug: string,
+    slug_id: string,
     is_owner: boolean,
     created_at: string
 }
