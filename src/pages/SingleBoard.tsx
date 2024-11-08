@@ -5,6 +5,8 @@ import {API_ENDPOINTS} from "@/helpers/Constant.ts";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
 import SkeletonHeader from "@/components/board/header/SkeletonHeader.tsx";
+import Toolbar from "@/components/board/toolbar/Toolbar.tsx";
+import SkeletonToolbar from "@/components/board/toolbar/SkeletonToolbar.tsx";
 
 
 export default function SingleBoard() {
@@ -36,11 +38,19 @@ export default function SingleBoard() {
     return (
         <div className='whiteboard'>
             {
-                boardQuery.isPending ? <SkeletonHeader />: null
+                boardQuery.isPending ? (
+                    <>
+                        <SkeletonHeader />
+                        <SkeletonToolbar />
+                    </>
+                ) : null
             }
             {
                 boardQuery.isSuccess ? (
-                    <Header name={boardQuery.data.name} />
+                    <>
+                        <Header name={boardQuery.data.name} />
+                        <Toolbar />
+                    </>
                 ) : null
             }
         </div>
