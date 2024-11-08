@@ -7,6 +7,8 @@ import {useShallow} from "zustand/react/shallow";
 import SkeletonHeader from "@/components/board/header/SkeletonHeader.tsx";
 import Toolbar from "@/components/board/toolbar/Toolbar.tsx";
 import SkeletonToolbar from "@/components/board/toolbar/SkeletonToolbar.tsx";
+import Footer from "@/components/board/footer/Footer.tsx";
+import SkeletonFooter from "@/components/board/footer/SkeletonFooter.tsx";
 
 
 export default function SingleBoard() {
@@ -42,6 +44,7 @@ export default function SingleBoard() {
                     <>
                         <SkeletonHeader />
                         <SkeletonToolbar />
+                        <SkeletonFooter />
                     </>
                 ) : null
             }
@@ -50,6 +53,7 @@ export default function SingleBoard() {
                     <>
                         <Header name={boardQuery.data.name} />
                         <Toolbar />
+                        <Footer />
                     </>
                 ) : null
             }
