@@ -10,7 +10,7 @@ import {
 
 export default function Footer() {
     return (
-        <div className='fixed flex gap-1 bottom-5 right-5 px-2 py-1' style={{ boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)' }}>
+        <div className='fixed flex gap-1 bottom-5 right-5 px-2 py-1 bg-white' style={{ boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)' }}>
             <TooltipProvider>
                 <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>

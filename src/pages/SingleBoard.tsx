@@ -9,12 +9,15 @@ import Toolbar from "@/components/board/toolbar/Toolbar.tsx";
 import SkeletonToolbar from "@/components/board/toolbar/SkeletonToolbar.tsx";
 import Footer from "@/components/board/footer/Footer.tsx";
 import SkeletonFooter from "@/components/board/footer/SkeletonFooter.tsx";
+import {useEffect, useRef} from "react";
+import {Canvas} from "@/core/canvas/Canvas.ts";
 
 
 export default function SingleBoard() {
     const params = useParams()
     const slugId = params?.id
     const token = useBoundStore(useShallow((state) => state.token))
+    const canvasRef = useRef<Canvas | null>(null);
 
     const boardQuery = useQuery({
         queryKey: ['board', slugId, token],
@@ -37,8 +40,26 @@ export default function SingleBoard() {
         },
     })
     
+    useEffect(() => {
+        const initializeCanvas = async () => {
+            canvasRef.current = new Canvas();
+            await canvasRef.current?.initialize()
+        }
+        if (!boardQuery.isSuccess) {
+            return
+        }
+        
+        if (canvasRef.current) {
+            if (canvasRef.current?.initialized) return
+        }
+        
+        
+        initializeCanvas()
+    }, [boardQuery.isSuccess])
+    
     return (
         <div className='whiteboard'>
+            <canvas id='board'></canvas>
             {
                 boardQuery.isPending ? (
                     <>
