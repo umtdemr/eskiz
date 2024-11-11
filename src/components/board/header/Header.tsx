@@ -4,7 +4,7 @@ import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem
 
 export default function Header({ name }: { name: string }) {
     return (
-        <div className='flex fixed justify-between w-full p-5'>
+        <div className='flex fixed justify-between w-full p-5 top-0'>
             <div className='flex px-5 py-2 rounded-lg gap-2 items-center select-none bg-white shadow'>
                 <span className='text-sm font-mono font-bold'>
                     WB

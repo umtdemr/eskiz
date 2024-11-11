@@ -4,7 +4,7 @@ import {Hand, MousePointer2, Redo, Square, StickyNote, Type, Undo} from "lucide-
 
 export default function Toolbar() {
     return (
-        <div className='fixed flex gap-2 flex-col rounded p-2 top-[50%] left-5' style={{ transform: 'translateY(-50%)', boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)' }}>
+        <div className='fixed flex gap-2 flex-col rounded p-2 top-[50%] left-5 bg-white' style={{ transform: 'translateY(-50%)', boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)' }}>
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
                     <TooltipTrigger asChild>
