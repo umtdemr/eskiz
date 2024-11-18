@@ -44,6 +44,7 @@ export default function SingleBoard() {
         const initializeCanvas = async () => {
             canvasRef.current = new Canvas();
             await canvasRef.current?.initialize()
+            canvasRef.current?.draw()
         }
         if (!boardQuery.isSuccess) {
             return
@@ -59,7 +60,9 @@ export default function SingleBoard() {
     
     return (
         <div className='whiteboard'>
-            <canvas id='board'></canvas>
+            <div className='canvas_wrapper'>
+                <canvas id='board'></canvas>
+            </div>
             {
                 boardQuery.isPending ? (
                     <>
