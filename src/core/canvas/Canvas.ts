@@ -12,6 +12,7 @@ export class Canvas {
     private offsetX = 0;
     private offsetY = 0;
     private needsRender = false;
+    private scale = 1;
     
     constructor() {
     }
@@ -85,10 +86,12 @@ export class Canvas {
 
 
         const surface = this.surface;
+        const scale = this.scale;
 
         function draw(canvas) {
             canvas.clear(canvasKit.WHITE);
             canvas.save()
+            canvas.scale(scale, scale)
             canvas.translate(offsetX, offsetY);
             canvas.drawRect(rect, paint);
             canvas.rotate(20, 0, 0)
@@ -133,6 +136,28 @@ export class Canvas {
             canvasEl.style.cursor = 'grab';
             this.needsRender = false;
         });
+        
+        canvasEl.addEventListener('mousewheel', (e: WheelEvent) => {
+            e.preventDefault();
+            
+            // zooming should be activated with ctrl key
+            if (!e.ctrlKey) {
+                return
+            }
+
+            const rect = canvasEl.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+            const oldScale = this.scale;
+            this.scale = Math.min(Math.max(0.1, this.scale * zoomFactor), 10.0);
+
+            this.offsetX = mouseX / this.scale - mouseX / oldScale + this.offsetX;
+            this.offsetY = mouseY / this.scale - mouseY / oldScale + this.offsetY;
+            
+            this.needsRender = true
+        })
     }
 
 }
