@@ -11,6 +11,8 @@ export class Canvas {
     private startPanY = 0;
     private offsetX = 0;
     private offsetY = 0;
+    private lastMouseX = 0;
+    private lastMouseY = 0;
     private needsRender = false;
     private scale = 1;
     
@@ -113,15 +115,26 @@ export class Canvas {
     setEventHandlers(canvasEl: HTMLCanvasElement) {
         canvasEl.addEventListener('mousedown', (e: MouseEvent) => {
             this._isPanning = true;
-            this.startPanX = e.clientX - this.offsetX;
-            this.startPanY = e.clientY - this.offsetY;
+            this.startPanX = e.clientX - this.offsetX * this.scale;
+            this.startPanY = e.clientY - this.offsetY * this.scale;
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
             canvasEl.style.cursor = 'grabbing';
         });
 
         canvasEl.addEventListener('mousemove', (e: MouseEvent) => {
             if (this._isPanning) {
-                this.offsetX = e.clientX - this.startPanX;
-                this.offsetY = e.clientY - this.startPanY;
+                // Calculate velocity based on mouse movement
+                const moveSpeed = Math.sqrt(e.movementX * e.movementX + e.movementY * e.movementY);
+                const speedFactor = Math.max(1, moveSpeed / 10); // Faster mouse = faster pan
+
+                this.offsetX = (e.clientX - this.startPanX) / this.scale * speedFactor;
+                this.offsetY = (e.clientY - this.startPanY) / this.scale * speedFactor;
+                // this.offsetX = (e.clientX - this.startPanX) / this.scale;
+                // this.offsetY = (e.clientY - this.startPanY) / this.scale;
+
+                this.lastMouseX = e.clientX;
+                this.lastMouseY = e.clientY;
                 this.needsRender = true;
             }
         });
@@ -129,12 +142,6 @@ export class Canvas {
         canvasEl.addEventListener('mouseup', () => {
             this._isPanning = false;
             canvasEl.style.cursor = 'grab';
-        });
-
-        canvasEl.addEventListener('mouseleave', () => {
-            this._isPanning = false;
-            canvasEl.style.cursor = 'grab';
-            this.needsRender = false;
         });
         
         canvasEl.addEventListener('mousewheel', (e: WheelEvent) => {
@@ -144,12 +151,10 @@ export class Canvas {
             if (!e.ctrlKey) {
                 return
             }
+            const mouseX = e.clientX
+            const mouseY = e.clientY;
 
-            const rect = canvasEl.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-
-            const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+            const zoomFactor = e.deltaY > 0 ? 0.5 : 1.6;
             const oldScale = this.scale;
             this.scale = Math.min(Math.max(0.1, this.scale * zoomFactor), 10.0);
 
