@@ -1,6 +1,11 @@
 import CanvasKitInit, {CanvasKit, Surface} from "canvaskit-wasm";
+import {Emitter} from "@/core/emitter/Emitter.ts";
 
-export class Canvas {
+export type CanvasEventsMap = {
+    'modeChange': 'neutral' | 'pan' | 'create';
+}
+
+export class Canvas extends Emitter<CanvasEventsMap> {
     private _initialized: boolean = false;
     private canvasKit: CanvasKit;
     private surface: Surface
@@ -15,8 +20,10 @@ export class Canvas {
     private lastMouseY = 0;
     private needsRender = false;
     private scale = 1;
+    private _mouseMode: 'neutral' | 'pan' | 'create' = 'neutral';
     
     constructor() {
+        super()
     }
     
     async initialize() {
@@ -65,7 +72,6 @@ export class Canvas {
         canvasEl.style.position = 'absolute';
         canvasEl.style.left = '0';
         canvasEl.style.top = '0';
-        canvasEl.style.cursor = 'grab';
     }
     
     render() {
@@ -114,24 +120,20 @@ export class Canvas {
     
     setEventHandlers(canvasEl: HTMLCanvasElement) {
         canvasEl.addEventListener('mousedown', (e: MouseEvent) => {
-            this._isPanning = true;
-            this.startPanX = e.clientX - this.offsetX * this.scale;
-            this.startPanY = e.clientY - this.offsetY * this.scale;
-            this.lastMouseX = e.clientX;
-            this.lastMouseY = e.clientY;
-            canvasEl.style.cursor = 'grabbing';
+            if (this._mouseMode === 'pan') {
+                this._isPanning = true;
+                this.startPanX = e.clientX - this.offsetX * this.scale;
+                this.startPanY = e.clientY - this.offsetY * this.scale;
+                this.lastMouseX = e.clientX;
+                this.lastMouseY = e.clientY;
+                canvasEl.style.cursor = 'grabbing';
+            }
         });
 
         canvasEl.addEventListener('mousemove', (e: MouseEvent) => {
-            if (this._isPanning) {
-                // Calculate velocity based on mouse movement
-                const moveSpeed = Math.sqrt(e.movementX * e.movementX + e.movementY * e.movementY);
-                const speedFactor = Math.max(1, moveSpeed / 10); // Faster mouse = faster pan
-
-                this.offsetX = (e.clientX - this.startPanX) / this.scale * speedFactor;
-                this.offsetY = (e.clientY - this.startPanY) / this.scale * speedFactor;
-                // this.offsetX = (e.clientX - this.startPanX) / this.scale;
-                // this.offsetY = (e.clientY - this.startPanY) / this.scale;
+            if (this._mouseMode === 'pan' && this._isPanning) {
+                this.offsetX = (e.clientX - this.startPanX) / this.scale;
+                this.offsetY = (e.clientY - this.startPanY) / this.scale;
 
                 this.lastMouseX = e.clientX;
                 this.lastMouseY = e.clientY;
@@ -140,8 +142,10 @@ export class Canvas {
         });
 
         canvasEl.addEventListener('mouseup', () => {
-            this._isPanning = false;
-            canvasEl.style.cursor = 'grab';
+            if (this._isPanning) {
+                this._isPanning = false;
+                canvasEl.style.cursor = 'grab';
+            }
         });
         
         canvasEl.addEventListener('mousewheel', (e: WheelEvent) => {
@@ -163,6 +167,21 @@ export class Canvas {
             
             this.needsRender = true
         })
+    }
+    
+    get mouseMode() {
+        return this._mouseMode
+    }
+    set mouseMode(newMode: 'neutral' | 'pan' | 'create') {
+        const shouldEmit = newMode !== this._mouseMode
+        this._mouseMode = newMode;
+        if (shouldEmit) {
+            this.emit('modeChange', newMode)
+        }
+        
+        if (this.mouseMode === 'neutral') {
+            this.upperCanvasEl.style.cursor = 'default'
+        }
     }
 
 }
