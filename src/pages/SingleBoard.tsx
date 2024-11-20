@@ -1,3 +1,4 @@
+import {useEffect, useRef, useState} from "react";
 import {useParams} from "react-router-dom";
 import Header from "@/components/board/header/Header.tsx";
 import {useQuery} from "@tanstack/react-query";
@@ -9,11 +10,11 @@ import Toolbar from "@/components/board/toolbar/Toolbar.tsx";
 import SkeletonToolbar from "@/components/board/toolbar/SkeletonToolbar.tsx";
 import Footer from "@/components/board/footer/Footer.tsx";
 import SkeletonFooter from "@/components/board/footer/SkeletonFooter.tsx";
-import {useEffect, useRef} from "react";
 import {Canvas} from "@/core/canvas/Canvas.ts";
 
 
 export default function SingleBoard() {
+    const [isInitialized, setIsInitialized] = useState(false);
     const params = useParams()
     const slugId = params?.id
     const token = useBoundStore(useShallow((state) => state.token))
@@ -45,6 +46,7 @@ export default function SingleBoard() {
             canvasRef.current = new Canvas();
             await canvasRef.current?.initialize()
             canvasRef.current?.draw()
+            setIsInitialized(true)
         }
         if (!boardQuery.isSuccess) {
             return
@@ -64,7 +66,7 @@ export default function SingleBoard() {
                 <canvas id='board'></canvas>
             </div>
             {
-                boardQuery.isPending ? (
+                (boardQuery.isPending || !isInitialized) ? (
                     <>
                         <SkeletonHeader />
                         <SkeletonToolbar />
@@ -73,10 +75,10 @@ export default function SingleBoard() {
                 ) : null
             }
             {
-                boardQuery.isSuccess ? (
+                (boardQuery.isSuccess && isInitialized) ? (
                     <>
                         <Header name={boardQuery.data.name} />
-                        <Toolbar />
+                        <Toolbar canvas={canvasRef.current!} />
                         <Footer />
                     </>
                 ) : null
