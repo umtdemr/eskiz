@@ -1,4 +1,4 @@
-import CanvasKitInit, {CanvasKit, Surface} from "canvaskit-wasm";
+import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas} from "canvaskit-wasm";
 import {Emitter} from "@/core/emitter/Emitter.ts";
 
 export type CanvasEventsMap = {
@@ -96,8 +96,34 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         const surface = this.surface;
         const scale = this.scale;
 
-        function draw(canvas) {
+        function draw(canvas: SkiaCanvas) {
             canvas.clear(canvasKit.WHITE);
+            
+            const gridPath = new canvasKit.Path()
+            const gridPaint = new canvasKit.Paint()
+            gridPaint.setColor(canvasKit.BLACK)
+            gridPaint.setStyle(canvasKit.PaintStyle.Stroke)
+            gridPaint.setAntiAlias(true);
+            gridPaint.setAlphaf(0.5)
+            gridPaint.setStrokeWidth(0.2)
+            
+            const gridSize = 50;
+            const height = surface.height()
+            const width = surface.width()
+            gridPath.moveTo(0, 0)
+            for (let y = 0; y <= height ; y += gridSize) {
+                gridPath.moveTo(0, y)
+                gridPath.lineTo(width, y)
+            }
+            gridPath.close()
+            gridPath.moveTo(0, 0)
+
+            for (let x = 0; x <= width ; x += gridSize) {
+                gridPath.moveTo(x, 0)
+                gridPath.lineTo(x, height)
+            }
+            
+            canvas.drawPath(gridPath, gridPaint)
             canvas.save()
             canvas.scale(scale, scale)
             canvas.translate(offsetX, offsetY);
