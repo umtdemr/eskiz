@@ -95,38 +95,18 @@ export class Canvas extends Emitter<CanvasEventsMap> {
 
         const surface = this.surface;
         const scale = this.scale;
+        const drawGrid = this.drawGrid.bind(this)
 
         function draw(canvas: SkiaCanvas) {
             canvas.clear(canvasKit.WHITE);
             
-            const gridPath = new canvasKit.Path()
-            const gridPaint = new canvasKit.Paint()
-            gridPaint.setColor(canvasKit.BLACK)
-            gridPaint.setStyle(canvasKit.PaintStyle.Stroke)
-            gridPaint.setAntiAlias(true);
-            gridPaint.setAlphaf(0.5)
-            gridPaint.setStrokeWidth(0.2)
             
-            const gridSize = 50;
-            const height = surface.height()
-            const width = surface.width()
-            gridPath.moveTo(0, 0)
-            for (let y = 0; y <= height ; y += gridSize) {
-                gridPath.moveTo(0, y)
-                gridPath.lineTo(width, y)
-            }
-            gridPath.close()
-            gridPath.moveTo(0, 0)
-
-            for (let x = 0; x <= width ; x += gridSize) {
-                gridPath.moveTo(x, 0)
-                gridPath.lineTo(x, height)
-            }
-            
-            canvas.drawPath(gridPath, gridPaint)
             canvas.save()
             canvas.scale(scale, scale)
             canvas.translate(offsetX, offsetY);
+
+            drawGrid(canvas)
+            
             canvas.drawRect(rect, paint);
             canvas.rotate(20, 0, 0)
             canvas.drawPath(path, paint)
@@ -142,6 +122,75 @@ export class Canvas extends Emitter<CanvasEventsMap> {
             window.requestAnimationFrame(this.draw.bind(this));
         }
         window.requestAnimationFrame(this.draw.bind(this));
+    }
+    
+    drawGrid(canvas: SkiaCanvas) {
+        const height = this.surface.height()
+        const width = this.surface.width()
+        const baseGridSize = 50
+
+        // Calculate the visible area
+        const visibleLeft = -this.offsetX
+        const visibleTop = -this.offsetY
+        const visibleRight = ((width / this.scale) - this.offsetX)
+        const visibleBottom = ((height / this.scale) - this.offsetY)
+
+        // Calculate the appropriate grid size based on current scale
+        const log10Scale = Math.log10(this.scale)
+        const power = Math.floor(log10Scale)
+        const fraction = log10Scale - power
+
+        // Calculate two grid sizes for smooth transition
+        const gridSize1 = baseGridSize * Math.pow(10, -power);
+        const gridSize2 = gridSize1 / 10;
+
+        // Calculate base alpha that decreases as zoom increases
+        const maxAlpha = 0.3;
+        const zoomFactor = this.scale;
+        const baseAlpha = maxAlpha / zoomFactor;
+
+        // Calculate alpha for smooth transition
+        const alpha1 = Math.min(baseAlpha, (1 - fraction) * baseAlpha)
+        const alpha2 = Math.min(baseAlpha, fraction * baseAlpha)
+
+        // Calculate line width that decreases with zoom
+        const baseWidth = this.scale < 1 ? Math.min(0.6, 1 / this.scale * 2) : Math.min(0.3, 1 / this.scale * 2);
+
+        [
+            { size: gridSize1, alpha: alpha1 },
+            { size: gridSize2, alpha: alpha2 }
+        ].forEach(({ size, alpha }) => {
+            if (alpha > 0) {
+                const gridPath = new this.canvasKit.Path()
+                const gridPaint = new this.canvasKit.Paint()
+                gridPaint.setColor(this.canvasKit.BLACK)
+                gridPaint.setStyle(this.canvasKit.PaintStyle.Stroke)
+                gridPaint.setAntiAlias(true)
+                gridPaint.setAlphaf(alpha)
+                gridPaint.setStrokeWidth(baseWidth)
+
+                // Calculate grid lines that cover the visible area
+                const startX = Math.floor(visibleLeft / size) * size
+                const endX = Math.ceil(visibleRight / size) * size
+                const startY = Math.floor(visibleTop / size) * size
+                const endY = Math.ceil(visibleBottom / size) * size
+
+                // Draw horizontal lines
+                for (let y = startY; y <= endY; y += size) {
+                    gridPath.moveTo(startX, y)
+                    gridPath.lineTo(endX, y)
+                }
+
+                // Draw vertical lines
+                for (let x = startX; x <= endX; x += size) {
+                    gridPath.moveTo(x, startY)
+                    gridPath.lineTo(x, endY)
+                }
+
+                gridPath.close()
+                canvas.drawPath(gridPath, gridPaint)
+            }
+        })
     }
     
     setEventHandlers(canvasEl: HTMLCanvasElement) {
@@ -186,7 +235,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
 
             const zoomFactor = e.deltaY > 0 ? 0.5 : 1.6;
             const oldScale = this.scale;
-            this.scale = Math.min(Math.max(0.1, this.scale * zoomFactor), 10.0);
+            this.scale = Math.min(Math.max(0.1, this.scale * zoomFactor), 4);
 
             this.offsetX = mouseX / this.scale - mouseX / oldScale + this.offsetX;
             this.offsetY = mouseY / this.scale - mouseY / oldScale + this.offsetY;
