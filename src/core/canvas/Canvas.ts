@@ -1,8 +1,10 @@
 import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas} from "canvaskit-wasm";
 import {Emitter} from "@/core/emitter/Emitter.ts";
+import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
 
 export type CanvasEventsMap = {
     'modeChange': 'neutral' | 'pan' | 'create';
+    'zoom': number
 }
 
 export class Canvas extends Emitter<CanvasEventsMap> {
@@ -235,13 +237,21 @@ export class Canvas extends Emitter<CanvasEventsMap> {
 
             const zoomFactor = e.deltaY > 0 ? 0.5 : 1.6;
             const oldScale = this.scale;
-            this.scale = Math.min(Math.max(0.1, this.scale * zoomFactor), 4);
+            this.scale = Math.min(Math.max(ZOOM_LEVELS.MIN, this.scale * zoomFactor), ZOOM_LEVELS.MAX);
 
             this.offsetX = mouseX / this.scale - mouseX / oldScale + this.offsetX;
             this.offsetY = mouseY / this.scale - mouseY / oldScale + this.offsetY;
             
             this.needsRender = true
+            this.emit('zoom', this.scale)
         })
+    }
+
+    zoom(newZoom: number) {
+        newZoom = Math.min(Math.max(ZOOM_LEVELS.MIN, newZoom), ZOOM_LEVELS.MAX)
+        this.scale = newZoom
+        this.needsRender = true
+        this.emit('zoom', this.scale)
     }
     
     get mouseMode() {
