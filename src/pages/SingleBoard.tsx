@@ -79,7 +79,7 @@ export default function SingleBoard() {
                     <>
                         <Header name={boardQuery.data.name} />
                         <Toolbar canvas={canvasRef.current!} />
-                        <Footer />
+                        <Footer canvas={canvasRef.current!} />
                     </>
                 ) : null
             }
