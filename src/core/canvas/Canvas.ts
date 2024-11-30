@@ -1,6 +1,7 @@
 import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas} from "canvaskit-wasm";
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
+import {WsEngine} from "@/core/WsEngine.ts";
 
 export type CanvasEventsMap = {
     'modeChange': 'neutral' | 'pan' | 'create';
@@ -23,6 +24,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     private needsRender = false;
     private scale = 1;
     private _mouseMode: 'neutral' | 'pan' | 'create' = 'neutral';
+    private wsEngine: WsEngine;
     
     constructor() {
         super()
@@ -57,6 +59,10 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         })
         
         this.surface = this.canvasKit.MakeWebGLCanvasSurface(canvas)!
+        
+        this.wsEngine = new WsEngine(import.meta.env.VITE_WS_URL)
+        await this.wsEngine.initialize()
+        
         this._initialized = true;
         
         // set event handlers
