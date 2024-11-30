@@ -2,6 +2,7 @@ import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas} from "canvaskit
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
 import {WsEngine} from "@/core/WsEngine.ts";
+import {WheelEvent} from "react";
 
 export type CanvasEventsMap = {
     'modeChange': 'neutral' | 'pan' | 'create';
@@ -28,6 +29,74 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     
     constructor() {
         super()
+        this.onMouseWheel = this.onMouseWheel.bind(this);
+        this.onMouseDown = this.onMouseDown.bind(this);
+        this.onMouseMove = this.onMouseMove.bind(this);
+        this.onMouseUp = this.onMouseUp.bind(this);
+    }
+
+    private setEventHandlers() {
+        this.upperCanvasEl.addEventListener('mousedown', this.onMouseDown)
+        this.upperCanvasEl.addEventListener('mousemove', this.onMouseMove);
+        this.upperCanvasEl.addEventListener('mouseup', this.onMouseUp);
+        // @ts-ignore
+        this.upperCanvasEl.addEventListener('wheel', this.onMouseWheel);
+    }
+
+    private onMouseDown(e: MouseEvent) {
+        if (this._mouseMode === 'pan') {
+            this._isPanning = true;
+            this.startPanX = e.clientX - this.offsetX * this.scale;
+            this.startPanY = e.clientY - this.offsetY * this.scale;
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
+            this.upperCanvasEl.style.cursor = 'grabbing';
+        }
+    }
+
+    private onMouseMove(e: MouseEvent) {
+        if (this._mouseMode === 'pan' && this._isPanning) {
+            this.offsetX = (e.clientX - this.startPanX) / this.scale;
+            this.offsetY = (e.clientY - this.startPanY) / this.scale;
+
+            this.lastMouseX = e.clientX;
+            this.lastMouseY = e.clientY;
+            this.needsRender = true;
+        }
+    }
+
+    private onMouseUp() {
+        if (this._isPanning) {
+            this._isPanning = false;
+            this.upperCanvasEl.style.cursor = 'grab';
+        }
+    }
+
+    private onMouseWheel(e: WheelEvent) {
+        e.preventDefault();
+
+        // zooming should be activated with ctrl key
+        if (!e.ctrlKey) {
+            return
+        }
+        const mouseX = e.clientX
+        const mouseY = e.clientY;
+
+        const zoomFactor = e.deltaY > 0 ? 0.5 : 1.6;
+        const oldScale = this.scale;
+        this.scale = Math.min(Math.max(ZOOM_LEVELS.MIN, this.scale * zoomFactor), ZOOM_LEVELS.MAX);
+
+        this.offsetX = mouseX / this.scale - mouseX / oldScale + this.offsetX;
+        this.offsetY = mouseY / this.scale - mouseY / oldScale + this.offsetY;
+
+        this.needsRender = true
+        this.emit('zoom', this.scale)
+    }
+
+    private setCanvasElStyles(canvasEl: HTMLCanvasElement) {
+        canvasEl.style.position = 'absolute';
+        canvasEl.style.left = '0';
+        canvasEl.style.top = '0';
     }
     
     async initialize() {
@@ -66,20 +135,10 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         this._initialized = true;
         
         // set event handlers
-        this.setEventHandlers(this.upperCanvasEl);
+        this.setEventHandlers();
         this.needsRender = true;
         
         return true
-    }
-    
-    get initialized() {
-        return this._initialized;
-    }
-    
-    setCanvasElStyles(canvasEl: HTMLCanvasElement) {
-        canvasEl.style.position = 'absolute';
-        canvasEl.style.left = '0';
-        canvasEl.style.top = '0';
     }
     
     render() {
@@ -200,64 +259,21 @@ export class Canvas extends Emitter<CanvasEventsMap> {
             }
         })
     }
-    
-    setEventHandlers(canvasEl: HTMLCanvasElement) {
-        canvasEl.addEventListener('mousedown', (e: MouseEvent) => {
-            if (this._mouseMode === 'pan') {
-                this._isPanning = true;
-                this.startPanX = e.clientX - this.offsetX * this.scale;
-                this.startPanY = e.clientY - this.offsetY * this.scale;
-                this.lastMouseX = e.clientX;
-                this.lastMouseY = e.clientY;
-                canvasEl.style.cursor = 'grabbing';
-            }
-        });
-
-        canvasEl.addEventListener('mousemove', (e: MouseEvent) => {
-            if (this._mouseMode === 'pan' && this._isPanning) {
-                this.offsetX = (e.clientX - this.startPanX) / this.scale;
-                this.offsetY = (e.clientY - this.startPanY) / this.scale;
-
-                this.lastMouseX = e.clientX;
-                this.lastMouseY = e.clientY;
-                this.needsRender = true;
-            }
-        });
-
-        canvasEl.addEventListener('mouseup', () => {
-            if (this._isPanning) {
-                this._isPanning = false;
-                canvasEl.style.cursor = 'grab';
-            }
-        });
-        
-        canvasEl.addEventListener('mousewheel', (e: WheelEvent) => {
-            e.preventDefault();
-            
-            // zooming should be activated with ctrl key
-            if (!e.ctrlKey) {
-                return
-            }
-            const mouseX = e.clientX
-            const mouseY = e.clientY;
-
-            const zoomFactor = e.deltaY > 0 ? 0.5 : 1.6;
-            const oldScale = this.scale;
-            this.scale = Math.min(Math.max(ZOOM_LEVELS.MIN, this.scale * zoomFactor), ZOOM_LEVELS.MAX);
-
-            this.offsetX = mouseX / this.scale - mouseX / oldScale + this.offsetX;
-            this.offsetY = mouseY / this.scale - mouseY / oldScale + this.offsetY;
-            
-            this.needsRender = true
-            this.emit('zoom', this.scale)
-        })
-    }
 
     zoom(newZoom: number) {
         newZoom = Math.min(Math.max(ZOOM_LEVELS.MIN, newZoom), ZOOM_LEVELS.MAX)
         this.scale = newZoom
         this.needsRender = true
         this.emit('zoom', this.scale)
+    }
+    
+    dispose() {
+        this.upperCanvasEl.removeEventListener('mousedown', this.onMouseDown)
+        this.upperCanvasEl.removeEventListener('mousemove', this.onMouseMove);
+        this.upperCanvasEl.removeEventListener('mouseup', this.onMouseUp);
+        // @ts-ignore
+        this.upperCanvasEl.removeEventListener('wheel', this.onMouseWheel);
+        this.wsEngine.dispose()
     }
     
     get mouseMode() {
@@ -273,6 +289,10 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         if (this.mouseMode === 'neutral') {
             this.upperCanvasEl.style.cursor = 'default'
         }
+    }
+
+    get initialized() {
+        return this._initialized;
     }
 
 }
