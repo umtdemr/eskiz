@@ -26,9 +26,11 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     private scale = 1;
     private _mouseMode: 'neutral' | 'pan' | 'create' = 'neutral';
     private wsEngine: WsEngine;
+    private _slugId: string;
     
-    constructor() {
+    constructor(slugId: string) {
         super()
+        this._slugId = slugId;
         this.onMouseWheel = this.onMouseWheel.bind(this);
         this.onMouseDown = this.onMouseDown.bind(this);
         this.onMouseMove = this.onMouseMove.bind(this);
@@ -129,8 +131,9 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         
         this.surface = this.canvasKit.MakeWebGLCanvasSurface(canvas)!
         
-        this.wsEngine = new WsEngine(import.meta.env.VITE_WS_URL)
+        this.wsEngine = new WsEngine(import.meta.env.VITE_WS_URL, this._slugId)
         await this.wsEngine.initialize()
+        this.wsEngine.connect()
         
         this._initialized = true;
         

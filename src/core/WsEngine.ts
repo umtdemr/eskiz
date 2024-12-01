@@ -10,9 +10,11 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private websocket: WebSocket
     private _status: 'idle' | 'open' | 'error' | 'closed' = 'idle';
     private _wsConnectTimeout = 5000;
+    private _boardSlugId: string;
 
-    constructor(url: string) {
+    constructor(url: string, slugId: string) {
         super()
+        this._boardSlugId = slugId
         this.websocket = new WebSocket(url)
         this.websocket.onerror = this.onError.bind(this)
         this.websocket.onmessage = this.onMessage.bind(this)
@@ -63,6 +65,19 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     
     dispose() {
         this.websocket.close()
+    }
+    
+    sendMessage(data) {
+        this.websocket.send(JSON.stringify(data))
+    }
+    
+    connect() {
+        this.sendMessage({
+            type: 'join',
+            data: {
+                board: this._boardSlugId,
+            }
+        })
     }
     
     set status(newStatus: WsEngineStatus){

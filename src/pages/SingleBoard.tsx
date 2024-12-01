@@ -43,7 +43,7 @@ export default function SingleBoard() {
     
     useEffect(() => {
         const initializeCanvas = async () => {
-            canvasRef.current = new Canvas();
+            canvasRef.current = new Canvas(slugId!);
             await canvasRef.current?.initialize()
             canvasRef.current?.draw()
             setIsInitialized(true)
