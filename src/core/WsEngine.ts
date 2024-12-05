@@ -1,3 +1,4 @@
+import Pako from 'pako';
 import {Emitter} from "@/core/emitter/Emitter.ts";
 
 type WsEngineStatus = 'idle' | 'open' | 'error' | 'closed';
@@ -16,6 +17,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         super()
         this._boardSlugId = slugId
         this.websocket = new WebSocket(url)
+        this.websocket.binaryType = 'arraybuffer'
         this.websocket.onerror = this.onError.bind(this)
         this.websocket.onmessage = this.onMessage.bind(this)
         this.websocket.onopen = this.onOpen.bind(this)
@@ -34,7 +36,9 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         this.status = 'closed';
     }
 
-    private onMessage(data) {
+    private async onMessage(message: MessageEvent) {
+        const data = JSON.parse(Pako.inflate(message.data, { to: 'string', encoding: 'utf8' }))
+        console.log(data)
     }
     
     async initialize() {
@@ -68,14 +72,16 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     }
     
     sendMessage(data) {
-        this.websocket.send(JSON.stringify(data))
+        const compressed = Pako.deflate(JSON.stringify(data))
+        this.websocket.send(compressed)
     }
     
-    connect() {
+    connect(userAuthToken: string) {
         this.sendMessage({
             type: 'join',
             data: {
-                board: this._boardSlugId,
+                board_slug_id: this._boardSlugId,
+                user_auth_token: userAuthToken,
             }
         })
     }

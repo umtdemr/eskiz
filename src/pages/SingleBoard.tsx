@@ -45,6 +45,7 @@ export default function SingleBoard() {
         const initializeCanvas = async () => {
             canvasRef.current = new Canvas(slugId!);
             await canvasRef.current?.initialize()
+            canvasRef.current?.wsEngine.connect(token)
             canvasRef.current?.draw()
             setIsInitialized(true)
         }
