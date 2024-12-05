@@ -91,6 +91,9 @@ devDependencies:
   '@types/node':
     specifier: ^22.8.0
     version: 22.8.0
+  '@types/pako':
+    specifier: ^2.0.3
+    version: 2.0.3
   '@types/react':
     specifier: ^18.3.3
     version: 18.3.3
@@ -1446,6 +1449,10 @@ packages:
     resolution: {integrity: sha512-84rafSBHC/z1i1E3p0cJwKA+CfYDNSXX9WSZBRopjIzLET8oNt6ht2tei4C7izwDeEiLLfdeSVBv1egOH916hg==}
     dependencies:
       undici-types: 6.19.8
+    dev: true
+
+  /@types/pako@2.0.3:
+    resolution: {integrity: sha512-bq0hMV9opAcrmE0Byyo0fY3Ew4tgOevJmQ9grUhpXQhYfyLJ1Kqg3P33JT5fdbT2AjeAjR51zqqVjAL/HMkx7Q==}
     dev: true
 
   /@types/prop-types@15.7.12:
