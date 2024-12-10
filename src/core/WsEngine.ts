@@ -42,6 +42,9 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     }
     
     async initialize() {
+        if (this._status === 'open') {
+            return Promise.resolve(true)
+        }
         if (this._status === 'idle') {
             return new Promise((resolve, reject) => {
                 setTimeout(() => {
