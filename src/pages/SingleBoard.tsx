@@ -11,6 +11,7 @@ import SkeletonToolbar from "@/components/board/toolbar/SkeletonToolbar.tsx";
 import Footer from "@/components/board/footer/Footer.tsx";
 import SkeletonFooter from "@/components/board/footer/SkeletonFooter.tsx";
 import {Canvas} from "@/core/canvas/Canvas.ts";
+import {Engine} from "@/core/engine/Engine.ts";
 
 
 export default function SingleBoard() {
@@ -19,6 +20,7 @@ export default function SingleBoard() {
     const slugId = params?.id
     const token = useBoundStore(useShallow((state) => state.token))
     const canvasRef = useRef<Canvas | null>(null);
+    const engineRef = useRef<Engine | null>(null)
 
     const boardQuery = useQuery({
         queryKey: ['board', slugId, token],
@@ -42,23 +44,24 @@ export default function SingleBoard() {
     })
     
     useEffect(() => {
-        const initializeCanvas = async () => {
-            canvasRef.current = new Canvas(slugId!);
-            await canvasRef.current?.initialize()
-            canvasRef.current?.wsEngine.connect(token)
-            canvasRef.current?.draw()
+        const initializeApp = async () => {
+            engineRef.current = new Engine(slugId!)
+            await engineRef.current?.initialize();
+            canvasRef.current = engineRef.current?.canvas!
+            engineRef.current?.wsEngine.connect(token)
+            canvasRef.current?.draw();
             setIsInitialized(true)
         }
         if (!boardQuery.isSuccess) {
             return
         }
         
-        if (canvasRef.current) {
-            if (canvasRef.current?.initialized) return
+        if (engineRef.current) {
+            if (engineRef.current?.canvas.initialized) return
         }
         
         
-        initializeCanvas()
+        initializeApp()
     }, [boardQuery.isSuccess])
     
     return (

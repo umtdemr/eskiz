@@ -25,7 +25,6 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     private needsRender = false;
     private scale = 1;
     private _mouseMode: 'neutral' | 'pan' | 'create' = 'neutral';
-    private wsEngine: WsEngine;
     private _slugId: string;
     
     constructor(slugId: string) {
@@ -130,10 +129,6 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         })
         
         this.surface = this.canvasKit.MakeWebGLCanvasSurface(canvas)!
-        
-        this.wsEngine = new WsEngine(import.meta.env.VITE_WS_URL, this._slugId)
-        await this.wsEngine.initialize()
-        this.wsEngine.connect()
         
         this._initialized = true;
         
@@ -276,7 +271,6 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         this.upperCanvasEl.removeEventListener('mouseup', this.onMouseUp);
         // @ts-ignore
         this.upperCanvasEl.removeEventListener('wheel', this.onMouseWheel);
-        this.wsEngine.dispose()
     }
     
     get mouseMode() {
