@@ -1,5 +1,6 @@
 import Pako from 'pako';
 import {Emitter} from "@/core/emitter/Emitter.ts";
+import {nanoid} from "nanoid";
 
 type WsEngineStatus = 'idle' | 'open' | 'error' | 'closed';
 
@@ -12,6 +13,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private _status: 'idle' | 'open' | 'error' | 'closed' = 'idle';
     private _wsConnectTimeout = 5000;
     private _boardSlugId: string;
+    private messageCallbacks= new Map<string, () => void>();
 
     constructor(url: string, slugId: string) {
         super()
@@ -38,7 +40,6 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
 
     private async onMessage(message: MessageEvent) {
         const data = JSON.parse(Pako.inflate(message.data, { to: 'string', encoding: 'utf8' }))
-        console.log(data)
     }
     
     async initialize() {
@@ -72,21 +73,34 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     
     dispose() {
         this.websocket.close()
+        this.messageCallbacks.clear();
     }
     
-    sendMessage(data) {
-        const compressed = Pako.deflate(JSON.stringify(data))
+    sendMessage(data, cb?: () => void) {
+        const sendingData = {
+            ...data,
+            id: nanoid()
+        }
+        if (cb) {
+            this.messageCallbacks.set(sendingData.id, cb)
+        }
+        const compressed = Pako.deflate(JSON.stringify(sendingData))
         this.websocket.send(compressed)
     }
     
     connect(userAuthToken: string) {
-        this.sendMessage({
-            type: 'join',
-            data: {
-                board_slug_id: this._boardSlugId,
-                user_auth_token: userAuthToken,
+        this.sendMessage(
+            {
+                type: 'join',
+                data: {
+                    board_slug_id: this._boardSlugId,
+                    user_auth_token: userAuthToken,
+                }
+            },
+            () => {
+                // handle reply here
             }
-        })
+        )
     }
     
     set status(newStatus: WsEngineStatus){
