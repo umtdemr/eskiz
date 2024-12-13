@@ -1,12 +1,17 @@
 import Pako from 'pako';
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {nanoid} from "nanoid";
-import type {MsgCallback, WsMessage} from '../types/Websocket.ts'
+import {WsCommand, WsResponse} from "../types/Websocket.ts";
 
 type WsEngineStatus = 'idle' | 'open' | 'error' | 'closed';
 
 type WsEngineEventMap = {
     'statusChange': WsEngineStatus
+}
+
+type MsgCallback<T extends WsCommand> = {
+    timeout: boolean,
+    data: WsResponse<T>
 }
 
 export class WsEngine extends Emitter<WsEngineEventMap> {
@@ -81,7 +86,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         this.messageCallbacks.clear();
     }
     
-    sendMessage(data, cb?: (data: MsgCallback) => void) {
+    sendMessage<T>(data, cb?: (data: MsgCallback<T>) => void) {
         const sendingData = {
             ...data,
             id: nanoid()
@@ -94,23 +99,23 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     }
     
     // sends message using sendMessage. But this method returns a promise. Useful when relying on callbacks
-    async sendAsyncMessage(data){
+    async sendAsyncMessage<T>(data): Promise<WsResponse<T>> {
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 reject('timeout')
             }, this.msgTimeoutDuration)
             this.sendMessage(
                 data,
-                (respData: MsgCallback) => {
+                (respData: MsgCallback<T>) => {
                     clearTimeout(timeout);
                     resolve(respData.data)
                 }
             )
-        }) 
+        }) as Promise<WsResponse<T>>
     }
     
     async connect(userAuthToken: string) {
-        const data = await this.sendAsyncMessage({
+        const data = await this.sendAsyncMessage<"join">({
             type: 'join',
             data: {
                 board_slug_id: this._boardSlugId,
