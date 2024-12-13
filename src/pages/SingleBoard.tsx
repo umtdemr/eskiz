@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {useParams} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import Header from "@/components/board/header/Header.tsx";
 import {useQuery} from "@tanstack/react-query";
 import {API_ENDPOINTS} from "@/helpers/Constant.ts";
@@ -12,6 +12,7 @@ import Footer from "@/components/board/footer/Footer.tsx";
 import SkeletonFooter from "@/components/board/footer/SkeletonFooter.tsx";
 import {Canvas} from "@/core/canvas/Canvas.ts";
 import {Engine} from "@/core/engine/Engine.ts";
+import {toast} from "react-hot-toast";
 
 
 export default function SingleBoard() {
@@ -21,6 +22,8 @@ export default function SingleBoard() {
     const token = useBoundStore(useShallow((state) => state.token))
     const canvasRef = useRef<Canvas | null>(null);
     const engineRef = useRef<Engine | null>(null)
+    
+    const navigate = useNavigate()
 
     const boardQuery = useQuery({
         queryKey: ['board', slugId, token],
@@ -45,12 +48,22 @@ export default function SingleBoard() {
     
     useEffect(() => {
         const initializeApp = async () => {
-            engineRef.current = new Engine(slugId!)
-            await engineRef.current?.initialize();
-            canvasRef.current = engineRef.current?.canvas!
-            engineRef.current?.wsEngine.connect(token)
-            canvasRef.current?.draw();
-            setIsInitialized(true)
+            try {
+                engineRef.current = new Engine(slugId!)
+                const isEngineInitialized = await engineRef.current?.initialize()!;
+                canvasRef.current = engineRef.current?.canvas!
+                const isConnected = await engineRef.current?.wsEngine.connect(token)!
+                let isOkayToProceed = isEngineInitialized! && isConnected;
+
+                setIsInitialized(isOkayToProceed)
+                if (isOkayToProceed) {
+                    canvasRef.current?.draw();
+                }
+            } catch (err) {
+                engineRef.current?.dispose()
+                toast.error('Error while initializing the board')
+                navigate('/boards')
+            }
         }
         if (!boardQuery.isSuccess) {
             return

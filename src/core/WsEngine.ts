@@ -1,6 +1,7 @@
 import Pako from 'pako';
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {nanoid} from "nanoid";
+import type {MsgCallback, WsMessage} from '../types/Websocket.ts'
 
 type WsEngineStatus = 'idle' | 'open' | 'error' | 'closed';
 
@@ -13,7 +14,8 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private _status: 'idle' | 'open' | 'error' | 'closed' = 'idle';
     private _wsConnectTimeout = 5000;
     private _boardSlugId: string;
-    private messageCallbacks= new Map<string, () => void>();
+    private messageCallbacks= new Map<string, (data: MsgCallback) => void>();
+    private msgTimeoutDuration = 10_000;
 
     constructor(url: string, slugId: string) {
         super()
@@ -40,6 +42,9 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
 
     private async onMessage(message: MessageEvent) {
         const data = JSON.parse(Pako.inflate(message.data, { to: 'string', encoding: 'utf8' }))
+        if (this.messageCallbacks.has(data.reply_to)) {
+            this.messageCallbacks.get(data.reply_to)!(data)
+        }
     }
     
     async initialize() {
@@ -76,31 +81,43 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         this.messageCallbacks.clear();
     }
     
-    sendMessage(data, cb?: () => void) {
+    sendMessage(data, cb?: (data: MsgCallback) => void) {
         const sendingData = {
             ...data,
             id: nanoid()
         }
         if (cb) {
-            this.messageCallbacks.set(sendingData.id, cb)
+            this.messageCallbacks.set(sendingData.id, cb!)
         }
         const compressed = Pako.deflate(JSON.stringify(sendingData))
         this.websocket.send(compressed)
     }
     
-    connect(userAuthToken: string) {
-        this.sendMessage(
-            {
-                type: 'join',
-                data: {
-                    board_slug_id: this._boardSlugId,
-                    user_auth_token: userAuthToken,
+    // sends message using sendMessage. But this method returns a promise. Useful when relying on callbacks
+    async sendAsyncMessage(data){
+        return new Promise((resolve, reject) => {
+            const timeout = setTimeout(() => {
+                reject('timeout')
+            }, this.msgTimeoutDuration)
+            this.sendMessage(
+                data,
+                (respData: MsgCallback) => {
+                    clearTimeout(timeout);
+                    resolve(respData.data)
                 }
+            )
+        }) 
+    }
+    
+    async connect(userAuthToken: string) {
+        const data = await this.sendAsyncMessage({
+            type: 'join',
+            data: {
+                board_slug_id: this._boardSlugId,
+                user_auth_token: userAuthToken,
             },
-            () => {
-                // handle reply here
-            }
-        )
+        });
+        return !data.error;
     }
     
     set status(newStatus: WsEngineStatus){
