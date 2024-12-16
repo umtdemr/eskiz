@@ -114,15 +114,14 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         }) as Promise<WsResponse<T>>
     }
     
-    async connect(userAuthToken: string) {
-        const data = await this.sendAsyncMessage<"join">({
+    async connect(userAuthToken: string): Promise<WsResponse<"join">>{
+        return await this.sendAsyncMessage<"join">({
             type: 'join',
             data: {
-                board_slug_id: this._boardSlugId,
+                board_slug_id: this._boardSlugId + 'selam',
                 user_auth_token: userAuthToken,
             },
         });
-        return !data.error;
     }
     
     set status(newStatus: WsEngineStatus){
