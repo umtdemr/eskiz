@@ -1,7 +1,7 @@
 import Pako from 'pako';
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {nanoid} from "nanoid";
-import {WsCommand, WsResponse} from "../types/Websocket.ts";
+import {WsCommand, WsPayload, WsResponse} from "../types/Websocket.ts";
 
 type WsEngineStatus = 'idle' | 'open' | 'error' | 'closed';
 
@@ -99,7 +99,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     }
     
     // sends message using sendMessage. But this method returns a promise. Useful when relying on callbacks
-    async sendAsyncMessage<T>(data): Promise<WsResponse<T>> {
+    async sendAsyncMessage<T>(data: WsPayload<T>): Promise<WsResponse<T>> {
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 reject('timeout')
