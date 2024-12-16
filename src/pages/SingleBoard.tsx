@@ -47,22 +47,29 @@ export default function SingleBoard() {
     })
     
     useEffect(() => {
+        const navigateToBoardOnErr = () => {
+            engineRef.current?.dispose()
+            toast.error('Error while initializing the board')
+            navigate('/boards') 
+        }
         const initializeApp = async () => {
             try {
                 engineRef.current = new Engine(slugId!)
                 const isEngineInitialized = await engineRef.current?.initialize()!;
                 canvasRef.current = engineRef.current?.canvas!
-                const isConnected = await engineRef.current?.wsEngine.connect(token)!
-                let isOkayToProceed = isEngineInitialized! && isConnected;
-
+                const connectResp = await engineRef.current?.wsEngine.connect(token)!
+                if (connectResp.error) {
+                    navigateToBoardOnErr();
+                    return
+                }
+                
+                let isOkayToProceed = isEngineInitialized! && !!connectResp.join;
                 setIsInitialized(isOkayToProceed)
                 if (isOkayToProceed) {
                     canvasRef.current?.draw();
                 }
             } catch (err) {
-                engineRef.current?.dispose()
-                toast.error('Error while initializing the board')
-                navigate('/boards')
+                navigateToBoardOnErr();
             }
         }
         if (!boardQuery.isSuccess) {
