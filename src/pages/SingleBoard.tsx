@@ -30,10 +30,12 @@ export default function SingleBoard() {
     const [isInitialized, setIsInitialized] = useState(false);
     const params = useParams()
     const slugId = params?.id
-    const token = useBoundStore(useShallow((state) => state.token))
     const canvasRef = useRef<Canvas | null>(null);
     const engineRef = useRef<Engine | null>(null)
     const [connectionError, setConnectionError] = useState<WsErrorMessage>(null)
+    
+    const token = useBoundStore(useShallow((state) => state.token))
+    const setCollaborators = useBoundStore(useShallow((state) => state.setCollaborators));
     
     const navigate = useNavigate()
 
@@ -74,6 +76,8 @@ export default function SingleBoard() {
                     setConnectionError(connectResp.error)
                     return
                 }
+                
+                setCollaborators(connectResp.join?.online_users || [])
                 
                 let isOkayToProceed = isEngineInitialized! && !!connectResp.join;
                 setIsInitialized(isOkayToProceed)
