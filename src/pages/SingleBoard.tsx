@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import {Link, useNavigate, useParams} from "react-router-dom";
 import Header from "@/components/board/header/Header.tsx";
 import {useQuery} from "@tanstack/react-query";
 import {API_ENDPOINTS} from "@/helpers/Constant.ts";
@@ -13,6 +13,17 @@ import SkeletonFooter from "@/components/board/footer/SkeletonFooter.tsx";
 import {Canvas} from "@/core/canvas/Canvas.ts";
 import {Engine} from "@/core/engine/Engine.ts";
 import {toast} from "react-hot-toast";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle
+} from "@/components/ui/dialog.tsx";
+import {CircleX} from "lucide-react";
+import {Button} from "@/components/ui/button.tsx";
+import {WsErrorMessage} from "@/types/Websocket.ts";
 
 
 export default function SingleBoard() {
@@ -22,6 +33,7 @@ export default function SingleBoard() {
     const token = useBoundStore(useShallow((state) => state.token))
     const canvasRef = useRef<Canvas | null>(null);
     const engineRef = useRef<Engine | null>(null)
+    const [connectionError, setConnectionError] = useState<WsErrorMessage>(null)
     
     const navigate = useNavigate()
 
@@ -59,7 +71,7 @@ export default function SingleBoard() {
                 canvasRef.current = engineRef.current?.canvas!
                 const connectResp = await engineRef.current?.wsEngine.connect(token)!
                 if (connectResp.error) {
-                    navigateToBoardOnErr();
+                    setConnectionError(connectResp.error)
                     return
                 }
                 
@@ -90,7 +102,7 @@ export default function SingleBoard() {
                 <canvas id='board'></canvas>
             </div>
             {
-                (boardQuery.isPending || !isInitialized) ? (
+                ((boardQuery.isPending || !isInitialized) && !connectionError) ? (
                     <>
                         <SkeletonHeader />
                         <SkeletonToolbar />
@@ -99,12 +111,33 @@ export default function SingleBoard() {
                 ) : null
             }
             {
-                (boardQuery.isSuccess && isInitialized) ? (
+                ((boardQuery.isSuccess && isInitialized) && !connectionError) ? (
                     <>
                         <Header name={boardQuery.data.name} />
                         <Toolbar canvas={canvasRef.current!} />
                         <Footer canvas={canvasRef.current!} />
                     </>
+                ) : null
+            }
+
+            {
+                connectionError ? (
+                    <Dialog open={true}>
+                        <DialogContent showCloseIcon={false}>
+                            <DialogHeader>
+                                <DialogTitle className='flex gap-2 items-center'>
+                                    An error occurred
+                                    <CircleX color='red' />
+                                </DialogTitle>
+                                <DialogDescription>Sorry but we are not able to open this board for you. Please try again later.</DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                                <Link to={'/boards'}>
+                                    <Button>Go to boards</Button>
+                                </Link>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
                 ) : null
             }
         </div>
