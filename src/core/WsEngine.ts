@@ -118,7 +118,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         return await this.sendAsyncMessage<"join">({
             type: 'join',
             data: {
-                board_slug_id: this._boardSlugId + 'selam',
+                board_slug_id: this._boardSlugId,
                 user_auth_token: userAuthToken,
             },
         });
