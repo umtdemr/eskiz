@@ -1,6 +1,8 @@
 import { create } from 'zustand';
-import {createUserSlice} from "@/store/userSlice.ts";
+import {createUserSlice, UserSlice} from "@/store/userSlice.ts";
+import {createCollaboratorsSlice, CollaboratorsSlice} from "@/store/collaborators.ts";
 
-export const useBoundStore = create((...a) => ({
-    ...createUserSlice(...a)
+export const useBoundStore = create<UserSlice, CollaboratorsSlice>()((...a) => ({
+    ...createUserSlice(...a),
+    ...createCollaboratorsSlice(...a)
 }))
