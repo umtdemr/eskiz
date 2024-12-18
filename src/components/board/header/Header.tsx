@@ -1,6 +1,4 @@
-import { EllipsisVertical } from "lucide-react";
-import { Image } from 'lucide-react';
-import {DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from "@/components/ui/dropdown-menu.tsx";
+import {UsersList} from "@/components/board/header/UsersList.tsx";
 
 export default function Header({ name }: { name: string }) {
     return (
@@ -16,17 +14,8 @@ export default function Header({ name }: { name: string }) {
                     <span className='text-sm'>{ name }</span>
                 </div>
             </div>
-            <div 
-                className='fixed top-5 right-5'
-                id='header_right'>
-                <div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger><EllipsisVertical size={20}/></DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                            <DropdownMenuItem><Image /> Import</DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                </div>
+            <div className='fixed top-5 right-5 flex bg-white shadow px-2 py-2 rounded-xl h-12 items-center gap-2'>
+                <UsersList />
             </div>
         </>
     )
