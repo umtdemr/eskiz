@@ -1,6 +1,27 @@
-import {UsersList} from "@/components/board/header/UsersList.tsx";
+import {UsersListDropdown} from "@/components/board/header/UsersListDropdown.tsx";
+import {UsersListCard} from "@/components/board/header/UsersListCard.tsx";
 
 export default function Header({ name }: { name: string }) {
+    // this is dummy data
+    const allUsers = [
+        {
+            name: 'ümit demir',
+            avatar: 'UD'
+        },
+        {
+            name: 'ümit demir',
+            avatar: 'KD'
+        },
+        {
+            name: 'ümit demir',
+            avatar: 'MD'
+        },
+        {
+            name: 'ümit demir',
+            avatar: 'TD'
+        },
+    ]
+
     return (
         <>
             <div 
@@ -15,7 +36,8 @@ export default function Header({ name }: { name: string }) {
                 </div>
             </div>
             <div className='fixed top-5 right-5 flex bg-white shadow px-2 py-2 rounded-xl h-12 items-center gap-2'>
-                <UsersList />
+                <UsersListDropdown users={allUsers} />
+                <UsersListCard users={allUsers} />
             </div>
         </>
     )
