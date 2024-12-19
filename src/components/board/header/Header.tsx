@@ -1,7 +1,11 @@
 import {UsersListDropdown} from "@/components/board/header/UsersListDropdown.tsx";
 import {UsersListCard} from "@/components/board/header/UsersListCard.tsx";
+import {useBoundStore} from "@/store/store.ts";
+import {useShallow} from "zustand/react/shallow";
 
 export default function Header({ name }: { name: string }) {
+    const isUsersListCardActive = useBoundStore(useShallow((state) => state.activeWindow === 'online_users_list'))
+    
     // this is dummy data
     const allUsers = [
         {
@@ -37,7 +41,7 @@ export default function Header({ name }: { name: string }) {
             </div>
             <div className='fixed top-5 right-5 flex bg-white shadow px-2 py-2 rounded-xl h-12 items-center gap-2'>
                 <UsersListDropdown users={allUsers} />
-                <UsersListCard users={allUsers} />
+                { isUsersListCardActive ? <UsersListCard users={allUsers} /> : null }
             </div>
         </>
     )

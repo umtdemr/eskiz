@@ -1,6 +1,9 @@
+import {useShallow} from "zustand/react/shallow";
+import {useCallback} from "react";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
 import {ChevronDown, UserRoundPlus} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
+import {useBoundStore} from "@/store/store.ts";
 
 export function UsersListDropdown({
     users
@@ -10,10 +13,25 @@ export function UsersListDropdown({
         name: string
     }[]
 }) {
+    const isUsersListCardActive = useBoundStore(useShallow((state) => state.activeWindow)) === 'online_users_list'
+    const openUsersList = useBoundStore(useShallow((state) => state.openOnlineUsers))
+    const closeAllWindows = useBoundStore(useShallow((state) => state.closeAllWindows))
+    
+    const toggleUsersCardList = useCallback(() => {
+        if (isUsersListCardActive) {
+            closeAllWindows()
+        } else {
+            openUsersList();
+        }
+    }, [isUsersListCardActive, openUsersList, closeAllWindows])
+    
     return (
         <>
             <div
                 className='flex relative bg-zinc-200 border-2 h-9 rounded-full items-center group hover:border-blue-600 cursor-pointer'
+                role='button'
+                tabIndex={-1}
+                onClick={toggleUsersCardList}
             >
                 <div className='flex'
                      style={{
@@ -33,7 +51,10 @@ export function UsersListDropdown({
                             </div>
                         )) }
                 </div>
-                <button className='rounded-full h-max' title='see active users'>
+                <button 
+                    onClick={toggleUsersCardList}
+                    className='rounded-full h-max' 
+                    title='see active users'>
                     <ChevronDown size={16} />
                 </button>
             </div>
