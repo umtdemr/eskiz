@@ -1,8 +1,10 @@
+import {useShallow} from "zustand/react/shallow";
 import {Card, CardContent, CardHeader, CardTitle} from "@/components/ui/card.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {X} from "lucide-react";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
+import {useBoundStore} from "@/store/store.ts";
 
 export function UsersListCard({
     users
@@ -12,6 +14,8 @@ export function UsersListCard({
             name: string
     }[]
 }) {
+    const closeAllWindows = useBoundStore(useShallow((state) => state.closeAllWindows))
+
     return (
         <Card className='fixed top-20 right-32 w-80'>
             <CardHeader className='relative'>
@@ -21,7 +25,11 @@ export function UsersListCard({
                         { users.length }
                     </Badge>
                 </CardTitle>
-                <Button variant='secondary' className='absolute py-2 px-3 top-2 right-4 rounded-full'>
+                <Button 
+                    variant='secondary' 
+                    className='absolute py-2 px-3 top-2 right-4 rounded-full'
+                    onClick={closeAllWindows}
+                >
                     <X />
                 </Button>
             </CardHeader>
