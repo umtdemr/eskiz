@@ -14,16 +14,20 @@ export function UsersListDropdown({
     }[]
 }) {
     const isUsersListCardActive = useBoundStore(useShallow((state) => state.activeWindow)) === 'online_users_list'
-    const openUsersList = useBoundStore(useShallow((state) => state.openOnlineUsers))
+    const openNewWindow = useBoundStore(useShallow((state) => state.openWindow))
     const closeAllWindows = useBoundStore(useShallow((state) => state.closeAllWindows))
     
     const toggleUsersCardList = useCallback(() => {
         if (isUsersListCardActive) {
             closeAllWindows()
         } else {
-            openUsersList();
+            openNewWindow('online_users_list');
         }
-    }, [isUsersListCardActive, openUsersList, closeAllWindows])
+    }, [isUsersListCardActive, openNewWindow, closeAllWindows])
+    
+    const openInviteModal = useCallback(() => {
+        openNewWindow('invite');
+    }, [openNewWindow])
     
     return (
         <>
@@ -58,7 +62,10 @@ export function UsersListDropdown({
                     <ChevronDown size={16} />
                 </button>
             </div>
-            <Button className='bg-blue-700 hover:bg-blue-900'>
+            <Button 
+                className='bg-blue-700 hover:bg-blue-900'
+                onClick={openInviteModal}
+            >
                 <UserRoundPlus />
                 Invite
             </Button>

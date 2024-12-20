@@ -2,9 +2,22 @@ import {UsersListDropdown} from "@/components/board/header/UsersListDropdown.tsx
 import {UsersListCard} from "@/components/board/header/UsersListCard.tsx";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
+import {InviteModal} from "@/components/modals/inviteModal/InviteModal.tsx";
+import {useCallback} from "react";
 
 export default function Header({ name }: { name: string }) {
-    const isUsersListCardActive = useBoundStore(useShallow((state) => state.activeWindow === 'online_users_list'))
+    const activeWindow = useBoundStore(useShallow((state) => state.activeWindow));
+    const openWindow = useBoundStore(useShallow((state) => state.openWindow));
+    const isUsersListCardActive = activeWindow === 'online_users_list';
+    const isInviteModalActive = activeWindow === 'invite';
+    
+    const closeInviteModal = useCallback(() => {
+        if (!isInviteModalActive) {
+            return
+        }
+        
+        openWindow(null);
+    }, [isInviteModalActive, openWindow])
     
     // this is dummy data
     const allUsers = [
@@ -43,6 +56,9 @@ export default function Header({ name }: { name: string }) {
                 <UsersListDropdown users={allUsers} />
                 { isUsersListCardActive ? <UsersListCard users={allUsers} /> : null }
             </div>
+            {
+                isInviteModalActive ? <InviteModal isOpen={true} closeModal={closeInviteModal} /> : null
+            }
         </>
     )
 }

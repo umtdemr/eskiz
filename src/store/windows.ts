@@ -1,10 +1,10 @@
 import {StateCreator} from "zustand/vanilla";
 
-type window = 'online_users_list';
+type window = 'online_users_list' | 'invite';
 
 export interface WindowSlice {
     activeWindow: window | null
-    openOnlineUsers: () => void
+    openWindow: (newWindow: window | null) => void
     closeAllWindows: () => void
 }
 
@@ -15,6 +15,6 @@ export const createWindowsSlice: StateCreator<
     WindowSlice
 > = (set) => ({
     activeWindow: null,
-    openOnlineUsers: (() => set({ activeWindow: 'online_users_list' })),
+    openWindow: ((newWindow: window | null) => set({ activeWindow: newWindow })),
     closeAllWindows: (() => set({ activeWindow: null }))
 })
