@@ -9,6 +9,12 @@ import {Button} from "@/components/ui/button.tsx";
 import {LoaderCircle} from "lucide-react";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
+import {DefaultError, useMutation} from "@tanstack/react-query";
+import {API_ENDPOINTS} from "@/helpers/Constant.ts";
+import {InviteRequest} from "@/types/Board.ts";
+import {useBoundStore} from "@/store/store.ts";
+import {useShallow} from "zustand/react/shallow";
+import {toast} from "react-hot-toast";
 
 const inviteFormSchema = z.object({
     email: z.string().email(),
@@ -21,6 +27,34 @@ export function InviteModal({
     isOpen: true,
     closeModal: () => void
 }) {
+    const boardData = useBoundStore(useShallow(state => state.boardData))
+    const token = useBoundStore(useShallow((state) => state.token))
+
+    const mutation = useMutation<unknown, DefaultError, InviteRequest>({
+        mutationFn: (formData) => {
+            return fetch(API_ENDPOINTS.INVITE_TO_BOARD, {
+                method: 'POST',
+                body: JSON.stringify(formData),
+                credentials: 'omit',
+                mode: 'cors',
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+        },
+        onSuccess: async (resp) => {
+            if (resp.status !== 201) {
+                return Promise.reject('could not invite the user')
+            }
+            const data = await resp.json()
+            toast.success('Successfully invited.')
+        },
+        onError: () => {
+            toast.error('Could not invite the user. Please try again later')
+        }
+    })
+    
+    
     // this is dummy data
     const users = [
         {
@@ -49,11 +83,11 @@ export function InviteModal({
     })
     
     function onSubmit(values: z.infer<typeof inviteFormSchema>) {
-        // todo: submit it
+        mutation.mutate({ email: values.email, board_id: boardData.id })
     }
     
     return (
-        <Dialog open={isOpen} onOpenChange={(newMode) => { if (!newMode) closeModal() }}>
+        <Dialog open={isOpen} onOpenChange={(newMode) => { if (mutation.isPending) return; if (!newMode) closeModal() }}>
             <DialogContent>
                 <DialogHeader>
                     <DialogTitle>
@@ -81,8 +115,11 @@ export function InviteModal({
                                 />
                                 <Button
                                     className='bg-blue-700 hover:bg-blue-900'
+                                    disabled={mutation.isPending}
                                     type='submit'>
-                                    <LoaderCircle className="animate-spin" />
+                                    {  
+                                        mutation.isPending ? <LoaderCircle className="animate-spin" /> : null
+                                    }
                                     Invite
                                 </Button>
                             </div>

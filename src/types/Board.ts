@@ -11,3 +11,8 @@ export type BoardCreateResult = {
     is_owner: boolean,
     created_at: string 
 }
+
+export type InviteRequest = {
+    email: string
+    board_id: number
+}
