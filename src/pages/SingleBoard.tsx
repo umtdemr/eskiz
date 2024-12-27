@@ -35,6 +35,7 @@ export default function SingleBoard() {
     const [connectionError, setConnectionError] = useState<WsErrorMessage>(null)
     
     const token = useBoundStore(useShallow((state) => state.token))
+    const setBoardData = useBoundStore(useShallow(state => state.setBoardData))
     const setCollaborators = useBoundStore(useShallow((state) => state.setCollaborators));
     
     const navigate = useNavigate()
@@ -56,7 +57,15 @@ export default function SingleBoard() {
             }
 
             const jsonResponse = await boardResponse.json()
-            return jsonResponse.board
+            const data = jsonResponse.board
+            setBoardData({
+                id: data.id,
+                name: data.name,
+                owner_id: data.owner_id,
+                created_at: new Date(data.created_at),
+                slug_id: data.slug_id
+            })
+            return data
         },
     })
     
