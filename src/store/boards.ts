@@ -1,5 +1,13 @@
 import {StateCreator} from "zustand/vanilla";
 
+export interface BoardUser {
+    id: number
+    email: string
+    full_name: string
+    role: string
+    avatar: string
+}
+
 interface Board {
     name: string
     id: number
@@ -11,7 +19,9 @@ interface Board {
 export interface BoardsSlice {
     isBoardFetched: boolean
     boardData: Board,
+    users: BoardUser[],
     setBoardData: (data: Board) => void
+    addToUsers: (data: BoardUser[]) => void
 }
 
 
@@ -28,6 +38,8 @@ export const createBoardsSlice: StateCreator<
         created_at: new Date(),
         slug_id: ""
     },
+    users: [],
     isBoardFetched: false,
-    setBoardData: (data: Board) => set({ boardData: data })
+    setBoardData: (data: Board) => set({ boardData: data, isBoardFetched: true }),
+    addToUsers: (data: BoardUser[]) => set(state => ({ users: [ ...state.users, ...data ] }))
 })

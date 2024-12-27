@@ -15,6 +15,8 @@ import {InviteRequest} from "@/types/Board.ts";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
 import {toast} from "react-hot-toast";
+import {BoardUser} from "@/store/boards.ts";
+import {getAvatar} from "@/helpers/AuthHelper.ts";
 
 const inviteFormSchema = z.object({
     email: z.string().email(),
@@ -27,8 +29,11 @@ export function InviteModal({
     isOpen: true,
     closeModal: () => void
 }) {
+    const thisUser = useBoundStore(useShallow((state) => state.userData))
     const boardData = useBoundStore(useShallow(state => state.boardData))
+    const users = useBoundStore(useShallow(state => state.users))
     const token = useBoundStore(useShallow((state) => state.token))
+    const addToUsers = useBoundStore(useShallow((state) => state.addToUsers))
 
     const mutation = useMutation<unknown, DefaultError, InviteRequest>({
         mutationFn: (formData) => {
@@ -47,33 +52,28 @@ export function InviteModal({
                 return Promise.reject('could not invite the user')
             }
             const data = await resp.json()
+            if (!data.user || !data.user?.id < 0) {
+                return Promise.reject('cold not invite the user')
+            }
+            
+            // add to users slice
+            addToUsers([{ 
+                full_name: data.user.full_name,
+                email: data.user.email,
+                role: "editor",
+                id: data.user.id,
+                avatar: getAvatar(data.user.full_name)
+            }] as BoardUser[])
+
             toast.success('Successfully invited.')
+            
+            // clear form
+            form.reset()
         },
         onError: () => {
             toast.error('Could not invite the user. Please try again later')
         }
     })
-    
-    
-    // this is dummy data
-    const users = [
-        {
-            name: 'ümit demir',
-            avatar: 'UD'
-        },
-        {
-            name: 'ümit demir',
-            avatar: 'KD'
-        },
-        {
-            name: 'ümit demir',
-            avatar: 'MD'
-        },
-        {
-            name: 'ümit demir',
-            avatar: 'TD'
-        },
-    ] 
 
     const form = useForm<z.infer<typeof inviteFormSchema>>({
         resolver: zodResolver(inviteFormSchema),
@@ -144,13 +144,13 @@ export function InviteModal({
                                     </Avatar>
                                     <div className='grid'>
                                     <span>
-                                        {user.name}
+                                        {user.full_name}
                                     </span>
-                                        <span className='text-xs text-slate-500'>umitde296@gmail.com</span>
+                                        <span className='text-xs text-slate-500'>{user.email}</span>
                                     </div>
                                 </div>
                                 {
-                                    i === 0 ? (
+                                    user.email === thisUser.email ? (
                                         <Badge className='flex-shrink-5 h-6'>
                                             you
                                         </Badge>
