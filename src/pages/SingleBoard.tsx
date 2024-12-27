@@ -24,6 +24,8 @@ import {
 import {CircleX} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {WsErrorMessage} from "@/types/Websocket.ts";
+import {BoardRetrieveResponse} from "@/types/Board.ts";
+import {getAvatar} from "@/helpers/AuthHelper.ts";
 
 
 export default function SingleBoard() {
@@ -37,6 +39,7 @@ export default function SingleBoard() {
     const token = useBoundStore(useShallow((state) => state.token))
     const setBoardData = useBoundStore(useShallow(state => state.setBoardData))
     const setCollaborators = useBoundStore(useShallow((state) => state.setCollaborators));
+    const addToUsers = useBoundStore(useShallow((state) => state.addToUsers))
     
     const navigate = useNavigate()
 
@@ -56,16 +59,25 @@ export default function SingleBoard() {
                 throw new Error('Network response was not ok')
             }
 
-            const jsonResponse = await boardResponse.json()
-            const data = jsonResponse.board
+            const jsonResponse = await boardResponse.json() as BoardRetrieveResponse
+            const boardData = jsonResponse.board.data
+            const users = jsonResponse.board.users.map(user => ({
+                full_name: user.full_name,
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                avatar: getAvatar(user.full_name)
+            }))
+
             setBoardData({
-                id: data.id,
-                name: data.name,
-                owner_id: data.owner_id,
-                created_at: new Date(data.created_at),
-                slug_id: data.slug_id
+                id: boardData.id,
+                name: boardData.name,
+                owner_id: boardData.owner_id,
+                created_at: new Date(boardData.created_at),
+                slug_id: boardData.slug_id
             })
-            return data
+            addToUsers(users)
+            return boardData
         },
     })
     
