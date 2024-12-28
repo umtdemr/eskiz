@@ -15,6 +15,8 @@ export function UsersListCard({
     }[]
 }) {
     const closeAllWindows = useBoundStore(useShallow((state) => state.closeAllWindows))
+    const userData = useBoundStore(useShallow(state => state.userData))
+    const collaborators = useBoundStore(useShallow((state) => state.collaboratorsList)).filter((_, i) => i < 3)
 
     return (
         <Card className='fixed top-20 right-32 w-80'>
@@ -22,7 +24,7 @@ export function UsersListCard({
                 <CardTitle className='flex items-center'>
                     Online users
                     <Badge className='rounded-full px-2 ml-3 bg-blue-900'>
-                        { users.length }
+                        { collaborators.length }
                     </Badge>
                 </CardTitle>
                 <Button 
@@ -35,7 +37,7 @@ export function UsersListCard({
             </CardHeader>
             <CardContent className='grid gap-4 max-h-60 overflow-y-auto'>
                 {
-                    users.map((user, i) => (
+                    collaborators.map((user, i) => (
                         <div className='flex justify-between items-center'>
                             <div className='flex gap-2'>
                                 <Avatar>
@@ -43,13 +45,13 @@ export function UsersListCard({
                                 </Avatar>
                                 <div className='grid'>
                                     <span>
-                                        {user.name}
+                                        {user.full_name}
                                     </span>
-                                    <span className='text-xs text-slate-500'>umitde296@gmail.com</span>
+                                    <span className='text-xs text-slate-500'>{user.email}</span>
                                 </div>
                             </div>
                             {
-                                i === 0 ? (
+                                user.email === userData.email ? (
                                     <Badge className='flex-shrink-5 h-6'>
                                         you
                                     </Badge>

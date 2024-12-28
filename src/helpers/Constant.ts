@@ -12,3 +12,9 @@ export const ZOOM_LEVELS = {
     MAX: 4,
     MIN: 0.1
 } as const;
+
+
+export const WS_EVENTS = {
+    USER_JOINED: 'USER_JOINED',
+    USER_LEFT: 'USER_LEFT',
+} as const;

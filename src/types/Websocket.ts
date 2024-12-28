@@ -1,4 +1,5 @@
 import {UserPublicData} from "@/types/Auth.ts";
+import {WS_EVENTS} from "@/helpers/Constant.ts";
 
 
 export type WsCommand = "join" | "other"
@@ -46,3 +47,15 @@ export type WsJoinPayload = {
     board_slug_id: string,
     user_auth_token: string
 }
+
+
+export type WsMessage = {
+    reply_to?: string
+    event?: string
+    data: any
+}
+
+export type WsEvents = 
+    | { event: WS_EVENTS.USER_LEFT, data: { user: UserPublicData }}
+    | { event: WS_EVENTS.USER_JOINED, data: { user: UserPublicData }}
+    

@@ -1,12 +1,14 @@
 import Pako from 'pako';
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {nanoid} from "nanoid";
-import {WsCommand, WsPayload, WsResponse} from "../types/Websocket.ts";
+import {WsCommand, WsMessage, WsPayload, WsResponse} from "../types/Websocket.ts";
+import {WS_EVENTS} from './../helpers/constant.ts';
 
 type WsEngineStatus = 'idle' | 'open' | 'error' | 'closed';
 
 type WsEngineEventMap = {
-    'statusChange': WsEngineStatus
+    'statusChange': WsEngineStatus,
+    'event': { event: keyof WS_EVENTS, data: any } 
 }
 
 type MsgCallback<T extends WsCommand> = {
@@ -19,7 +21,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private _status: 'idle' | 'open' | 'error' | 'closed' = 'idle';
     private _wsConnectTimeout = 5000;
     private _boardSlugId: string;
-    private messageCallbacks= new Map<string, (data: MsgCallback) => void>();
+    private messageCallbacks= new Map<string, (data: MsgCallback<any>) => void>();
     private msgTimeoutDuration = 10_000;
 
     constructor(url: string, slugId: string) {
@@ -47,8 +49,14 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
 
     private async onMessage(message: MessageEvent) {
         const data = JSON.parse(Pako.inflate(message.data, { to: 'string', encoding: 'utf8' }))
-        if (this.messageCallbacks.has(data.reply_to)) {
-            this.messageCallbacks.get(data.reply_to)!(data)
+        if (data.reply_to) {
+            if (this.messageCallbacks.has(data.reply_to)) {
+                this.messageCallbacks.get(data.reply_to)!(data)
+            }
+        }
+        
+        if (data.event) {
+            this.emit('event', data)
         }
     }
     
