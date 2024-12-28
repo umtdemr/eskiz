@@ -16,6 +16,7 @@ export function UsersListDropdown({
     const isUsersListCardActive = useBoundStore(useShallow((state) => state.activeWindow)) === 'online_users_list'
     const openNewWindow = useBoundStore(useShallow((state) => state.openWindow))
     const closeAllWindows = useBoundStore(useShallow((state) => state.closeAllWindows))
+    const collaborators = useBoundStore(useShallow((state) => state.collaboratorsList)).filter((_, i) => i < 3)
     
     const toggleUsersCardList = useCallback(() => {
         if (isUsersListCardActive) {
@@ -39,16 +40,16 @@ export function UsersListDropdown({
             >
                 <div className='flex'
                      style={{
-                         width: `${(users.length * 32) - ((users.length - 1) * 12) }px`,
-                         transform: `translateX(-${(users.length - 1) * 12 }px)`
+                         width: `${(collaborators.length * 32) - ((collaborators.length - 1) * 12) }px`,
+                         transform: `translateX(-${(collaborators.length - 1) * 12 }px)`
                      }}
                 >
-                        { users.map((u, i) => (
-                            <div className='relative' style={{ transform: i === users.length - 1 ? 'translateX(0)' : `translateX(calc(12px * ${users.length - 1 - i}))` }} key={i}>
+                        { collaborators.map((u, i) => (
+                            <div className='relative' style={{ transform: i === collaborators.length - 1 ? 'translateX(0)' : `translateX(calc(12px * ${collaborators.length - 1 - i}))` }} key={i}>
                                 <Avatar
                                     className='collab_avatar border-2 h-8 w-8 text-sm select-none'
                                     key={i}
-                                    data-order={users.length - 1 - i}
+                                    data-order={collaborators.length - 1 - i}
                                 >
                                     <AvatarFallback>{u.avatar}</AvatarFallback>
                                 </Avatar>

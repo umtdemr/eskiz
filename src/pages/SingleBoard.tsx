@@ -2,7 +2,7 @@ import {useEffect, useRef, useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import Header from "@/components/board/header/Header.tsx";
 import {useQuery} from "@tanstack/react-query";
-import {API_ENDPOINTS} from "@/helpers/Constant.ts";
+import {API_ENDPOINTS, WS_EVENTS} from "@/helpers/Constant.ts";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
 import SkeletonHeader from "@/components/board/header/SkeletonHeader.tsx";
@@ -23,9 +23,10 @@ import {
 } from "@/components/ui/dialog.tsx";
 import {CircleX} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
-import {WsErrorMessage} from "@/types/Websocket.ts";
+import {WsErrorMessage, WsEvents} from "@/types/Websocket.ts";
 import {BoardRetrieveResponse} from "@/types/Board.ts";
 import {getAvatar} from "@/helpers/AuthHelper.ts";
+import {BoardUser} from "@/store/boards.ts";
 
 
 export default function SingleBoard() {
@@ -37,8 +38,11 @@ export default function SingleBoard() {
     const [connectionError, setConnectionError] = useState<WsErrorMessage>(null)
     
     const token = useBoundStore(useShallow((state) => state.token))
+    const userData = useBoundStore(useShallow((state) => state.userData))
     const setBoardData = useBoundStore(useShallow(state => state.setBoardData))
     const setCollaborators = useBoundStore(useShallow((state) => state.setCollaborators));
+    const addToCollaborators = useBoundStore(useShallow((state) => state.addToCollaborators));
+    const removeFromCollaborators = useBoundStore(useShallow((state) => state.removeFromCollaborators));
     const addToUsers = useBoundStore(useShallow((state) => state.addToUsers))
     
     const navigate = useNavigate()
@@ -98,8 +102,23 @@ export default function SingleBoard() {
                     return
                 }
                 
-                setCollaborators(connectResp.join?.online_users || [])
+                const collaborators = connectResp.join?.online_users.map(user => ({
+                    id: user.id,
+                    email: user.email,
+                    full_name: user.full_name,
+                    role: 'editor',
+                    avatar: getAvatar(user.full_name),
+                })) || []
                 
+                const allCollaborators = collaborators.concat({
+                    id: userData.id,
+                    email: userData.email,
+                    full_name: userData.full_name,
+                    role: 'editor',
+                    avatar: getAvatar(userData.full_name),
+                })
+                
+                setCollaborators(allCollaborators)
                 let isOkayToProceed = isEngineInitialized! && !!connectResp.join;
                 setIsInitialized(isOkayToProceed)
                 if (isOkayToProceed) {
@@ -119,7 +138,31 @@ export default function SingleBoard() {
         
         
         initializeApp()
-    }, [boardQuery.isSuccess])
+    }, [boardQuery.isSuccess, userData])
+
+    useEffect(() => {
+        if (isInitialized) {
+            const eventHandler = (msg: WsEvents) => {
+                if (msg.event === WS_EVENTS.USER_JOINED) {
+                    const collaborator: BoardUser = {
+                        full_name: msg.data.user.full_name!,
+                        email: msg.data.user.email,
+                        id: msg.data.user.id,
+                        role: 'editor',
+                        avatar: getAvatar(msg.data.user.full_name)
+                    }
+                    addToCollaborators(collaborator)
+                } else if (msg.event === WS_EVENTS.USER_LEFT) {
+                    removeFromCollaborators(msg.data.user.id)
+                }
+            }
+            engineRef.current?.wsEngine.on('event', eventHandler)
+            
+            return () => {
+                engineRef.current?.wsEngine.off('event', eventHandler)
+            }
+        }
+    }, [isInitialized]);
     
     return (
         <div className='whiteboard'>
