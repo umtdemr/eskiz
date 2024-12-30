@@ -1,7 +1,6 @@
 import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas} from "canvaskit-wasm";
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
-import {WsEngine} from "@/core/WsEngine.ts";
 import {WheelEvent} from "react";
 
 export type CanvasEventsMap = {
@@ -290,6 +289,10 @@ export class Canvas extends Emitter<CanvasEventsMap> {
 
     get initialized() {
         return this._initialized;
+    }
+    
+    get upperCanvas() {
+        return this.upperCanvasEl;
     }
 
 }
