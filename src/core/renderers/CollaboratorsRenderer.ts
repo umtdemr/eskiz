@@ -1,3 +1,5 @@
+import {getTextDimension} from "@/helpers/TextHelpers.ts";
+
 const CURSOR_WIDTH = 20;
 const CURSOR_HEIGHT = 20;
 const RECT_HEIGHT = 25;
@@ -12,7 +14,7 @@ export class CollaboratorsRenderer {
             x: 700,
             y: 350,
             name: 'umit demir',
-            color: 'red'
+            color: '#000'
         }
         
         const ctx = canvasEl.getContext('2d');
@@ -37,13 +39,15 @@ export class CollaboratorsRenderer {
         ctx.fill()
         ctx.restore()
         
+        const textMeasurement = getTextDimension(collaborator.name, '14px "Open-Sans", sans_serif')
+        
         // draw rectangle
         ctx.save()
         const rectanglePos = {
             x: collaborator.x + CURSOR_WIDTH,
             y: collaborator.y + CURSOR_HEIGHT,
         }
-        const width= 50;
+        const width= textMeasurement.width + 20; // here, 20 is padding.
         ctx.translate(rectanglePos.x, rectanglePos.y)
         ctx.beginPath();
         ctx.moveTo(RECT_RADIUS, 0);
@@ -63,11 +67,12 @@ export class CollaboratorsRenderer {
         // Draw text
         ctx.save()
         ctx.translate(rectanglePos.x + width / 2, rectanglePos.y + RECT_HEIGHT / 2)
+        // since ctx is translated into the center of the rectangle, just center the text
         ctx.textBaseline = 'middle'
-        ctx.textAlign = 'center'
+        ctx.textAlign = 'center' 
         ctx.font = '14px "Open-Sans", sans-serif';
         ctx.fillStyle = '#f2f2f2';
-        ctx.fillText("ümit", 0, 0)
+        ctx.fillText(collaborator.name, 0, 0)
         ctx.restore()
 
         ctx.restore()

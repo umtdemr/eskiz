@@ -1,5 +1,5 @@
 @font-face{
-  font-family: "Open Sans";
+  font-family: "Open-Sans";
   src: url("/fonts/OpenSans-Regular.ttf") format("truetype");
 }
 @tailwind base;
@@ -82,6 +82,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Open-Sans', sans-serif;
   }
 }
