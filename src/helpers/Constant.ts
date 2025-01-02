@@ -18,3 +18,5 @@ export const WS_EVENTS = {
     USER_JOINED: 'USER_JOINED',
     USER_LEFT: 'USER_LEFT',
 } as const;
+
+export const COLLAB_CURSOR_THROTTLING_TIME = 300 as const;
