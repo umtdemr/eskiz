@@ -20,4 +20,8 @@ export class Emitter<EventMap extends Record<string, any>>  {
     emit<K extends keyof EventMap>(eventName: K, data: EventMap[K]) {
         this.eventListeners[eventName].forEach(callback => callback(data));
     }
+    
+    clearEventListeners() {
+        this.eventListeners = {}
+    }
 }

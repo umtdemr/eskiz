@@ -5,7 +5,8 @@ import {WheelEvent} from "react";
 
 export type CanvasEventsMap = {
     'modeChange': 'neutral' | 'pan' | 'create';
-    'zoom': number
+    'zoom': number,
+    'mouseMove': MouseEvent
 }
 
 export class Canvas extends Emitter<CanvasEventsMap> {
@@ -63,6 +64,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
             this.lastMouseY = e.clientY;
             this.needsRender = true;
         }
+        this.emit('mouseMove', e)
     }
 
     private onMouseUp() {
@@ -270,6 +272,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         this.upperCanvasEl.removeEventListener('mouseup', this.onMouseUp);
         // @ts-ignore
         this.upperCanvasEl.removeEventListener('wheel', this.onMouseWheel);
+        this.clearEventListeners() // remove eventListeners in Emitter class
     }
     
     get mouseMode() {
