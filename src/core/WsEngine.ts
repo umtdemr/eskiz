@@ -94,7 +94,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         this.messageCallbacks.clear();
     }
     
-    sendMessage<T>(data, cb?: (data: MsgCallback<T>) => void) {
+    sendMessage<T>(data: WsPayload<T>, cb?: (data: MsgCallback<T>) => void) {
         const sendingData = {
             ...data,
             id: nanoid()
