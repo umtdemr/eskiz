@@ -13,6 +13,7 @@ type CommandBaseResponse = {
 // defines responses for each request
 type CommandBasePayload = {
     join: WsJoinPayload,
+    cursor: WsCursorPayload
 }
 
 // defines typical error message for the request
@@ -46,6 +47,11 @@ export type WsJoinResponse = {
 export type WsJoinPayload = {
     board_slug_id: string,
     user_auth_token: string
+}
+
+export type WsCursorPayload = {
+    x: number,
+    y: number
 }
 
 

@@ -34,7 +34,7 @@ export class Engine {
     private canvasMouseMoveHandler(e: MouseEvent) {
         const time = Date.now()
         clearTimeout(this.collabCursorSendingTimeout) // clear old attempts to sync data
-        const collabCursorSender = this.sendCollabCursorData
+        const collabCursorSender = this.sendCollabCursorData.bind(this)
 
         if (!this.collabCursorLastSend || time > this.collabCursorLastSend + COLLAB_CURSOR_THROTTLING_TIME) {
             this.collabCursorLastSend = time
@@ -48,6 +48,6 @@ export class Engine {
     }
     
     private sendCollabCursorData(e: MouseEvent) {
-        // todo: send
+        this.wsEngine.sendMessage<"cursor">({type: 'cursor', data: {x: e.x, y: e.y}})
     }
 }
