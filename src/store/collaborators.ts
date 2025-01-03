@@ -2,6 +2,7 @@ import {StateCreator} from "zustand/vanilla";
 import {BoardUser} from "@/store/boards.ts";
 
 export interface CollaboratorUser extends BoardUser {
+    is_current_user?: boolean
     cursor?: {
         x: number,
         y: number
