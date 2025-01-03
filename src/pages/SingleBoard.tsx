@@ -122,6 +122,7 @@ export default function SingleBoard() {
                     full_name: userData.full_name,
                     role: 'editor',
                     avatar: getAvatar(userData.full_name),
+                    is_current_user: true
                 })
                 
                 setCollaborators(allCollaborators)
@@ -162,6 +163,7 @@ export default function SingleBoard() {
                     removeFromCollaborators(msg.data.user.id)
                 } else if (msg.event === WS_EVENTS.CURSOR) {
                     updateCursor(msg.data.cursor.user_id, { x: msg.data.cursor.x, y: msg.data.cursor.y })
+                    engineRef.current?.upperCanvasRenderer.requestRender()
                 }
             }
             engineRef.current?.wsEngine.on('event', eventHandler)

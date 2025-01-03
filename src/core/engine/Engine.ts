@@ -1,21 +1,21 @@
 import {Canvas} from "@/core/canvas/Canvas.ts";
 import {WsEngine} from "@/core/WsEngine.ts";
-import {CollaboratorsRenderer} from "@/core/renderers/CollaboratorsRenderer.ts";
 import {COLLAB_CURSOR_THROTTLING_TIME} from "@/helpers/Constant.ts";
+import {UpperCanvasRenderer} from "@/core/renderers/UpperCanvasRenderer.ts";
 
 export class Engine {
     private _slugId: string
     canvas: Canvas
     wsEngine: WsEngine
-    collaboratorsRenderer: CollaboratorsRenderer
     private collabCursorLastSend: number
     private collabCursorSendingTimeout: number
+    upperCanvasRenderer: UpperCanvasRenderer
     
     constructor(slugId: string) {
         this._slugId = slugId
         this.canvas = new Canvas(this._slugId)
+        this.upperCanvasRenderer = new UpperCanvasRenderer();
         this.wsEngine = new WsEngine(import.meta.env.VITE_WS_URL, this._slugId)
-        this.collaboratorsRenderer = new CollaboratorsRenderer();
         this.canvasMouseMoveHandler = this.canvasMouseMoveHandler.bind(this)
     }
     
@@ -23,6 +23,10 @@ export class Engine {
         await this.canvas.initialize()
         await this.wsEngine.initialize()
         this.canvas.on('mouseMove', this.canvasMouseMoveHandler)
+        
+        // assign upper canvas el from canvas instance to upper canvas renderer
+        this.upperCanvasRenderer.upperCanvasEl = this.canvas.upperCanvas
+        this.upperCanvasRenderer.run() // start rendering upper canvas
         return true
     }
 

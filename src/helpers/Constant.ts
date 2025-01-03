@@ -20,4 +20,4 @@ export const WS_EVENTS = {
     CURSOR: 'CURSOR'
 } as const;
 
-export const COLLAB_CURSOR_THROTTLING_TIME = 300 as const;
+export const COLLAB_CURSOR_THROTTLING_TIME = 1 as const; // TODO: reduced to 1ms for testing purposes only. Revert it back
