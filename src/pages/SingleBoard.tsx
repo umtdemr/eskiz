@@ -27,6 +27,7 @@ import {WsErrorMessage, WsEvents} from "@/types/Websocket.ts";
 import {BoardRetrieveResponse} from "@/types/Board.ts";
 import {getAvatar} from "@/helpers/AuthHelper.ts";
 import {BoardUser} from "@/store/boards.ts";
+import {CollaboratorUser} from "@/store/collaborators.ts";
 
 
 export default function SingleBoard() {
@@ -43,6 +44,7 @@ export default function SingleBoard() {
     const setCollaborators = useBoundStore(useShallow((state) => state.setCollaborators));
     const addToCollaborators = useBoundStore(useShallow((state) => state.addToCollaborators));
     const removeFromCollaborators = useBoundStore(useShallow((state) => state.removeFromCollaborators));
+    const updateCursor = useBoundStore(useShallow((state) => state.updateCursor));
     const addToUsers = useBoundStore(useShallow((state) => state.addToUsers))
     
     const navigate = useNavigate()
@@ -102,13 +104,17 @@ export default function SingleBoard() {
                     return
                 }
                 
-                const collaborators = connectResp.join?.online_users.map(user => ({
-                    id: user.id,
-                    email: user.email,
-                    full_name: user.full_name,
+                const collaborators = (connectResp.join?.online_users.map(data => ({
+                    id: data.user.id,
+                    email: data.user.email,
+                    full_name: data.user.full_name,
                     role: 'editor',
-                    avatar: getAvatar(user.full_name),
-                })) || []
+                    avatar: getAvatar(data.user.full_name),
+                    cursor: {
+                        x: data.cursor?.x,
+                        y: data.cursor?.y
+                    }
+                }))  || []) as CollaboratorUser[]
                 
                 const allCollaborators = collaborators.concat({
                     id: userData.id,
@@ -154,6 +160,8 @@ export default function SingleBoard() {
                     addToCollaborators(collaborator)
                 } else if (msg.event === WS_EVENTS.USER_LEFT) {
                     removeFromCollaborators(msg.data.user.id)
+                } else if (msg.event === WS_EVENTS.CURSOR) {
+                    updateCursor(msg.data.cursor.user_id, { x: msg.data.cursor.x, y: msg.data.cursor.y })
                 }
             }
             engineRef.current?.wsEngine.on('event', eventHandler)
