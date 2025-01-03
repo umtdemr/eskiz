@@ -41,7 +41,7 @@ export type WsPayload<T extends WsCommand> = {
 )
 
 export type WsJoinResponse = {
-    online_users: UserPublicData[]
+    online_users: {user: UserPublicData, cursor?: {x: number, y: number}}[]
 }
 
 export type WsJoinPayload = {
@@ -61,7 +61,33 @@ export type WsMessage = {
     data: any
 }
 
+export type EventUserJoined = {
+    event: typeof WS_EVENTS.USER_JOINED,
+    data: {
+        user: UserPublicData
+    }
+}
+
+export type EventUserLeft = {
+    event: typeof WS_EVENTS.USER_LEFT,
+    data: {
+        user: UserPublicData
+    }
+}
+
+export type EventCursor = {
+    event: typeof WS_EVENTS.CURSOR,
+    data: {
+        cursor: {
+            user_id: number
+            x: number
+            y: number 
+        }
+    }
+}
+
 export type WsEvents = 
-    | { event: WS_EVENTS.USER_LEFT, data: { user: UserPublicData }}
-    | { event: WS_EVENTS.USER_JOINED, data: { user: UserPublicData }}
+    | EventUserLeft
+    | EventUserJoined
+    | EventCursor
     
