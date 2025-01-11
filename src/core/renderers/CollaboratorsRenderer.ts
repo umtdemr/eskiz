@@ -1,10 +1,11 @@
 import {getTextDimension} from "@/helpers/TextHelpers.ts";
-import {useBoundStore} from "@/store/store.ts";
 
 const CURSOR_WIDTH = 20;
 const CURSOR_HEIGHT = 20;
 const RECT_HEIGHT = 25;
 const RECT_RADIUS = 7;
+
+export type collaboratorCursor = {x: number, y: number, user_name: string, user_id: number}
 
 export class CollaboratorsRenderer {
     
@@ -12,16 +13,12 @@ export class CollaboratorsRenderer {
 
     }
 
-    drawCollaborators(canvasEl: HTMLCanvasElement) {
+    drawCollaborators(canvasEl: HTMLCanvasElement, collaborators: collaboratorCursor[]) {
         const ctx = canvasEl.getContext('2d');
         // clear the upper canvas
         ctx.clearRect(0, 0, canvasEl.width, canvasEl.height)
-        const collaborators = useBoundStore.getState().collaboratorsList?.filter(
-            user => !user.is_current_user && (typeof user.cursor?.x === 'number' && typeof user.cursor?.y === 'number')
-        )
-        
         for (const collaborator of collaborators) {
-            if (!collaborator.cursor) {
+            if (!collaborator) {
                 continue
             }
             ctx.save()
@@ -29,7 +26,7 @@ export class CollaboratorsRenderer {
             ctx.save()
             ctx.lineCap = 'round'
             ctx.lineJoin = 'round'
-            ctx.translate(collaborator.cursor.x, collaborator.cursor.y)
+            ctx.translate(collaborator.x, collaborator.y)
             const degree = 320 * Math.PI / 180; // rotate 320 degrees
             ctx.rotate(degree)
             ctx.beginPath()
@@ -42,13 +39,13 @@ export class CollaboratorsRenderer {
             ctx.fill()
             ctx.restore()
 
-            const textMeasurement = getTextDimension(collaborator.full_name, '14px "Open-Sans", sans_serif')
+            const textMeasurement = getTextDimension(collaborator.user_name, '14px "Open-Sans", sans_serif')
 
             // draw rectangle
             ctx.save()
             const rectanglePos = {
-                x: collaborator.cursor.x + CURSOR_WIDTH,
-                y: collaborator.cursor.y + CURSOR_HEIGHT,
+                x: collaborator.x + CURSOR_WIDTH,
+                y: collaborator.y + CURSOR_HEIGHT,
             }
             const width= textMeasurement.width + 20; // here, 20 is padding.
             ctx.translate(rectanglePos.x, rectanglePos.y)
@@ -75,7 +72,7 @@ export class CollaboratorsRenderer {
             ctx.textAlign = 'center'
             ctx.font = '14px "Open-Sans", sans-serif';
             ctx.fillStyle = '#f2f2f2';
-            ctx.fillText(collaborator.full_name, 0, 0)
+            ctx.fillText(collaborator.user_name, 0, 0)
             ctx.restore()
 
             ctx.restore() 
