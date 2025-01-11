@@ -80,6 +80,7 @@ export type EventCursor = {
     data: {
         cursor: {
             user_id: number
+            user_name: string
             x: number
             y: number 
         }
