@@ -109,10 +109,6 @@ export default function SingleBoard() {
                     full_name: data.user.full_name,
                     role: 'editor',
                     avatar: getAvatar(data.user.full_name),
-                    cursor: {
-                        x: data.cursor?.x,
-                        y: data.cursor?.y
-                    }
                 }))  || []) as CollaboratorUser[]
                 
                 const allCollaborators = collaborators.concat({

@@ -3,10 +3,6 @@ import {BoardUser} from "@/store/boards.ts";
 
 export interface CollaboratorUser extends BoardUser {
     is_current_user?: boolean
-    cursor?: {
-        x: number,
-        y: number
-    }
 }
 
 
@@ -15,7 +11,6 @@ export interface CollaboratorsSlice {
     setCollaborators: (data: CollaboratorUser[]) => void,
     addToCollaborators: (data: CollaboratorUser) => void,
     removeFromCollaborators: (id: number) => void,
-    updateCursor: (id: number, cursor: { x: number, y: number }) => void,
 }
 
 
@@ -33,16 +28,4 @@ export const createCollaboratorsSlice: StateCreator<
     removeFromCollaborators: (id: number) => set((state) => ({
         collaboratorsList: state.collaboratorsList.filter(user => user.id !== id)
     })),
-    updateCursor: (id: number, cursor: { x: number, y: number }) => set((state) => ({
-        collaboratorsList: state.collaboratorsList.map(collaborator => {
-            if (collaborator.id === id) {
-                collaborator.cursor = {
-                    x: cursor.x,
-                    y: cursor.y
-                }
-            }
-            
-            return collaborator
-        })
-    }))
 })
