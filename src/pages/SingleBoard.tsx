@@ -157,7 +157,7 @@ export default function SingleBoard() {
                 } else if (msg.event === WS_EVENTS.USER_LEFT) {
                     removeFromCollaborators(msg.data.user.id)
                 } else if (msg.event === WS_EVENTS.CURSOR) {
-                    engineRef.current?.upperCanvasRenderer.handleCursorEvent(msg)
+                    engineRef.current?.upperCanvasRenderer.handleCursorEvent(msg, canvasRef.current!)
                 }
             }
             engineRef.current?.wsEngine.on('event', eventHandler)

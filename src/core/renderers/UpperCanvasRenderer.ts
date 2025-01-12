@@ -1,5 +1,6 @@
 import {collaboratorCursor, CollaboratorsRenderer} from "@/core/renderers/CollaboratorsRenderer.ts";
 import {EventCursor} from "@/types/Websocket.ts";
+import {Canvas} from "@/core/canvas/Canvas.ts";
 
 function animate({ timing, draw, duration}: { 
     timing: (fraction: number) => number,  draw: (progress: number) => void, duration: number
@@ -48,7 +49,10 @@ export class UpperCanvasRenderer {
         this._needsRender = true;
     }
     
-    handleCursorEvent(msg: EventCursor) {
+    handleCursorEvent(msg: EventCursor, canvas: Canvas) {
+        // calculate cursor position based on viewport transform
+        const actualCursorPosition = canvas.transformPoint({x: msg.data.cursor.x, y: msg.data.cursor.y}, canvas.viewportTransform)
+      
         const cursor = this.collabCursors.find(cursor => cursor.user_id === msg.data.cursor.user_id)
         if (!cursor) {
             this.collabCursors.push(msg.data.cursor)
@@ -60,12 +64,12 @@ export class UpperCanvasRenderer {
             }
             
             const cursorPositionDiff = {
-                x: msg.data.cursor.x - oldCursorPosition.x,
-                y: msg.data.cursor.y - oldCursorPosition.y
+                x: actualCursorPosition.x - oldCursorPosition.x,
+                y: actualCursorPosition.y - oldCursorPosition.y
             }
             
             animate({
-                timing: (timeFraction) => timeFraction, // linear.
+                timing: (timeFraction) => 1 - Math.pow(1 - timeFraction, 3),
                 draw: (progress) => {
                     const newX = (oldCursorPosition.x + (cursorPositionDiff.x * progress))
                     const newY = (oldCursorPosition.y + (cursorPositionDiff.y * progress))

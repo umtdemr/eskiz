@@ -9,6 +9,13 @@ export type CanvasEventsMap = {
     'mouseMove': MouseEvent
 }
 
+type Point = {
+    x: number
+    y: number
+}
+
+type Transform = [number, number, number, number, number, number]
+
 export class Canvas extends Emitter<CanvasEventsMap> {
     private _initialized: boolean = false;
     private canvasKit: CanvasKit;
@@ -275,6 +282,43 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         this.clearEventListeners() // remove eventListeners in Emitter class
     }
     
+    getPointer(e: MouseEvent): Point {
+        const pointer = {
+            x: e.x,
+            y: e.y
+        }
+
+        return this.transformPoint(
+            pointer,
+            this.invertTransform(this.viewportTransform)
+        );
+    }
+
+    transformPoint(p: Point, t: Transform, ignoreOffset?: boolean) {
+        if (ignoreOffset) {
+            return {
+                x: t[0] * p.x + t[2] * p.y,
+                y: t[1] * p.x + t[3] * p.y
+            }
+        }
+        return {
+            x: t[0] * p.x + t[2] * p.y + t[4],
+            y: t[1] * p.x + t[3] * p.y + t[5]
+        }
+    }
+
+    invertTransform(t: Transform) {
+        let a = 1 / (t[0] * t[3] - t[1] * t[2]),
+        r = [a * t[3], -a * t[1], -a * t[2], a * t[0]],
+        o = this.transformPoint({ x: t[4], y: t[5] }, r, true);
+        r[4] = -o.x;
+        r[5] = -o.y;
+        return r;
+    }
+    
+    get viewportTransform(): Transform {
+        return [this.scale, 0, 0, this.scale, this.offsetX * this.scale, this.offsetY * this.scale]
+    }
     get mouseMode() {
         return this._mouseMode
     }
