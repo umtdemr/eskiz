@@ -52,6 +52,15 @@ export class Engine {
     }
     
     private sendCollabCursorData(e: MouseEvent) {
-        this.wsEngine.sendMessage<"cursor">({type: 'cursor', data: {x: e.x, y: e.y}})
+        const pointer = this.canvas.getPointer(e)
+        this.wsEngine.sendMessage<"cursor">(
+        {
+                type: 'cursor', 
+                data: {
+                    x: pointer.x, 
+                    y: pointer.y, 
+                }
+            }
+        )
     }
 }
