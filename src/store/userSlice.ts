@@ -1,7 +1,7 @@
 import {UserPublicData} from "@/types/Auth.ts";
 import {StateCreator} from "zustand/vanilla";
 
-interface UserSlice {
+export interface UserSlice {
     userData: UserPublicData,
     loginFailed: boolean,
     navigatedToLogin: boolean,
