@@ -16,9 +16,15 @@ export type CanvasMode = {
 export type CanvasEventsMap = {
     'modeChange': CanvasMode
     'zoom': number,
-    'mouseMove': MouseEvent
+    'mouseDown': CanvasMouseEvent
+    'mouseMove': CanvasMouseEvent
+    'mouseUp': CanvasMouseEvent
 }
 
+export type CanvasMouseEvent = {
+    e: MouseEvent
+    pointer: Point
+}
 
 type Point = {
     x: number
@@ -33,13 +39,9 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     private surface: Surface
     private canvasEl: HTMLCanvasElement
     private upperCanvasEl: HTMLCanvasElement
-    private _isPanning = false;
-    private startPanX = 0;
-    private startPanY = 0;
     private offsetX = 0;
     private offsetY = 0;
-    private lastMouseX = 0;
-    private lastMouseY = 0;
+
     private needsRender = false;
     private scale = 1;
     private _activeMode: CanvasMode = { mainMode: 'neutral' };
@@ -63,33 +65,15 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     }
 
     private onMouseDown(e: MouseEvent) {
-        if (this._activeMode.mainMode === 'pan') {
-            this._isPanning = true;
-            this.startPanX = e.clientX - this.offsetX * this.scale;
-            this.startPanY = e.clientY - this.offsetY * this.scale;
-            this.lastMouseX = e.clientX;
-            this.lastMouseY = e.clientY;
-            this.upperCanvasEl.style.cursor = 'grabbing';
-        }
+        this.emit('mouseDown', { e, pointer: this.getPointer(e) })
     }
 
     private onMouseMove(e: MouseEvent) {
-        if (this._activeMode.mainMode === 'pan' && this._isPanning) {
-            this.offsetX = (e.clientX - this.startPanX) / this.scale;
-            this.offsetY = (e.clientY - this.startPanY) / this.scale;
-
-            this.lastMouseX = e.clientX;
-            this.lastMouseY = e.clientY;
-            this.needsRender = true;
-        }
-        this.emit('mouseMove', e)
+        this.emit('mouseMove', { e, pointer: this.getPointer(e) })
     }
 
-    private onMouseUp() {
-        if (this._isPanning) {
-            this._isPanning = false;
-            this.upperCanvasEl.style.cursor = 'grab';
-        }
+    private onMouseUp(e: MouseEvent) {
+        this.emit('mouseUp', { e, pointer: this.getPointer(e) })
     }
 
     private onMouseWheel(e: WheelEvent) {
@@ -198,6 +182,9 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         }
         surface.requestAnimationFrame(draw)
     }
+    requestRender() {
+        this.needsRender = true;
+    }
     
     draw() {
         if (this.needsRender) {
@@ -277,13 +264,6 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         })
     }
 
-    zoom(newZoom: number) {
-        newZoom = Math.min(Math.max(ZOOM_LEVELS.MIN, newZoom), ZOOM_LEVELS.MAX)
-        this.scale = newZoom
-        this.needsRender = true
-        this.emit('zoom', this.scale)
-    }
-    
     dispose() {
         this.upperCanvasEl.removeEventListener('mousedown', this.onMouseDown)
         this.upperCanvasEl.removeEventListener('mousemove', this.onMouseMove);
@@ -360,6 +340,33 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     
     get upperCanvas() {
         return this.upperCanvasEl;
+    }
+    
+    get zoom() {
+        return this.scale
+    }
+    
+    get translateX() {
+        return this.offsetX
+    }
+    
+    set translateX(x: number) {
+        this.offsetX = x;
+    }
+    
+    get translateY() {
+        return this.offsetY
+    }
+
+    set translateY(y: number) {
+        this.offsetY = y;
+    }
+
+    set zoom(newZoom: number) {
+        newZoom = Math.min(Math.max(ZOOM_LEVELS.MIN, newZoom), ZOOM_LEVELS.MAX)
+        this.scale = newZoom
+        this.needsRender = true
+        this.emit('zoom', this.scale)
     }
 
 }
