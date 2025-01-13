@@ -11,9 +11,12 @@
     - [x] Modes - select, pan
     - [x] Grid
     - [x] Zoom event listeners
-    - [ ] Collab cursors
-      - [ ] Handling events - sending them to the other classes like event dispatcher.
-      - [ ] Websocket connection
+    - [x] Collaboration list
+      - [x] Set on join
+      - [x] Handle user left and join events
+    - [x] Collab cursors
+      - [x] Websocket connection
+      - [x] Handling events - sending them to the other classes like event dispatcher.
     - [ ] Adding rect.
     - [ ] Selecting.
     - [ ] Pagination and search
