@@ -1,7 +1,7 @@
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Hand, MousePointer2, Redo, Square, StickyNote, Type, Undo} from "lucide-react";
-import {Canvas} from "@/core/canvas/Canvas.ts";
+import {Canvas, CanvasMode} from "@/core/canvas/Canvas.ts";
 import {useEffect, useState} from "react";
 import {clsx} from "clsx";
 
@@ -10,12 +10,11 @@ export default function Toolbar({
 }: {
     canvas: Canvas
 }) {
-    // todo: make this type safe
-    const [activeMode, setActiveMode] = useState('neutral')
+    const [activeMode, setActiveMode] = useState<CanvasMode>({ mainMode: 'neutral' })
     
     useEffect(() => {
-        const unsubscribe = canvas.on('modeChange', (newEvent) => {
-            setActiveMode(newEvent)
+        const unsubscribe = canvas.on('modeChange', (event) => {
+            setActiveMode(event)
         })
         
         return () => unsubscribe();
@@ -29,10 +28,10 @@ export default function Toolbar({
                         <Button 
                             variant='ghost' 
                             className={clsx('px-2', { 
-                                'bg-amber-500': activeMode === 'neutral',
-                                'hover:bg-amber-500': activeMode === 'neutral'
+                                'bg-amber-500': activeMode?.mainMode === 'neutral',
+                                'hover:bg-amber-500': activeMode?.mainMode === 'neutral'
                             })} 
-                            onClick={() => canvas.mouseMode = 'neutral'}>
+                            onClick={() => canvas.changeActiveMode('neutral')}>
                             <MousePointer2 />
                         </Button>
                     </TooltipTrigger>
@@ -47,10 +46,10 @@ export default function Toolbar({
                         <Button 
                             variant='ghost' 
                             className={clsx('px-2', {
-                                'bg-amber-500': activeMode === 'pan',
-                                'hover:bg-amber-500': activeMode === 'pan'
+                                'bg-amber-500': activeMode?.mainMode === 'pan',
+                                'hover:bg-amber-500': activeMode?.mainMode === 'pan'
                             })}
-                            onClick={() => canvas.mouseMode = 'pan'}>
+                            onClick={() => canvas.changeActiveMode('pan')}>
                             <Hand />
                         </Button>
                     </TooltipTrigger>
@@ -75,7 +74,14 @@ export default function Toolbar({
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button disabled variant='ghost' className='px-2'>
+                        <Button 
+                            variant='ghost' 
+                            className={clsx('px-2', {
+                                'bg-amber-500': activeMode?.subMode === 'createRectangle',
+                                'hover:bg-amber-500': activeMode?.subMode === 'createRectangle' 
+                            })}
+                            onClick={() => canvas.changeActiveMode('create', 'createRectangle')}
+                        >
                             <Square />
                         </Button>
                     </TooltipTrigger>

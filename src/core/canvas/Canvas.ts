@@ -3,11 +3,22 @@ import {Emitter} from "@/core/emitter/Emitter.ts";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
 import {WheelEvent} from "react";
 
+export type CanvasMainModes = 'neutral' | 'pan' | 'create'
+
+// can be used determining sub modes for main modes. For example, main mode can be `create` and sub mode can be `createRectangle`
+export type CanvasSubModes = 'createRectangle'
+
+export type CanvasMode = {
+    mainMode: CanvasMainModes,
+    subMode?: CanvasSubModes
+}
+
 export type CanvasEventsMap = {
-    'modeChange': 'neutral' | 'pan' | 'create';
+    'modeChange': CanvasMode
     'zoom': number,
     'mouseMove': MouseEvent
 }
+
 
 type Point = {
     x: number
@@ -31,7 +42,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     private lastMouseY = 0;
     private needsRender = false;
     private scale = 1;
-    private _mouseMode: 'neutral' | 'pan' | 'create' = 'neutral';
+    private _activeMode: CanvasMode = { mainMode: 'neutral' };
     private _slugId: string;
     
     constructor(slugId: string) {
@@ -52,7 +63,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     }
 
     private onMouseDown(e: MouseEvent) {
-        if (this._mouseMode === 'pan') {
+        if (this._activeMode.mainMode === 'pan') {
             this._isPanning = true;
             this.startPanX = e.clientX - this.offsetX * this.scale;
             this.startPanY = e.clientY - this.offsetY * this.scale;
@@ -63,7 +74,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     }
 
     private onMouseMove(e: MouseEvent) {
-        if (this._mouseMode === 'pan' && this._isPanning) {
+        if (this._activeMode.mainMode === 'pan' && this._isPanning) {
             this.offsetX = (e.clientX - this.startPanX) / this.scale;
             this.offsetY = (e.clientY - this.startPanY) / this.scale;
 
@@ -281,6 +292,26 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         this.upperCanvasEl.removeEventListener('wheel', this.onMouseWheel);
         this.clearEventListeners() // remove eventListeners in Emitter class
     }
+
+    /**
+     * Sets new mode for canvas.
+     * @param newMainMode - New main mode.
+     * @param newSubMode - New sub mode.
+     */
+    changeActiveMode(newMainMode: CanvasMainModes, newSubMode?: CanvasSubModes) {
+        const shouldEmit = newMainMode !== this._activeMode.mainMode || newSubMode !== this._activeMode.subMode
+        this._activeMode = {
+            mainMode: newMainMode,
+            subMode: newSubMode
+        };
+        if (shouldEmit) {
+            this.emit('modeChange', { mainMode: newMainMode, subMode: newSubMode })
+        }
+
+        if (this._activeMode.mainMode === 'neutral') {
+            this.upperCanvasEl.style.cursor = 'default'
+        }
+    }
     
     getPointer(e: MouseEvent): Point {
         const pointer = {
@@ -315,23 +346,12 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         r[5] = -o.y;
         return r;
     }
-    
+
     get viewportTransform(): Transform {
         return [this.scale, 0, 0, this.scale, this.offsetX * this.scale, this.offsetY * this.scale]
     }
-    get mouseMode() {
-        return this._mouseMode
-    }
-    set mouseMode(newMode: 'neutral' | 'pan' | 'create') {
-        const shouldEmit = newMode !== this._mouseMode
-        this._mouseMode = newMode;
-        if (shouldEmit) {
-            this.emit('modeChange', newMode)
-        }
-        
-        if (this.mouseMode === 'neutral') {
-            this.upperCanvasEl.style.cursor = 'default'
-        }
+    get activeMode() {
+        return this._activeMode
     }
 
     get initialized() {
