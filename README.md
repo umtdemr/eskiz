@@ -18,6 +18,9 @@
       - [x] Websocket connection
       - [x] Handling events - sending them to the other classes like event dispatcher.
     - [ ] Adding rect.
+	- [ ] Create base class & Render with render methods
+	- [ ] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
+	- [ ] Handle changing width, height
     - [ ] Selecting.
     - [ ] Pagination and search
     - [ ] Controls

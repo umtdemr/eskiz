@@ -2,6 +2,7 @@ import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas} from "canvaskit
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
 import {WheelEvent} from "react";
+import {Shape} from "@/core/shapes/Shape.ts";
 
 export type CanvasMainModes = 'neutral' | 'pan' | 'create'
 
@@ -46,6 +47,8 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     private scale = 1;
     private _activeMode: CanvasMode = { mainMode: 'neutral' };
     private _slugId: string;
+    
+    private _shapes: Shape[] = []
     
     constructor(slugId: string) {
         super()
@@ -165,15 +168,21 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         const scale = this.scale;
         const drawGrid = this.drawGrid.bind(this)
 
+        const allShapes = this._shapes
         function draw(canvas: SkiaCanvas) {
             canvas.clear(canvasKit.WHITE);
-            
-            
+
             canvas.save()
             canvas.scale(scale, scale)
             canvas.translate(offsetX, offsetY);
 
             drawGrid(canvas)
+            
+            for (const shape of allShapes) {
+                canvas.save()
+                shape.render(canvasKit, canvas)
+                canvas.restore()
+            }
             
             canvas.drawRect(rect, paint);
             canvas.rotate(20, 0, 0)
@@ -325,6 +334,11 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         r[4] = -o.x;
         r[5] = -o.y;
         return r;
+    }
+    
+    addShape(shape: Shape) {
+        this._shapes.push(shape)
+        this.requestRender()
     }
 
     get viewportTransform(): Transform {
