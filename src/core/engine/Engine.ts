@@ -2,6 +2,7 @@ import {Canvas, CanvasMouseEvent} from "@/core/canvas/Canvas.ts";
 import {WsEngine} from "@/core/WsEngine.ts";
 import {COLLAB_CURSOR_THROTTLING_TIME} from "@/helpers/Constant.ts";
 import {UpperCanvasRenderer} from "@/core/renderers/UpperCanvasRenderer.ts";
+import {ShapeDrawer} from "@/core/engine/ShapeDrawer.ts";
 
 export class Engine {
     private _slugId: string
@@ -14,6 +15,7 @@ export class Engine {
     private startPanY = 0;
     private lastMouseX = 0;
     private lastMouseY = 0;
+    private shapeDrawer: ShapeDrawer
     upperCanvasRenderer: UpperCanvasRenderer
     
     constructor(slugId: string) {
@@ -24,6 +26,7 @@ export class Engine {
         this.canvasMouseDownHandler = this.canvasMouseDownHandler.bind(this)
         this.canvasMouseMoveHandler = this.canvasMouseMoveHandler.bind(this)
         this.canvasMouseUpHandler = this.canvasMouseUpHandler.bind(this)
+        this.shapeDrawer = new ShapeDrawer()
     }
     
     async initialize() {
@@ -53,6 +56,11 @@ export class Engine {
             this.lastMouseX = e.clientX;
             this.lastMouseY = e.clientY;
             this.canvas.upperCanvas.style.cursor = 'grabbing';
+            return
+        }
+        
+        if (this.canvas.activeMode.mainMode === 'create' && this.canvas.activeMode.subMode) {
+            this.shapeDrawer.startDrawing(data, this.canvas)
         }
     }
     
@@ -66,6 +74,11 @@ export class Engine {
             this.lastMouseX = e.clientX;
             this.lastMouseY = e.clientY;
             this.canvas.requestRender()
+        }
+        
+        // handle shape drawing
+        if (this.shapeDrawer.isDrawerActive) {
+            this.shapeDrawer.handleDrawing(data)
         }
         
         // handle collaborator cursor
@@ -88,6 +101,10 @@ export class Engine {
         if (this._isPanning) {
             this._isPanning = false;
             this.canvas.upperCanvas.style.cursor = 'grab';
+        }
+
+        if (this.shapeDrawer.isDrawerActive) {
+            this.shapeDrawer.stopDrawing()
         }
     }
     

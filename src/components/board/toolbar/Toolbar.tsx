@@ -80,7 +80,9 @@ export default function Toolbar({
                                 'bg-amber-500': activeMode?.subMode === 'createRectangle',
                                 'hover:bg-amber-500': activeMode?.subMode === 'createRectangle' 
                             })}
-                            onClick={() => canvas.changeActiveMode('create', 'createRectangle')}
+                            onClick={() => {
+                                canvas.changeActiveMode('create', 'createRectangle')
+                            }}
                         >
                             <Square />
                         </Button>
