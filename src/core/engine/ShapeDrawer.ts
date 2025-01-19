@@ -7,7 +7,7 @@ import {Rectangle} from "@/core/shapes/Rectangle.ts";
  */
 export class ShapeDrawer {
     private shape: Shape|null
-    private canvas: Canvas
+    private canvas: Canvas|null
     private drawingStarted: boolean = false;
     private initialPosition: { x: number, y: number }
     
@@ -47,6 +47,12 @@ export class ShapeDrawer {
             // change width and height
             this.shape.width = Math.abs(e.pointer.x - this.initialPosition.x)
             this.shape.height = Math.abs(e.pointer.y - this.initialPosition.y)
+            
+            // grow shape equally when shift key is being pressed
+            if (e.e.shiftKey) {
+                const maxSide = Math.max(this.shape.width, this.shape.height)
+                this.shape.width = this.shape.height = maxSide
+            }
 
             // align x and y
             if (e.pointer.x > this.initialPosition.x) {
@@ -61,7 +67,7 @@ export class ShapeDrawer {
                 this.shape.bottom = this.initialPosition.y
             }
             
-            this.canvas.requestRender()
+            this.canvas?.requestRender()
         }
     }
 
@@ -71,6 +77,8 @@ export class ShapeDrawer {
     
     reset() {
         this.shape = null
+        this.drawingStarted = false
+        this.canvas = null
     }
 
     /**

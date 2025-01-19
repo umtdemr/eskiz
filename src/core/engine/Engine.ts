@@ -105,6 +105,7 @@ export class Engine {
 
         if (this.shapeDrawer.isDrawerActive) {
             this.shapeDrawer.stopDrawing()
+            this.canvas.changeActiveMode('neutral') // go back to normal mode after drawing is completed
         }
     }
     
