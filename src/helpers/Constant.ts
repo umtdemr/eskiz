@@ -23,6 +23,12 @@ export const WS_EVENTS = {
 export const COLLAB_CURSOR_THROTTLING_TIME = 300 as const;
 
 export const CANVAS_COLORS = {
+    TRANSPARENT: {
+        r: 0,
+        g: 0,
+        b: 0,
+        a: 0
+    },
     BLACK: {
         r: 0,
         g: 0,

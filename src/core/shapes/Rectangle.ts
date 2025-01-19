@@ -1,11 +1,15 @@
 import {CanvasKit, Canvas as SkiaCanvas} from 'canvaskit-wasm';
 import {Shape} from "@/core/shapes/Shape.ts";
+import {RGBA} from "@/core/shapes/Color.ts";
+import {CANVAS_COLORS} from "@/helpers/Constant.ts";
 
 export type RectangleProps = {
     x: number
     y: number
     width: number
-    height: number
+    height: number,
+    strokeColor?: RGBA
+    fillColor?: RGBA
 }
 
 export class Rectangle extends Shape {
@@ -13,6 +17,8 @@ export class Rectangle extends Shape {
     private _y: number
     private _width: number
     private _height: number
+    private _strokeColor: RGBA
+    private _fillColor: RGBA
     
     constructor(props: RectangleProps) {
         super()
@@ -20,6 +26,8 @@ export class Rectangle extends Shape {
         this._y = props.y
         this._width = props.width
         this._height = props.height
+        this._strokeColor = props.strokeColor ? props.strokeColor : CANVAS_COLORS.BLACK
+        this._fillColor = props.fillColor ? props.fillColor : CANVAS_COLORS.TRANSPARENT
     }
     
     render(canvasKit: CanvasKit, canvas: SkiaCanvas) {
@@ -28,12 +36,9 @@ export class Rectangle extends Shape {
             return
         }
         canvas.translate(this._x, this._y)
-        const paint = new canvasKit.Paint();
-        paint.setStrokeWidth(2)
-        paint.setColor(canvasKit.Color4f(0, 0, 0, 1.0));
-        paint.setStyle(canvasKit.PaintStyle.Stroke);
-        paint.setAntiAlias(true);
 
+        const paint = new canvasKit.Paint();
+        paint.setAntiAlias(true);
         const rect = canvasKit.LTRBRect(
             -this._width / 2,
             -this._height / 2,
@@ -41,6 +46,20 @@ export class Rectangle extends Shape {
             this._height / 2
         )
 
+
+        // draw fill
+        paint.setStrokeWidth(0)
+        const fillColor = canvasKit.Color(this._fillColor.r, this._fillColor.g, this._fillColor.b, this._fillColor.a)
+        paint.setColor(fillColor);
+        paint.setStyle(canvasKit.PaintStyle.Fill);
+        
+        canvas.drawRect(rect, paint)
+
+        // draw stroke
+        const strokeColor = canvasKit.Color(this._strokeColor.r, this._strokeColor.g, this._strokeColor.b, this._strokeColor.a)
+        paint.setColor(strokeColor);
+        paint.setStyle(canvasKit.PaintStyle.Stroke);
+        paint.setStrokeWidth(2)
         canvas.drawRect(rect, paint)
     }
     
