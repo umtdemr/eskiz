@@ -71,8 +71,10 @@ export class ShapeDrawer {
         }
     }
 
-    stopDrawing() {
+    stopDrawing(): Shape {
+        const drawnShape = this.shape
         this.reset()
+        return drawnShape!
     }
     
     reset() {

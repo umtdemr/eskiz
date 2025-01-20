@@ -74,6 +74,28 @@ export class Rectangle extends Shape {
         canvas[drawFn](rect, paint)
     }
     
+    renderControls(canvasKit: CanvasKit, ctx: SkiaCanvas, scale: number) {
+        ctx.save()
+        const bbox = this.getBoundingRect()
+        const paint = new canvasKit.Paint()
+        paint.setStyle(canvasKit.PaintStyle.Stroke)
+        paint.setColor(canvasKit.Color(0, 0, 255))
+        paint.setStrokeWidth(1 / scale)
+
+        const rect = canvasKit.XYWHRect(bbox.x, bbox.y, bbox.width, bbox.height)
+        ctx.drawRect(rect, paint)
+        ctx.restore()
+    }
+    
+    getBoundingRect() {
+        return {
+            x: this.left,
+            y: this.top,
+            width: this.width,
+            height: this.height,
+        }
+    }
+    
     get width() {
         return this._width
     }
