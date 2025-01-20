@@ -49,12 +49,23 @@ export class Rectangle extends Shape {
             this._height / 2
         )
         
+        // since border width grows to inward and outward, we don't want it to look like outside the bounding box,
+        // so here, we just adjust te position of rectangle for drawing border
+        const strokeHalf = 1
+        let strokeRect = canvasKit.LTRBRect(
+            (-this._width / 2) + strokeHalf,
+            (-this._height / 2) + strokeHalf,
+            (this._width / 2) - strokeHalf,
+            (this._height / 2) - strokeHalf
+        )
+        
         // method to call draw rect in canvas kit
         let drawFn = 'drawRect'
         
         // if this has radius, create radius rect
         if (this._radius) {
             rect = canvasKit.RRectXY(rect, this._radius, this._radius)
+            strokeRect = canvasKit.RRectXY(rect, this._radius, this._radius)
             drawFn = 'drawRRect'
         }
         
@@ -71,7 +82,7 @@ export class Rectangle extends Shape {
         paint.setColor(strokeColor);
         paint.setStyle(canvasKit.PaintStyle.Stroke);
         paint.setStrokeWidth(2)
-        canvas[drawFn](rect, paint)
+        canvas[drawFn](strokeRect, paint)
     }
     
     renderControls(canvasKit: CanvasKit, ctx: SkiaCanvas, scale: number) {
