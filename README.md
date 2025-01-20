@@ -17,11 +17,12 @@
     - [x] Collab cursors
       - [x] Websocket connection
       - [x] Handling events - sending them to the other classes like event dispatcher.
-    - [ ] Adding rect.
-	- [ ] Create base class & Render with render methods
-	- [ ] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
-	- [ ] Handle changing width, height
+    - [x] Adding rect.
+    - [ ] Refactor -> use `ctx` instead of `canvas`
+    - [ ] Create base class & Render with render methods
+      - [ ] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
     - [ ] Selecting.
+      - [ ] Handle changing width, height by controls
     - [ ] Pagination and search
     - [ ] Controls
     - [ ] Adding text
