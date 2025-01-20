@@ -7,9 +7,10 @@ export type RectangleProps = {
     x: number
     y: number
     width: number
-    height: number,
+    height: number
     strokeColor?: RGBA
     fillColor?: RGBA
+    radius?: number
 }
 
 export class Rectangle extends Shape {
@@ -19,6 +20,7 @@ export class Rectangle extends Shape {
     private _height: number
     private _strokeColor: RGBA
     private _fillColor: RGBA
+    private _radius: number
     
     constructor(props: RectangleProps) {
         super()
@@ -28,6 +30,7 @@ export class Rectangle extends Shape {
         this._height = props.height
         this._strokeColor = props.strokeColor ? props.strokeColor : CANVAS_COLORS.BLACK
         this._fillColor = props.fillColor ? props.fillColor : CANVAS_COLORS.TRANSPARENT
+        this._radius = props.radius >= 0 && props.radius <= 20 ? props.radius! : 0
     }
     
     render(canvasKit: CanvasKit, canvas: SkiaCanvas) {
@@ -39,28 +42,36 @@ export class Rectangle extends Shape {
 
         const paint = new canvasKit.Paint();
         paint.setAntiAlias(true);
-        const rect = canvasKit.LTRBRect(
+        let rect = canvasKit.LTRBRect(
             -this._width / 2,
             -this._height / 2,
             this._width / 2,
             this._height / 2
         )
-
-
+        
+        // method to call draw rect in canvas kit
+        let drawFn = 'drawRect'
+        
+        // if this has radius, create radius rect
+        if (this._radius) {
+            rect = canvasKit.RRectXY(rect, this._radius, this._radius)
+            drawFn = 'drawRRect'
+        }
+        
         // draw fill
         paint.setStrokeWidth(0)
         const fillColor = canvasKit.Color(this._fillColor.r, this._fillColor.g, this._fillColor.b, this._fillColor.a)
         paint.setColor(fillColor);
         paint.setStyle(canvasKit.PaintStyle.Fill);
         
-        canvas.drawRect(rect, paint)
+        canvas[drawFn](rect, paint)
 
         // draw stroke
         const strokeColor = canvasKit.Color(this._strokeColor.r, this._strokeColor.g, this._strokeColor.b, this._strokeColor.a)
         paint.setColor(strokeColor);
         paint.setStyle(canvasKit.PaintStyle.Stroke);
         paint.setStrokeWidth(2)
-        canvas.drawRect(rect, paint)
+        canvas[drawFn](rect, paint)
     }
     
     get width() {
