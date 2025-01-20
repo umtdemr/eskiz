@@ -3,6 +3,7 @@ import {Emitter} from "@/core/emitter/Emitter.ts";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
 import {WheelEvent} from "react";
 import {Shape} from "@/core/shapes/Shape.ts";
+import {Rectangle} from "@/core/shapes/Rectangle.ts";
 
 export type CanvasMainModes = 'neutral' | 'pan' | 'create'
 
@@ -49,6 +50,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     private _slugId: string;
     
     private _shapes: Shape[] = []
+    private _selectedShape: Shape | null
     
     constructor(slugId: string) {
         super()
@@ -169,6 +171,8 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         const drawGrid = this.drawGrid.bind(this)
 
         const allShapes = this._shapes
+        
+        const thisCall = this
         function draw(canvas: SkiaCanvas) {
             canvas.clear(canvasKit.WHITE);
 
@@ -187,10 +191,26 @@ export class Canvas extends Emitter<CanvasEventsMap> {
             canvas.drawRect(rect, paint);
             canvas.rotate(20, 0, 0)
             canvas.drawPath(path, paint)
+            
             canvas.restore()
+            thisCall.renderControlsUI(canvas)
         }
         surface.requestAnimationFrame(draw)
     }
+    
+    renderControlsUI(canvas: SkiaCanvas) {
+        if (!this.selectedShape) {
+            return
+        }
+        canvas.save()
+        canvas.scale(this.scale, this.scale)
+        canvas.translate(this.offsetX, this.offsetY);
+        if (this.selectedShape instanceof Rectangle) {
+            this.selectedShape.renderControls(this.canvasKit, canvas, this.scale)
+        }
+        canvas.restore()
+    }
+
     requestRender() {
         this.needsRender = true;
     }
@@ -381,6 +401,13 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         this.scale = newZoom
         this.needsRender = true
         this.emit('zoom', this.scale)
+    }
+    
+    get selectedShape(): Shape|null {
+        return this._selectedShape
+    }
+    set selectedShape(shape: Shape) {
+        this._selectedShape = shape
     }
 
 }
