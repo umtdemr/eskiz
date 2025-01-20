@@ -148,24 +148,10 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     }
     
     render() {
-        const paint = new this.canvasKit.Paint();
-        paint.setColor(this.canvasKit.Color4f(0.9, 0, 0, 1.0));
-        paint.setStyle(this.canvasKit.PaintStyle.Stroke);
-        paint.setAntiAlias(true);
-
-        const path = new this.canvasKit.Path()
-        path.moveTo(100, 200)
-        path.lineTo(150, 200)
-        path.quadTo(300, 300, 350, 400)
-        path.close()
-
         const canvasKit = this.canvasKit;
-        const rect = this.canvasKit.LTRBRect(100, 200, 350, 400)
 
         const offsetX = this.offsetX;
         const offsetY = this.offsetY;
-
-
         const surface = this.surface;
         const scale = this.scale;
         const drawGrid = this.drawGrid.bind(this)
@@ -187,13 +173,9 @@ export class Canvas extends Emitter<CanvasEventsMap> {
                 shape.render(canvasKit, canvas)
                 canvas.restore()
             }
-            
-            canvas.drawRect(rect, paint);
-            canvas.rotate(20, 0, 0)
-            canvas.drawPath(path, paint)
-            
-            canvas.restore()
+
             thisCall.renderControlsUI(canvas)
+            canvas.restore()
         }
         surface.requestAnimationFrame(draw)
     }
@@ -202,13 +184,9 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         if (!this.selectedShape) {
             return
         }
-        canvas.save()
-        canvas.scale(this.scale, this.scale)
-        canvas.translate(this.offsetX, this.offsetY);
         if (this.selectedShape instanceof Rectangle) {
             this.selectedShape.renderControls(this.canvasKit, canvas, this.scale)
         }
-        canvas.restore()
     }
 
     requestRender() {
