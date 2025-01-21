@@ -78,3 +78,7 @@ export const CANVAS_COLORS = {
         a: 1
     }
 } as const;
+
+export const SHAPES = {
+    RECTANGLE: 'rectangle'
+}
