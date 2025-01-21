@@ -18,7 +18,7 @@
       - [x] Websocket connection
       - [x] Handling events - sending them to the other classes like event dispatcher.
     - [x] Adding rect.
-    - [ ] Refactor -> use `ctx` instead of `canvas`
+    - [x] Refactor -> use `ctx` instead of `canvas`
     - [ ] Create base class & Render with render methods
       - [ ] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
     - [ ] Selecting.

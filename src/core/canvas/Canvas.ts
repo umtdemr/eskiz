@@ -159,33 +159,33 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         const allShapes = this._shapes
         
         const thisCall = this
-        function draw(canvas: SkiaCanvas) {
-            canvas.clear(canvasKit.WHITE);
+        function draw(ctx: SkiaCanvas) {
+            ctx.clear(canvasKit.WHITE);
 
-            canvas.save()
-            canvas.scale(scale, scale)
-            canvas.translate(offsetX, offsetY);
+            ctx.save()
+            ctx.scale(scale, scale)
+            ctx.translate(offsetX, offsetY);
 
-            drawGrid(canvas)
+            drawGrid(ctx)
             
             for (const shape of allShapes) {
-                canvas.save()
-                shape.render(canvasKit, canvas)
-                canvas.restore()
+                ctx.save()
+                shape.render(canvasKit, ctx)
+                ctx.restore()
             }
 
-            thisCall.renderControlsUI(canvas)
-            canvas.restore()
+            thisCall.renderControlsUI(ctx)
+            ctx.restore()
         }
         surface.requestAnimationFrame(draw)
     }
     
-    renderControlsUI(canvas: SkiaCanvas) {
+    renderControlsUI(ctx: SkiaCanvas) {
         if (!this.selectedShape) {
             return
         }
         if (this.selectedShape instanceof Rectangle) {
-            this.selectedShape.renderControls(this.canvasKit, canvas, this.scale)
+            this.selectedShape.renderControls(this.canvasKit, ctx, this.scale)
         }
     }
 
@@ -202,7 +202,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         window.requestAnimationFrame(this.draw.bind(this));
     }
     
-    drawGrid(canvas: SkiaCanvas) {
+    drawGrid(ctx: SkiaCanvas) {
         const height = this.surface.height()
         const width = this.surface.width()
         const baseGridSize = 50
@@ -266,7 +266,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
                 }
 
                 gridPath.close()
-                canvas.drawPath(gridPath, gridPaint)
+                ctx.drawPath(gridPath, gridPaint)
             }
         })
     }
