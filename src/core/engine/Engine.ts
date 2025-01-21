@@ -104,7 +104,8 @@ export class Engine {
         }
 
         if (this.shapeDrawer.isDrawerActive) {
-            this.canvas.selectedShape = this.shapeDrawer.stopDrawing()
+            this.shapeDrawer.stopDrawing()
+            // this.canvas.selectedShape = this.shapeDrawer.stopDrawing() // todo: turn this on when selecting is completely ready
             this.canvas.changeActiveMode('neutral') // go back to normal mode after drawing is completed
         }
     }
