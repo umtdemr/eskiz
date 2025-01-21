@@ -32,7 +32,7 @@ export abstract class Shape {
         this._fillColor = props.fillColor ? props.fillColor : CANVAS_COLORS.TRANSPARENT 
     }
     
-    abstract render(canvasKit: CanvasKit, canvas: SkiaCanvas): void
+    abstract render(canvasKit: CanvasKit, ctx: SkiaCanvas): void
 
     getBoundingRect() {
         return {

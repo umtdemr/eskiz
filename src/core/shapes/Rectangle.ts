@@ -20,12 +20,12 @@ export class Rectangle extends Shape {
         this._radius = props.radius >= 0 && props.radius <= 20 ? props.radius! : 0
     }
     
-    render(canvasKit: CanvasKit, canvas: SkiaCanvas) {
+    render(canvasKit: CanvasKit, ctx: SkiaCanvas) {
         // can not render if width or height is less than 0
         if (this._width <= 0 || this._height <= 0) {
             return
         }
-        canvas.translate(this._x, this._y)
+        ctx.translate(this._x, this._y)
 
         const paint = new canvasKit.Paint();
         paint.setAntiAlias(true);
@@ -61,15 +61,15 @@ export class Rectangle extends Shape {
         const fillColor = canvasKit.Color(this._fillColor.r, this._fillColor.g, this._fillColor.b, this._fillColor.a)
         paint.setColor(fillColor);
         paint.setStyle(canvasKit.PaintStyle.Fill);
-        
-        canvas[drawFn](rect, paint)
+
+        ctx[drawFn](rect, paint)
 
         // draw stroke
         const strokeColor = canvasKit.Color(this._strokeColor.r, this._strokeColor.g, this._strokeColor.b, this._strokeColor.a)
         paint.setColor(strokeColor);
         paint.setStyle(canvasKit.PaintStyle.Stroke);
         paint.setStrokeWidth(2)
-        canvas[drawFn](strokeRect, paint)
+        ctx[drawFn](strokeRect, paint)
     }
     
     renderControls(canvasKit: CanvasKit, ctx: SkiaCanvas, scale: number) {
