@@ -1,9 +1,10 @@
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Button} from "@/components/ui/button.tsx";
-import {Hand, MousePointer2, Redo, Square, StickyNote, Type, Undo} from "lucide-react";
-import {Canvas, CanvasMode} from "@/core/canvas/Canvas.ts";
-import {useEffect, useState} from "react";
+import {Hand, MousePointer2, Redo, StickyNote, Type, Undo} from "lucide-react";
+import {Canvas, CanvasMode, CanvasSubModes} from "@/core/canvas/Canvas.ts";
+import {useCallback, useEffect, useState} from "react";
 import {clsx} from "clsx";
+import {ShapesDropdown} from "@/components/board/toolbar/ShapesDropdown.tsx";
 
 export default function Toolbar({
     canvas
@@ -11,6 +12,10 @@ export default function Toolbar({
     canvas: Canvas
 }) {
     const [activeMode, setActiveMode] = useState<CanvasMode>({ mainMode: 'neutral' })
+    
+    const handleShapeModeChange = useCallback((newMode: CanvasSubModes) => {
+        canvas.changeActiveMode('create', newMode)
+    }, [canvas])
     
     useEffect(() => {
         const unsubscribe = canvas.on('modeChange', (event) => {
@@ -71,27 +76,7 @@ export default function Toolbar({
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
-            <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button 
-                            variant='ghost' 
-                            className={clsx('px-2', {
-                                'bg-amber-500': activeMode?.subMode === 'createRectangle',
-                                'hover:bg-amber-500': activeMode?.subMode === 'createRectangle' 
-                            })}
-                            onClick={() => {
-                                canvas.changeActiveMode('create', 'createRectangle')
-                            }}
-                        >
-                            <Square />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={'right'}>
-                        <p>Rectangle</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            <ShapesDropdown activeMode={activeMode} handleShapeModeChange={handleShapeModeChange} />
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
                     <TooltipTrigger asChild>
