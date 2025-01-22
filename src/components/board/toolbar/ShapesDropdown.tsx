@@ -1,7 +1,7 @@
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {clsx} from "clsx";
-import {Shapes, Square, Triangle} from "lucide-react";
+import {Circle, Shapes, Square, Triangle} from "lucide-react";
 import {CanvasMode, CanvasSubModes} from "@/core/canvas/Canvas.ts";
 import {ComponentType, SVGAttributes, useEffect, useRef, useState} from "react";
 import useOnClickOutside from "@/hooks/UseOutsideClick.ts";
@@ -43,6 +43,11 @@ export function ShapesDropdown({
             tooltip: 'Triangle',
             mode: 'createTriangle',
             icon: Triangle
+        },
+        {
+            tooltip: 'Ellipse',
+            mode: 'createEllipse',
+            icon: Circle
         },
     ]
     
