@@ -41,7 +41,7 @@ export function ShapesDropdown({
         },
         {
             tooltip: 'Triangle',
-            mode: 'createRectangle',
+            mode: 'createTriangle',
             icon: Triangle
         },
     ]
