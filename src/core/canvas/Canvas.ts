@@ -8,7 +8,7 @@ import {Rectangle} from "@/core/shapes/Rectangle.ts";
 export type CanvasMainModes = 'neutral' | 'pan' | 'create'
 
 // can be used determining sub modes for main modes. For example, main mode can be `create` and sub mode can be `createRectangle`
-export type CanvasSubModes = 'createRectangle'
+export type CanvasSubModes = 'createRectangle' | 'createTriangle'
 
 export type CanvasMode = {
     mainMode: CanvasMainModes,

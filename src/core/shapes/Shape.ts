@@ -11,7 +11,7 @@ export type ShapeProps = {
     fillColor?: RGBA
 }
 
-export type ShapeType = 'rectangle'
+export type ShapeType = 'rectangle' | 'triangle'
 
 export abstract class Shape {
     protected _x: number
