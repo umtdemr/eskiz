@@ -2,6 +2,7 @@ import {Canvas, CanvasMouseEvent} from "@/core/canvas/Canvas.ts";
 import {Shape} from "@/core/shapes/Shape.ts";
 import {Rectangle} from "@/core/shapes/Rectangle.ts";
 import {Triangle} from "@/core/shapes/Triangle.ts";
+import {Ellipse} from "@/core/shapes/Ellipse.ts";
 
 /**
  * Helps to draw shapes
@@ -28,24 +29,25 @@ export class ShapeDrawer {
             y: e.pointer.y,
         }
 
+        let shapeConstructor
         if (drawingMode === 'createRectangle') {
-            this.shape = new Rectangle({
-                x: e.pointer.x,
-                y: e.pointer.y,
-                width: 1,
-                height: 1
-            })
-            this.canvas.addShape(this.shape)
+            shapeConstructor = Rectangle
         } else if (drawingMode === 'createTriangle') {
-            this.shape = new Triangle({
+            shapeConstructor = Triangle
+        } else if (drawingMode === 'createEllipse') {
+            shapeConstructor = Ellipse
+        }
+        
+        if (shapeConstructor) {
+            this.shape = new shapeConstructor({
                 x: e.pointer.x,
                 y: e.pointer.y,
                 width: 1,
                 height: 1,
             })
-            this.canvas.addShape(this.shape)
+            this.canvas.addShape(this.shape!)
+            this.drawingStarted = true;
         }
-        this.drawingStarted = true;
     }
 
     /**
