@@ -1,14 +1,18 @@
-import {
-    DropdownMenu,
-    DropdownMenuContent, DropdownMenuItem,
-    DropdownMenuTrigger
-} from "@/components/ui/dropdown-menu.tsx";
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {clsx} from "clsx";
 import {Shapes, Square, Triangle} from "lucide-react";
 import {CanvasMode, CanvasSubModes} from "@/core/canvas/Canvas.ts";
-import {ComponentType, SVGAttributes} from "react";
+import {ComponentType, SVGAttributes, useEffect, useRef, useState} from "react";
+import useOnClickOutside from "@/hooks/UseOutsideClick.ts";
+
+function isSubModeForShapes(mode: CanvasSubModes|undefined): boolean {
+    if (!mode) return false
+    if (mode === 'createRectangle') {
+        return true
+    }
+    return false
+}
 
 export function ShapesDropdown({
     activeMode, 
@@ -17,7 +21,18 @@ export function ShapesDropdown({
     activeMode: CanvasMode,
     handleShapeModeChange: (newMode: CanvasSubModes) => void
 }) {
+    const [isOpen, setIsOpen] = useState(false);
+    const menuRef = useRef(null);
+    const shapesBtnRef = useRef(null)
     
+    const onClickOutsideHandler = (event) => {
+        if (shapesBtnRef.current.contains(event.target)) {
+            return
+        }
+        setIsOpen(false)
+    }
+    useOnClickOutside(menuRef, onClickOutsideHandler)
+
     const shapes: {tooltip: string, mode: CanvasSubModes, icon?: ComponentType<SVGAttributes<SVGElement>> }[] = [
         {
             tooltip: 'Rectangle',
@@ -30,61 +45,67 @@ export function ShapesDropdown({
             icon: Triangle
         },
     ]
+    
+    const toggleVisibility = () => {
+        setIsOpen(oldState => !oldState)
+    }
+
+    useEffect(() => {
+        if (isOpen) {
+            handleShapeModeChange('createRectangle')
+        }
+    }, [isOpen, handleShapeModeChange]);
 
     return (
-        <DropdownMenu>
-            <DropdownMenuTrigger>
-                <TooltipProvider delayDuration={0}>
-                    <Tooltip>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant='ghost'
-                                className={clsx('px-2', {
-                                    'bg-amber-500': activeMode?.subMode === 'createRectangle',
-                                    'hover:bg-amber-500': activeMode?.subMode === 'createRectangle'
-                                })}
-                                onClick={() => {
-                                    // canvas.changeActiveMode('create', 'createRectangle')
-                                }}
-                            >
-                                <Shapes />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side={'right'}>
-                            <p>Shapes</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent
-                side={'right'}
-                sideOffset={20}
-                className='min-w-0'
-            >
-                <div className={'flex'}>
-                    {shapes.map(shape => (
-                        <DropdownMenuItem 
-                            className={clsx('p-1', {
-                                
+        <div className='relative'>
+            <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant='ghost'
+                            className={clsx('px-2', {
+                                'bg-amber-500': isSubModeForShapes(activeMode?.subMode),
+                                'hover:bg-amber-500': (activeMode?.subMode)
                             })}
-                            onClick={() => handleShapeModeChange(shape.mode)}
+                            onClick={toggleVisibility}
+                            ref={shapesBtnRef}
                         >
-                            <TooltipProvider delayDuration={0}>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button variant='ghost' className='px-2'>
-                                            {shape.icon && <shape.icon />}
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>{shape.tooltip}</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
-                        </DropdownMenuItem>
-                    ))}
-                </div>
-            </DropdownMenuContent>
-        </DropdownMenu>
+                            <Shapes />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side={'right'}>
+                        <p>Shapes</p>
+                    </TooltipContent>
+                </Tooltip>
+            {
+                isOpen ? (
+                    <div
+                        className='absolute flex gap-2 left-14 top-0 bg-white shadow-2xl p-1 rounded-lg z-50'
+                        ref={menuRef}
+                    >
+                        {shapes.map(shape => (
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <Button 
+                                        variant='ghost' 
+                                        className={clsx('px-2', {
+                                            'bg-amber-500': activeMode?.subMode === shape.mode,
+                                            'hover:bg-amber-500': activeMode?.subMode === shape.mode
+                                        })}
+                                        onClick={() => handleShapeModeChange(shape.mode)}
+                                    >
+                                        {shape.icon && <shape.icon />}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{shape.tooltip}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        ))}
+                    </div>
+                ) : null
+            }
+            </TooltipProvider>
+        </div>
     )
 }
