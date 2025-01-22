@@ -8,10 +8,7 @@ import useOnClickOutside from "@/hooks/UseOutsideClick.ts";
 
 function isSubModeForShapes(mode: CanvasSubModes|undefined): boolean {
     if (!mode) return false
-    if (mode === 'createRectangle') {
-        return true
-    }
-    return false
+    return mode === 'createRectangle' || mode === 'createTriangle' || mode === 'createEllipse';
 }
 
 export function ShapesDropdown({
