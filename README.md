@@ -32,4 +32,6 @@
     - [ ] Adding text
     - [ ] Sticky note
     - [ ] Undo redo
+- Refactor & bug fixes
+  - [ ] Fix: ShapesDropdown top position
 
