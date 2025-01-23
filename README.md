@@ -19,8 +19,12 @@
       - [x] Handling events - sending them to the other classes like event dispatcher.
     - [x] Adding rect.
     - [x] Refactor -> use `ctx` instead of `canvas`
-    - [ ] Create base class & Render with render methods
-      - [ ] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
+    - [x] Create base class & Render with render methods
+      - [x] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
+    - [ ] Rendering shapes
+      - [ ] Storing shapes in app
+      - [ ] Handling zIndexes
+      - [ ] Handling multiple objects...
     - [ ] Selecting.
       - [ ] Handle changing width, height by controls
     - [ ] Pagination and search
