@@ -45,7 +45,7 @@ export class ShapeDrawer {
                 width: 1,
                 height: 1,
             })
-            this.canvas.addShape(this.shape!)
+            this.canvas.addWidget(this.shape!)
             this.drawingStarted = true;
         }
     }
