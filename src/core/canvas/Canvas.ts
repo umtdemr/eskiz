@@ -1,9 +1,9 @@
-import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas} from "canvaskit-wasm";
+import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas, FontMgr} from "canvaskit-wasm";
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
 import {WheelEvent} from "react";
-import {Shape} from "@/core/shapes/Shape.ts";
 import {Rectangle} from "@/core/shapes/Rectangle.ts";
+import {Widget} from "@/core/shapes/Widget.ts";
 
 export type CanvasMainModes = 'neutral' | 'pan' | 'create'
 
@@ -37,7 +37,6 @@ type Transform = [number, number, number, number, number, number]
 
 export class Canvas extends Emitter<CanvasEventsMap> {
     private _initialized: boolean = false;
-    private canvasKit: CanvasKit;
     private surface: Surface
     private canvasEl: HTMLCanvasElement
     private upperCanvasEl: HTMLCanvasElement
@@ -49,8 +48,8 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     private _activeMode: CanvasMode = { mainMode: 'neutral' };
     private _slugId: string;
     
-    private _shapes: Shape[] = []
-    private _selectedShape: Shape | null
+    private _widgets: Widget[] = []
+    private _selectedWidget: Widget | null
     
     constructor(slugId: string) {
         super()
@@ -131,12 +130,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         this.setCanvasElStyles(this.canvasEl);
         this.setCanvasElStyles(this.upperCanvasEl);
 
-        // initialize canvasKit
-        this.canvasKit = await CanvasKitInit({
-            locateFile: (file: string) => '/node_modules/canvaskit-wasm/bin/' + file
-        })
-        
-        this.surface = this.canvasKit.MakeWebGLCanvasSurface(canvas)!
+        this.surface = canvasKit.MakeWebGLCanvasSurface(canvas)!
         
         this._initialized = true;
         
@@ -148,15 +142,13 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     }
     
     render() {
-        const canvasKit = this.canvasKit;
-
         const offsetX = this.offsetX;
         const offsetY = this.offsetY;
         const surface = this.surface;
         const scale = this.scale;
         const drawGrid = this.drawGrid.bind(this)
 
-        const allShapes = this._shapes
+        const allWidgets = this._widgets
         
         const thisCall = this
         function draw(ctx: SkiaCanvas) {
@@ -168,9 +160,9 @@ export class Canvas extends Emitter<CanvasEventsMap> {
 
             drawGrid(ctx)
             
-            for (const shape of allShapes) {
+            for (const widget of allWidgets) {
                 ctx.save()
-                shape.render(canvasKit, ctx)
+                widget.render(canvasKit, ctx)
                 ctx.restore()
             }
 
@@ -181,11 +173,11 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     }
     
     renderControlsUI(ctx: SkiaCanvas) {
-        if (!this.selectedShape) {
+        if (!this.selectedWidget) {
             return
         }
-        if (this.selectedShape instanceof Rectangle) {
-            this.selectedShape.renderControls(this.canvasKit, ctx, this.scale)
+        if (this.selectedWidget instanceof Rectangle) {
+            this.selectedWidget.renderControls(canvasKit, ctx, this.scale)
         }
     }
 
@@ -239,10 +231,10 @@ export class Canvas extends Emitter<CanvasEventsMap> {
             { size: gridSize2, alpha: alpha2 }
         ].forEach(({ size, alpha }) => {
             if (alpha > 0) {
-                const gridPath = new this.canvasKit.Path()
-                const gridPaint = new this.canvasKit.Paint()
-                gridPaint.setColor(this.canvasKit.BLACK)
-                gridPaint.setStyle(this.canvasKit.PaintStyle.Stroke)
+                const gridPath = new canvasKit.Path()
+                const gridPaint = new canvasKit.Paint()
+                gridPaint.setColor(canvasKit.BLACK)
+                gridPaint.setStyle(canvasKit.PaintStyle.Stroke)
                 gridPaint.setAntiAlias(true)
                 gridPaint.setAlphaf(alpha)
                 gridPaint.setStrokeWidth(baseWidth)
@@ -334,8 +326,8 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         return r;
     }
     
-    addShape(shape: Shape) {
-        this._shapes.push(shape)
+    addWidget(widget: Widget) {
+        this._widgets.push(widget)
         this.requestRender()
     }
 
@@ -381,11 +373,45 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         this.emit('zoom', this.scale)
     }
     
-    get selectedShape(): Shape|null {
-        return this._selectedShape
+    get selectedWidget(): Widget|null {
+        return this._selectedWidget
     }
-    set selectedShape(shape: Shape) {
-        this._selectedShape = shape
+    set selectedWidget(widget: Widget) {
+        this._selectedWidget = Widget
     }
 
 }
+
+export class CanvasKitSingleton {
+    private static instance: CanvasKit;
+
+    private constructor() {}
+
+    public static async getInstance(): Promise<CanvasKit> {
+        if (!CanvasKitSingleton.instance) {
+            CanvasKitSingleton.instance = await CanvasKitInit({
+                locateFile: (file: string) => '/node_modules/canvaskit-wasm/bin/' + file
+            });
+        }
+        return CanvasKitSingleton.instance;
+    }
+}
+
+export const canvasKit = await CanvasKitSingleton.getInstance();
+
+export class FontManagerSingleton {
+    private static instance: FontMgr;
+
+    private constructor() {}
+
+    public static async getInstance(canvasKit: CanvasKit): Promise<FontMgr> {
+        if (!FontManagerSingleton.instance) {
+            const fontUrl = '/fonts/OpenSans-Regular.ttf';
+            const loadFontPromise = await fetch(fontUrl);
+            FontManagerSingleton.instance = canvasKit.FontMgr.FromData(await loadFontPromise.arrayBuffer())!;
+        }
+        return FontManagerSingleton.instance;
+    }
+}
+
+export const fontManager = await FontManagerSingleton.getInstance(canvasKit);

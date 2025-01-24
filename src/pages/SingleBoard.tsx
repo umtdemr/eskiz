@@ -127,6 +127,7 @@ export default function SingleBoard() {
                     canvasRef.current?.draw();
                 }
             } catch (err) {
+                console.error(err)
                 navigateToBoardOnErr();
             }
         }
