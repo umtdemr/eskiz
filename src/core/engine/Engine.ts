@@ -1,21 +1,17 @@
 import {Canvas, CanvasMouseEvent} from "@/core/canvas/Canvas.ts";
 import {WsEngine} from "@/core/WsEngine.ts";
-import {COLLAB_CURSOR_THROTTLING_TIME} from "@/helpers/Constant.ts";
 import {UpperCanvasRenderer} from "@/core/renderers/UpperCanvasRenderer.ts";
-import {ShapeDrawer} from "@/core/engine/ShapeDrawer.ts";
+import {ShapeDrawerTool} from "@/core/tools/ShapeDrawerTool.ts";
+import {Tool} from "@/core/tools/Tool.ts";
+import {PanTool} from "@/core/tools/PanTool.ts";
+import {CursorSenderTool} from "@/core/tools/CursorSenderTool.ts";
 
 export class Engine {
     private _slugId: string
     canvas: Canvas
     wsEngine: WsEngine
-    private collabCursorLastSend: number
-    private collabCursorSendingTimeout: number
-    private _isPanning = false;
-    private startPanX = 0;
-    private startPanY = 0;
-    private lastMouseX = 0;
-    private lastMouseY = 0;
-    private shapeDrawer: ShapeDrawer
+    private primaryTool: Tool | null = null;
+    private alwaysActiveTools: Tool[] = [];
     upperCanvasRenderer: UpperCanvasRenderer
     
     constructor(slugId: string) {
@@ -26,7 +22,16 @@ export class Engine {
         this.canvasMouseDownHandler = this.canvasMouseDownHandler.bind(this)
         this.canvasMouseMoveHandler = this.canvasMouseMoveHandler.bind(this)
         this.canvasMouseUpHandler = this.canvasMouseUpHandler.bind(this)
-        this.shapeDrawer = new ShapeDrawer()
+        
+        this.canvas.on('modeChange', mode => {
+            if (mode.mainMode === 'pan') {
+                this.registerTool(new PanTool(), 'primary')
+                this.primaryTool = new PanTool()
+            } else if (mode.mainMode === 'create' && mode.subMode) {
+                this.registerTool(new ShapeDrawerTool(), 'primary')
+            }
+        })
+        this.registerTool(new CursorSenderTool(), 'always-active')
     }
     
     async initialize() {
@@ -42,83 +47,47 @@ export class Engine {
         return true
     }
 
+    registerTool(tool: Tool, type: 'primary' | 'always-active') {
+        if (type === 'primary') {
+            // Only one primary tool can exist
+            this.primaryTool = tool;
+        } else {
+            this.alwaysActiveTools.push(tool);
+        }
+    }
+
     dispose() {
         this.canvas.dispose()
         this.wsEngine.dispose()
     }
     
     private canvasMouseDownHandler(data: CanvasMouseEvent) {
-        const { e } = data
-        if (this.canvas.activeMode.mainMode === 'pan') {
-            this._isPanning = true;
-            this.startPanX = e.clientX - this.canvas.translateX * this.canvas.zoom;
-            this.startPanY = e.clientY - this.canvas.translateY * this.canvas.zoom;
-            this.lastMouseX = e.clientX;
-            this.lastMouseY = e.clientY;
-            this.canvas.upperCanvas.style.cursor = 'grabbing';
-            return
+        if (this.primaryTool) {
+            this.primaryTool.onMouseDown(data, this);
         }
-        
-        if (this.canvas.activeMode.mainMode === 'create' && this.canvas.activeMode.subMode) {
-            this.shapeDrawer.startDrawing(data, this.canvas)
-        }
+
+        for (const tool of this.alwaysActiveTools) {
+            tool.onMouseDown(data, this);
+        }        
     }
     
     private canvasMouseMoveHandler(data: CanvasMouseEvent) {
-        const { e } = data;
-        // handle panning
-        if (this.canvas.activeMode.mainMode === 'pan' && this._isPanning) {
-            this.canvas.translateX = (e.clientX - this.startPanX) / this.canvas.zoom;
-            this.canvas.translateY = (e.clientY - this.startPanY) / this.canvas.zoom;
-
-            this.lastMouseX = e.clientX;
-            this.lastMouseY = e.clientY;
-            this.canvas.requestRender()
+        if (this.primaryTool) {
+            this.primaryTool.onMouseMove(data, this);
         }
-        
-        // handle shape drawing
-        if (this.shapeDrawer.isDrawerActive) {
-            this.shapeDrawer.handleDrawing(data)
-        }
-        
-        // handle collaborator cursor
-        const time = Date.now()
-        clearTimeout(this.collabCursorSendingTimeout) // clear old attempts to sync data
-        const collabCursorSender = this.sendCollabCursorData.bind(this)
 
-        if (!this.collabCursorLastSend || time > this.collabCursorLastSend + COLLAB_CURSOR_THROTTLING_TIME) {
-            this.collabCursorLastSend = time
-            collabCursorSender(data);
-        } else {
-            // send collab cursor data after some time to sync last data
-            this.collabCursorSendingTimeout = setTimeout(() => {
-                collabCursorSender(data)
-            }, COLLAB_CURSOR_THROTTLING_TIME)
+        for (const tool of this.alwaysActiveTools) {
+            tool.onMouseMove(data, this);
         }
     }
     
     private canvasMouseUpHandler(data: CanvasMouseEvent) {
-        if (this._isPanning) {
-            this._isPanning = false;
-            this.canvas.upperCanvas.style.cursor = 'grab';
+        if (this.primaryTool) {
+            this.primaryTool.onMouseUp(data, this);
         }
 
-        if (this.shapeDrawer.isDrawerActive) {
-            this.shapeDrawer.stopDrawing()
-            // this.canvas.selectedShape = this.shapeDrawer.stopDrawing() // todo: turn this on when selecting is completely ready
-            this.canvas.changeActiveMode('neutral') // go back to normal mode after drawing is completed
+        for (const tool of this.alwaysActiveTools) {
+            tool.onMouseUp(data, this);
         }
-    }
-    
-    private sendCollabCursorData(data: CanvasMouseEvent) {
-        this.wsEngine.sendMessage<"cursor">(
-        {
-                type: 'cursor', 
-                data: {
-                    x: data.pointer.x, 
-                    y: data.pointer.y, 
-                }
-            }
-        )
     }
 }
