@@ -3,13 +3,14 @@ import {Shape} from "@/core/shapes/Shape.ts";
 import {Rectangle} from "@/core/shapes/Rectangle.ts";
 import {Triangle} from "@/core/shapes/Triangle.ts";
 import {Ellipse} from "@/core/shapes/Ellipse.ts";
+import {Engine} from "@/core/engine/Engine.ts";
+import {Tool} from "@/core/tools/Tool.ts";
 
 /**
  * Helps to draw shapes
  */
-export class ShapeDrawer {
+export class ShapeDrawerTool implements Tool {
     private shape: Shape|null
-    private canvas: Canvas|null
     private drawingStarted: boolean = false;
     private initialPosition: { x: number, y: number }
     
@@ -18,15 +19,15 @@ export class ShapeDrawer {
 
     /**
      * Starts drawing a shape based on pointer
-     * @param e
-     * @param canvas
+     * @param data
+     * @param engine
      */
-    startDrawing(e: CanvasMouseEvent, canvas: Canvas) {
-        this.canvas = canvas;
-        const drawingMode = this.canvas.activeMode.subMode
+    onMouseDown(data: CanvasMouseEvent, engine: Engine) {
+        const { canvas } = data
+        const drawingMode = canvas.activeMode.subMode
         this.initialPosition = {
-            x: e.pointer.x,
-            y: e.pointer.y,
+            x: data.pointer.x,
+            y: data.pointer.y,
         }
 
         let shapeConstructor
@@ -37,62 +38,62 @@ export class ShapeDrawer {
         } else if (drawingMode === 'createEllipse') {
             shapeConstructor = Ellipse
         }
-        
+
         if (shapeConstructor) {
             this.shape = new shapeConstructor({
-                x: e.pointer.x,
-                y: e.pointer.y,
+                x: data.pointer.x,
+                y: data.pointer.y,
                 width: 1,
                 height: 1,
             })
-            this.canvas.addWidget(this.shape!)
+            canvas.addWidget(this.shape!)
             this.drawingStarted = true;
-        }
+        } 
     }
 
     /**
      * Handles changing width and height during shape drawing
-     * @param e
+     * @param data
+     * @param engine
      */
-    handleDrawing(e: CanvasMouseEvent) {
+    onMouseMove(data: CanvasMouseEvent, engine: Engine) {
         if (!this.shape) return
+        const { canvas } = data
 
         // change width and height
-        this.shape.width = Math.abs(e.pointer.x - this.initialPosition.x)
-        this.shape.height = Math.abs(e.pointer.y - this.initialPosition.y)
+        this.shape.width = Math.abs(data.pointer.x - this.initialPosition.x)
+        this.shape.height = Math.abs(data.pointer.y - this.initialPosition.y)
         
         // grow shape equally when shift key is being pressed
-        if (e.e.shiftKey) {
+        if (data.e.shiftKey) {
             const maxSide = Math.max(this.shape.width, this.shape.height)
             this.shape.width = this.shape.height = maxSide
         }
 
         // align x and y
-        if (e.pointer.x > this.initialPosition.x) {
+        if (data.pointer.x > this.initialPosition.x) {
             this.shape.left = this.initialPosition.x
         } else {
             this.shape.right = this.initialPosition.x
         }
         
-        if (e.pointer.y > this.initialPosition.y) {
+        if (data.pointer.y > this.initialPosition.y) {
             this.shape.top = this.initialPosition.y
         } else {
             this.shape.bottom = this.initialPosition.y
         }
         
-        this.canvas?.requestRender()
+        canvas?.requestRender()
     }
 
-    stopDrawing(): Shape {
-        const drawnShape = this.shape
+    onMouseUp(data: CanvasMouseEvent, engine: Engine) {
+        data.canvas.changeActiveMode('neutral')
         this.reset()
-        return drawnShape!
     }
     
     reset() {
         this.shape = null
         this.drawingStarted = false
-        this.canvas = null
     }
 
     /**

@@ -26,6 +26,7 @@ export type CanvasEventsMap = {
 export type CanvasMouseEvent = {
     e: MouseEvent
     pointer: Point
+    canvas: Canvas
 }
 
 type Point = {
@@ -69,15 +70,15 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     }
 
     private onMouseDown(e: MouseEvent) {
-        this.emit('mouseDown', { e, pointer: this.getPointer(e) })
+        this.emit('mouseDown', { e, pointer: this.getPointer(e), canvas: this })
     }
 
     private onMouseMove(e: MouseEvent) {
-        this.emit('mouseMove', { e, pointer: this.getPointer(e) })
+        this.emit('mouseMove', { e, pointer: this.getPointer(e), canvas: this })
     }
 
     private onMouseUp(e: MouseEvent) {
-        this.emit('mouseUp', { e, pointer: this.getPointer(e) })
+        this.emit('mouseUp', { e, pointer: this.getPointer(e), canvas: this })
     }
 
     private onMouseWheel(e: WheelEvent) {
@@ -377,7 +378,7 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         return this._selectedWidget
     }
     set selectedWidget(widget: Widget) {
-        this._selectedWidget = Widget
+        this._selectedWidget = widget
     }
 
 }
