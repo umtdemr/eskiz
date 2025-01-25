@@ -1,9 +1,8 @@
-import {Canvas, CanvasMouseEvent} from "@/core/canvas/Canvas.ts";
 import {Shape} from "@/core/shapes/Shape.ts";
 import {Rectangle} from "@/core/shapes/Rectangle.ts";
 import {Triangle} from "@/core/shapes/Triangle.ts";
 import {Ellipse} from "@/core/shapes/Ellipse.ts";
-import {Engine} from "@/core/engine/Engine.ts";
+import {Engine, CanvasMouseEvent} from "@/core/engine/Engine.ts";
 import {Tool} from "@/core/tools/Tool.ts";
 
 /**
@@ -24,7 +23,7 @@ export class ShapeDrawerTool implements Tool {
      */
     onMouseDown(data: CanvasMouseEvent, engine: Engine) {
         const { canvas } = data
-        const drawingMode = canvas.activeMode.subMode
+        const drawingMode = engine.activeMode.subMode
         this.initialPosition = {
             x: data.pointer.x,
             y: data.pointer.y,
@@ -87,7 +86,7 @@ export class ShapeDrawerTool implements Tool {
     }
 
     onMouseUp(data: CanvasMouseEvent, engine: Engine) {
-        data.canvas.changeActiveMode('neutral')
+        engine.changeActiveMode('neutral')
         this.reset()
     }
     

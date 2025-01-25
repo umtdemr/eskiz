@@ -1,6 +1,5 @@
 import {Tool} from "@/core/tools/Tool.ts";
-import {CanvasMouseEvent} from "@/core/canvas/Canvas.ts";
-import {Engine} from "@/core/engine/Engine.ts";
+import {Engine, CanvasMouseEvent} from "@/core/engine/Engine.ts";
 import {COLLAB_CURSOR_THROTTLING_TIME} from "@/helpers/Constant.ts";
 import {WsEngine} from "@/core/WsEngine.ts";
 

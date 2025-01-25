@@ -1,143 +1,55 @@
 import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas, FontMgr} from "canvaskit-wasm";
-import {Emitter} from "@/core/emitter/Emitter.ts";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
-import {WheelEvent} from "react";
 import {Rectangle} from "@/core/shapes/Rectangle.ts";
 import {Widget} from "@/core/shapes/Widget.ts";
 
-export type CanvasMainModes = 'neutral' | 'pan' | 'create'
-
-// can be used determining sub modes for main modes. For example, main mode can be `create` and sub mode can be `createRectangle`
-export type CanvasSubModes = 'createRectangle' | 'createTriangle' | 'createEllipse'
-
-export type CanvasMode = {
-    mainMode: CanvasMainModes,
-    subMode?: CanvasSubModes
-}
-
-export type CanvasEventsMap = {
-    'modeChange': CanvasMode
-    'zoom': number,
-    'mouseDown': CanvasMouseEvent
-    'mouseMove': CanvasMouseEvent
-    'mouseUp': CanvasMouseEvent
-}
-
-export type CanvasMouseEvent = {
-    e: MouseEvent
-    pointer: Point
-    canvas: Canvas
-}
-
-type Point = {
+export type Point = {
     x: number
     y: number
 }
 
 type Transform = [number, number, number, number, number, number]
 
-export class Canvas extends Emitter<CanvasEventsMap> {
+export const setCanvasStyles = (canvasEl: HTMLCanvasElement) => {
+    canvasEl.style.position = 'absolute';
+    canvasEl.style.left = '0';
+    canvasEl.style.top = '0'; 
+}
+
+export class Canvas {
     private _initialized: boolean = false;
     private surface: Surface
-    private canvasEl: HTMLCanvasElement
-    private upperCanvasEl: HTMLCanvasElement
+    private _canvasEl: HTMLCanvasElement
     private offsetX = 0;
     private offsetY = 0;
 
     private needsRender = false;
     private scale = 1;
-    private _activeMode: CanvasMode = { mainMode: 'neutral' };
     private _slugId: string;
     
     private _widgets: Widget[] = []
     private _selectedWidget: Widget | null
     
     constructor(slugId: string) {
-        super()
         this._slugId = slugId;
-        this.onMouseWheel = this.onMouseWheel.bind(this);
-        this.onMouseDown = this.onMouseDown.bind(this);
-        this.onMouseMove = this.onMouseMove.bind(this);
-        this.onMouseUp = this.onMouseUp.bind(this);
     }
 
-    private setEventHandlers() {
-        this.upperCanvasEl.addEventListener('mousedown', this.onMouseDown)
-        this.upperCanvasEl.addEventListener('mousemove', this.onMouseMove);
-        this.upperCanvasEl.addEventListener('mouseup', this.onMouseUp);
-        // @ts-ignore
-        this.upperCanvasEl.addEventListener('wheel', this.onMouseWheel);
-    }
-
-    private onMouseDown(e: MouseEvent) {
-        this.emit('mouseDown', { e, pointer: this.getPointer(e), canvas: this })
-    }
-
-    private onMouseMove(e: MouseEvent) {
-        this.emit('mouseMove', { e, pointer: this.getPointer(e), canvas: this })
-    }
-
-    private onMouseUp(e: MouseEvent) {
-        this.emit('mouseUp', { e, pointer: this.getPointer(e), canvas: this })
-    }
-
-    private onMouseWheel(e: WheelEvent) {
-        e.preventDefault();
-
-        // zooming should be activated with ctrl key
-        if (!e.ctrlKey) {
-            return
-        }
-        const mouseX = e.clientX
-        const mouseY = e.clientY;
-
-        const zoomFactor = e.deltaY > 0 ? 0.5 : 1.6;
-        const oldScale = this.scale;
-        this.scale = Math.min(Math.max(ZOOM_LEVELS.MIN, this.scale * zoomFactor), ZOOM_LEVELS.MAX);
-
-        this.offsetX = mouseX / this.scale - mouseX / oldScale + this.offsetX;
-        this.offsetY = mouseY / this.scale - mouseY / oldScale + this.offsetY;
-
-        this.needsRender = true
-        this.emit('zoom', this.scale)
-    }
-
-    private setCanvasElStyles(canvasEl: HTMLCanvasElement) {
-        canvasEl.style.position = 'absolute';
-        canvasEl.style.left = '0';
-        canvasEl.style.top = '0';
-    }
-    
     async initialize() {
         const canvas = document.querySelector('#board') as HTMLCanvasElement;
         if (!canvas) {
             return false;
         }
-        this.canvasEl = canvas
+        this._canvasEl = canvas
         
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         
-        // create upper canvas
-        const upperCanvasEl = document.createElement('canvas')
-        upperCanvasEl.width = canvas.width;
-        upperCanvasEl.height = canvas.height;
-        upperCanvasEl.id = 'upperCanvas'
-        
-        canvas.parentNode.appendChild(upperCanvasEl)
-        this.upperCanvasEl = upperCanvasEl;
-        
         // set canvas styles
-        this.setCanvasElStyles(this.canvasEl);
-        this.setCanvasElStyles(this.upperCanvasEl);
+        setCanvasStyles(this._canvasEl)
 
         this.surface = canvasKit.MakeWebGLCanvasSurface(canvas)!
         
         this._initialized = true;
-        
-        // set event handlers
-        this.setEventHandlers();
-        this.needsRender = true;
         
         return true
     }
@@ -265,34 +177,10 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     }
 
     dispose() {
-        this.upperCanvasEl.removeEventListener('mousedown', this.onMouseDown)
-        this.upperCanvasEl.removeEventListener('mousemove', this.onMouseMove);
-        this.upperCanvasEl.removeEventListener('mouseup', this.onMouseUp);
         // @ts-ignore
         this.upperCanvasEl.removeEventListener('wheel', this.onMouseWheel);
-        this.clearEventListeners() // remove eventListeners in Emitter class
     }
 
-    /**
-     * Sets new mode for canvas.
-     * @param newMainMode - New main mode.
-     * @param newSubMode - New sub mode.
-     */
-    changeActiveMode(newMainMode: CanvasMainModes, newSubMode?: CanvasSubModes) {
-        const shouldEmit = newMainMode !== this._activeMode.mainMode || newSubMode !== this._activeMode.subMode
-        this._activeMode = {
-            mainMode: newMainMode,
-            subMode: newSubMode
-        };
-        if (shouldEmit) {
-            this.emit('modeChange', { mainMode: newMainMode, subMode: newSubMode })
-        }
-
-        if (this._activeMode.mainMode === 'neutral') {
-            this.upperCanvasEl.style.cursor = 'default'
-        }
-    }
-    
     getPointer(e: MouseEvent): Point {
         const pointer = {
             x: e.x,
@@ -335,16 +223,9 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     get viewportTransform(): Transform {
         return [this.scale, 0, 0, this.scale, this.offsetX * this.scale, this.offsetY * this.scale]
     }
-    get activeMode() {
-        return this._activeMode
-    }
 
     get initialized() {
         return this._initialized;
-    }
-    
-    get upperCanvas() {
-        return this.upperCanvasEl;
     }
     
     get zoom() {
@@ -371,7 +252,6 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         newZoom = Math.min(Math.max(ZOOM_LEVELS.MIN, newZoom), ZOOM_LEVELS.MAX)
         this.scale = newZoom
         this.needsRender = true
-        this.emit('zoom', this.scale)
     }
     
     get selectedWidget(): Widget|null {
@@ -381,6 +261,9 @@ export class Canvas extends Emitter<CanvasEventsMap> {
         this._selectedWidget = widget
     }
 
+    get canvasEl(): HTMLCanvasElement {
+        return this._canvasEl
+    }
 }
 
 export class CanvasKitSingleton {

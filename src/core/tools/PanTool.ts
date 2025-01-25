@@ -1,6 +1,5 @@
 import {Tool} from "@/core/tools/Tool.ts";
-import {CanvasMouseEvent} from "@/core/canvas/Canvas.ts";
-import {Engine} from "@/core/engine/Engine.ts";
+import {Engine, CanvasMouseEvent} from "@/core/engine/Engine.ts";
 
 export class PanTool implements Tool {
     private startPanX = 0;
@@ -12,9 +11,9 @@ export class PanTool implements Tool {
     constructor() {
     }
 
-    onMouseDown(data: CanvasMouseEvent, _: Engine) {
+    onMouseDown(data: CanvasMouseEvent, engine: Engine) {
         const { e, canvas } = data;
-        if (canvas.activeMode.mainMode !== 'pan') {
+        if (engine.activeMode.mainMode !== 'pan') {
             return
         }
         this._isPanning = true;
@@ -24,10 +23,10 @@ export class PanTool implements Tool {
         this.lastMouseY = e.clientY;
     }
     
-    onMouseMove(data: CanvasMouseEvent, _: Engine) {
+    onMouseMove(data: CanvasMouseEvent, engine: Engine) {
         const { e, canvas } = data
-        if (canvas.activeMode.mainMode === 'pan' && this._isPanning) {
-            canvas.upperCanvas.style.cursor = 'grabbing';
+        if (engine.activeMode.mainMode === 'pan' && this._isPanning) {
+            engine.upperCanvasEl.style.cursor = 'grabbing';
 
             canvas.translateX = (e.clientX - this.startPanX) / canvas.zoom;
             canvas.translateY = (e.clientY - this.startPanY) / canvas.zoom;
@@ -37,10 +36,10 @@ export class PanTool implements Tool {
             canvas.requestRender()
         }
     }
-    onMouseUp(e: CanvasMouseEvent, _: Engine) {
+    onMouseUp(e: CanvasMouseEvent, engine: Engine) {
         if (this._isPanning) {
             this._isPanning = false;
-            e.canvas.upperCanvas.style.cursor = 'grab';
+            engine.upperCanvasEl.style.cursor = 'grab';
         }
     }
 }
