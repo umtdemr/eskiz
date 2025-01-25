@@ -1,24 +1,24 @@
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Hand, MousePointer2, Redo, StickyNote, Type, Undo} from "lucide-react";
-import {Canvas, CanvasMode, CanvasSubModes} from "@/core/canvas/Canvas.ts";
 import {useCallback, useEffect, useState} from "react";
 import {clsx} from "clsx";
 import {ShapesDropdown} from "@/components/board/toolbar/ShapesDropdown.tsx";
+import {Engine, CanvasMode, CanvasSubModes} from "@/core/engine/Engine.ts";
 
 export default function Toolbar({
-    canvas
+    engine
 }: {
-    canvas: Canvas
+    engine: Engine
 }) {
     const [activeMode, setActiveMode] = useState<CanvasMode>({ mainMode: 'neutral' })
     
     const handleShapeModeChange = useCallback((newMode: CanvasSubModes) => {
-        canvas.changeActiveMode('create', newMode)
-    }, [canvas])
+        engine.changeActiveMode('create', newMode)
+    }, [engine])
     
     useEffect(() => {
-        const unsubscribe = canvas.on('modeChange', (event) => {
+        const unsubscribe = engine.on('modeChange', (event) => {
             setActiveMode(event)
         })
         
@@ -36,7 +36,7 @@ export default function Toolbar({
                                 'bg-amber-500': activeMode?.mainMode === 'neutral',
                                 'hover:bg-amber-500': activeMode?.mainMode === 'neutral'
                             })} 
-                            onClick={() => canvas.changeActiveMode('neutral')}>
+                            onClick={() => engine.changeActiveMode('neutral')}>
                             <MousePointer2 />
                         </Button>
                     </TooltipTrigger>
@@ -54,7 +54,7 @@ export default function Toolbar({
                                 'bg-amber-500': activeMode?.mainMode === 'pan',
                                 'hover:bg-amber-500': activeMode?.mainMode === 'pan'
                             })}
-                            onClick={() => canvas.changeActiveMode('pan')}>
+                            onClick={() => engine.changeActiveMode('pan')}>
                             <Hand />
                         </Button>
                     </TooltipTrigger>
