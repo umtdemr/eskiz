@@ -11,6 +11,10 @@ export class PanTool implements Tool {
     constructor() {
     }
 
+    onActivate(engine: Engine) {
+        engine.upperCanvasEl.style.cursor = 'grab';
+    }
+
     onMouseDown(data: CanvasMouseEvent, engine: Engine) {
         const { e, canvas } = data;
         if (engine.activeMode.mainMode !== 'pan') {

@@ -58,7 +58,6 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.onMouseUp = this.onMouseUp.bind(this);
         
         this.registerTool(new CursorSenderTool(), 'always-active')
-        this.onModeChange()
     }
     
     async initialize() {
@@ -80,6 +79,7 @@ export class Engine extends Emitter<EngineEventsMap>{
         // assign upper canvas el to upper canvas renderer
         this.upperCanvasRenderer.upperCanvasEl = this._upperCanvasEl
         this.upperCanvasRenderer.run() // start rendering upper canvas
+        this.onModeChange()
         return true
     }
     
@@ -125,11 +125,6 @@ export class Engine extends Emitter<EngineEventsMap>{
         };
         if (shouldEmit) {
             this.emit('modeChange', { mainMode: newMainMode, subMode: newSubMode })
-
-            if (this._activeMode.mainMode === 'neutral') {
-                this._upperCanvasEl.style.cursor = 'default'
-            }
-
             this.onModeChange()
         }
     }
@@ -143,6 +138,8 @@ export class Engine extends Emitter<EngineEventsMap>{
         } else if (this._activeMode.mainMode === 'create' && this._activeMode.subMode) {
             this.registerTool(new ShapeDrawerTool(), 'primary')
         }
+        
+        this.primaryTool?.onActivate?.(this);
     }
 
     private setEventHandlers() {
