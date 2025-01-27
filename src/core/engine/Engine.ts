@@ -8,6 +8,7 @@ import {CursorSenderTool} from "@/core/tools/CursorSenderTool.ts";
 import {WheelEvent} from "react";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
 import {Emitter} from "@/core/emitter/Emitter.ts";
+import {SelectTool} from "@/core/tools/SelectTool.ts";
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -57,6 +58,7 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.onMouseUp = this.onMouseUp.bind(this);
         
         this.registerTool(new CursorSenderTool(), 'always-active')
+        this.onModeChange()
     }
     
     async initialize() {
@@ -123,17 +125,19 @@ export class Engine extends Emitter<EngineEventsMap>{
         };
         if (shouldEmit) {
             this.emit('modeChange', { mainMode: newMainMode, subMode: newSubMode })
-        }
 
-        if (this._activeMode.mainMode === 'neutral') {
-            this._upperCanvasEl.style.cursor = 'default'
+            if (this._activeMode.mainMode === 'neutral') {
+                this._upperCanvasEl.style.cursor = 'default'
+            }
+
+            this.onModeChange()
         }
-        
-        this.onModeChange()
     }
     
     private onModeChange() {
-        if (this._activeMode.mainMode === 'pan') {
+        if (this._activeMode.mainMode === 'neutral') {
+            this.registerTool(new SelectTool(), 'primary')
+        } else if (this._activeMode.mainMode === 'pan') {
             this.registerTool(new PanTool(), 'primary')
             this.primaryTool = new PanTool()
         } else if (this._activeMode.mainMode === 'create' && this._activeMode.subMode) {

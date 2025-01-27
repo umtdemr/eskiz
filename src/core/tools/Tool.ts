@@ -1,4 +1,4 @@
-import {CanvasMouseEvent} from "@/core/canvas/Canvas.ts";
+import {CanvasMouseEvent} from "@/core/engine/Engine.ts";
 import {Engine} from "@/core/engine/Engine.ts";
 
 // Tool handles mouse events
