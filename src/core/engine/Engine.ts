@@ -143,7 +143,6 @@ export class Engine extends Emitter<EngineEventsMap>{
     }
 
     private setEventHandlers() {
-        console.log('>> ', this._upperCanvasEl)
         this._upperCanvasEl.addEventListener('mousedown', this.onMouseDown)
         this._upperCanvasEl.addEventListener('mousemove', this.onMouseMove);
         this._upperCanvasEl.addEventListener('mouseup', this.onMouseUp);
@@ -201,7 +200,6 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.canvas.translateX = mouseX / this.canvas.zoom - mouseX / oldScale + this.canvas.translateX;
         this.canvas.translateY = mouseY / this.canvas.zoom - mouseY / oldScale + this.canvas.translateY;
 
-        console.log('>> wheel down')
         this.canvas.requestRender()
         this.emit('zoom', this.canvas.zoom)
     }
