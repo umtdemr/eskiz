@@ -15,6 +15,10 @@ export class ShapeDrawerTool implements Tool {
     
     constructor() {
     }
+    
+    onActivate(engine: Engine) {
+        engine.upperCanvasEl.style.cursor = 'crosshair'
+    }
 
     /**
      * Starts drawing a shape based on pointer
