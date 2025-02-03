@@ -22,6 +22,7 @@
     - [x] Create base class & Render with render methods
       - [x] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
     - [ ] Rendering shapes
+      - [ ] Layering
       - [ ] Storing shapes in app
       - [ ] Handling zIndexes
       - [ ] Handling multiple objects...
