@@ -82,3 +82,13 @@ export const CANVAS_COLORS = {
 export const SHAPES = {
     RECTANGLE: 'rectangle'
 }
+
+export const STAGE_LAYERS = {
+    ROOT: 'RootContainer',
+    CANVAS_CONTAINER: 'CanvasContainer',
+    CANVAS_CONTAINER_STATIC: 'CanvasContainer_Static',
+    CANVAS_CONTAINER_DYNAMIC: 'CanvasContainer_Dynamic',
+    NON_CANVAS_CONTAINER: 'NonCanvasContainer',
+    NON_CANVAS_CONTAINER_STATIC: 'NonCanvasContainer_Static',
+    NON_CANVAS_CONTAINER_DYNAMIC: 'NonCanvasContainer_Dynamic',
+} as const;
