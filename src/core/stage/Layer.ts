@@ -10,6 +10,7 @@ export class Layer {
     protected _children: LinkedList
     protected _zIndex: string
     protected _parent: Layer|null = null;
+    protected _isLayer: boolean = true
     
     constructor(props: LayerProps) {
         this.name = props.name

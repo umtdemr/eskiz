@@ -1,6 +1,10 @@
 import {STAGE_LAYERS} from "@/helpers/Constant.ts";
 import {Layer} from "./Layer.ts";
+import { Widget } from "../shapes/Widget.ts";
 
+/**
+ * Stage handles scene graph structure in canvas.
+ */
 export class Stage {
     private _root: Layer
     private _canvasContainer: Layer
@@ -9,6 +13,7 @@ export class Stage {
     private _nonCanvasContainer: Layer
     private _nonCanvasStaticContainer: Layer
     private _nonCanvasDynamicContainer: Layer
+
     constructor() {
         // setup layers
         this._root = new Layer({
@@ -41,5 +46,18 @@ export class Stage {
             this._nonCanvasStaticContainer, 
             this._nonCanvasDynamicContainer
         )
+    }
+
+    /**
+     * Adds given widget to static canvas container
+     * @param widget Widget to add
+     */
+    addStaticWidget(widget: Widget) {
+        this._canvasStaticContainer.addChildren(widget)
+        console.log(this)
+    }
+
+    get staticCanvasContainer() {
+        return this._canvasStaticContainer
     }
 }

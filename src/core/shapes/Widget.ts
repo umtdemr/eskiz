@@ -1,4 +1,5 @@
 import {Canvas as SkiaCanvas, CanvasKit} from "canvaskit-wasm";
+import { Layer }from "../stage/Layer";
 
 export type WidgetType = 'shape' | 'text'
 
@@ -7,16 +8,19 @@ export interface WidgetProps {
     y: number
     width: number
     height?: number
+    parentLayer: Layer
 }
 
-export abstract class Widget {
+export abstract class Widget extends Layer {
     protected _widgetType: WidgetType
     protected _x: number
     protected _y: number
     protected _width: number
     protected _height: number
+    protected _layer: Layer
     
     constructor(type: WidgetType, props: WidgetProps) {
+        super({ name: 'widget' })
         this._widgetType = type
         this._x = props.x
         this._y = props.y
@@ -24,6 +28,8 @@ export abstract class Widget {
         if (props.hasOwnProperty('height')) {
             this._height = props.height!
         }
+        this._layer = props.parentLayer
+        this._isLayer = false
     }
     abstract render(canvasKit: CanvasKit, ctx: SkiaCanvas): void
 
