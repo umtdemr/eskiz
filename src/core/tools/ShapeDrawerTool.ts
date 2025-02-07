@@ -9,9 +9,9 @@ import {Tool} from "@/core/tools/Tool.ts";
  * Helps to draw shapes
  */
 export class ShapeDrawerTool implements Tool {
-    private shape: Shape|null
+    private shape: Shape|null = null
     private drawingStarted: boolean = false;
-    private initialPosition: { x: number, y: number }
+    private initialPosition: { x: number, y: number } = { x: 0, y: 0 }
     
     constructor() {
     }
@@ -26,7 +26,6 @@ export class ShapeDrawerTool implements Tool {
      * @param engine
      */
     onMouseDown(data: CanvasMouseEvent, engine: Engine) {
-        const { canvas } = data
         const drawingMode = engine.activeMode.subMode
         this.initialPosition = {
             x: data.pointer.x,
@@ -48,8 +47,9 @@ export class ShapeDrawerTool implements Tool {
                 y: data.pointer.y,
                 width: 1,
                 height: 1,
+                parentLayer: engine.stage.staticCanvasContainer
             })
-            canvas.addWidget(this.shape!)
+            engine.stage.addStaticWidget(this.shape!)
             this.drawingStarted = true;
         } 
     }

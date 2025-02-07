@@ -9,6 +9,7 @@ import {WheelEvent} from "react";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {SelectTool} from "@/core/tools/SelectTool.ts";
+import { Stage } from "../stage/Stage";
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -38,6 +39,7 @@ export class Engine extends Emitter<EngineEventsMap>{
     private alwaysActiveTools: Tool[] = [];
     private _upperCanvasEl: HTMLCanvasElement
     private _activeMode: CanvasMode = { mainMode: 'neutral' };
+    private _stage: Stage
     canvas: Canvas
     wsEngine: WsEngine
 
@@ -48,8 +50,8 @@ export class Engine extends Emitter<EngineEventsMap>{
         super()
         this._slugId = slugId
         this.canvas = new Canvas(this._slugId)
-        
-        
+        this._stage = new Stage();
+
         this.upperCanvasRenderer = new UpperCanvasRenderer();
         this.wsEngine = new WsEngine(import.meta.env.VITE_WS_URL, this._slugId)
         this.onMouseWheel = this.onMouseWheel.bind(this);
@@ -214,5 +216,12 @@ export class Engine extends Emitter<EngineEventsMap>{
     
     get upperCanvasEl() {
         return this._upperCanvasEl
+    }
+
+    /**
+     * Getter for stage manager.
+     */
+    get stage() {
+        return this._stage
     }
 }
