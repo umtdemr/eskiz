@@ -31,7 +31,7 @@ export abstract class Widget extends Layer {
         this._layer = props.parentLayer
         this._isLayer = false
     }
-    abstract render(canvasKit: CanvasKit, ctx: SkiaCanvas): void
+    abstract render(ctx: SkiaCanvas): void
 
 
     getBoundingRect() {

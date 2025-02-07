@@ -2,6 +2,7 @@ import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas, FontMgr} from "
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
 import {Rectangle} from "@/core/shapes/Rectangle.ts";
 import {Widget} from "@/core/shapes/Widget.ts";
+import { Stage } from "../stage/Stage";
 
 export type Point = {
     x: number
@@ -22,16 +23,17 @@ export class Canvas {
     private _canvasEl: HTMLCanvasElement
     private offsetX = 0;
     private offsetY = 0;
+    private _stage: Stage
 
     private needsRender = false;
     private scale = 1;
     private _slugId: string;
     
-    private _widgets: Widget[] = []
     private _selectedWidget: Widget | null
     
-    constructor(slugId: string) {
+    constructor(slugId: string, stage: Stage) {
         this._slugId = slugId;
+        this._stage = stage 
     }
 
     async initialize() {
@@ -55,34 +57,22 @@ export class Canvas {
     }
     
     render() {
-        const offsetX = this.offsetX;
-        const offsetY = this.offsetY;
-        const surface = this.surface;
-        const scale = this.scale;
-        const drawGrid = this.drawGrid.bind(this)
-
-        const allWidgets = this._widgets
-        
-        const thisCall = this
-        function draw(ctx: SkiaCanvas) {
+        const draw = (ctx: SkiaCanvas) => {
             ctx.clear(canvasKit.WHITE);
 
             ctx.save()
-            ctx.scale(scale, scale)
-            ctx.translate(offsetX, offsetY);
+            ctx.scale(this.scale, this.scale)
+            ctx.translate(this.offsetX, this.offsetY);
 
-            drawGrid(ctx)
+            this.drawGrid(ctx)
             
-            for (const widget of allWidgets) {
-                ctx.save()
-                widget.render(canvasKit, ctx)
-                ctx.restore()
-            }
+            // render all elements
+            this._stage.render(ctx)
 
-            thisCall.renderControlsUI(ctx)
+            this.renderControlsUI(ctx)
             ctx.restore()
         }
-        surface.requestAnimationFrame(draw)
+        this.surface.requestAnimationFrame(draw.bind(this))
     }
     
     renderControlsUI(ctx: SkiaCanvas) {
@@ -215,11 +205,6 @@ export class Canvas {
         return r;
     }
     
-    addWidget(widget: Widget) {
-        this._widgets.push(widget)
-        this.requestRender()
-    }
-
     get viewportTransform(): Transform {
         return [this.scale, 0, 0, this.scale, this.offsetX * this.scale, this.offsetY * this.scale]
     }

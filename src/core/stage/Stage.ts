@@ -1,3 +1,4 @@
+import { Canvas as SkiaCanvas } from "canvaskit-wasm";
 import {STAGE_LAYERS} from "@/helpers/Constant.ts";
 import {Layer} from "./Layer.ts";
 import { Widget } from "../shapes/Widget.ts";
@@ -55,6 +56,14 @@ export class Stage {
     addStaticWidget(widget: Widget) {
         this._canvasStaticContainer.addChildren(widget)
         console.log(this)
+    }
+
+    /**
+     * Starts rendering from root. 
+     * @param ctx Context to call canvas rendering API's.
+     */
+    render(ctx: SkiaCanvas) {
+        this._root.render(ctx)
     }
 
     get staticCanvasContainer() {

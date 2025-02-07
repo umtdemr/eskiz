@@ -187,6 +187,17 @@ export class LinkedList {
         return arr
     }
 
+    /**
+     * Generator function to make iterations on LinkedList easier.
+     */
+    *[Symbol.iterator]() {
+        let current = this._root
+        while (current !== null) {
+            yield current.value
+            current = current.next
+        }
+    }
+
     get length() {
         return this._nodeCount
     }

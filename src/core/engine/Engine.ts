@@ -49,8 +49,8 @@ export class Engine extends Emitter<EngineEventsMap>{
     constructor(slugId: string) {
         super()
         this._slugId = slugId
-        this.canvas = new Canvas(this._slugId)
         this._stage = new Stage();
+        this.canvas = new Canvas(this._slugId, this._stage)
 
         this.upperCanvasRenderer = new UpperCanvasRenderer();
         this.wsEngine = new WsEngine(import.meta.env.VITE_WS_URL, this._slugId)
