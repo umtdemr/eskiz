@@ -1,12 +1,13 @@
 import {Shape, ShapeProps} from "@/core/shapes/Shape.ts";
-import {CanvasKit, Canvas as SkiaCanvas} from "canvaskit-wasm";
+import {Canvas as SkiaCanvas} from "canvaskit-wasm";
+import { canvasKit } from "@/core/canvas/Canvas";
 
 export class Triangle extends Shape {
     constructor(props: ShapeProps) {
         super('triangle', props)
     }
 
-    render(canvasKit: CanvasKit, ctx: SkiaCanvas): void {
+    render(ctx: SkiaCanvas): void {
         // can not render if width or height is less than 0
         if (this._width <= 0 || this._height <= 0) {
             return

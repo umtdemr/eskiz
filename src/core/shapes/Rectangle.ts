@@ -1,7 +1,8 @@
-import {CanvasKit, Canvas as SkiaCanvas} from 'canvaskit-wasm';
+import {Canvas as SkiaCanvas} from 'canvaskit-wasm';
 import {Shape} from "@/core/shapes/Shape.ts";
 import {RGBA} from "@/core/shapes/Color.ts";
 import {SHAPES} from "@/helpers/Constant.ts";
+import { canvasKit } from '@/core/canvas/Canvas';
 
 export type RectangleProps = {
     x: number
@@ -20,7 +21,7 @@ export class Rectangle extends Shape {
         this._radius = props.radius >= 0 && props.radius <= 20 ? props.radius! : 0
     }
     
-    render(canvasKit: CanvasKit, ctx: SkiaCanvas) {
+    render(ctx: SkiaCanvas) {
         // can not render if width or height is less than 0
         if (this._width <= 0 || this._height <= 0) {
             return
@@ -72,7 +73,7 @@ export class Rectangle extends Shape {
         ctx[drawFn](strokeRect, paint)
     }
     
-    renderControls(canvasKit: CanvasKit, ctx: SkiaCanvas, scale: number) {
+    renderControls(ctx: SkiaCanvas, scale: number) {
         ctx.save()
         const bbox = this.getBoundingRect()
         const paint = new canvasKit.Paint()
