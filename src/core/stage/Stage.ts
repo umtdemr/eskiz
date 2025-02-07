@@ -55,7 +55,6 @@ export class Stage {
      */
     addStaticWidget(widget: Widget) {
         this._canvasStaticContainer.addChildren(widget)
-        console.log(this)
     }
 
     /**
