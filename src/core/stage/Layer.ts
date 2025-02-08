@@ -50,4 +50,11 @@ export class Layer {
     get childsAsArray() {
         return this._children.toArray()
     }
+
+    get zIndex(): string {
+        return this._zIndex
+    }
+    set zIndex(val: string) {
+        this._zIndex = val
+    }
 }

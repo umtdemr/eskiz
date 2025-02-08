@@ -201,4 +201,12 @@ export class LinkedList {
     get length() {
         return this._nodeCount
     }
+
+    get first() {
+        return this._root?.value
+    }
+
+    get last() {
+        return this._tail?.value
+    }
 }
