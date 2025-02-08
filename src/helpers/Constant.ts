@@ -87,6 +87,7 @@ export const STAGE_LAYERS = {
     ROOT: 'RootContainer',
     CANVAS_CONTAINER: 'CanvasContainer',
     CANVAS_CONTAINER_STATIC: 'CanvasContainer_Static',
+    WIDGETS_DEFAULT_LAYER: 'WidgetsDefaultLayer',
     CANVAS_CONTAINER_DYNAMIC: 'CanvasContainer_Dynamic',
     NON_CANVAS_CONTAINER: 'NonCanvasContainer',
     NON_CANVAS_CONTAINER_STATIC: 'NonCanvasContainer_Static',

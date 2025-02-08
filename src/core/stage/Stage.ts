@@ -10,6 +10,7 @@ export class Stage {
     private _root: Layer
     private _canvasContainer: Layer
     private _canvasStaticContainer: Layer
+    private _widgetsDefaultLayer: Layer
     private _canvasDynamicContainer: Layer
     private _nonCanvasContainer: Layer
     private _nonCanvasStaticContainer: Layer
@@ -27,6 +28,14 @@ export class Stage {
         this._canvasStaticContainer = new Layer({
             name: STAGE_LAYERS.CANVAS_CONTAINER_STATIC
         })
+
+        // add widget layers for canvas static container
+        this._widgetsDefaultLayer = new Layer({
+            name: STAGE_LAYERS.WIDGETS_DEFAULT_LAYER
+        })
+        this._canvasStaticContainer.addChildren(this._widgetsDefaultLayer)
+
+        
         this._canvasDynamicContainer = new Layer({
             name: STAGE_LAYERS.CANVAS_CONTAINER_DYNAMIC
         })
@@ -53,8 +62,8 @@ export class Stage {
      * Adds given widget to static canvas container
      * @param widget Widget to add
      */
-    addStaticWidget(widget: Widget) {
-        this._canvasStaticContainer.addChildren(widget)
+    addWidget(widget: Widget) {
+        this._widgetsDefaultLayer.addChildren(widget)
     }
 
     /**
@@ -67,5 +76,9 @@ export class Stage {
 
     get staticCanvasContainer() {
         return this._canvasStaticContainer
+    }
+
+    get widgetsDefaultLayer() {
+        return this._widgetsDefaultLayer
     }
 }
