@@ -47,9 +47,9 @@ export class ShapeDrawerTool implements Tool {
                 y: data.pointer.y,
                 width: 1,
                 height: 1,
-                parentLayer: engine.stage.staticCanvasContainer
+                parentLayer: engine.stage.widgetsDefaultLayer
             })
-            engine.stage.addStaticWidget(this.shape!)
+            engine.stage.addWidget(this.shape!)
             this.drawingStarted = true;
         } 
     }
