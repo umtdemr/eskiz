@@ -53,31 +53,6 @@ export class Stage {
             name: STAGE_LAYERS.NON_CANVAS_CONTAINER_DYNAMIC
         })
 
-        this._canvasContainer.zIndex = this._indexer.generateIndex(this._root, null)
-        this._nonCanvasContainer.zIndex = this._indexer.generateIndex(this._canvasContainer, null)
-
-        this._canvasStaticContainer.zIndex = this._indexer.generateIndex(
-            this._canvasContainer,
-            this._nonCanvasContainer
-        )
-        this._canvasDynamicContainer.zIndex = this._indexer.generateIndex(
-            this._canvasStaticContainer,
-            this._nonCanvasContainer
-        )
-        this._widgetsDefaultLayer.zIndex = this._indexer.generateIndex(
-            this._canvasStaticContainer,
-            this._canvasDynamicContainer
-        )
-
-        this._nonCanvasStaticContainer.zIndex = this._indexer.generateIndex(
-            this._nonCanvasContainer,
-            null
-        )
-        this._nonCanvasDynamicContainer.zIndex = this._indexer.generateIndex(
-            this._nonCanvasStaticContainer,
-            null
-        )
-
         // add canvas and non canvas containers
         this.addChildToParent(this._root, this._canvasContainer)
         this.addChildToParent(this._root, this._nonCanvasContainer)
@@ -92,8 +67,6 @@ export class Stage {
         // add static and dynamic containers to non canvas container
         this.addChildToParent(this._nonCanvasContainer, this._nonCanvasStaticContainer)
         this.addChildToParent(this._nonCanvasContainer, this._nonCanvasDynamicContainer)
-
-        console.log(this._root)
     }
 
     /**
@@ -103,10 +76,9 @@ export class Stage {
     addWidget(widget: Widget) {
         widget.zIndex = this._indexer.generateIndexForWidget(
             this._widgetsDefaultLayer,
-            this._canvasDynamicContainer
+            null
         )
         this._widgetsDefaultLayer.addChildren(widget)
-        console.log(widget.zIndex)
     }
 
     /**
@@ -117,7 +89,13 @@ export class Stage {
         this._root.render(ctx)
     }
     
+    /**
+     * Generates and adds zIndex for child of the parent layer.
+     * @param parent Parent layer.
+     * @param child Child layer to add index.
+     */
     addChildToParent(parent: Layer, child: Layer) {
+        child.zIndex = this._indexer.generateIndexForChild(parent)
         parent.addChildren(child)
     }
 
