@@ -47,7 +47,7 @@ export class Layer {
     get children() {
         return this._children
     }
-    get childsAsArray() {
+    get childrenArray() {
         return this._children.toArray()
     }
 
