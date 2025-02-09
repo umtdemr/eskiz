@@ -133,7 +133,7 @@ export class Engine extends Emitter<EngineEventsMap>{
     
     private onModeChange() {
         if (this._activeMode.mainMode === 'neutral') {
-            this.registerTool(new SelectTool(), 'primary')
+            this.registerTool(new SelectTool(this), 'primary')
         } else if (this._activeMode.mainMode === 'pan') {
             this.registerTool(new PanTool(), 'primary')
             this.primaryTool = new PanTool()
