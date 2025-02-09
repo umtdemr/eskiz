@@ -81,6 +81,14 @@ export class Stage {
         this._widgetsDefaultLayer.addChildren(widget)
     }
 
+    addDynamicNonCanvasWidget(widget: Widget) {
+        widget.zIndex = this._indexer.generateIndexForWidget(
+            this._nonCanvasDynamicContainer,
+            null
+        )
+        this._nonCanvasDynamicContainer.addChildren(widget)
+    }
+
     /**
      * Starts rendering from root. 
      * @param ctx Context to call canvas rendering API's.
@@ -105,5 +113,9 @@ export class Stage {
 
     get widgetsDefaultLayer() {
         return this._widgetsDefaultLayer
+    }
+
+    get nonCanvasDynamicContainer() {
+        return this._nonCanvasDynamicContainer
     }
 }

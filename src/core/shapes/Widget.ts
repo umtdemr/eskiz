@@ -1,7 +1,7 @@
 import {Canvas as SkiaCanvas, CanvasKit} from "canvaskit-wasm";
 import { Layer }from "../stage/Layer";
 
-export type WidgetType = 'shape' | 'text'
+export type WidgetType = 'shape' | 'text' | 'multiSelector'
 
 export interface WidgetProps {
     x: number
