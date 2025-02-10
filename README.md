@@ -22,14 +22,16 @@
     - [x] Create base class & Render with render methods
       - [x] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
     - [ ] Rendering shapes
-      - [ ] Layering
+      - [x] Layering
       - [ ] Storing shapes in app
-      - [ ] Handling zIndexes
+      - [x] Handling zIndexes
       - [ ] Handling multiple objects...
     - [ ] Selecting.
+      - [ ] Selecting.
+      - [ ] Adding multi selector
+        - [ ] Restrict zoom and pan when multi selector is active
       - [ ] Handle changing width, height by controls
     - [ ] Pagination and search
-    - [ ] Controls
     - [ ] Adding text
     - [ ] Sticky note
     - [ ] Undo redo

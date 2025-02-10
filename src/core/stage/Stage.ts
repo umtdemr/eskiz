@@ -3,6 +3,7 @@ import {STAGE_LAYERS} from "@/helpers/Constant.ts";
 import {Layer} from "./Layer.ts";
 import { Widget } from "../shapes/Widget.ts";
 import { Indexer } from "../indexer/Indexer.ts";
+import { NonCanvasDynamicContainer } from "./NonCanvasDynamicContainer.ts";
 
 /**
  * Stage handles scene graph structure in canvas.
@@ -15,7 +16,7 @@ export class Stage {
     private _canvasDynamicContainer: Layer
     private _nonCanvasContainer: Layer
     private _nonCanvasStaticContainer: Layer
-    private _nonCanvasDynamicContainer: Layer
+    private _nonCanvasDynamicContainer: NonCanvasDynamicContainer
 
     private _indexer: Indexer
 
@@ -49,9 +50,8 @@ export class Stage {
         this._nonCanvasStaticContainer = new Layer({
             name: STAGE_LAYERS.NON_CANVAS_CONTAINER_STATIC
         })
-        this._nonCanvasDynamicContainer = new Layer({
-            name: STAGE_LAYERS.NON_CANVAS_CONTAINER_DYNAMIC
-        })
+
+        this._nonCanvasDynamicContainer = new NonCanvasDynamicContainer();
 
         // add canvas and non canvas containers
         this.addChildToParent(this._root, this._canvasContainer)

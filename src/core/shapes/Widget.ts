@@ -9,6 +9,7 @@ export interface WidgetProps {
     width: number
     height?: number
     parentLayer: Layer
+    visible?: boolean
 }
 
 export abstract class Widget extends Layer {
@@ -18,6 +19,7 @@ export abstract class Widget extends Layer {
     protected _width: number
     protected _height: number
     protected _layer: Layer
+    protected _visible: boolean = true;
     
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
@@ -30,6 +32,10 @@ export abstract class Widget extends Layer {
         }
         this._layer = props.parentLayer
         this._isLayer = false
+
+        if (props.visible !== undefined) {
+            this.visible = props.visible
+        }
     }
     abstract render(ctx: SkiaCanvas): void
 
@@ -115,5 +121,13 @@ export abstract class Widget extends Layer {
      */
     set bottom(bottom: number) {
         this._y = bottom - this.height / 2
+    }
+
+    get visible(): boolean {
+        return this._visible
+    }
+
+    set visible(val: boolean) {
+        this._visible = val;
     }
 }
