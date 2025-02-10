@@ -12,11 +12,11 @@ export interface MultiSelectorProps {
 export class MultiSelector extends Widget {
     private paint: Paint
     constructor(props: MultiSelectorProps) {
-        super('multiSelector', { x: props.x, y: props.y, width: 0, height: 0, parentLayer: props.parent });
+        super('multiSelector', { x: props.x, y: props.y, width: 0, height: 0, parentLayer: props.parent, visible: false });
         this.paint = new canvasKit.Paint()
         this.paint.setAntiAlias(true)
         this.paint.setStyle(canvasKit.PaintStyle.Fill)
-        this.paint.setColor(canvasKit.Color(29, 78, 216, .5))
+        this.paint.setColor(canvasKit.Color(29, 78, 216, .3))
     }
 
     render(ctx: SkiaCanvas): void {
