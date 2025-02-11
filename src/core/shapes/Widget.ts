@@ -1,5 +1,6 @@
 import {Canvas as SkiaCanvas, CanvasKit} from "canvaskit-wasm";
 import { Layer }from "../stage/Layer";
+import { BoundingBox } from "../geometry/BoundingBox";
 
 export type WidgetType = 'shape' | 'text' | 'multiSelector'
 
@@ -20,6 +21,7 @@ export abstract class Widget extends Layer {
     protected _height: number
     protected _layer: Layer
     protected _visible: boolean = true;
+    protected _bounds: BoundingBox
     
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
@@ -36,6 +38,8 @@ export abstract class Widget extends Layer {
         if (props.visible !== undefined) {
             this.visible = props.visible
         }
+        this._bounds = new BoundingBox();
+        this.updateBounds();
     }
     abstract render(ctx: SkiaCanvas): void
 
@@ -49,12 +53,20 @@ export abstract class Widget extends Layer {
         }
     }
 
+    updateBounds() {
+        this._bounds.x = this.left
+        this._bounds.y = this.top
+        this._bounds.width = this.width
+        this._bounds.height = this.height
+    }
+
     get width() {
         return this._width
     }
 
     set width(width: number) {
         this._width = width
+        this.updateBounds();
     }
 
     get height() {
@@ -62,6 +74,7 @@ export abstract class Widget extends Layer {
     }
     set height(height: number) {
         this._height = height
+        this.updateBounds();
     }
 
     get centerX() {
@@ -73,6 +86,7 @@ export abstract class Widget extends Layer {
      */
     set centerX(centerX: number) {
         this._x = centerX
+        this.updateBounds();
     }
 
     /**
@@ -81,6 +95,7 @@ export abstract class Widget extends Layer {
      */
     set centerY(centerY: number) {
         this._y = centerY
+        this.updateBounds();
     }
 
     get left() {
@@ -93,6 +108,7 @@ export abstract class Widget extends Layer {
      */
     set left(left: number) {
         this._x = left + this.width / 2
+        this.updateBounds();
     }
 
     get top() {
@@ -105,6 +121,7 @@ export abstract class Widget extends Layer {
      */
     set top(top: number) {
         this._y = top + this.height / 2
+        this.updateBounds();
     }
 
     /**
@@ -113,6 +130,7 @@ export abstract class Widget extends Layer {
      */
     set right(right: number) {
         this._x = right - this.width / 2
+        this.updateBounds();
     }
 
     /**
@@ -121,6 +139,7 @@ export abstract class Widget extends Layer {
      */
     set bottom(bottom: number) {
         this._y = bottom - this.height / 2
+        this.updateBounds();
     }
 
     get visible(): boolean {
