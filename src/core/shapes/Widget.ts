@@ -149,4 +149,8 @@ export abstract class Widget extends Layer {
     set visible(val: boolean) {
         this._visible = val;
     }
+
+    get bounds(): BoundingBox {
+        return this._bounds
+    }
 }
