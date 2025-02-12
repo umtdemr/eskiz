@@ -80,7 +80,7 @@ export class Canvas {
             return
         }
         if (this.selectedWidget instanceof Rectangle) {
-            this.selectedWidget.renderControls(canvasKit, ctx, this.scale)
+            this.selectedWidget.renderControls(ctx, this.scale)
         }
     }
 
