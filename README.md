@@ -25,7 +25,8 @@
       - [x] Layering
       - [ ] Storing shapes in app
       - [x] Handling zIndexes
-      - [ ] Handling multiple objects...
+      - [ ] Handling multiple objects
+          - [ ] Create local and world bounds
     - [ ] Selecting.
       - [ ] Selecting.
       - [ ] Adding multi selector
