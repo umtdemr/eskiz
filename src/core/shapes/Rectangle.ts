@@ -21,12 +21,11 @@ export class Rectangle extends Shape {
         this._radius = props.radius >= 0 && props.radius <= 20 ? props.radius! : 0
     }
     
-    render(ctx: SkiaCanvas) {
+    protected renderContent(ctx: SkiaCanvas) {
         // can not render if width or height is less than 0
         if (this._width <= 0 || this._height <= 0) {
             return
         }
-        ctx.translate(this._x, this._y)
 
         const paint = new canvasKit.Paint();
         paint.setAntiAlias(true);
@@ -48,13 +47,12 @@ export class Rectangle extends Shape {
         )
         
         // method to call draw rect in canvas kit
-        let drawFn = 'drawRect'
+        const drawFn = this._radius > 0 ? 'drawRRect' : 'drawRect'
         
         // if this has radius, create radius rect
-        if (this._radius) {
+        if (this._radius > 0) {
             rect = canvasKit.RRectXY(rect, this._radius, this._radius)
             strokeRect = canvasKit.RRectXY(rect, this._radius, this._radius)
-            drawFn = 'drawRRect'
         }
         
         // draw fill
@@ -63,14 +61,23 @@ export class Rectangle extends Shape {
         paint.setColor(fillColor);
         paint.setStyle(canvasKit.PaintStyle.Fill);
 
-        ctx[drawFn](rect, paint)
+        if (drawFn === 'drawRRect') {
+            ctx.drawRRect(rect, paint)
+        } else {
+            ctx.drawRect(rect, paint)
+        }
 
         // draw stroke
         const strokeColor = canvasKit.Color(this._strokeColor.r, this._strokeColor.g, this._strokeColor.b, this._strokeColor.a)
         paint.setColor(strokeColor);
         paint.setStyle(canvasKit.PaintStyle.Stroke);
         paint.setStrokeWidth(2)
-        ctx[drawFn](strokeRect, paint)
+        
+        if (drawFn === 'drawRRect') {
+            ctx.drawRRect(strokeRect, paint)
+        } else {
+            ctx.drawRect(strokeRect, paint)
+        }
     }
     
     renderControls(ctx: SkiaCanvas, scale: number) {

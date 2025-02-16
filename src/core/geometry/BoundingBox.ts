@@ -22,6 +22,23 @@ export class BoundingBox {
         this._height = height
     }
 
+    static createInfinite(): BoundingBox {
+        return new BoundingBox(
+            -Infinity,
+            -Infinity,
+            Infinity,
+            Infinity,
+        )
+    }
+    static createIndefinite(): BoundingBox {
+        return new BoundingBox(
+            Infinity,
+            Infinity,
+            -Infinity,
+            -Infinity,
+        )
+    }
+
     get x(): number {
         return this._x;
     }
@@ -85,8 +102,8 @@ export class BoundingBox {
     }
 
     get bottom(): number {
-        const bottom = this._y + this._height
-        return isFinite(bottom) ? bottom : this.bottom === Infinity ? Infinity : -Infinity
+        const bottom = this._y + this.height
+        return isFinite(bottom) ? bottom : this.height === Infinity ? Infinity : -Infinity
     }
 
     set bottom(val: number) {

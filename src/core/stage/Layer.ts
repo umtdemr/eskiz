@@ -6,7 +6,6 @@ interface LayerProps {
     name: string
 }
 
-
 /**
  * Layers represents Node of each stage.
  */
@@ -14,7 +13,7 @@ export class Layer {
     protected name: string
     protected _children: LinkedList
     protected _zIndex: string
-    protected _parent: Layer|null = null;
+    protected _parent: Layer|null = null
     protected _isLayer: boolean = true
     
     constructor(props: LayerProps) {
@@ -22,10 +21,6 @@ export class Layer {
         this._children = new LinkedList()
     }
     
-    /**
-     * Adds given items to here
-     * @param children Item to add
-     */
     addChildren(...children: Layer[]) {
         for (const child of children) {
             child._parent = this
@@ -33,10 +28,6 @@ export class Layer {
         }
     }
 
-    /**
-     * Renders this layer's items.
-     * @param ctx Context to call canvas rendering API's.
-     */
     render(ctx: SkiaCanvas) {
         for (const child of this._children) {
             if (child instanceof Widget && !child.visible) {
@@ -51,6 +42,7 @@ export class Layer {
     get children() {
         return this._children
     }
+
     get childrenArray() {
         return this._children.toArray()
     }
@@ -58,6 +50,7 @@ export class Layer {
     get zIndex(): string {
         return this._zIndex
     }
+    
     set zIndex(val: string) {
         this._zIndex = val
     }

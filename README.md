@@ -26,7 +26,8 @@
       - [ ] Storing shapes in app
       - [x] Handling zIndexes
       - [ ] Handling multiple objects
-          - [ ] Create local and world bounds
+          - [x]  Create local and world bounds
+          - [ ]  Implement left, top based rendering
     - [ ] Selecting.
       - [ ] Selecting.
       - [ ] Adding multi selector
