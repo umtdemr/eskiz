@@ -20,8 +20,9 @@ export abstract class Widget extends Layer {
     protected _width: number
     protected _height: number
     protected _layer: Layer
-    protected _visible: boolean = true;
-    protected _bounds: BoundingBox
+    protected _visible: boolean = true
+    protected _bounds: BoundingBox       // Global bounds (including parent transforms)
+    protected _localBounds: BoundingBox  // Local bounds (object's own space)
     
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
@@ -34,15 +35,70 @@ export abstract class Widget extends Layer {
         }
         this._layer = props.parentLayer
         this._isLayer = false
+        this._bounds = new BoundingBox()
+        this._localBounds = new BoundingBox()
 
         if (props.visible !== undefined) {
             this.visible = props.visible
         }
-        this._bounds = new BoundingBox();
-        this.updateBounds();
+        
+        this.updateBounds()
     }
-    abstract render(ctx: SkiaCanvas): void
 
+    // Add a method to add child widgets
+    addWidget(child: Widget) {
+        // Use parent from Layer class instead of _layer
+        child._parent = this
+        this.addChildren(child)
+        this.updateBounds()
+    }
+
+    // Override render to handle child widgets properly
+    render(ctx: SkiaCanvas) {
+        if (!this.visible) return
+
+        ctx.save()
+        
+        // Apply this widget's transform
+        ctx.translate(this._x, this._y)
+        
+        // Render this widget
+        this.renderContent(ctx)
+        
+        // Render children
+        super.render(ctx)
+        
+        ctx.restore()
+    }
+
+    // New abstract method for actual widget rendering
+    protected abstract renderContent(ctx: SkiaCanvas): void
+
+    updateBounds() {
+        // First update local bounds (object's own space)
+        this._localBounds.x = -this._width / 2
+        this._localBounds.y = -this._height / 2
+        this._localBounds.width = this._width
+        this._localBounds.height = this._height
+
+        // Update global bounds by starting with local bounds
+        this._bounds.x = this._localBounds.x
+        this._bounds.y = this._localBounds.y
+        this._bounds.width = this._localBounds.width
+        this._bounds.height = this._localBounds.height
+
+        // Transform bounds to global space
+        this._bounds.x += this._x
+        this._bounds.y += this._y
+
+        // Apply parent transforms
+        let currentParent = this._parent
+        while (currentParent instanceof Widget) {
+            this._bounds.x += currentParent._x
+            this._bounds.y += currentParent._y
+            currentParent = currentParent._parent
+        }
+    }
 
     getBoundingRect() {
         return {
@@ -51,13 +107,6 @@ export abstract class Widget extends Layer {
             width: this.width,
             height: this.height,
         }
-    }
-
-    updateBounds() {
-        this._bounds.x = this.left
-        this._bounds.y = this.top
-        this._bounds.width = this.width
-        this._bounds.height = this.height
     }
 
     get width() {
@@ -152,5 +201,9 @@ export abstract class Widget extends Layer {
 
     get bounds(): BoundingBox {
         return this._bounds
+    }
+
+    get localBounds(): BoundingBox {
+        return this._localBounds
     }
 }
