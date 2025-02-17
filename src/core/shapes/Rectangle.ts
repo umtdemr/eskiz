@@ -30,20 +30,20 @@ export class Rectangle extends Shape {
         const paint = new canvasKit.Paint();
         paint.setAntiAlias(true);
         let rect = canvasKit.LTRBRect(
-            -this._width / 2,
-            -this._height / 2,
-            this._width / 2,
-            this._height / 2
+            0,
+            0,
+            this._width,
+            this._height
         )
         
         // since border width grows to inward and outward, we don't want it to look like outside the bounding box,
         // so here, we just adjust te position of rectangle for drawing border
         const strokeHalf = 1
         let strokeRect = canvasKit.LTRBRect(
-            (-this._width / 2) + strokeHalf,
-            (-this._height / 2) + strokeHalf,
-            (this._width / 2) - strokeHalf,
-            (this._height / 2) - strokeHalf
+            0 + strokeHalf,
+            0 + strokeHalf,
+            this._width - strokeHalf,
+            this._height - strokeHalf
         )
         
         // method to call draw rect in canvas kit

@@ -27,7 +27,7 @@
       - [x] Handling zIndexes
       - [ ] Handling multiple objects
           - [x]  Create local and world bounds
-          - [ ]  Implement left, top based rendering
+          - [x]  Implement left, top based rendering
     - [ ] Selecting.
       - [ ] Selecting.
       - [ ] Adding multi selector
