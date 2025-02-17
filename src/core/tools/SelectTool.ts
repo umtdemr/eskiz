@@ -3,16 +3,19 @@ import {CanvasMouseEvent, Engine} from "@/core/engine/Engine.ts";
 import { Layer } from "../stage/Layer";
 import { Point } from "../canvas/Canvas";
 import { Widget } from "../shapes/Widget";
+import { SelectionService } from "../services/SelectionService";
 
 export class SelectTool implements Tool {
     private engine: Engine
     private initialPosition: { x: number, y: number } = { x: 0, y: 0 }
     private isDrawing: boolean = false
     private shapesLayer: Layer
+    private selectionService: SelectionService
 
-    constructor(engine: Engine) {
+    constructor(engine: Engine, selectionService: SelectionService) {
         this.engine = engine
         this.shapesLayer = this.engine.stage.widgetsDefaultLayer;
+        this.selectionService = selectionService
     }
 
     onActivate(engine: Engine) {
@@ -57,9 +60,9 @@ export class SelectTool implements Tool {
     onMouseUp(data: CanvasMouseEvent, engine: Engine): void {
         this.isDrawing = false;
         this.engine.stage.nonCanvasDynamicContainer.multiSelector.visible = false;
-        const selectedWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
-        if (selectedWidget) {
-            this.engine.canvas.selectedWidget = selectedWidget
+        const clickedWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
+        if (clickedWidget) {
+            this.selectionService.singleSelect(clickedWidget)
         }
         this.engine.canvas.requestRender()
     }
