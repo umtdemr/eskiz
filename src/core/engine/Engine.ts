@@ -10,6 +10,8 @@ import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {SelectTool} from "@/core/tools/SelectTool.ts";
 import { Stage } from "../stage/Stage";
+import { ServiceManager } from '../services/ServiceManager';
+import { SelectionService } from '../services/SelectionService';
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -42,6 +44,7 @@ export class Engine extends Emitter<EngineEventsMap>{
     private _stage: Stage
     canvas: Canvas
     wsEngine: WsEngine
+    private serviceManager: ServiceManager;
 
 
     upperCanvasRenderer: UpperCanvasRenderer
@@ -60,6 +63,9 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.onMouseUp = this.onMouseUp.bind(this);
         
         this.registerTool(new CursorSenderTool(), 'always-active')
+
+        this.serviceManager = new ServiceManager();
+        this.initializeServices();
     }
     
     async initialize() {
@@ -133,7 +139,7 @@ export class Engine extends Emitter<EngineEventsMap>{
     
     private onModeChange() {
         if (this._activeMode.mainMode === 'neutral') {
-            this.registerTool(new SelectTool(this), 'primary')
+            this.registerTool(new SelectTool(this, this.getService<SelectionService>('selection')), 'primary')
         } else if (this._activeMode.mainMode === 'pan') {
             this.registerTool(new PanTool(), 'primary')
             this.primaryTool = new PanTool()
@@ -208,6 +214,14 @@ export class Engine extends Emitter<EngineEventsMap>{
     
     private wrapMouseEvent(e: MouseEvent): CanvasMouseEvent {
         return { e, pointer: this.canvas.getPointer(e), canvas: this.canvas }
+    }
+
+    private initializeServices() {
+        this.serviceManager.register('selection', new SelectionService(this));
+    }
+
+    getService<T>(name: string): T {
+        return this.serviceManager.get<T>(name);
     }
 
     get activeMode() {
