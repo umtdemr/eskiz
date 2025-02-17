@@ -7,27 +7,27 @@ export class Ellipse extends Shape {
         super('ellipse', props)
     }
 
-    render(ctx: SkiaCanvas): void {
+    renderContent(ctx: SkiaCanvas): void {
         // can not render if width or height is less than 0
         if (this._width <= 0 || this._height <= 0) {
             return
         }
-        ctx.translate(this._x, this._y)
         const paint = new canvasKit.Paint();
         paint.setAntiAlias(true);
-        let ellipse = canvasKit.LTRBRect(
-            -this._width / 2,
-            -this._height / 2,
-            this._width / 2,
-            this._height / 2
+
+        const ellipse = canvasKit.LTRBRect(
+            0,
+            0,
+            this._width,
+            this._height
         )
 
         const strokeHalf = 1
-        let strokeEllipse = canvasKit.LTRBRect(
-            (-this._width / 2) + strokeHalf,
-            (-this._height / 2) + strokeHalf,
-            (this._width / 2) - strokeHalf,
-            (this._height / 2) - strokeHalf
+        const strokeEllipse = canvasKit.LTRBRect(
+            0 + strokeHalf,
+            0 + strokeHalf,
+            this.width - strokeHalf,
+            this._height - strokeHalf
         )
 
         // draw fill

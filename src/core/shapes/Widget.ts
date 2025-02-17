@@ -30,8 +30,8 @@ export abstract class Widget extends Layer {
         this._x = props.x
         this._y = props.y
         this._width = props.width
-        if (props.hasOwnProperty('height')) {
-            this._height = props.height!
+        if (props.height !== undefined) {
+            this._height = props.height
         }
         this._layer = props.parentLayer
         this._isLayer = false
@@ -50,7 +50,7 @@ export abstract class Widget extends Layer {
         // Use parent from Layer class instead of _layer
         child._parent = this
         this.addChildren(child)
-        this.updateBounds()
+        child.updateBounds()
     }
 
     // Override render to handle child widgets properly
@@ -75,9 +75,9 @@ export abstract class Widget extends Layer {
     protected abstract renderContent(ctx: SkiaCanvas): void
 
     updateBounds() {
-        // First update local bounds (object's own space)
-        this._localBounds.x = -this._width / 2
-        this._localBounds.y = -this._height / 2
+        // Update local bounds (object's own space)
+        this._localBounds.x = 0
+        this._localBounds.y = 0
         this._localBounds.width = this._width
         this._localBounds.height = this._height
 
@@ -102,8 +102,8 @@ export abstract class Widget extends Layer {
 
     getBoundingRect() {
         return {
-            x: this.left,
-            y: this.top,
+            x: this._x,
+            y: this._y,
             width: this.width,
             height: this.height,
         }
@@ -121,73 +121,63 @@ export abstract class Widget extends Layer {
     get height() {
         return this._height
     }
+
     set height(height: number) {
         this._height = height
         this.updateBounds();
     }
 
     get centerX() {
-        return this._x
+        return this._x + this.width / 2
     }
-    /**
-     * Align shape center x coordinate
-     * @param centerX - new center x
-     */
+
     set centerX(centerX: number) {
         this._x = centerX
         this.updateBounds();
     }
 
-    /**
-     * Align shape center y coordinate
-     * @param centerY - new center y
-     */
+    get centerY() {
+        return this._y + this.height / 2
+    }
+
     set centerY(centerY: number) {
-        this._y = centerY
+        this._y = centerY - this.height / 2
         this.updateBounds();
     }
 
     get left() {
-        return this._x - this._width / 2
+        return this._x
     }
 
-    /**
-     * Align shape left with given coordinate
-     * @param left - new left coordinate
-     */
     set left(left: number) {
-        this._x = left + this.width / 2
+        this._x = left
         this.updateBounds();
     }
 
     get top() {
-        return this._y - this._height / 2
+        return this._y
     }
 
-    /**
-     * Align shape top with given coordinate
-     * @param top - new top coordinate
-     */
     set top(top: number) {
-        this._y = top + this.height / 2
+        this._y = top
         this.updateBounds();
     }
 
-    /**
-     * Align shape right with given coordinate
-     * @param right - new right coordinate
-     */
+    get right() {
+        return this._x + this._width
+    }
+
     set right(right: number) {
-        this._x = right - this.width / 2
+        this._x = right - this.width
         this.updateBounds();
     }
 
-    /**
-     * Align shape bottom with given coordinate
-     * @param bottom - new bottom coordinate
-     */
+    get bottom() {
+        return this._y + this._height
+    }
+
     set bottom(bottom: number) {
-        this._y = bottom - this.height / 2
+        this._y = bottom - this.height
         this.updateBounds();
     }
 

@@ -7,25 +7,24 @@ export class Triangle extends Shape {
         super('triangle', props)
     }
 
-    render(ctx: SkiaCanvas): void {
+    renderContent(ctx: SkiaCanvas): void {
         // can not render if width or height is less than 0
         if (this._width <= 0 || this._height <= 0) {
             return
         }
-        ctx.translate(this._x, this._y)
         const path = new canvasKit.Path()
-        path.moveTo(-this.width / 2, this.height / 2)
-        path.lineTo(0, -this.height / 2)
-        path.lineTo(this.width / 2, this.height / 2)
-        path.lineTo(-this.width / 2, this.height / 2)
+        path.moveTo(0, this.height)           // Bottom left
+        path.lineTo(this.width / 2, 0)          // Top middle
+        path.lineTo(this.width, this.height)  // Bottom right
+        path.lineTo(0, this.height)           // Back to bottom left
         path.close()
 
         const strokeHalf = 1
         const pathStroke = new canvasKit.Path()
-        pathStroke.moveTo(-this.width / 2 + strokeHalf, this.height / 2 - strokeHalf)
-        pathStroke.lineTo(0, -this.height / 2 + strokeHalf)
-        pathStroke.lineTo(this.width / 2 - strokeHalf, this.height / 2 - strokeHalf)
-        pathStroke.lineTo(-this.width / 2 + strokeHalf, this.height / 2 - strokeHalf)
+        pathStroke.moveTo(strokeHalf, this.height - strokeHalf)
+        pathStroke.lineTo(this.width / 2, strokeHalf)
+        pathStroke.lineTo(this.width - strokeHalf, this.height - strokeHalf)
+        pathStroke.lineTo(strokeHalf, this.height - strokeHalf)
         pathStroke.close()
         
         const paint = new canvasKit.Paint()
