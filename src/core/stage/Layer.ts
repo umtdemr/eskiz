@@ -1,6 +1,7 @@
 import { Canvas as SkiaCanvas } from "canvaskit-wasm";
 import { LinkedList } from "../dataStructures/LinkedList";
 import { Widget } from "../shapes/Widget";
+import { RenderContext } from "../canvas/Canvas";
 
 interface LayerProps {
     name: string
@@ -28,14 +29,14 @@ export class Layer {
         }
     }
 
-    render(ctx: SkiaCanvas) {
+    render(renderContext: RenderContext) {
         for (const child of this._children) {
             if (child instanceof Widget && !child.visible) {
                 continue
             }
-            ctx.save()
-            child.render(ctx)
-            ctx.restore()
+            renderContext.ctx.save()
+            child.render(renderContext)
+            renderContext.ctx.restore()
         }
     }
 

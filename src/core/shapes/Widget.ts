@@ -1,8 +1,9 @@
 import {Canvas as SkiaCanvas, CanvasKit} from "canvaskit-wasm";
 import { Layer }from "../stage/Layer";
 import { BoundingBox } from "../geometry/BoundingBox";
+import { RenderContext } from "../canvas/Canvas";
 
-export type WidgetType = 'shape' | 'text' | 'multiSelector'
+export type WidgetType = 'shape' | 'text' | 'multiSelector' | 'border'
 
 export interface WidgetProps {
     x: number
@@ -54,8 +55,9 @@ export abstract class Widget extends Layer {
     }
 
     // Override render to handle child widgets properly
-    render(ctx: SkiaCanvas) {
+    render(renderContext: RenderContext) {
         if (!this.visible) return
+        const ctx = renderContext.ctx
 
         ctx.save()
         
@@ -63,16 +65,16 @@ export abstract class Widget extends Layer {
         ctx.translate(this._x, this._y)
         
         // Render this widget
-        this.renderContent(ctx)
+        this.renderContent(renderContext)
         
         // Render children
-        super.render(ctx)
+        super.render(renderContext)
         
         ctx.restore()
     }
 
     // New abstract method for actual widget rendering
-    protected abstract renderContent(ctx: SkiaCanvas): void
+    protected abstract renderContent(renderContext: RenderContext): void
 
     updateBounds() {
         // Update local bounds (object's own space)
