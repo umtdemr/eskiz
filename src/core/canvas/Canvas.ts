@@ -34,8 +34,6 @@ export class Canvas {
     private scale = 1;
     private _slugId: string;
     
-    private _selectedWidget: Widget | null
-    
     constructor(slugId: string, stage: Stage) {
         this._slugId = slugId;
         this._stage = stage 
@@ -74,19 +72,9 @@ export class Canvas {
             // render all elements
             this._stage.render({ ctx, scale: this.scale })
 
-            this.renderControlsUI(ctx)
             ctx.restore()
         }
         this.surface.requestAnimationFrame(draw.bind(this))
-    }
-    
-    renderControlsUI(ctx: SkiaCanvas) {
-        if (!this.selectedWidget) {
-            return
-        }
-        if (this.selectedWidget instanceof Rectangle) {
-            this.selectedWidget.renderControls(ctx, this.scale)
-        }
     }
 
     requestRender() {
@@ -244,13 +232,6 @@ export class Canvas {
         this.needsRender = true
     }
     
-    get selectedWidget(): Widget|null {
-        return this._selectedWidget
-    }
-    set selectedWidget(widget: Widget) {
-        this._selectedWidget = widget
-    }
-
     get canvasEl(): HTMLCanvasElement {
         return this._canvasEl
     }

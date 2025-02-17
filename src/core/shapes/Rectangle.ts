@@ -80,17 +80,4 @@ export class Rectangle extends Shape {
             ctx.drawRect(strokeRect, paint)
         }
     }
-    
-    renderControls(ctx: SkiaCanvas, scale: number) {
-        ctx.save()
-        const bbox = this.getBoundingRect()
-        const paint = new canvasKit.Paint()
-        paint.setStyle(canvasKit.PaintStyle.Stroke)
-        paint.setColor(canvasKit.Color(0, 0, 255))
-        paint.setStrokeWidth(1 / scale)
-
-        const rect = canvasKit.XYWHRect(bbox.x, bbox.y, bbox.width, bbox.height)
-        ctx.drawRect(rect, paint)
-        ctx.restore()
-    }
 }
