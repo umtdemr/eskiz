@@ -4,6 +4,7 @@ import {Layer} from "./Layer.ts";
 import { Widget } from "../shapes/Widget.ts";
 import { Indexer } from "../indexer/Indexer.ts";
 import { NonCanvasDynamicContainer } from "./NonCanvasDynamicContainer.ts";
+import { RenderContext } from "../canvas/Canvas.ts";
 
 /**
  * Stage handles scene graph structure in canvas.
@@ -93,8 +94,8 @@ export class Stage {
      * Starts rendering from root. 
      * @param ctx Context to call canvas rendering API's.
      */
-    render(ctx: SkiaCanvas) {
-        this._root.render(ctx)
+    render(renderContext: RenderContext) {
+        this._root.render(renderContext)
     }
     
     /**

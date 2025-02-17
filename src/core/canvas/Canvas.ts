@@ -11,6 +11,11 @@ export type Point = {
 
 type Transform = [number, number, number, number, number, number]
 
+export type RenderContext = {
+    ctx: SkiaCanvas
+    scale: number
+}
+
 export const setCanvasStyles = (canvasEl: HTMLCanvasElement) => {
     canvasEl.style.position = 'absolute';
     canvasEl.style.left = '0';
@@ -67,7 +72,7 @@ export class Canvas {
             this.drawGrid(ctx)
             
             // render all elements
-            this._stage.render(ctx)
+            this._stage.render({ ctx, scale: this.scale })
 
             this.renderControlsUI(ctx)
             ctx.restore()
