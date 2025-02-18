@@ -23,18 +23,14 @@ export class SelectTool implements Tool {
     }
 
     onMouseDown(data: CanvasMouseEvent, engine: Engine): void {
-        this.isDrawing = true
-        this.initialPosition = {
-            x: data.pointer.x,
-            y: data.pointer.y,
+        if (this.checksObjectsInLayer(this.shapesLayer, data.pointer)) {
+            this.isDrawing = false
+        } else {
+            this.isDrawing = true
+            const multiSelector = this.engine.stage.nonCanvasDynamicContainer.multiSelector;
+            multiSelector.onMouseDown(data)
+            this.engine.canvas.requestRender()
         }
-        const multiSelector = this.engine.stage.nonCanvasDynamicContainer.multiSelector;
-        multiSelector.width = 0;
-        multiSelector.height = 0;
-        multiSelector.left = data.pointer.x
-        multiSelector.top = data.pointer.y
-        multiSelector.visible = true;
-        this.engine.canvas.requestRender()
     }
 
     onMouseMove(data: CanvasMouseEvent, engine: Engine): void {
@@ -42,26 +38,17 @@ export class SelectTool implements Tool {
         if (!multiSelector || !this.isDrawing) {
             return
         }
-        multiSelector.width = Math.abs(data.pointer.x - this.initialPosition.x)
-        multiSelector.height = Math.abs(data.pointer.y - this.initialPosition.y)
-
-        if (data.pointer.x > this.initialPosition.x) {
-            multiSelector.left = this.initialPosition.x
-        } else {
-            multiSelector.right = this.initialPosition.x
-        }
-        
-        if (data.pointer.y > this.initialPosition.y) {
-            multiSelector.top = this.initialPosition.y
-        } else {
-            multiSelector.bottom = this.initialPosition.y
-        }
+        multiSelector.onMouseMove(data)
+        this.selectionService.selectObjectsWithDrawing(multiSelector.bounds)
         engine.canvas.requestRender()
     }
 
     onMouseUp(data: CanvasMouseEvent, engine: Engine): void {
-        this.isDrawing = false;
-        this.engine.stage.nonCanvasDynamicContainer.multiSelector.visible = false;
+        if (this.isDrawing) {
+            this.isDrawing = false;
+            const multiSelector = this.engine.stage.nonCanvasDynamicContainer.multiSelector;
+            multiSelector.onMouseUp(data)
+        }
         const clickedWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
         if (clickedWidget) {
             this.selectionService.selectWidget(clickedWidget, data)
