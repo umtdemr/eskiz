@@ -64,7 +64,7 @@ export class SelectTool implements Tool {
         this.engine.stage.nonCanvasDynamicContainer.multiSelector.visible = false;
         const clickedWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
         if (clickedWidget) {
-            this.selectionService.singleSelect(clickedWidget)
+            this.selectionService.selectWidget(clickedWidget, data)
         }
         this.engine.canvas.requestRender()
     }

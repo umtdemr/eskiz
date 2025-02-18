@@ -5,6 +5,8 @@ import { Widget } from "../shapes/Widget.ts";
 import { Indexer } from "../indexer/Indexer.ts";
 import { NonCanvasDynamicContainer } from "./NonCanvasDynamicContainer.ts";
 import { RenderContext } from "../canvas/Canvas.ts";
+import { Engine } from "../engine/Engine.ts";
+import { SelectionService } from "../services/SelectionService.ts";
 
 /**
  * Stage handles scene graph structure in canvas.
@@ -20,14 +22,16 @@ export class Stage {
     private _nonCanvasDynamicContainer: NonCanvasDynamicContainer
 
     private _indexer: Indexer
+    private _engine: Engine
 
-    constructor() {
+    constructor(engine: Engine) {
         // setup layers
         this._indexer = new Indexer();
         this._root = new Layer({
             name: STAGE_LAYERS.ROOT
         })
         this._root.zIndex = this._indexer.generateRootIndex()
+        this._engine = engine;
 
         this.initializeLayers();
     }
@@ -52,7 +56,10 @@ export class Stage {
             name: STAGE_LAYERS.NON_CANVAS_CONTAINER_STATIC
         })
 
-        this._nonCanvasDynamicContainer = new NonCanvasDynamicContainer();
+        this._nonCanvasDynamicContainer = new NonCanvasDynamicContainer(
+            this._engine,
+            this._engine.getService<SelectionService>('selection')
+        );
 
         // add canvas and non canvas containers
         this.addChildToParent(this._root, this._canvasContainer)
