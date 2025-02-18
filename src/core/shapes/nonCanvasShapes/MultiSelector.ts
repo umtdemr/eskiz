@@ -1,7 +1,7 @@
-import { Paint, Canvas as SkiaCanvas } from "canvaskit-wasm";
+import { Paint } from "canvaskit-wasm";
 import { Widget } from "../Widget";
 import { Layer } from "@/core/stage/Layer";
-import { canvasKit } from "@/core/canvas/Canvas";
+import { canvasKit, RenderContext } from "@/core/canvas/Canvas";
 
 export interface MultiSelectorProps {
     x: number
@@ -19,13 +19,13 @@ export class MultiSelector extends Widget {
         this.paint.setColor(canvasKit.Color(29, 78, 216, .3))
     }
 
-    render(ctx: SkiaCanvas): void {
-        ctx.translate(this._x, this._y)
+    protected renderContent(renderContext: RenderContext): void {
+        const ctx = renderContext.ctx;
         const rect = canvasKit.LTRBRect(
-            -this._width / 2,
-            -this._height / 2,
-            this._width / 2,
-            this._height / 2
+            0,
+            0,
+            this._width,
+            this._height
         )
         ctx.drawRect(rect, this.paint)
     }
