@@ -29,6 +29,8 @@ export class SelectTool implements Tool {
             y: data.pointer.y,
         }
         const multiSelector = this.engine.stage.nonCanvasDynamicContainer.multiSelector;
+        multiSelector.width = 0;
+        multiSelector.height = 0;
         multiSelector.left = data.pointer.x
         multiSelector.top = data.pointer.y
         multiSelector.visible = true;
