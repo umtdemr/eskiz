@@ -22,10 +22,10 @@ export class NonCanvasDynamicContainer extends Layer {
         this._selectionLayer = new SelectionLayer(engine, selectionService)
 
         this.addChildren(
-            this._mutliSelector
+            this._selectionLayer
         )
         this.addChildren(
-            this._selectionLayer
+            this._mutliSelector
         )
     }
 

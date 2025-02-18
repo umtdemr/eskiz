@@ -1,7 +1,8 @@
 import { Paint } from "canvaskit-wasm";
 import { Widget } from "../Widget";
 import { Layer } from "@/core/stage/Layer";
-import { canvasKit, RenderContext } from "@/core/canvas/Canvas";
+import { canvasKit, Point, RenderContext } from "@/core/canvas/Canvas";
+import { CanvasMouseEvent } from "@/core/engine/Engine";
 
 export interface MultiSelectorProps {
     x: number
@@ -11,6 +12,8 @@ export interface MultiSelectorProps {
 
 export class MultiSelector extends Widget {
     private paint: Paint
+    private initialPosition: Point = {x: 0, y: 0}
+
     constructor(props: MultiSelectorProps) {
         super('multiSelector', { x: props.x, y: props.y, width: 0, height: 0, parentLayer: props.parent, visible: false });
         this.paint = new canvasKit.Paint()
@@ -28,5 +31,39 @@ export class MultiSelector extends Widget {
             this._height
         )
         ctx.drawRect(rect, this.paint)
+    }
+
+    onMouseDown(data: CanvasMouseEvent) {
+        this.initialPosition = {
+            x: data.pointer.x,
+            y: data.pointer.y,
+        }
+
+        this.width = 0;
+        this.height = 0;
+        this.left = data.pointer.x
+        this.top = data.pointer.y
+        this.visible = true;
+    }
+
+    onMouseMove(data: CanvasMouseEvent) {
+        this.width = Math.abs(data.pointer.x - this.initialPosition.x)
+        this.height = Math.abs(data.pointer.y - this.initialPosition.y)
+
+        if (data.pointer.x > this.initialPosition.x) {
+            this.left = this.initialPosition.x
+        } else {
+            this.right = this.initialPosition.x
+        }
+        
+        if (data.pointer.y > this.initialPosition.y) {
+            this.top = this.initialPosition.y
+        } else {
+            this.bottom = this.initialPosition.y
+        }
+    }
+
+    onMouseUp(data: CanvasMouseEvent) {
+        this.visible = false;
     }
 }

@@ -216,11 +216,26 @@ export class BoundingBox {
         return this.width === 0 || this.height === 0
     }
 
+    /**
+     * Checks if the bounding box contains given point.
+     * @param x Point x coordinate
+     * @param y Point y coordinate
+     * @returns True if it contains
+     */
     contains(x: number, y: number): boolean {
         if (this.width <= 0 || this.height <= 0) return false;
         if (x >= this.x && x <= this.x + this.width) {
             if (y >= this.y && y <= this.y + this.height) return true;
         }
         return false;
+    }
+
+    /**
+     * Checks if the given bounding box contains this bounding box.
+     * @param rect Boundingbox instance
+     * @returns True if given boundingbox contains this instance
+     */
+    containsRect(rect: BoundingBox) {
+        return this.left <= rect.left && this.right >= rect.right && this.top <= rect.top && this.bottom >= rect.bottom
     }
 }
