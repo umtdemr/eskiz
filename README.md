@@ -28,12 +28,16 @@
       - [ ] Handling multiple objects
           - [x]  Create local and world bounds
           - [x]  Implement left, top based rendering
+          - [ ] Handle drawing borders correctly
+            - [ ] Draw borders on multi selection
+            - [ ] Remove borders on empty select
     - [ ] Selecting.
       - [ ] Selecting.
       - [ ] Adding multi selector
         - [ ] Restrict zoom and pan when multi selector is active
       - [ ] Handle changing width, height by controls
     - [ ] Pagination and search
+    - [ ] Create better signal system
     - [ ] Adding text
     - [ ] Sticky note
     - [ ] Undo redo
