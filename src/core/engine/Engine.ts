@@ -52,7 +52,11 @@ export class Engine extends Emitter<EngineEventsMap>{
     constructor(slugId: string) {
         super()
         this._slugId = slugId
-        this._stage = new Stage();
+
+        this.serviceManager = new ServiceManager();
+        this.initializeServices();
+
+        this._stage = new Stage(this);
         this.canvas = new Canvas(this._slugId, this._stage)
 
         this.upperCanvasRenderer = new UpperCanvasRenderer();
@@ -63,9 +67,6 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.onMouseUp = this.onMouseUp.bind(this);
         
         this.registerTool(new CursorSenderTool(), 'always-active')
-
-        this.serviceManager = new ServiceManager();
-        this.initializeServices();
     }
     
     async initialize() {

@@ -1,4 +1,4 @@
-import { Engine } from "../engine/Engine";
+import { CanvasMouseEvent, Engine } from "../engine/Engine";
 import { Widget } from "../shapes/Widget";
 import { Service } from "./Service";
 
@@ -9,7 +9,7 @@ export class SelectionService extends Service {
         super(engine)
     }
 
-    singleSelect(widget: Widget) {
+    selectWidget(widget: Widget, mouseEvent: CanvasMouseEvent) {
         this._selected = [widget]
     }
 
