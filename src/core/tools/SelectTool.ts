@@ -26,6 +26,7 @@ export class SelectTool implements Tool {
         if (this.checksObjectsInLayer(this.shapesLayer, data.pointer)) {
             this.isDrawing = false
         } else {
+            this.selectionService.clearSelection()
             this.isDrawing = true
             const multiSelector = this.engine.stage.nonCanvasDynamicContainer.multiSelector;
             multiSelector.onMouseDown(data)
@@ -47,8 +48,14 @@ export class SelectTool implements Tool {
         if (this.isDrawing) {
             this.isDrawing = false;
             const multiSelector = this.engine.stage.nonCanvasDynamicContainer.multiSelector;
+
+            this.selectionService.selectRectangularArea(multiSelector.bounds)
+
             multiSelector.onMouseUp(data)
+            this.engine.canvas.requestRender()
+            return
         }
+
         const clickedWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
         if (clickedWidget) {
             this.selectionService.selectWidget(clickedWidget, data)
