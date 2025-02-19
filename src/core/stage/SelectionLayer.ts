@@ -1,4 +1,5 @@
 import { Engine } from "../engine/Engine";
+import { BoundingBox } from "../geometry/BoundingBox";
 import { SelectionService } from "../services/SelectionService";
 import { Border } from "../shapes/nonCanvasShapes/Border";
 import { Widget } from "../shapes/Widget";
@@ -8,6 +9,7 @@ export class SelectionLayer extends Layer {
     private engine: Engine
     private selectionService: SelectionService
     private _selected: Widget[]
+    private _boundingBoxWidget: Widget
 
     constructor(engine: Engine, selectionService: SelectionService) {
         super({ name: 'selection_layer' })
@@ -18,19 +20,41 @@ export class SelectionLayer extends Layer {
         this.selectionService.drawingSelectionUpdated.add(this.onDrawingSelectionUpdated, this)
     }
 
+    /**
+     * Handles selection changes. It is called after mouse up events - when the selection is certain.
+     */
     onSelectionChanged() {
-        this.clearSelection()
-        const newSelectedObjects = this.selectionService.selected
-
-        this.addBorders(newSelectedObjects)
+        this._selected = this.selectionService.selected
+        this.handleBordersOnSelectionChange(this._selected)
     }
 
+    /**
+     * Handles temprorary selection changes.
+     */
     onDrawingSelectionUpdated() {
-        this.clearSelection()
-        const newSelectedObjects = this.selectionService.selectedDuringDrawing
-        this.addBorders(newSelectedObjects)
+        const selectedWidgets = this.selectionService.selectedDuringDrawing
+        this.handleBordersOnSelectionChange(selectedWidgets)
     }
 
+    /**
+     * Handles drawing borders for given widgets. 
+     * @param widgets Widgets to draw new bounding box.
+     */
+    private handleBordersOnSelectionChange(widgets = this._selected) {
+        this.clearSelection()
+        if (!widgets.length) return;
+
+        this.addBorders(widgets)
+        if (widgets.length > 1) {
+            this.drawBoundinBoxOfSelection(widgets)
+        }
+    }
+
+
+    /**
+     * Adds bounding box border for the given widgets.
+     * @param widgets Widgets to take refference.
+     */
     private addBorders(widgets: Widget[]) {
         for (const widget of widgets) {
             this.addChildren(
@@ -43,6 +67,23 @@ export class SelectionLayer extends Layer {
                 })
             )
         }
+    }
+
+    /**
+     * Draws inclusive bounding box for all the elements.
+     * @param widgets Widgets to draw bounding box.
+     */
+    private drawBoundinBoxOfSelection(widgets: Widget[]) {
+        const bbox = BoundingBox.createWithMerge(...widgets)
+        this.addChildren(
+            new Border({
+                x: bbox.left,
+                y: bbox.top,
+                width: bbox.width,
+                height: bbox.height,
+                parentLayer: this
+            })
+        )
     }
 
     private clearSelection() {

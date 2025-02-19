@@ -9,7 +9,6 @@ export class SelectionService extends Service {
     private _selectedDuringDrawing: Widget[] = []
 
     selectionChanged = new Signal()
-    selectionCleared = new Signal()
     drawingSelectionUpdated = new Signal()
 
     constructor(engine: Engine) {
@@ -23,6 +22,7 @@ export class SelectionService extends Service {
 
     clearSelection() {
         this._selected = []
+        this.selectionChanged.dispatch()
     }
 
     checkObjectsInRect(rect: BoundingBox): Widget[] {
@@ -48,6 +48,20 @@ export class SelectionService extends Service {
             this._selectedDuringDrawing = allObjects
             this.drawingSelectionUpdated.dispatch()
         }
+    }
+
+    selectRectangularArea(rect: BoundingBox) {
+        const allObjects = this.checkObjectsInRect(rect)
+        if (!allObjects.length) {
+            if (this._selected.length) {
+                this._selected = []
+                this.selectionChanged.dispatch()
+            }
+            this._selected = []
+            return
+        }
+        this._selected = allObjects
+        this.selectionChanged.dispatch()
     }
 
     get selected() {

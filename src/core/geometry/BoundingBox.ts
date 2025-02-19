@@ -1,3 +1,9 @@
+export type LTRBRect = {
+    left: number
+    top: number
+    right: number
+    bottom: number
+}
 /**
  * Boundingbox is a helper class to make rectangular bounding box calculations
  * and processes easy.
@@ -36,6 +42,23 @@ export class BoundingBox {
             Infinity,
             -Infinity,
             -Infinity,
+        )
+    }
+
+    static createWithMerge(...rects: LTRBRect[]): BoundingBox {
+        let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+        rects.forEach((rect) => {
+            left = Math.min(left, rect.left);
+            right = Math.max(right, rect.right);
+            top = Math.min(top, rect.top);
+            bottom = Math.max(bottom, rect.bottom); 
+        })
+    
+        return new BoundingBox(
+            left,
+            top,
+            right - left,
+            bottom - top
         )
     }
 
@@ -149,6 +172,21 @@ export class BoundingBox {
 
     set maxY(val: number) {
         this.bottom = val
+    }
+
+    /**
+     * Merges this bounding box with given rectangles.
+     * @param rects List of LTRBRects to merge.
+     * @returns Updated bounding box instance.
+     */
+    merge(...rects: LTRBRect[]) {
+        rects.forEach(rect => {
+            this.left = Math.min(this.left, rect.left);
+            this.right = Math.max(this.right, rect.right);
+            this.top = Math.min(this.top, rect.top);
+            this.bottom = Math.max(this.bottom, rect.bottom);
+        });
+        return this;
     }
 
     /**
