@@ -10,7 +10,7 @@ export class Border extends Widget {
         this.paint = new canvasKit.Paint()
         this.paint.setAntiAlias(true)
         this.paint.setStyle(canvasKit.PaintStyle.Stroke)
-        this.paint.setColor(canvasKit.Color(255, 0, 0, 1))
+        this.paint.setColor(canvasKit.Color(29, 78, 216, .8))
     }
 
     protected renderContent(renderContext: RenderContext): void {
