@@ -53,9 +53,7 @@ export class Indexer {
 
         // Find the maximum zIndex among siblings
         for (const child of parentLayer.children) {
-            if (child instanceof Layer && child.zIndex > maxZIndex) {
-                maxZIndex = child.zIndex;
-            }
+            maxZIndex = child.zIndex;
         }
 
         // Generate a new index after the maximum zIndex

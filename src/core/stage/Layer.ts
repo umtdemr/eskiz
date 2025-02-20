@@ -12,14 +12,17 @@ interface LayerProps {
  */
 export class Layer {
     protected name: string
-    protected _children: LinkedList
+    protected _children: LinkedList<Layer | Widget>
     protected _zIndex: string
-    protected _parent: Layer|null = null
+    protected _parent: Layer | Widget | null = null
     protected _isLayer: boolean = true
+    protected _interactive: boolean = false;
+    protected _visible: boolean = true
+
     
     constructor(props: LayerProps) {
         this.name = props.name
-        this._children = new LinkedList()
+        this._children = new LinkedList<Layer | Widget>()
     }
     
     addChildren(...children: Layer[]) {
@@ -31,7 +34,7 @@ export class Layer {
 
     render(renderContext: RenderContext) {
         for (const child of this._children) {
-            if (child instanceof Widget && !child.visible) {
+            if (!child.visible) {
                 continue
             }
             renderContext.ctx.save()
@@ -54,5 +57,17 @@ export class Layer {
     
     set zIndex(val: string) {
         this._zIndex = val
+    }
+
+    get interactive(): boolean {
+        return this._interactive
+    }
+
+    get visible(): boolean {
+        return this._visible
+    }
+
+    set visible(val: boolean) {
+        this._visible = val;
     }
 }

@@ -30,14 +30,12 @@ export class SelectionService extends Service {
         const allWidgets = new Set<Widget>();
         
         for (const child of shapesLayer.children) {
-            if (child instanceof Widget) {
-                if (!child.interactive) continue;
+            if (!(child instanceof Widget) || !child.interactive) continue
 
-                if (rect.containsRect(child.bounds)) {
-                    allWidgets.add(child)
-                } else {
-                    allWidgets.delete(child)
-                }
+            if (rect.containsRect(child.bounds)) {
+                allWidgets.add(child)
+            } else {
+                allWidgets.delete(child)
             }
         }
 
