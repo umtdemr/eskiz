@@ -65,7 +65,7 @@ export class SelectTool implements Tool {
 
     checksObjectsInLayer(layer: Layer, pointer: Point): Widget | null {
         for (const widget of layer.children) {
-            if (widget instanceof Widget && widget.bounds.contains(pointer.x, pointer.y)) {
+            if (widget instanceof Widget && widget.interactive && widget.bounds.contains(pointer.x, pointer.y)) {
                 return widget
             }
         }

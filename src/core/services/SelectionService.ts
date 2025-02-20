@@ -31,6 +31,8 @@ export class SelectionService extends Service {
         
         for (const child of shapesLayer.children) {
             if (child instanceof Widget) {
+                if (!child.interactive) continue;
+
                 if (rect.containsRect(child.bounds)) {
                     allWidgets.add(child)
                 } else {

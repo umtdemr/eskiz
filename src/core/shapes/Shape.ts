@@ -19,5 +19,6 @@ export abstract class Shape extends Widget {
         this._shapeType = type
         this._strokeColor = props.strokeColor ? props.strokeColor : CANVAS_COLORS.BLACK
         this._fillColor = props.fillColor ? props.fillColor : CANVAS_COLORS.TRANSPARENT 
+        this._interactive = true
     }
 }
