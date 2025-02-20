@@ -24,6 +24,7 @@ export abstract class Widget extends Layer {
     protected _visible: boolean = true
     protected _bounds: BoundingBox       // Global bounds (including parent transforms)
     protected _localBounds: BoundingBox  // Local bounds (object's own space)
+    protected _interactive: boolean = false
     
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
@@ -197,5 +198,9 @@ export abstract class Widget extends Layer {
 
     get localBounds(): BoundingBox {
         return this._localBounds
+    }
+
+    get interactive(): boolean {
+        return this._interactive
     }
 }
