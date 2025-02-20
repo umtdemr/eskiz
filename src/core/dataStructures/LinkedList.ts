@@ -1,35 +1,35 @@
-export class Node {
-    private _next: Node|null = null
-    private _prev: Node|null = null
-    private _value: unknown
+export class Node<T> {
+    private _next: Node<T> | null = null
+    private _prev: Node<T> | null = null
+    private _value: T
     
-    constructor(value: unknown) {
+    constructor(value: T) {
         this._value = value
     }
     
-    get next(): Node|null {
+    get next(): Node<T> | null {
         return this._next
     }
-    set next(node: Node|null) {
+    set next(node: Node<T> | null) {
         this._next = node
     }
-    get prev(): Node|null {
+    get prev(): Node<T> | null {
         return this._prev
     }
-    set prev(node: Node|null) {
+    set prev(node: Node<T> | null) {
         this._prev = node
     }
-    get value(): unknown {
+    get value(): T {
         return this._value
     }
-    set value(val: unknown) {
+    set value(val: T) {
         this._value = val
     }
 }
 
-export class LinkedList {
-    private _root: Node|null = null;
-    private _tail: Node|null = null;
+export class LinkedList<T> {
+    private _root: Node<T> | null = null;
+    private _tail: Node<T> | null = null;
     private _nodeCount: number = 0;
     
     constructor() {
@@ -39,7 +39,7 @@ export class LinkedList {
      * Adds item to linked list.
      * @param value
      */
-    add(value: unknown) {
+    add(value: T) {
         this.addAt(this._nodeCount, value)
     }
 
@@ -47,7 +47,7 @@ export class LinkedList {
      * Prepends item to linked list.
      * @param value
      */
-    prepend(value: unknown) {
+    prepend(value: T) {
         this.addAt(0, value)
     }
 
@@ -57,7 +57,7 @@ export class LinkedList {
      * @param index - Where to add
      * @param value - Value to add
      */
-    addAt(idx: number, value: unknown) {
+    addAt(idx: number, value: T) {
         if (idx < 0) {
             idx = this._nodeCount
         }
@@ -94,7 +94,7 @@ export class LinkedList {
      * Removes particular item with given index
      * @param idx Index of the item
      */
-    removeAt(idx: number): [boolean, unknown] {
+    removeAt(idx: number): [boolean, T | null | undefined] {
         // empty list or invalid index
         if (!this._root || idx < 0 || idx >= this._nodeCount) {
             return [false, null];
@@ -123,7 +123,7 @@ export class LinkedList {
         return [true, removedNode?.value]
     }
 
-    private getNodeAt(idx: number): Node|null {
+    private getNodeAt(idx: number): Node<T> | null {
         let next = this._root;
         let countIdx = 0;
         while (next) {

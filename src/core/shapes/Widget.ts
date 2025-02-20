@@ -2,6 +2,7 @@ import {Canvas as SkiaCanvas, CanvasKit} from "canvaskit-wasm";
 import { Layer }from "../stage/Layer";
 import { BoundingBox } from "../geometry/BoundingBox";
 import { RenderContext } from "../canvas/Canvas";
+import { LinkedList } from "../dataStructures/LinkedList";
 
 export type WidgetType = 'shape' | 'text' | 'multiSelector' | 'border'
 
@@ -21,13 +22,14 @@ export abstract class Widget extends Layer {
     protected _width: number
     protected _height: number
     protected _layer: Layer
-    protected _visible: boolean = true
     protected _bounds: BoundingBox       // Global bounds (including parent transforms)
     protected _localBounds: BoundingBox  // Local bounds (object's own space)
-    protected _interactive: boolean = false
     
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
+
+        this._children = new LinkedList<Widget>
+
         this._widgetType = type
         this._x = props.x
         this._y = props.y
@@ -184,23 +186,11 @@ export abstract class Widget extends Layer {
         this.updateBounds();
     }
 
-    get visible(): boolean {
-        return this._visible
-    }
-
-    set visible(val: boolean) {
-        this._visible = val;
-    }
-
     get bounds(): BoundingBox {
         return this._bounds
     }
 
     get localBounds(): BoundingBox {
         return this._localBounds
-    }
-
-    get interactive(): boolean {
-        return this._interactive
     }
 }
