@@ -11,6 +11,8 @@ export class SelectTool implements Tool {
     private isDrawing: boolean = false
     private shapesLayer: Layer
     private selectionService: SelectionService
+    private movingShape: Widget | null
+    private isObjectMoved: boolean = false;
 
     constructor(engine: Engine, selectionService: SelectionService) {
         this.engine = engine
@@ -23,8 +25,15 @@ export class SelectTool implements Tool {
     }
 
     onMouseDown(data: CanvasMouseEvent, engine: Engine): void {
-        if (this.checksObjectsInLayer(this.shapesLayer, data.pointer)) {
+        this.isObjectMoved = false;
+        const movingWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
+        if (movingWidget) {
             this.isDrawing = false
+            this.movingShape = movingWidget
+            this.initialPosition = {
+                x: this.movingShape.left - data.pointer.x,
+                y: this.movingShape.top - data.pointer.y,
+            }
         } else {
             this.selectionService.clearSelection()
             this.isDrawing = true
@@ -35,6 +44,13 @@ export class SelectTool implements Tool {
     }
 
     onMouseMove(data: CanvasMouseEvent, engine: Engine): void {
+        if (this.movingShape) {
+            this.movingShape.left = this.initialPosition.x + data.pointer.x
+            this.movingShape.top = this.initialPosition.y + data.pointer.y
+            this.engine.canvas.requestRender()
+            this.isObjectMoved = true;
+            return
+        }
         const multiSelector = this.engine.stage.nonCanvasDynamicContainer.multiSelector;
         if (!multiSelector || !this.isDrawing) {
             return
@@ -45,6 +61,11 @@ export class SelectTool implements Tool {
     }
 
     onMouseUp(data: CanvasMouseEvent, engine: Engine): void {
+        this.movingShape = null;
+        if (this.isObjectMoved) {
+            return
+        }
+
         if (this.isDrawing) {
             this.isDrawing = false;
             const multiSelector = this.engine.stage.nonCanvasDynamicContainer.multiSelector;
