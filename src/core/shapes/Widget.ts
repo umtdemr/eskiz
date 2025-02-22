@@ -3,6 +3,7 @@ import { Layer }from "../stage/Layer";
 import { BoundingBox } from "../geometry/BoundingBox";
 import { RenderContext } from "../canvas/Canvas";
 import { LinkedList } from "../dataStructures/LinkedList";
+import signals from "signals";
 
 export type WidgetType = 'shape' | 'text' | 'multiSelector' | 'border'
 
@@ -24,6 +25,9 @@ export abstract class Widget extends Layer {
     protected _layer: Layer
     protected _bounds: BoundingBox       // Global bounds (including parent transforms)
     protected _localBounds: BoundingBox  // Local bounds (object's own space)
+    protected _selected: boolean = false;
+
+    boundsChanged = new signals.Signal()
     
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
@@ -103,6 +107,8 @@ export abstract class Widget extends Layer {
             this._bounds.y += currentParent._y
             currentParent = currentParent._parent
         }
+
+        if (this.interactive) this.boundsChanged.dispatch()
     }
 
     getBoundingRect() {
@@ -192,5 +198,13 @@ export abstract class Widget extends Layer {
 
     get localBounds(): BoundingBox {
         return this._localBounds
+    }
+
+    get selected(): boolean {
+        return this._selected;
+    }
+
+    set selected(val: boolean) {
+        this._selected = val
     }
 }
