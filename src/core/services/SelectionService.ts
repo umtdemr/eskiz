@@ -16,11 +16,13 @@ export class SelectionService extends Service {
     }
 
     selectWidget(widget: Widget, mouseEvent: CanvasMouseEvent) {
+        widget.selected = true;
         this._selected = [widget]
         this.selectionChanged.dispatch()
     }
 
     clearSelection() {
+        this._selected.forEach(widget => widget.selected = false)
         this._selected = []
         this.selectionChanged.dispatch()
     }
