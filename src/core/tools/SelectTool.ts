@@ -4,20 +4,26 @@ import { Layer } from "../stage/Layer";
 import { Point } from "../canvas/Canvas";
 import { Widget } from "../shapes/Widget";
 import { SelectionService } from "../services/SelectionService";
+import { SelectionLayer } from "../stage/SelectionLayer";
 
 export class SelectTool implements Tool {
     private engine: Engine
     private initialPosition: { x: number, y: number } = { x: 0, y: 0 }
     private isDrawing: boolean = false
     private shapesLayer: Layer
+    private selectionLayer: SelectionLayer
     private selectionService: SelectionService
-    private movingShape: Widget | null
-    private isObjectMoved: boolean = false;
+    private movingObjectState: { movingShape: Widget | null, isObjectMoved: boolean, isObjectAlreadySelected: boolean  } = {
+        movingShape: null,
+        isObjectMoved: false,
+        isObjectAlreadySelected: false
+    }
 
     constructor(engine: Engine, selectionService: SelectionService) {
         this.engine = engine
         this.shapesLayer = this.engine.stage.widgetsDefaultLayer;
         this.selectionService = selectionService
+        this.selectionLayer = this.engine.stage.nonCanvasDynamicContainer.selectionLayer;
     }
 
     onActivate(engine: Engine) {
@@ -25,14 +31,21 @@ export class SelectTool implements Tool {
     }
 
     onMouseDown(data: CanvasMouseEvent, engine: Engine): void {
-        this.isObjectMoved = false;
+        this.clearMovingObjectState()
+
         const movingWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
         if (movingWidget) {
             this.isDrawing = false
-            this.movingShape = movingWidget
+            this.movingObjectState.movingShape = movingWidget
+            this.movingObjectState.isObjectAlreadySelected = !!movingWidget.selected
+
+            if (!this.movingObjectState.isObjectAlreadySelected) {
+                this.selectionService.clearSelection()
+            }
+
             this.initialPosition = {
-                x: this.movingShape.left - data.pointer.x,
-                y: this.movingShape.top - data.pointer.y,
+                x: this.movingObjectState.movingShape.left - data.pointer.x,
+                y: this.movingObjectState.movingShape.top - data.pointer.y,
             }
         } else {
             this.selectionService.clearSelection()
@@ -44,11 +57,16 @@ export class SelectTool implements Tool {
     }
 
     onMouseMove(data: CanvasMouseEvent, engine: Engine): void {
-        if (this.movingShape) {
-            this.movingShape.left = this.initialPosition.x + data.pointer.x
-            this.movingShape.top = this.initialPosition.y + data.pointer.y
+        if (this.movingObjectState.movingShape) {
+            this.movingObjectState.movingShape.left = this.initialPosition.x + data.pointer.x
+            this.movingObjectState.movingShape.top = this.initialPosition.y + data.pointer.y
             this.engine.canvas.requestRender()
-            this.isObjectMoved = true;
+
+            if (!this.movingObjectState.isObjectMoved) {
+                this.selectionLayer.startInstantMoving(this.movingObjectState.movingShape)
+            }
+
+            this.movingObjectState.isObjectMoved = true;
             return
         }
         const multiSelector = this.engine.stage.nonCanvasDynamicContainer.multiSelector;
@@ -61,8 +79,10 @@ export class SelectTool implements Tool {
     }
 
     onMouseUp(data: CanvasMouseEvent, engine: Engine): void {
-        this.movingShape = null;
-        if (this.isObjectMoved) {
+        this.movingObjectState.movingShape = null;
+        if (this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
+            this.selectionLayer.finishMoving()
+            this.engine.canvas.requestRender()
             return
         }
 
@@ -94,5 +114,13 @@ export class SelectTool implements Tool {
         }
 
         return null
+    }
+
+    private clearMovingObjectState() {
+        this.movingObjectState = {
+            movingShape: null,
+            isObjectMoved: false,
+            isObjectAlreadySelected: false
+        }
     }
 }

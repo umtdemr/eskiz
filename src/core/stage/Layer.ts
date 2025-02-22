@@ -43,6 +43,8 @@ export class Layer {
         }
     }
 
+    destroy() {}
+
     get children() {
         return this._children
     }
