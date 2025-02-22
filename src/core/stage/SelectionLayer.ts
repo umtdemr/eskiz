@@ -36,6 +36,14 @@ export class SelectionLayer extends Layer {
         this.handleBordersOnSelectionChange(selectedWidgets)
     }
 
+    startInstantMoving(widget: Widget) {
+        this.addBorders([widget])
+    }
+
+    finishMoving() {
+        this.clearSelection()
+    }
+
     /**
      * Handles drawing borders for given widgets. 
      * @param widgets Widgets to draw new bounding box.
@@ -59,10 +67,7 @@ export class SelectionLayer extends Layer {
         for (const widget of widgets) {
             this.addChildren(
                 new Border({
-                    x: widget.left,
-                    y: widget.top,
-                    width: widget.width,
-                    height: widget.height,
+                    widget,
                     parentLayer: this
                 })
             )
@@ -87,6 +92,9 @@ export class SelectionLayer extends Layer {
     }
 
     private clearSelection() {
+        for (const border of this.children) {
+            border.destroy()
+        }
         this._children.clear()
     }
 }
