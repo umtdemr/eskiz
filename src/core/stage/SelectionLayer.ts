@@ -67,7 +67,7 @@ export class SelectionLayer extends Layer {
         for (const widget of widgets) {
             this.addChildren(
                 new Border({
-                    widget,
+                    widgets: [widget],
                     parentLayer: this
                 })
             )
@@ -79,13 +79,9 @@ export class SelectionLayer extends Layer {
      * @param widgets Widgets to draw bounding box.
      */
     private drawBoundinBoxOfSelection(widgets: Widget[]) {
-        const bbox = BoundingBox.createWithMerge(...widgets)
         this.addChildren(
             new Border({
-                x: bbox.left,
-                y: bbox.top,
-                width: bbox.width,
-                height: bbox.height,
+                widgets,
                 parentLayer: this
             })
         )
