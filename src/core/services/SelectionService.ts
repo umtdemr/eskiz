@@ -73,4 +73,14 @@ export class SelectionService extends Service {
     get selectedDuringDrawing() {
         return this._selectedDuringDrawing
     }
+
+    get bounds(): BoundingBox {
+        if (!this.selected.length) {
+            return BoundingBox.createIndefinite()
+        }
+        if (this.selected.length === 1) {
+            return this.selected[0].bounds
+        }
+        return BoundingBox.createWithMerge(...this._selected)
+    }
 }

@@ -8,15 +8,22 @@ import { SelectionLayer } from "../stage/SelectionLayer";
 
 export class SelectTool implements Tool {
     private engine: Engine
-    private initialPosition: { x: number, y: number } = { x: 0, y: 0 }
     private isDrawing: boolean = false
     private shapesLayer: Layer
     private selectionLayer: SelectionLayer
     private selectionService: SelectionService
-    private movingObjectState: { movingShape: Widget | null, isObjectMoved: boolean, isObjectAlreadySelected: boolean  } = {
-        movingShape: null,
+    private movingObjectState: { 
+        movingShape: Widget[]
+        isObjectMoved: boolean
+        isObjectAlreadySelected: boolean
+        initialPointer: Point
+        initialWidgetPositions: { left: number, top: number }[]
+    } = {
+        movingShape: [],
         isObjectMoved: false,
-        isObjectAlreadySelected: false
+        isObjectAlreadySelected: false,
+        initialPointer: { x: 0, y: 0 },
+        initialWidgetPositions: []
     }
 
     constructor(engine: Engine, selectionService: SelectionService) {
@@ -33,20 +40,36 @@ export class SelectTool implements Tool {
     onMouseDown(data: CanvasMouseEvent, engine: Engine): void {
         this.clearMovingObjectState()
 
+        const selectionBound = this.selectionService.bounds
         const movingWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
-        if (movingWidget) {
+
+        if (selectionBound.isFinite() && selectionBound.contains(data.pointer.x, data.pointer.y)) {
             this.isDrawing = false
-            this.movingObjectState.movingShape = movingWidget
-            this.movingObjectState.isObjectAlreadySelected = !!movingWidget.selected
+            this.movingObjectState.movingShape = this.selectionService.selected
+            this.movingObjectState.isObjectAlreadySelected = true
 
-            if (!this.movingObjectState.isObjectAlreadySelected) {
-                this.selectionService.clearSelection()
+            this.movingObjectState.initialPointer = {
+                x: data.pointer.x,
+                y: data.pointer.y,
             }
-
-            this.initialPosition = {
-                x: this.movingObjectState.movingShape.left - data.pointer.x,
-                y: this.movingObjectState.movingShape.top - data.pointer.y,
-            }
+            this.movingObjectState.initialWidgetPositions = this.movingObjectState.movingShape.map( widget => ({
+                left: widget.left,
+                top: widget.top,
+            }))
+        } else if (movingWidget) {
+                this.isDrawing = false
+                this.movingObjectState.movingShape = [movingWidget]
+                this.movingObjectState.isObjectAlreadySelected = !!movingWidget.selected
+    
+                if (!this.movingObjectState.isObjectAlreadySelected) {
+                    this.selectionService.clearSelection()
+                }
+    
+                this.movingObjectState.initialPointer = {
+                    x: data.pointer.x,
+                    y: data.pointer.y,
+                }
+                this.movingObjectState.initialWidgetPositions = [{ left: movingWidget.left, top: movingWidget.top }]
         } else {
             this.selectionService.clearSelection()
             this.isDrawing = true
@@ -57,13 +80,20 @@ export class SelectTool implements Tool {
     }
 
     onMouseMove(data: CanvasMouseEvent, engine: Engine): void {
-        if (this.movingObjectState.movingShape) {
-            this.movingObjectState.movingShape.left = this.initialPosition.x + data.pointer.x
-            this.movingObjectState.movingShape.top = this.initialPosition.y + data.pointer.y
-            this.engine.canvas.requestRender()
+        if (this.movingObjectState.movingShape.length > 0) {
+            const deltaX = data.pointer.x - this.movingObjectState.initialPointer.x
+            const deltaY = data.pointer.y - this.movingObjectState.initialPointer.y
 
-            if (!this.movingObjectState.isObjectMoved) {
-                this.selectionLayer.startInstantMoving(this.movingObjectState.movingShape)
+            this.movingObjectState.movingShape.forEach((widget, index) => {
+                const initialPos = this.movingObjectState.initialWidgetPositions[index];
+                widget.left = initialPos.left + deltaX;
+                widget.top = initialPos.top + deltaY;
+            });
+    
+            this.engine.canvas.requestRender();
+
+            if (this.movingObjectState.movingShape.length === 1 && !this.movingObjectState.isObjectMoved) {
+                this.selectionLayer.startInstantMoving(this.movingObjectState.movingShape[0])
             }
 
             this.movingObjectState.isObjectMoved = true;
@@ -79,7 +109,7 @@ export class SelectTool implements Tool {
     }
 
     onMouseUp(data: CanvasMouseEvent, engine: Engine): void {
-        this.movingObjectState.movingShape = null;
+        this.movingObjectState.movingShape = [];
         if (this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
             this.selectionLayer.finishMoving()
             this.engine.canvas.requestRender()
@@ -97,11 +127,13 @@ export class SelectTool implements Tool {
             return
         }
 
-        const clickedWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
-        if (clickedWidget) {
-            this.selectionService.selectWidget(clickedWidget, data)
+        if (!this.movingObjectState.isObjectAlreadySelected) {
+            const clickedWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
+            if (clickedWidget) {
+                this.selectionService.selectWidget(clickedWidget, data)
+            }
+            this.engine.canvas.requestRender()
         }
-        this.engine.canvas.requestRender()
     }
 
     checksObjectsInLayer(layer: Layer, pointer: Point): Widget | null {
@@ -118,9 +150,11 @@ export class SelectTool implements Tool {
 
     private clearMovingObjectState() {
         this.movingObjectState = {
-            movingShape: null,
+            movingShape: [],
             isObjectMoved: false,
-            isObjectAlreadySelected: false
+            isObjectAlreadySelected: false,
+            initialPointer: { x: 0, y: 0 },
+            initialWidgetPositions: []
         }
     }
 }
