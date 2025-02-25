@@ -2,22 +2,24 @@ import { Paint } from "canvaskit-wasm";
 import { Widget } from "../Widget";
 import { canvasKit, RenderContext } from "@/core/canvas/Canvas";
 import { Layer } from "@/core/stage/Layer";
+import { BoundingBox } from "@/core/geometry/BoundingBox";
 
 export interface BorderProps {
     parentLayer: Layer
-    widget: Widget
+    widgets: Widget[]
 }
 
 export class Border extends Widget {
     private paint: Paint
-    private bindWidget?: Widget
+    private bindWidgets?: Widget[]
 
     constructor(props: BorderProps) {
+        const boundingBox = BoundingBox.createWithMerge(...props.widgets)
         const widgetProps = {
-            x: props.widget.left,
-            y: props.widget.top,
-            width: props.widget.width,
-            height: props.widget.height,
+            x: boundingBox.left,
+            y: boundingBox.top,
+            width: boundingBox.width,
+            height: boundingBox.height,
             parentLayer: props.parentLayer
         }
         super('border', widgetProps)
@@ -26,8 +28,8 @@ export class Border extends Widget {
         this.paint.setStyle(canvasKit.PaintStyle.Stroke)
         this.paint.setColor(canvasKit.Color(29, 78, 216, .8))
         
-        this.bindWidget = props.widget
-        this.listenWidget(this.bindWidget)
+        this.bindWidgets = props.widgets
+        this.listenWidgets()
     }
 
     protected renderContent(renderContext: RenderContext): void {
@@ -42,18 +44,21 @@ export class Border extends Widget {
         renderContext.ctx.drawRect(rect, this.paint)
     }
 
-    listenWidget(widget: Widget) {
+    listenWidgets() {
+        const widget = this.bindWidgets![0]
         widget.boundsChanged.add(this.onWidgetBoundsChanged, this)
     }
 
     onWidgetBoundsChanged() {
-        this.left = this.bindWidget!.left;
-        this.top = this.bindWidget!.top;
-        this.width = this.bindWidget!.width;
-        this.height = this.bindWidget!.height;
+        const boundingBox = BoundingBox.createWithMerge(...this.bindWidgets!)
+        this.left = boundingBox.left;
+        this.top = boundingBox.top;
+        this.width = boundingBox.width;
+        this.height = boundingBox.height;
     }
 
     destroy(): void {
-        this.bindWidget?.boundsChanged.remove(this.onWidgetBoundsChanged, this)
+        const widget = this.bindWidgets![0]
+        widget.boundsChanged.remove(this.onWidgetBoundsChanged, this)
     }
 }
