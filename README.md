@@ -25,17 +25,24 @@
       - [x] Layering
       - [ ] Storing shapes in app
       - [x] Handling zIndexes
-      - [ ] Handling multiple objects
-          - [x]  Create local and world bounds
-          - [x]  Implement left, top based rendering
-          - [ ] Handle drawing borders correctly
-            - [ ] Draw borders on multi selection
-            - [ ] Remove borders on empty select
+      - [x] Handling multiple objects
+          - [x] Create local and world bounds
+          - [x] Implement left, top based rendering
+          - [x] Handle drawing borders correctly
+            - [x] Draw borders on multi selection
+            - [x] Remove borders on empty select
     - [ ] Selecting.
-      - [ ] Selecting.
+      - [x] Selecting.
       - [ ] Adding multi selector
+        - [ ] Adding multi selector
         - [ ] Restrict zoom and pan when multi selector is active
       - [ ] Handle changing width, height by controls
+      - [ ] Deselect on tool change
+    - [ ] Movable objects
+      - [x] Single movable objects
+      - [ ] Multiple movable objects
+        - [x] Implement moving
+        - [ ] Fix: bounding box updating
     - [ ] Pagination and search
     - [ ] Create better signal system
     - [ ] Adding text
