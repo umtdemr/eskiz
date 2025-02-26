@@ -6,8 +6,12 @@
     - [ ] Redirect on getUser true
     - [ ] Activate page
 - [ ] Canvas
-    - [x] Panning
-    - [x] Zooming
+    - [ ] Wheel
+      - [x] Panning
+        - [x] Pan with pan tool
+        - [ ] Pan with mouse wheel
+      - [x] Zooming
+      - [ ] Restrict wheel on mouse down
     - [x] Modes - select, pan
     - [x] Grid
     - [x] Zoom event listeners
@@ -33,11 +37,11 @@
             - [x] Remove borders on empty select
     - [ ] Selecting.
       - [x] Selecting.
-      - [ ] Adding multi selector
-        - [ ] Adding multi selector
-        - [ ] Restrict zoom and pan when multi selector is active
+      - [x] Adding multi selector
+        - [x] Adding multi selector
       - [ ] Handle changing width, height by controls
       - [ ] Deselect on tool change
+      - [ ] Auto select on new shape added
     - [ ] Movable objects
       - [x] Single movable objects
       - [ ] Multiple movable objects

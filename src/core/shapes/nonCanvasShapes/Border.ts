@@ -40,7 +40,7 @@ export class Border extends Widget {
             this.height,
         )
 
-        this.paint.setStrokeWidth(2 / renderContext.scale)
+        this.paint.setStrokeWidth(1 / renderContext.scale)
         renderContext.ctx.drawRect(rect, this.paint)
     }
 
