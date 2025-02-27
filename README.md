@@ -47,6 +47,12 @@
       - [ ] Multiple movable objects
         - [x] Implement moving
         - [ ] Fix: bounding box updating
+    - [ ] Mid way refactor
+      - [x] Better event emitter
+      - [ ] Canvas mouse controller service
+        - [ ] Use it in select tool
+        - [ ] Use it in shape drawer
+      - [ ] Wheel service
     - [ ] Pagination and search
     - [ ] Create better signal system
     - [ ] Adding text

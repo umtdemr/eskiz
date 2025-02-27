@@ -113,7 +113,7 @@ export class Engine extends Emitter<EngineEventsMap>{
         this._upperCanvasEl.removeEventListener('mousemove', this.onMouseMove);
         this._upperCanvasEl.removeEventListener('mouseup', this.onMouseUp);
 
-        this.clearEventListeners() // remove eventListeners in Emitter class
+        this.clear() // remove eventListeners in Emitter class
     }
     
     setZoom(zoom: number) {
