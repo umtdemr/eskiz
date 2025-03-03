@@ -1,8 +1,8 @@
 import { CanvasMouseEvent, Engine } from "../engine/Engine";
 import { BoundingBox } from "../geometry/BoundingBox";
 import { Widget } from "../shapes/Widget";
+import { Signal } from "../signal/Signal";
 import { Service } from "./Service";
-import { Signal } from 'signals'
 
 export class SelectionService extends Service {
     private _selected: Widget[] = []

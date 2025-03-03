@@ -3,7 +3,7 @@ import { Layer }from "../stage/Layer";
 import { BoundingBox } from "../geometry/BoundingBox";
 import { RenderContext } from "../canvas/Canvas";
 import { LinkedList } from "../dataStructures/LinkedList";
-import signals from "signals";
+import { Signal } from "../signal/Signal";
 
 export type WidgetType = 'shape' | 'text' | 'multiSelector' | 'border'
 
@@ -27,7 +27,7 @@ export abstract class Widget extends Layer {
     protected _localBounds: BoundingBox  // Local bounds (object's own space)
     protected _selected: boolean = false;
 
-    boundsChanged = new signals.Signal()
+    boundsChanged = new Signal()
     
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
