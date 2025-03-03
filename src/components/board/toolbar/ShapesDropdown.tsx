@@ -2,48 +2,50 @@ import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/compon
 import {Button} from "@/components/ui/button.tsx";
 import {clsx} from "clsx";
 import {Circle, Shapes, Square, Triangle} from "lucide-react";
-import {CanvasMode, CanvasSubModes} from "@/core/canvas/Canvas.ts";
 import {ComponentType, SVGAttributes, useEffect, useRef, useState} from "react";
 import useOnClickOutside from "@/hooks/UseOutsideClick.ts";
+import { ACTION_MODES, SUB_ACTION_MODES } from "@/helpers/Constant";
 
-function isSubModeForShapes(mode: CanvasSubModes|undefined): boolean {
+function isSubModeForShapes(mode: keyof typeof SUB_ACTION_MODES | undefined): boolean {
     if (!mode) return false
-    return mode === 'createRectangle' || mode === 'createTriangle' || mode === 'createEllipse';
+    return mode === SUB_ACTION_MODES.CREATE_RECTANGLE || 
+        mode === SUB_ACTION_MODES.CREATE_ELLIPSE || 
+        mode === SUB_ACTION_MODES.CREATE_TRIANGLE
 }
 
 export function ShapesDropdown({
     activeMode, 
     handleShapeModeChange
 }: {
-    activeMode: CanvasMode,
-    handleShapeModeChange: (newMode: CanvasSubModes) => void
+    activeMode: { mainMode: keyof typeof ACTION_MODES, subMode?: keyof typeof SUB_ACTION_MODES },
+    handleShapeModeChange: (newMode: keyof typeof SUB_ACTION_MODES) => void
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const menuRef = useRef(null);
-    const shapesBtnRef = useRef(null)
+    const shapesBtnRef = useRef<HTMLButtonElement>(null)
     
-    const onClickOutsideHandler = (event) => {
-        if (shapesBtnRef.current.contains(event.target)) {
+    const onClickOutsideHandler = (event: MouseEvent) => {
+        if (shapesBtnRef.current!.contains(event.target as Node)) {
             return
         }
         setIsOpen(false)
     }
     useOnClickOutside(menuRef, onClickOutsideHandler)
 
-    const shapes: {tooltip: string, mode: CanvasSubModes, icon?: ComponentType<SVGAttributes<SVGElement>> }[] = [
+    const shapes: {tooltip: string, mode: keyof typeof SUB_ACTION_MODES, icon?: ComponentType<SVGAttributes<SVGElement>> }[] = [
         {
             tooltip: 'Rectangle',
-            mode: 'createRectangle',
+            mode: SUB_ACTION_MODES.CREATE_RECTANGLE,
             icon: Square
         },
         {
             tooltip: 'Triangle',
-            mode: 'createTriangle',
+            mode: SUB_ACTION_MODES.CREATE_TRIANGLE,
             icon: Triangle
         },
         {
             tooltip: 'Ellipse',
-            mode: 'createEllipse',
+            mode: SUB_ACTION_MODES.CREATE_ELLIPSE,
             icon: Circle
         },
     ]
@@ -54,7 +56,7 @@ export function ShapesDropdown({
 
     useEffect(() => {
         if (isOpen) {
-            handleShapeModeChange('createRectangle')
+            handleShapeModeChange(SUB_ACTION_MODES.CREATE_RECTANGLE)
         }
     }, [isOpen, handleShapeModeChange]);
 
@@ -86,7 +88,7 @@ export function ShapesDropdown({
                         ref={menuRef}
                     >
                         {shapes.map(shape => (
-                            <Tooltip>
+                            <Tooltip key={shape.mode}>
                                 <TooltipTrigger asChild>
                                     <Button 
                                         variant='ghost' 

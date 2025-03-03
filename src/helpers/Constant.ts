@@ -93,3 +93,15 @@ export const STAGE_LAYERS = {
     NON_CANVAS_CONTAINER_STATIC: 'NonCanvasContainer_Static',
     NON_CANVAS_CONTAINER_DYNAMIC: 'NonCanvasContainer_Dynamic',
 } as const;
+
+export const ACTION_MODES = {
+    SELECT: "SELECT",
+    PAN: "PAN",
+    CREATE: "CREATE",
+} as const;
+
+export const SUB_ACTION_MODES = {
+    CREATE_RECTANGLE: 'CREATE_RECTANGLE',
+    CREATE_TRIANGLE: 'CREATE_TRIANGLE',
+    CREATE_ELLIPSE: 'CREATE_ELLIPSE'
+} as const;
