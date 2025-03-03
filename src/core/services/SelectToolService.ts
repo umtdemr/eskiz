@@ -1,13 +1,14 @@
-import {Tool} from "@/core/tools/Tool.ts";
-import {CanvasMouseEvent, Engine} from "@/core/engine/Engine.ts";
-import { Layer } from "../stage/Layer";
 import { Point } from "../canvas/Canvas";
+import { CanvasMouseEvent, Engine } from "../engine/Engine";
+import { MouseController } from "../engine/MouseController";
 import { Widget } from "../shapes/Widget";
-import { SelectionService } from "../services/SelectionService";
+import { Layer } from "../stage/Layer";
 import { SelectionLayer } from "../stage/SelectionLayer";
+import { SelectionService } from "./SelectionService";
+import { Service } from "./Service";
 
-export class SelectTool implements Tool {
-    private engine: Engine
+export class SelectToolService extends Service {
+    private mouseController: MouseController
     private isDrawing: boolean = false
     private shapesLayer: Layer
     private selectionLayer: SelectionLayer
@@ -26,18 +27,28 @@ export class SelectTool implements Tool {
         initialWidgetPositions: []
     }
 
-    constructor(engine: Engine, selectionService: SelectionService) {
-        this.engine = engine
+    constructor(engine: Engine, mouseController: MouseController) {
+        super(engine)
+        this.mouseController = mouseController
+        engine.stagesInitiated.addOnce(this.onStagesInitiated, this)
+    }
+
+    onStagesInitiated() {
+        this.init()
+    }
+
+    init() {
         this.shapesLayer = this.engine.stage.widgetsDefaultLayer;
-        this.selectionService = selectionService
+        this.selectionService = this.engine.getService('selection')
         this.selectionLayer = this.engine.stage.nonCanvasDynamicContainer.selectionLayer;
+
+        this.mouseController.on('mouseDown', this.onMouseDown, this)
+        this.mouseController.on('mouseMove', this.onMouseMove, this)
+        this.mouseController.on('mouseUp', this.onMouseUp, this)
     }
 
-    onActivate(engine: Engine) {
-        engine.upperCanvasEl.style.cursor = 'default';
-    }
 
-    onMouseDown(data: CanvasMouseEvent, engine: Engine): void {
+    onMouseDown(data: CanvasMouseEvent): void {
         this.clearMovingObjectState()
 
         const selectionBound = this.selectionService.bounds
@@ -79,7 +90,7 @@ export class SelectTool implements Tool {
         }
     }
 
-    onMouseMove(data: CanvasMouseEvent, engine: Engine): void {
+    onMouseMove(data: CanvasMouseEvent): void {
         if (this.movingObjectState.movingShape.length > 0) {
             const deltaX = data.pointer.x - this.movingObjectState.initialPointer.x
             const deltaY = data.pointer.y - this.movingObjectState.initialPointer.y
@@ -105,10 +116,10 @@ export class SelectTool implements Tool {
         }
         multiSelector.onMouseMove(data)
         this.selectionService.selectObjectsWithDrawing(multiSelector.bounds)
-        engine.canvas.requestRender()
+        this.engine.canvas.requestRender()
     }
 
-    onMouseUp(data: CanvasMouseEvent, engine: Engine): void {
+    onMouseUp(data: CanvasMouseEvent): void {
         this.movingObjectState.movingShape = [];
         if (this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
             this.selectionLayer.finishMoving()
@@ -156,5 +167,12 @@ export class SelectTool implements Tool {
             initialPointer: { x: 0, y: 0 },
             initialWidgetPositions: []
         }
+    }
+
+
+    dispose(): void {
+        this.mouseController.off('mouseDown', this.onMouseDown, this)
+        this.mouseController.off('mouseMove', this.onMouseMove, this)
+        this.mouseController.off('mouseUp', this.onMouseUp, this)
     }
 }

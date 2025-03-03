@@ -23,4 +23,6 @@ export class Service {
     get enabled() {
         return this._enabled
     }
+
+    dispose() {}
 }
