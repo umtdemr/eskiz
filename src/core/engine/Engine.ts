@@ -10,9 +10,10 @@ import { SelectionService } from '../services/SelectionService';
 import { MouseController } from "./MouseController";
 import { SelectToolService } from "../services/SelectToolService";
 import { ShapeDrawerToolService } from "../services/ShapeDrawerToolService";
-import { Signal } from "signals";
 import { PanToolService } from "../services/PanToolService";
 import { CursorSenderService } from "../services/CursorSenderService";
+import { ToolService } from "../services/ToolService";
+import { Signal } from "../signal/Signal";
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -136,6 +137,7 @@ export class Engine extends Emitter<EngineEventsMap>{
     
     private initializeServices() {
         this.serviceManager.register('selection', new SelectionService(this));
+        this.serviceManager.register('toolService', new ToolService(this));
         this.serviceManager.register('selectTool', new SelectToolService(this, this._mouseController));
         this.serviceManager.register('panTool', new PanToolService(this, this._mouseController));
         this.serviceManager.register('shapeDrawer', new ShapeDrawerToolService(this, this._mouseController));
