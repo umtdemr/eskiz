@@ -1,19 +1,28 @@
-import {Shape} from "@/core/shapes/Shape.ts";
-import {Rectangle} from "@/core/shapes/Rectangle.ts";
-import {Triangle} from "@/core/shapes/Triangle.ts";
-import {Ellipse} from "@/core/shapes/Ellipse.ts";
-import {Engine, CanvasMouseEvent} from "@/core/engine/Engine.ts";
-import {Tool} from "@/core/tools/Tool.ts";
+import { Triangle } from "lucide-react";
+import { CanvasMouseEvent, Engine } from "../engine/Engine";
+import { MouseController } from "../engine/MouseController";
+import { Rectangle } from "../shapes/Rectangle";
+import { Shape } from "../shapes/Shape";
+import { Service } from "./Service";
+import { Ellipse } from "../shapes/Ellipse";
 
-/**
- * Helps to draw shapes
- */
-export class ShapeDrawerTool implements Tool {
+export class ShapeDrawerToolService extends Service {
+    private mouseController: MouseController
     private shape: Shape|null = null
     private drawingStarted: boolean = false;
     private initialPosition: { x: number, y: number } = { x: 0, y: 0 }
     
-    constructor() {
+    constructor(engine: Engine, mouseController: MouseController) {
+        super(engine)
+        this.mouseController = mouseController
+
+        this.init()
+    }
+
+    init() {
+        this.mouseController.on('mouseDown', this.onMouseDown, this)
+        this.mouseController.on('mouseMove', this.onMouseMove, this)
+        this.mouseController.on('mouseUp', this.onMouseUp, this)
     }
     
     onActivate(engine: Engine) {
@@ -25,8 +34,8 @@ export class ShapeDrawerTool implements Tool {
      * @param data
      * @param engine
      */
-    onMouseDown(data: CanvasMouseEvent, engine: Engine) {
-        const drawingMode = engine.activeMode.subMode
+    onMouseDown(data: CanvasMouseEvent) {
+        const drawingMode = this.engine.activeMode.subMode
         this.initialPosition = {
             x: data.pointer.x,
             y: data.pointer.y,
@@ -47,9 +56,9 @@ export class ShapeDrawerTool implements Tool {
                 y: data.pointer.y,
                 width: 1,
                 height: 1,
-                parentLayer: engine.stage.widgetsDefaultLayer
+                parentLayer: this.engine.stage.widgetsDefaultLayer
             })
-            engine.stage.addWidget(this.shape!)
+            this.engine.stage.addWidget(this.shape!)
             this.drawingStarted = true;
         } 
     }
@@ -59,7 +68,7 @@ export class ShapeDrawerTool implements Tool {
      * @param data
      * @param engine
      */
-    onMouseMove(data: CanvasMouseEvent, engine: Engine) {
+    onMouseMove(data: CanvasMouseEvent) {
         if (!this.shape) return
         const { canvas } = data
 
@@ -89,8 +98,8 @@ export class ShapeDrawerTool implements Tool {
         canvas?.requestRender()
     }
 
-    onMouseUp(data: CanvasMouseEvent, engine: Engine) {
-        engine.changeActiveMode('neutral')
+    onMouseUp() {
+        this.engine.changeActiveMode('neutral')
         this.reset()
     }
     
@@ -106,4 +115,9 @@ export class ShapeDrawerTool implements Tool {
         return this.drawingStarted
     }
 
+    dispose(): void {
+        this.mouseController.off('mouseDown', this.onMouseDown, this)
+        this.mouseController.off('mouseMove', this.onMouseMove, this)
+        this.mouseController.off('mouseUp', this.onMouseUp, this)
+    }
 }
