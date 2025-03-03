@@ -21,7 +21,6 @@ export type CanvasMouseEvent = {
 }
 
 export type EngineEventsMap = {
-    'modeChange': CanvasMode
     'zoom': number,
 }
 
@@ -109,21 +108,6 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.emit('zoom', this.canvas.zoom)
     }
 
-    /**
-     * Sets new mode.
-     * @param newMainMode - New main mode.
-     * @param newSubMode - New sub mode.
-     */
-    changeActiveMode(newMainMode: CanvasMainModes, newSubMode?: CanvasSubModes) {
-        const shouldEmit = newMainMode !== this._activeMode.mainMode || newSubMode !== this._activeMode.subMode
-        this._activeMode = {
-            mainMode: newMainMode,
-            subMode: newSubMode
-        };
-        if (shouldEmit) {
-            this.emit('modeChange', { mainMode: newMainMode, subMode: newSubMode })
-        }
-    }
     private setEventHandlers() {
         // @ts-ignore
         this._upperCanvasEl.addEventListener('wheel', this.onMouseWheel);

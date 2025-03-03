@@ -99,7 +99,7 @@ export class ShapeDrawerToolService extends Service {
     }
 
     onMouseUp() {
-        this.engine.changeActiveMode('neutral')
+        // this.engine.changeActiveMode('neutral') // todo: fix here
         this.reset()
     }
     

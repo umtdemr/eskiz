@@ -1,29 +1,24 @@
 import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from "@/components/ui/tooltip.tsx";
 import {Button} from "@/components/ui/button.tsx";
 import {Hand, MousePointer2, Redo, StickyNote, Type, Undo} from "lucide-react";
-import {useCallback, useEffect, useState} from "react";
+import {useCallback} from "react";
 import {clsx} from "clsx";
 import {ShapesDropdown} from "@/components/board/toolbar/ShapesDropdown.tsx";
-import {Engine, CanvasMode, CanvasSubModes} from "@/core/engine/Engine.ts";
+import { useBoundStore } from "@/store/store";
+import { useShallow } from "zustand/react/shallow";
+import { ACTION_MODES, SUB_ACTION_MODES } from "@/helpers/Constant";
 
-export default function Toolbar({
-    engine
-}: {
-    engine: Engine
-}) {
-    const [activeMode, setActiveMode] = useState<CanvasMode>({ mainMode: 'neutral' })
-    
-    const handleShapeModeChange = useCallback((newMode: CanvasSubModes) => {
-        engine.changeActiveMode('create', newMode)
-    }, [engine])
-    
-    useEffect(() => {
-        const unsubscribe = engine.on('modeChange', (event) => {
-            setActiveMode(event)
-        })
-        
-        return () => unsubscribe();
-    })
+export default function Toolbar() {
+    const activeMode = {
+        mainMode: useBoundStore(useShallow((state) => state.mainMode)),
+        subMode: useBoundStore(useShallow((state) => state.subMode))
+    }
+
+    const changeActiveMode = useBoundStore(useShallow((state) => state.changeActiveMode))
+
+    const handleShapeModeChange = useCallback((newMode: keyof typeof SUB_ACTION_MODES) => {
+        changeActiveMode(ACTION_MODES.CREATE, newMode)
+    }, [changeActiveMode])
     
     return (
         <div className='fixed flex gap-2 flex-col rounded p-2 top-[50%] left-5 bg-white' style={{ transform: 'translateY(-50%)', boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)' }}>
@@ -33,10 +28,10 @@ export default function Toolbar({
                         <Button 
                             variant='ghost' 
                             className={clsx('px-2', { 
-                                'bg-amber-500': activeMode?.mainMode === 'neutral',
-                                'hover:bg-amber-500': activeMode?.mainMode === 'neutral'
+                                'bg-amber-500': activeMode?.mainMode === ACTION_MODES.SELECT,
+                                'hover:bg-amber-500': activeMode?.mainMode === ACTION_MODES.SELECT
                             })} 
-                            onClick={() => engine.changeActiveMode('neutral')}>
+                            onClick={() => changeActiveMode(ACTION_MODES.SELECT)}>
                             <MousePointer2 />
                         </Button>
                     </TooltipTrigger>
@@ -51,10 +46,10 @@ export default function Toolbar({
                         <Button 
                             variant='ghost' 
                             className={clsx('px-2', {
-                                'bg-amber-500': activeMode?.mainMode === 'pan',
-                                'hover:bg-amber-500': activeMode?.mainMode === 'pan'
+                                'bg-amber-500': activeMode?.mainMode === ACTION_MODES.PAN,
+                                'hover:bg-amber-500': activeMode?.mainMode === ACTION_MODES.PAN
                             })}
-                            onClick={() => engine.changeActiveMode('pan')}>
+                            onClick={() => changeActiveMode(ACTION_MODES.PAN)}>
                             <Hand />
                         </Button>
                     </TooltipTrigger>
