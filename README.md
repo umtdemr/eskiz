@@ -40,7 +40,7 @@
       - [x] Adding multi selector
         - [x] Adding multi selector
       - [ ] Handle changing width, height by controls
-      - [ ] Deselect on tool change
+      - [x] Deselect on tool change
       - [ ] Auto select on new shape added
     - [ ] Movable objects
       - [x] Single movable objects
@@ -49,9 +49,10 @@
         - [ ] Fix: bounding box updating
     - [ ] Mid way refactor
       - [x] Better event emitter
-      - [ ] Canvas mouse controller service
-        - [ ] Use it in select tool
-        - [ ] Use it in shape drawer
+      - [x] Canvas mouse controller service
+        - [x] Use it in select tool
+        - [x] Use it in shape drawer
+        - [x] Use it in cursor sender
       - [ ] Wheel service
     - [ ] Pagination and search
     - [ ] Create better signal system
