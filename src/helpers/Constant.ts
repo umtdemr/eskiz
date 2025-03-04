@@ -100,8 +100,13 @@ export const ACTION_MODES = {
     CREATE: "CREATE",
 } as const;
 
-export const SUB_ACTION_MODES = {
+export const DRAWING_MODES = {
     CREATE_RECTANGLE: 'CREATE_RECTANGLE',
     CREATE_TRIANGLE: 'CREATE_TRIANGLE',
     CREATE_ELLIPSE: 'CREATE_ELLIPSE'
 } as const;
+
+export const SUB_ACTION_MODES = {
+    ...DRAWING_MODES
+} as const;
+

@@ -6,9 +6,12 @@ import { Layer } from "../stage/Layer";
 import { SelectionLayer } from "../stage/SelectionLayer";
 import { SelectionService } from "./SelectionService";
 import { Service } from "./Service";
+import { MainModeChangedState, ToolService } from "./ToolService";
+import { ACTION_MODES } from "@/helpers/Constant";
 
 export class SelectToolService extends Service {
     private mouseController: MouseController
+    private toolService: ToolService
     private isDrawing: boolean = false
     private shapesLayer: Layer
     private selectionLayer: SelectionLayer
@@ -26,18 +29,43 @@ export class SelectToolService extends Service {
         initialPointer: { x: 0, y: 0 },
         initialWidgetPositions: []
     }
+    private isStageInitated: boolean = false;
+    private mainMode: keyof typeof ACTION_MODES | null;
 
-    constructor(engine: Engine, mouseController: MouseController) {
+    constructor(engine: Engine, mouseController: MouseController, toolService: ToolService) {
         super(engine)
         this.mouseController = mouseController
+        this.toolService = toolService
         engine.stagesInitiated.addOnce(this.onStagesInitiated, this)
+
+        this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
     }
 
-    onStagesInitiated() {
-        this.init()
+    /**
+     * Listens stages initilization signal
+     */
+    private onStagesInitiated() {
+        this.isStageInitated = true;
+        this.checkInit();
+    }
+
+    private onMainModeChanged(state: MainModeChangedState) {
+        this.mainMode = state.tool;
+        this.checkInit();
+    }
+
+    /**
+     * Checks if all the necessary states are met, if it is, it calls init.
+     */
+    private checkInit() {
+        this.reset();
+        if (this.mainMode === ACTION_MODES.SELECT && this.isStageInitated) {
+            this.init();
+        }
     }
 
     init() {
+        this.engine.upperCanvasEl.style.cursor = 'default';
         this.shapesLayer = this.engine.stage.widgetsDefaultLayer;
         this.selectionService = this.engine.getService('selection')
         this.selectionLayer = this.engine.stage.nonCanvasDynamicContainer.selectionLayer;
@@ -169,10 +197,13 @@ export class SelectToolService extends Service {
         }
     }
 
-
-    dispose(): void {
+    reset() {
         this.mouseController.off('mouseDown', this.onMouseDown, this)
         this.mouseController.off('mouseMove', this.onMouseMove, this)
         this.mouseController.off('mouseUp', this.onMouseUp, this)
+    }
+
+    dispose(): void {
+        this.reset();
     }
 }
