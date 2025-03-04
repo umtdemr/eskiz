@@ -25,22 +25,10 @@ export type EngineEventsMap = {
     'zoom': number,
 }
 
-export type CanvasMainModes = 'neutral' | 'pan' | 'create'
-
-// can be used determining sub modes for main modes. For example, main mode can be `create` and sub mode can be `createRectangle`
-export type CanvasSubModes = 'createRectangle' | 'createTriangle' | 'createEllipse'
-
-export type CanvasMode = {
-    mainMode: CanvasMainModes,
-    subMode?: CanvasSubModes
-}
-
-
 export class Engine extends Emitter<EngineEventsMap>{
     private _slugId: string
     private _mouseController: MouseController
     private _upperCanvasEl: HTMLCanvasElement
-    private _activeMode: CanvasMode = { mainMode: 'neutral' };
     private _stage: Stage
     canvas: Canvas
     wsEngine: WsEngine
@@ -147,10 +135,6 @@ export class Engine extends Emitter<EngineEventsMap>{
 
     getService<T>(name: string): T {
         return this.serviceManager.get<T>(name);
-    }
-
-    get activeMode() {
-        return this._activeMode
     }
     
     get upperCanvasEl() {
