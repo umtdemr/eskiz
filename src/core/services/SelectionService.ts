@@ -29,10 +29,11 @@ export class SelectionService extends Service {
         }
     }
 
-    selectWidget(widget: Widget, mouseEvent: CanvasMouseEvent) {
+    selectWidget(widget: Widget) {
         widget.selected = true;
         this._selected = [widget]
         this.selectionChanged.dispatch()
+        this.engine.canvas.requestRender()
     }
 
     clearSelection() {
