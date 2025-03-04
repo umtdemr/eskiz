@@ -1,18 +1,32 @@
+import { ACTION_MODES } from "@/helpers/Constant";
 import { CanvasMouseEvent, Engine } from "../engine/Engine";
 import { BoundingBox } from "../geometry/BoundingBox";
 import { Widget } from "../shapes/Widget";
 import { Signal } from "../signal/Signal";
 import { Service } from "./Service";
+import { MainModeChangedState, ToolService } from "./ToolService";
 
 export class SelectionService extends Service {
     private _selected: Widget[] = []
     private _selectedDuringDrawing: Widget[] = []
+    private toolService: ToolService
 
     selectionChanged = new Signal()
     drawingSelectionUpdated = new Signal()
 
-    constructor(engine: Engine) {
+    constructor(engine: Engine, toolService: ToolService) {
         super(engine)
+        this.toolService = toolService
+
+        this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
+    }
+
+    private onMainModeChanged(state: MainModeChangedState) {
+        // if select tool is not selected, remove selection
+        if (state.tool !== ACTION_MODES.SELECT) {
+            this.clearSelection()
+            this.engine.canvas.requestRender()
+        }
     }
 
     selectWidget(widget: Widget, mouseEvent: CanvasMouseEvent) {
