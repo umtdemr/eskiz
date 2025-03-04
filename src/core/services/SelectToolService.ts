@@ -169,9 +169,8 @@ export class SelectToolService extends Service {
         if (!this.movingObjectState.isObjectAlreadySelected) {
             const clickedWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
             if (clickedWidget) {
-                this.selectionService.selectWidget(clickedWidget, data)
+                this.selectionService.selectWidget(clickedWidget)
             }
-            this.engine.canvas.requestRender()
         }
     }
 

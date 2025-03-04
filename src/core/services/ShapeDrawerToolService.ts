@@ -7,19 +7,22 @@ import { Ellipse } from "../shapes/Ellipse";
 import { Triangle } from "../shapes/Triangle"; 
 import { SubModeChangedState, ToolService } from "./ToolService";
 import { ACTION_MODES, SUB_ACTION_MODES, DRAWING_MODES } from "@/helpers/Constant";
+import { SelectionService } from "./SelectionService";
 
 export class ShapeDrawerToolService extends Service {
     private mouseController: MouseController
     private toolService: ToolService
+    private selectionService: SelectionService
     private shape: Shape|null = null
     private drawingStarted: boolean = false;
     private initialPosition: { x: number, y: number } = { x: 0, y: 0 }
     private drawingMode: keyof typeof DRAWING_MODES | null;
     
-    constructor(engine: Engine, mouseController: MouseController, toolService: ToolService) {
+    constructor(engine: Engine, mouseController: MouseController, toolService: ToolService, selectionService: SelectionService) {
         super(engine)
         this.mouseController = mouseController
         this.toolService = toolService
+        this.selectionService = selectionService
 
         this.toolService.subModeChanged.add(this.onSubModeChanged, this)
     }
@@ -125,6 +128,9 @@ export class ShapeDrawerToolService extends Service {
         setTimeout(() => {
             this.toolService.changeTool(ACTION_MODES.SELECT)
         }, 0)
+        if (this.shape) {
+            this.selectionService.selectWidget(this.shape)
+        }
         this.reset()
     }
     

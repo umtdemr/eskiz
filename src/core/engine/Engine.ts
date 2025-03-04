@@ -125,11 +125,12 @@ export class Engine extends Emitter<EngineEventsMap>{
     
     private initializeServices() {
         const toolService = new ToolService(this)
+        const selectionService = new SelectionService(this, toolService);
         this.serviceManager.register('toolService', toolService);
-        this.serviceManager.register('selection', new SelectionService(this, toolService));
+        this.serviceManager.register('selection', selectionService);
         this.serviceManager.register('selectTool', new SelectToolService(this, this._mouseController, toolService));
         this.serviceManager.register('panTool', new PanToolService(this, this._mouseController, toolService));
-        this.serviceManager.register('shapeDrawer', new ShapeDrawerToolService(this, this._mouseController, toolService));
+        this.serviceManager.register('shapeDrawer', new ShapeDrawerToolService(this, this._mouseController, toolService, selectionService));
         this.serviceManager.register('cursorSender', new CursorSenderService(this, this.wsEngine, this._mouseController));
     }
 
