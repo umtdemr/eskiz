@@ -26,8 +26,13 @@ export class WheelService extends Service {
         }
         e.preventDefault();
 
-        // zooming should be activated with ctrl key
-        if (!e.ctrlKey) {
+        // handle panning if ctrl or meta is not pressed
+        if (!e.ctrlKey && !e.metaKey) {
+            const panSpeed = 1.5 / this.canvas.zoom;
+            this.canvas.translateX -= e.deltaX * panSpeed;
+            this.canvas.translateY -= e.deltaY * panSpeed;
+
+            this.canvas.requestRender();
             return
         }
         const mouseX = e.clientX
