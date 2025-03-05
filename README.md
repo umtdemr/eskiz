@@ -6,10 +6,10 @@
     - [ ] Redirect on getUser true
     - [ ] Activate page
 - [ ] Canvas
-    - [ ] Wheel
+    - [x] Wheel
       - [x] Panning
         - [x] Pan with pan tool
-        - [ ] Pan with mouse wheel
+        - [x] Pan with mouse wheel
       - [x] Zooming
       - [x] Restrict wheel on mouse down
     - [x] Modes - select, pan
@@ -35,13 +35,14 @@
           - [x] Handle drawing borders correctly
             - [x] Draw borders on multi selection
             - [x] Remove borders on empty select
-    - [ ] Selecting.
+    - [x] Selecting.
       - [x] Selecting.
       - [x] Adding multi selector
         - [x] Adding multi selector
-      - [ ] Handle changing width, height by controls
       - [x] Deselect on tool change
       - [x] Auto select on new shape added
+    - [ ] Controls
+      - [ ] Handle changing width, height by controls
     - [ ] Movable objects
       - [x] Single movable objects
       - [ ] Multiple movable objects
