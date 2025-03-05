@@ -24,8 +24,8 @@ export class MouseController extends Emitter<EngineEventsMap> {
     
     private mouseDownX = 0;
     private mouseDownY = 0;
-    private isMouseDown = false;
-    private isMouseMovePrevented = false;
+    private _isMouseDown = false;
+    private _isMouseMovePrevented = false;
 
     constructor() {
         super()
@@ -46,8 +46,8 @@ export class MouseController extends Emitter<EngineEventsMap> {
     private onMouseDown(e: MouseEvent) {
         this.mouseDownX = e.clientX
         this.mouseDownY = e.clientY
-        this.isMouseDown = true;
-        this.isMouseMovePrevented = false;
+        this._isMouseDown = true;
+        this._isMouseMovePrevented = false;
 
         const wrappedMouseEvent = this.wrapMouseEvent(e)
         this.emit('mouseDown', wrappedMouseEvent)
@@ -57,14 +57,14 @@ export class MouseController extends Emitter<EngineEventsMap> {
         const wrappedMouseEvent = this.wrapMouseEvent(e)
         let shouldEmit = true;
 
-        if (this.isMouseDown && !this.isMouseMovePrevented) {
+        if (this._isMouseDown && !this._isMouseMovePrevented) {
             const dx = Math.abs(e.clientX - this.mouseDownX)
             const dy = Math.abs(e.clientY - this.mouseDownY)
             
             // If move exceeds threshold, consider it an intentional move
             if (dx < MOVE_THRESHOLD || dy < MOVE_THRESHOLD) {
                 shouldEmit = false
-                this.isMouseMovePrevented = true;
+                this._isMouseMovePrevented = true;
             }
         }
 
@@ -90,8 +90,8 @@ export class MouseController extends Emitter<EngineEventsMap> {
         this.lastClickTime = currentTime
         this.lastClickX = e.clientX
         this.lastClickY = e.clientY
-        this.isMouseDown = false;
-        this.isMouseMovePrevented = false;
+        this._isMouseDown = false;
+        this._isMouseMovePrevented = false;
 
         this.emit('mouseUp', wrappedMouseEvent)
     } 
@@ -104,5 +104,9 @@ export class MouseController extends Emitter<EngineEventsMap> {
         this.upperCanvasEl.removeEventListener('mousedown', this.onMouseDown)
         document.removeEventListener('mousemove', this.onMouseMove);
         this.upperCanvasEl.removeEventListener('mouseup', this.onMouseUp);
+    }
+
+    get isMouseDown(): boolean {
+        return this._isMouseDown
     }
 }

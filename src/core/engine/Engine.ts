@@ -1,8 +1,7 @@
 import {Canvas, Point, setCanvasStyles} from "@/core/canvas/Canvas.ts";
 import {WsEngine} from "@/core/WsEngine.ts";
 import {UpperCanvasRenderer} from "@/core/renderers/UpperCanvasRenderer.ts";
-import {WheelEvent} from "react";
-import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
+
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import { Stage } from "../stage/Stage";
 import { ServiceManager } from '../services/ServiceManager';
@@ -14,6 +13,7 @@ import { PanToolService } from "../services/PanToolService";
 import { CursorSenderService } from "../services/CursorSenderService";
 import { ToolService } from "../services/ToolService";
 import { Signal } from "../signal/Signal";
+import { WheelService } from "../services/WheelService";
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -51,7 +51,6 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.canvas = new Canvas(this._slugId, this._stage)
 
         this.upperCanvasRenderer = new UpperCanvasRenderer();
-        this.onMouseWheel = this.onMouseWheel.bind(this);
         
         this.stagesInitiated.dispatch()
     }
@@ -70,8 +69,8 @@ export class Engine extends Emitter<EngineEventsMap>{
         this._upperCanvasEl = upperCanvasEl
         setCanvasStyles(this._upperCanvasEl)
         
-        this.setEventHandlers()
         this._mouseController.start(this)
+        this.getService<WheelService>('wheel')?.start()
 
         // assign upper canvas el to upper canvas renderer
         this.upperCanvasRenderer.upperCanvasEl = this._upperCanvasEl
@@ -96,32 +95,6 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.canvas.zoom = zoom
         this.emit('zoom', this.canvas.zoom)
     }
-
-    private setEventHandlers() {
-        // @ts-ignore
-        this._upperCanvasEl.addEventListener('wheel', this.onMouseWheel);
-    }
-    
-    private onMouseWheel(e: WheelEvent) {
-        e.preventDefault();
-
-        // zooming should be activated with ctrl key
-        if (!e.ctrlKey) {
-            return
-        }
-        const mouseX = e.clientX
-        const mouseY = e.clientY;
-
-        const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-        const oldScale = this.canvas.zoom;
-        this.canvas.zoom = Math.min(Math.max(ZOOM_LEVELS.MIN, this.canvas.zoom * zoomFactor), ZOOM_LEVELS.MAX);
-
-        this.canvas.translateX = mouseX / this.canvas.zoom - mouseX / oldScale + this.canvas.translateX;
-        this.canvas.translateY = mouseY / this.canvas.zoom - mouseY / oldScale + this.canvas.translateY;
-
-        this.canvas.requestRender()
-        this.emit('zoom', this.canvas.zoom)
-    }
     
     private initializeServices() {
         const toolService = new ToolService(this)
@@ -130,6 +103,7 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.serviceManager.register('selection', selectionService);
         this.serviceManager.register('selectTool', new SelectToolService(this, this._mouseController, toolService));
         this.serviceManager.register('panTool', new PanToolService(this, this._mouseController, toolService));
+        this.serviceManager.register('wheel', new WheelService(this, this._mouseController));
         this.serviceManager.register('shapeDrawer', new ShapeDrawerToolService(this, this._mouseController, toolService, selectionService));
         this.serviceManager.register('cursorSender', new CursorSenderService(this, this.wsEngine, this._mouseController));
     }

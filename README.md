@@ -11,7 +11,7 @@
         - [x] Pan with pan tool
         - [ ] Pan with mouse wheel
       - [x] Zooming
-      - [ ] Restrict wheel on mouse down
+      - [x] Restrict wheel on mouse down
     - [x] Modes - select, pan
     - [x] Grid
     - [x] Zoom event listeners
@@ -53,7 +53,7 @@
         - [x] Use it in select tool
         - [x] Use it in shape drawer
         - [x] Use it in cursor sender
-      - [ ] Wheel service
+      - [x] Wheel service
     - [ ] Pagination and search
     - [x] Create better signal system
     - [ ] Adding text
