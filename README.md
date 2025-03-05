@@ -41,7 +41,7 @@
         - [x] Adding multi selector
       - [ ] Handle changing width, height by controls
       - [x] Deselect on tool change
-      - [ ] Auto select on new shape added
+      - [x] Auto select on new shape added
     - [ ] Movable objects
       - [x] Single movable objects
       - [ ] Multiple movable objects
@@ -55,7 +55,7 @@
         - [x] Use it in cursor sender
       - [ ] Wheel service
     - [ ] Pagination and search
-    - [ ] Create better signal system
+    - [x] Create better signal system
     - [ ] Adding text
     - [ ] Sticky note
     - [ ] Undo redo
