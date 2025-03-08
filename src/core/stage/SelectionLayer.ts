@@ -1,5 +1,4 @@
 import { Engine } from "../engine/Engine";
-import { BoundingBox } from "../geometry/BoundingBox";
 import { SelectionService } from "../services/SelectionService";
 import { Border } from "../shapes/nonCanvasShapes/Border";
 import { Widget } from "../shapes/Widget";
@@ -9,7 +8,6 @@ export class SelectionLayer extends Layer {
     private engine: Engine
     private selectionService: SelectionService
     private _selected: Widget[]
-    private _boundingBoxWidget: Widget
 
     constructor(engine: Engine, selectionService: SelectionService) {
         super({ name: 'selection_layer' })
@@ -68,7 +66,8 @@ export class SelectionLayer extends Layer {
             this.addChildren(
                 new Border({
                     widgets: [widget],
-                    parentLayer: this
+                    parentLayer: this,
+                    engine: this.engine
                 })
             )
         }
@@ -82,7 +81,8 @@ export class SelectionLayer extends Layer {
         this.addChildren(
             new Border({
                 widgets,
-                parentLayer: this
+                parentLayer: this,
+                engine: this.engine
             })
         )
     }

@@ -27,6 +27,9 @@ export class MouseController extends Emitter<EngineEventsMap> {
     private _isMouseDown = false;
     private _isMouseMovePrevented = false;
 
+    private mouseMoveEvent: MouseEvent;
+    private mouseMoved = false;
+
     constructor() {
         super()
         this.onMouseDown = this.onMouseDown.bind(this);
@@ -37,23 +40,17 @@ export class MouseController extends Emitter<EngineEventsMap> {
     start(engine: Engine) {
         this.upperCanvasEl = engine.upperCanvasEl
         this.canvas = engine.canvas
+        this.canvas.tick.add(this.onTick, this)
 
         this.upperCanvasEl.addEventListener('mousedown', this.onMouseDown)
         this.upperCanvasEl.addEventListener('mouseup', this.onMouseUp)
         document.addEventListener('mousemove', this.onMouseMove)
     }
 
-    private onMouseDown(e: MouseEvent) {
-        this.mouseDownX = e.clientX
-        this.mouseDownY = e.clientY
-        this._isMouseDown = true;
-        this._isMouseMovePrevented = false;
+    private onTick() {
+        if (!this.mouseMoved) return;
+        const e = this.mouseMoveEvent
 
-        const wrappedMouseEvent = this.wrapMouseEvent(e)
-        this.emit('mouseDown', wrappedMouseEvent)
-    }
-    
-    private onMouseMove(e: MouseEvent) {
         const wrappedMouseEvent = this.wrapMouseEvent(e)
         let shouldEmit = true;
 
@@ -71,6 +68,23 @@ export class MouseController extends Emitter<EngineEventsMap> {
         if (shouldEmit) {
             this.emit('mouseMove', wrappedMouseEvent)
         }
+        this.mouseMoved = false;
+    }
+
+    private onMouseDown(e: MouseEvent) {
+        this.mouseDownX = e.clientX
+        this.mouseDownY = e.clientY
+        this._isMouseDown = true;
+        this._isMouseMovePrevented = false;
+
+        const wrappedMouseEvent = this.wrapMouseEvent(e)
+        this.emit('mouseDown', wrappedMouseEvent)
+    }
+    
+    private onMouseMove(e: MouseEvent) {
+        this.mouseMoveEvent = e
+        this.mouseMoved = true;
+
     }
     
     private onMouseUp(e: MouseEvent) {
