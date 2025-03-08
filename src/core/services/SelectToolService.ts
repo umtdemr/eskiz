@@ -131,7 +131,7 @@ export class SelectToolService extends Service {
     
             this.engine.canvas.requestRender();
 
-            if (this.movingObjectState.movingShape.length === 1 && !this.movingObjectState.isObjectMoved) {
+            if (this.movingObjectState.movingShape.length === 1 && !this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
                 this.selectionLayer.startInstantMoving(this.movingObjectState.movingShape[0])
             }
 
