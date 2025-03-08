@@ -3,15 +3,19 @@ import { Widget } from "../Widget";
 import { canvasKit, RenderContext } from "@/core/canvas/Canvas";
 import { Layer } from "@/core/stage/Layer";
 import { BoundingBox } from "@/core/geometry/BoundingBox";
+import { Engine } from "@/core/engine/Engine";
 
 export interface BorderProps {
     parentLayer: Layer
-    widgets: Widget[]
+    widgets: Widget[],
+    engine: Engine
 }
 
 export class Border extends Widget {
+    private engine: Engine
     private paint: Paint
     private bindWidgets?: Widget[]
+    private needsUpdate = false;
 
     constructor(props: BorderProps) {
         const boundingBox = BoundingBox.createWithMerge(...props.widgets)
@@ -23,6 +27,8 @@ export class Border extends Widget {
             parentLayer: props.parentLayer
         }
         super('border', widgetProps)
+
+        this.engine = props.engine;
         this.paint = new canvasKit.Paint()
         this.paint.setAntiAlias(true)
         this.paint.setStyle(canvasKit.PaintStyle.Stroke)
@@ -30,6 +36,7 @@ export class Border extends Widget {
         
         this.bindWidgets = props.widgets
         this.listenWidgets()
+        this.engine.canvas.tick.add(this.onTick, this)
     }
 
     protected renderContent(renderContext: RenderContext): void {
@@ -44,12 +51,16 @@ export class Border extends Widget {
         renderContext.ctx.drawRect(rect, this.paint)
     }
 
-    listenWidgets() {
+    private listenWidgets() {
         const widget = this.bindWidgets![0]
         widget.boundsChanged.add(this.onWidgetBoundsChanged, this)
     }
 
-    onWidgetBoundsChanged() {
+    private onWidgetBoundsChanged() {
+        this.needsUpdate = true;
+    }
+
+    private updateBbox() {
         const boundingBox = BoundingBox.createWithMerge(...this.bindWidgets!)
         this.left = boundingBox.left;
         this.top = boundingBox.top;
@@ -60,5 +71,12 @@ export class Border extends Widget {
     destroy(): void {
         const widget = this.bindWidgets![0]
         widget.boundsChanged.remove(this.onWidgetBoundsChanged, this)
+    }
+
+    private onTick() {
+        if (this.needsUpdate) {
+            this.updateBbox()
+            this.needsUpdate = false;
+        }
     }
 }
