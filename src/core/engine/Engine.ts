@@ -37,6 +37,7 @@ export class Engine extends Emitter<EngineEventsMap>{
     upperCanvasRenderer: UpperCanvasRenderer
 
     stagesInitiated = new Signal()
+    canvasInitiated = new Signal<Canvas>()
     
     constructor(slugId: string) {
         super()
@@ -75,6 +76,8 @@ export class Engine extends Emitter<EngineEventsMap>{
         // assign upper canvas el to upper canvas renderer
         this.upperCanvasRenderer.upperCanvasEl = this._upperCanvasEl
         this.upperCanvasRenderer.run() // start rendering upper canvas
+
+        this.canvasInitiated.dispatch(this.canvas)
         return true
     }
     
