@@ -3,6 +3,7 @@ import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
 import {Rectangle} from "@/core/shapes/Rectangle.ts";
 import {Widget} from "@/core/shapes/Widget.ts";
 import { Stage } from "../stage/Stage";
+import { Signal } from "../signal/Signal";
 
 export type Point = {
     x: number
@@ -33,6 +34,9 @@ export class Canvas {
     private needsRender = false;
     private scale = 1;
     private _slugId: string;
+
+    tickBefore = new Signal();
+    tick = new Signal();
     
     constructor(slugId: string, stage: Stage) {
         this._slugId = slugId;
@@ -82,11 +86,13 @@ export class Canvas {
     }
     
     draw() {
+        this.tickBefore.dispatch()
         if (this.needsRender) {
             this.render()
             this.needsRender = false;
             window.requestAnimationFrame(this.draw.bind(this));
         }
+        this.tick.dispatch()
         window.requestAnimationFrame(this.draw.bind(this));
     }
     
