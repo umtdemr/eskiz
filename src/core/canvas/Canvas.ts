@@ -1,203 +1,102 @@
-import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas} from "canvaskit-wasm";
-import {Emitter} from "@/core/emitter/Emitter.ts";
+import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas, FontMgr} from "canvaskit-wasm";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
-import {WheelEvent} from "react";
+import {Rectangle} from "@/core/shapes/Rectangle.ts";
+import {Widget} from "@/core/shapes/Widget.ts";
+import { Stage } from "../stage/Stage";
+import { Signal } from "../signal/Signal";
 
-export type CanvasEventsMap = {
-    'modeChange': 'neutral' | 'pan' | 'create';
-    'zoom': number,
-    'mouseMove': MouseEvent
-}
-
-type Point = {
+export type Point = {
     x: number
     y: number
 }
 
 type Transform = [number, number, number, number, number, number]
 
-export class Canvas extends Emitter<CanvasEventsMap> {
+export type RenderContext = {
+    ctx: SkiaCanvas
+    scale: number
+}
+
+export const setCanvasStyles = (canvasEl: HTMLCanvasElement) => {
+    canvasEl.style.position = 'absolute';
+    canvasEl.style.left = '0';
+    canvasEl.style.top = '0'; 
+}
+
+export class Canvas {
     private _initialized: boolean = false;
-    private canvasKit: CanvasKit;
     private surface: Surface
-    private canvasEl: HTMLCanvasElement
-    private upperCanvasEl: HTMLCanvasElement
-    private _isPanning = false;
-    private startPanX = 0;
-    private startPanY = 0;
+    private _canvasEl: HTMLCanvasElement
     private offsetX = 0;
     private offsetY = 0;
-    private lastMouseX = 0;
-    private lastMouseY = 0;
+    private _stage: Stage
+
     private needsRender = false;
     private scale = 1;
-    private _mouseMode: 'neutral' | 'pan' | 'create' = 'neutral';
     private _slugId: string;
+
+    tickBefore = new Signal();
+    tick = new Signal();
     
-    constructor(slugId: string) {
-        super()
+    constructor(slugId: string, stage: Stage) {
         this._slugId = slugId;
-        this.onMouseWheel = this.onMouseWheel.bind(this);
-        this.onMouseDown = this.onMouseDown.bind(this);
-        this.onMouseMove = this.onMouseMove.bind(this);
-        this.onMouseUp = this.onMouseUp.bind(this);
+        this._stage = stage 
     }
 
-    private setEventHandlers() {
-        this.upperCanvasEl.addEventListener('mousedown', this.onMouseDown)
-        this.upperCanvasEl.addEventListener('mousemove', this.onMouseMove);
-        this.upperCanvasEl.addEventListener('mouseup', this.onMouseUp);
-        // @ts-ignore
-        this.upperCanvasEl.addEventListener('wheel', this.onMouseWheel);
-    }
-
-    private onMouseDown(e: MouseEvent) {
-        if (this._mouseMode === 'pan') {
-            this._isPanning = true;
-            this.startPanX = e.clientX - this.offsetX * this.scale;
-            this.startPanY = e.clientY - this.offsetY * this.scale;
-            this.lastMouseX = e.clientX;
-            this.lastMouseY = e.clientY;
-            this.upperCanvasEl.style.cursor = 'grabbing';
-        }
-    }
-
-    private onMouseMove(e: MouseEvent) {
-        if (this._mouseMode === 'pan' && this._isPanning) {
-            this.offsetX = (e.clientX - this.startPanX) / this.scale;
-            this.offsetY = (e.clientY - this.startPanY) / this.scale;
-
-            this.lastMouseX = e.clientX;
-            this.lastMouseY = e.clientY;
-            this.needsRender = true;
-        }
-        this.emit('mouseMove', e)
-    }
-
-    private onMouseUp() {
-        if (this._isPanning) {
-            this._isPanning = false;
-            this.upperCanvasEl.style.cursor = 'grab';
-        }
-    }
-
-    private onMouseWheel(e: WheelEvent) {
-        e.preventDefault();
-
-        // zooming should be activated with ctrl key
-        if (!e.ctrlKey) {
-            return
-        }
-        const mouseX = e.clientX
-        const mouseY = e.clientY;
-
-        const zoomFactor = e.deltaY > 0 ? 0.5 : 1.6;
-        const oldScale = this.scale;
-        this.scale = Math.min(Math.max(ZOOM_LEVELS.MIN, this.scale * zoomFactor), ZOOM_LEVELS.MAX);
-
-        this.offsetX = mouseX / this.scale - mouseX / oldScale + this.offsetX;
-        this.offsetY = mouseY / this.scale - mouseY / oldScale + this.offsetY;
-
-        this.needsRender = true
-        this.emit('zoom', this.scale)
-    }
-
-    private setCanvasElStyles(canvasEl: HTMLCanvasElement) {
-        canvasEl.style.position = 'absolute';
-        canvasEl.style.left = '0';
-        canvasEl.style.top = '0';
-    }
-    
     async initialize() {
         const canvas = document.querySelector('#board') as HTMLCanvasElement;
         if (!canvas) {
             return false;
         }
-        this.canvasEl = canvas
+        this._canvasEl = canvas
         
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         
-        // create upper canvas
-        const upperCanvasEl = document.createElement('canvas')
-        upperCanvasEl.width = canvas.width;
-        upperCanvasEl.height = canvas.height;
-        upperCanvasEl.id = 'upperCanvas'
-        
-        canvas.parentNode.appendChild(upperCanvasEl)
-        this.upperCanvasEl = upperCanvasEl;
-        
         // set canvas styles
-        this.setCanvasElStyles(this.canvasEl);
-        this.setCanvasElStyles(this.upperCanvasEl);
+        setCanvasStyles(this._canvasEl)
 
-        // initialize canvasKit
-        this.canvasKit = await CanvasKitInit({
-            locateFile: (file: string) => '/node_modules/canvaskit-wasm/bin/' + file
-        })
-        
-        this.surface = this.canvasKit.MakeWebGLCanvasSurface(canvas)!
+        this.surface = canvasKit.MakeWebGLCanvasSurface(canvas)!
         
         this._initialized = true;
-        
-        // set event handlers
-        this.setEventHandlers();
-        this.needsRender = true;
         
         return true
     }
     
     render() {
-        const paint = new this.canvasKit.Paint();
-        paint.setColor(this.canvasKit.Color4f(0.9, 0, 0, 1.0));
-        paint.setStyle(this.canvasKit.PaintStyle.Stroke);
-        paint.setAntiAlias(true);
+        const draw = (ctx: SkiaCanvas) => {
+            ctx.clear(canvasKit.WHITE);
 
-        const path = new this.canvasKit.Path()
-        path.moveTo(100, 200)
-        path.lineTo(150, 200)
-        path.quadTo(300, 300, 350, 400)
-        path.close()
+            ctx.save()
+            ctx.scale(this.scale, this.scale)
+            ctx.translate(this.offsetX, this.offsetY);
 
-        const canvasKit = this.canvasKit;
-        const rect = this.canvasKit.LTRBRect(100, 200, 350, 400)
-
-        const offsetX = this.offsetX;
-        const offsetY = this.offsetY;
-
-
-        const surface = this.surface;
-        const scale = this.scale;
-        const drawGrid = this.drawGrid.bind(this)
-
-        function draw(canvas: SkiaCanvas) {
-            canvas.clear(canvasKit.WHITE);
+            this.drawGrid(ctx)
             
-            
-            canvas.save()
-            canvas.scale(scale, scale)
-            canvas.translate(offsetX, offsetY);
+            // render all elements
+            this._stage.render({ ctx, scale: this.scale })
 
-            drawGrid(canvas)
-            
-            canvas.drawRect(rect, paint);
-            canvas.rotate(20, 0, 0)
-            canvas.drawPath(path, paint)
-            canvas.restore()
+            ctx.restore()
         }
-        surface.requestAnimationFrame(draw)
+        this.surface.requestAnimationFrame(draw.bind(this))
+    }
+
+    requestRender() {
+        this.needsRender = true;
     }
     
     draw() {
+        this.tickBefore.dispatch()
         if (this.needsRender) {
             this.render()
             this.needsRender = false;
             window.requestAnimationFrame(this.draw.bind(this));
         }
+        this.tick.dispatch()
         window.requestAnimationFrame(this.draw.bind(this));
     }
     
-    drawGrid(canvas: SkiaCanvas) {
+    drawGrid(ctx: SkiaCanvas) {
         const height = this.surface.height()
         const width = this.surface.width()
         const baseGridSize = 50
@@ -234,10 +133,10 @@ export class Canvas extends Emitter<CanvasEventsMap> {
             { size: gridSize2, alpha: alpha2 }
         ].forEach(({ size, alpha }) => {
             if (alpha > 0) {
-                const gridPath = new this.canvasKit.Path()
-                const gridPaint = new this.canvasKit.Paint()
-                gridPaint.setColor(this.canvasKit.BLACK)
-                gridPaint.setStyle(this.canvasKit.PaintStyle.Stroke)
+                const gridPath = new canvasKit.Path()
+                const gridPaint = new canvasKit.Paint()
+                gridPaint.setColor(canvasKit.BLACK)
+                gridPaint.setStyle(canvasKit.PaintStyle.Stroke)
                 gridPaint.setAntiAlias(true)
                 gridPaint.setAlphaf(alpha)
                 gridPaint.setStrokeWidth(baseWidth)
@@ -261,27 +160,16 @@ export class Canvas extends Emitter<CanvasEventsMap> {
                 }
 
                 gridPath.close()
-                canvas.drawPath(gridPath, gridPaint)
+                ctx.drawPath(gridPath, gridPaint)
             }
         })
     }
 
-    zoom(newZoom: number) {
-        newZoom = Math.min(Math.max(ZOOM_LEVELS.MIN, newZoom), ZOOM_LEVELS.MAX)
-        this.scale = newZoom
-        this.needsRender = true
-        this.emit('zoom', this.scale)
-    }
-    
     dispose() {
-        this.upperCanvasEl.removeEventListener('mousedown', this.onMouseDown)
-        this.upperCanvasEl.removeEventListener('mousemove', this.onMouseMove);
-        this.upperCanvasEl.removeEventListener('mouseup', this.onMouseUp);
         // @ts-ignore
         this.upperCanvasEl.removeEventListener('wheel', this.onMouseWheel);
-        this.clearEventListeners() // remove eventListeners in Emitter class
     }
-    
+
     getPointer(e: MouseEvent): Point {
         const pointer = {
             x: e.x,
@@ -319,27 +207,72 @@ export class Canvas extends Emitter<CanvasEventsMap> {
     get viewportTransform(): Transform {
         return [this.scale, 0, 0, this.scale, this.offsetX * this.scale, this.offsetY * this.scale]
     }
-    get mouseMode() {
-        return this._mouseMode
-    }
-    set mouseMode(newMode: 'neutral' | 'pan' | 'create') {
-        const shouldEmit = newMode !== this._mouseMode
-        this._mouseMode = newMode;
-        if (shouldEmit) {
-            this.emit('modeChange', newMode)
-        }
-        
-        if (this.mouseMode === 'neutral') {
-            this.upperCanvasEl.style.cursor = 'default'
-        }
-    }
 
     get initialized() {
         return this._initialized;
     }
     
-    get upperCanvas() {
-        return this.upperCanvasEl;
+    get zoom() {
+        return this.scale
+    }
+    
+    get translateX() {
+        return this.offsetX
+    }
+    
+    set translateX(x: number) {
+        this.offsetX = x;
+    }
+    
+    get translateY() {
+        return this.offsetY
     }
 
+    set translateY(y: number) {
+        this.offsetY = y;
+    }
+
+    set zoom(newZoom: number) {
+        newZoom = Math.min(Math.max(ZOOM_LEVELS.MIN, newZoom), ZOOM_LEVELS.MAX)
+        this.scale = newZoom
+        this.needsRender = true
+    }
+    
+    get canvasEl(): HTMLCanvasElement {
+        return this._canvasEl
+    }
 }
+
+export class CanvasKitSingleton {
+    private static instance: CanvasKit;
+
+    private constructor() {}
+
+    public static async getInstance(): Promise<CanvasKit> {
+        if (!CanvasKitSingleton.instance) {
+            CanvasKitSingleton.instance = await CanvasKitInit({
+                locateFile: (file: string) => '/node_modules/canvaskit-wasm/bin/' + file
+            });
+        }
+        return CanvasKitSingleton.instance;
+    }
+}
+
+export const canvasKit = await CanvasKitSingleton.getInstance();
+
+export class FontManagerSingleton {
+    private static instance: FontMgr;
+
+    private constructor() {}
+
+    public static async getInstance(canvasKit: CanvasKit): Promise<FontMgr> {
+        if (!FontManagerSingleton.instance) {
+            const fontUrl = '/fonts/OpenSans-Regular.ttf';
+            const loadFontPromise = await fetch(fontUrl);
+            FontManagerSingleton.instance = canvasKit.FontMgr.FromData(await loadFontPromise.arrayBuffer())!;
+        }
+        return FontManagerSingleton.instance;
+    }
+}
+
+export const fontManager = await FontManagerSingleton.getInstance(canvasKit);

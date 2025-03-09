@@ -124,9 +124,10 @@ export default function SingleBoard() {
                 let isOkayToProceed = isEngineInitialized! && !!connectResp.join;
                 setIsInitialized(isOkayToProceed)
                 if (isOkayToProceed) {
-                    canvasRef.current?.draw();
+                    engineRef.current?.run()
                 }
             } catch (err) {
+                console.error(err)
                 navigateToBoardOnErr();
             }
         }
@@ -186,8 +187,8 @@ export default function SingleBoard() {
                 ((boardQuery.isSuccess && isInitialized) && !connectionError) ? (
                     <>
                         <Header name={boardQuery.data.name} />
-                        <Toolbar canvas={canvasRef.current!} />
-                        <Footer canvas={canvasRef.current!} />
+                        <Toolbar engine={engineRef.current!} />
+                        <Footer engine={engineRef.current!} />
                     </>
                 ) : null
             }
