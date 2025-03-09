@@ -25,9 +25,8 @@
     - [x] Refactor -> use `ctx` instead of `canvas`
     - [x] Create base class & Render with render methods
       - [x] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
-    - [ ] Rendering shapes
+    - [x] Rendering shapes
       - [x] Layering
-      - [ ] Storing shapes in app
       - [x] Handling zIndexes
       - [x] Handling multiple objects
           - [x] Create local and world bounds
@@ -43,12 +42,12 @@
       - [x] Auto select on new shape added
     - [ ] Controls
       - [ ] Handle changing width, height by controls
-    - [ ] Movable objects
+    - [x] Movable objects
       - [x] Single movable objects
-      - [ ] Multiple movable objects
+      - [x] Multiple movable objects
         - [x] Implement moving
-        - [ ] Fix: bounding box updating
-    - [ ] Mid way refactor
+        - [x] Fix: bounding box updating
+    - [x] Mid way refactor
       - [x] Better event emitter
       - [x] Canvas mouse controller service
         - [x] Use it in select tool
@@ -57,6 +56,7 @@
       - [x] Wheel service
     - [ ] Pagination and search
     - [x] Create better signal system
+    - [ ] Adding pen tool
     - [ ] Adding text
     - [ ] Sticky note
     - [ ] Undo redo
