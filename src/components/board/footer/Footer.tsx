@@ -8,15 +8,15 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu.tsx";
-import {Canvas} from "@/core/canvas/Canvas.ts";
+import {Engine} from "@/core/engine/Engine.ts";
 
 export default function Footer({
-    canvas
-}: { canvas: Canvas }) {
+    engine
+}: { engine: Engine }) {
     const [zoom, setZoom] = useState(100);
     
     useEffect(() => {
-        const unsubscribe = canvas.on('zoom', (val) => {
+        const unsubscribe = engine.on('zoom', (val) => {
             setZoom(Math.floor(val * 100))
         })
         
@@ -53,13 +53,13 @@ export default function Footer({
                     </TooltipProvider>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent sideOffset={20} side={"top"}>
-                    <DropdownMenuItem onClick={() => canvas.zoom(0.5)}>
+                    <DropdownMenuItem onClick={() => engine.setZoom(0.5)}>
                         <ZoomIn /> 50%
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => canvas.zoom(1)}>
+                    <DropdownMenuItem onClick={() => engine.setZoom(1)}>
                         <ZoomIn /> 100%
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => canvas.zoom(2)}>
+                    <DropdownMenuItem onClick={() => engine.setZoom(2)}>
                         <ZoomIn /> 200%
                     </DropdownMenuItem>
                 </DropdownMenuContent>
