@@ -1,6 +1,6 @@
 import {Button} from "@/components/ui/button.tsx";
 import {LoaderCircle, MousePointer2, Plus} from "lucide-react";
-import {useMutation, useQuery} from "@tanstack/react-query";
+import {useMutation} from "@tanstack/react-query";
 import {API_ENDPOINTS} from "@/helpers/Constant.ts";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
@@ -8,32 +8,14 @@ import {BoardList} from "@/components/board/boardList/BoardList.tsx";
 import {toast} from "react-hot-toast";
 import {useNavigate} from "react-router-dom";
 import BoardsListSkeleton from "@/components/board/boardList/BoardsListSkeleton.tsx";
+import { useBoards } from "@/hooks/UseBoards";
 
 export default function BoardsPage() {
     const token = useBoundStore(useShallow((state) => state.token))
     const navigate = useNavigate();
 
-    const boardsQuery = useQuery({
-        queryKey: ['board_results', token],
-        queryFn: async () => {
-            const boardResponse = await fetch(API_ENDPOINTS.BOARDS, {
-                method: 'GET',
-                credentials: 'omit',
-                mode: 'cors',
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            })
+    const boardsQuery = useBoards()
 
-            if (!boardResponse.ok) {
-                throw new Error('Network response was not ok')
-            }
-            
-            const jsonResponse = await boardResponse.json()
-            return jsonResponse.board_results
-        },
-    })
-    
     const createBoard = useMutation({
         mutationFn: () => {
             return fetch(API_ENDPOINTS.CREATE_BOARD, {
