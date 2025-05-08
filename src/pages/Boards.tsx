@@ -14,7 +14,7 @@ export default function BoardsPage() {
     const token = useBoundStore(useShallow((state) => state.token))
     const navigate = useNavigate();
 
-    const boardsQuery = useBoards()
+    const boardsQuery = useBoards({is_deleted: false})
 
     const createBoard = useMutation({
         mutationFn: () => {
