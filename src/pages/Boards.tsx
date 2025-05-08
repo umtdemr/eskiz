@@ -9,8 +9,15 @@ import {toast} from "react-hot-toast";
 import {useNavigate} from "react-router-dom";
 import BoardsListSkeleton from "@/components/board/boardList/BoardsListSkeleton.tsx";
 import { useBoards } from "@/hooks/UseBoards";
+import Filter from "@/components/board/boardList/Filter";
+import { useState } from "react";
+
+export type OwnedByFilter = {
+    isOwner?: boolean
+}
 
 export default function BoardsPage() {
+    const [ownedByFilter, setOwnedByFilter] = useState<OwnedByFilter>({})
     const token = useBoundStore(useShallow((state) => state.token))
     const navigate = useNavigate();
 
@@ -71,8 +78,9 @@ export default function BoardsPage() {
                         </div> 
                     </div>
                 </div>
-
-
+                <div className="my-10">
+                    <Filter ownedByFilter={ownedByFilter} changeOwnedByFilter={(data: {isOwner?: boolean}) => setOwnedByFilter(data)} />
+                </div>
                 <div className='flex mt-10 flex-wrap gap-x-5 gap-y-10'>
                     {
                         boardsQuery.isError ? (
