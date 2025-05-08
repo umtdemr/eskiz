@@ -8,7 +8,7 @@ import {BoardList} from "@/components/board/boardList/BoardList.tsx";
 import {toast} from "react-hot-toast";
 import {useNavigate} from "react-router-dom";
 import BoardsListSkeleton from "@/components/board/boardList/BoardsListSkeleton.tsx";
-import { useBoards } from "@/hooks/UseBoards";
+import { SortByFilter, useBoards } from "@/hooks/UseBoards";
 import Filter from "@/components/board/boardList/Filter";
 import { useState } from "react";
 
@@ -18,10 +18,16 @@ export type OwnedByFilter = {
 
 export default function BoardsPage() {
     const [ownedByFilter, setOwnedByFilter] = useState<OwnedByFilter>({})
+    const [sortByFilter, setSortByFilter] = useState<SortByFilter>('-created_at')
     const token = useBoundStore(useShallow((state) => state.token))
     const navigate = useNavigate();
 
-    const boardsQuery = useBoards({is_deleted: false})
+    const boardsFilter = {
+        is_deleted: false, 
+        is_owner: ownedByFilter?.isOwner,
+        sort: sortByFilter
+    }
+    const boardsQuery = useBoards(boardsFilter)
 
     const createBoard = useMutation({
         mutationFn: () => {
@@ -79,7 +85,12 @@ export default function BoardsPage() {
                     </div>
                 </div>
                 <div className="my-10">
-                    <Filter ownedByFilter={ownedByFilter} changeOwnedByFilter={(data: {isOwner?: boolean}) => setOwnedByFilter(data)} />
+                    <Filter 
+                        ownedByFilter={ownedByFilter} 
+                        changeOwnedByFilter={(data: {isOwner?: boolean}) => setOwnedByFilter(data)} 
+                        sortByFilter={sortByFilter}
+                        changeSortByFilter={(newSortFilter: SortByFilter) => setSortByFilter(newSortFilter)}
+                    />
                 </div>
                 <div className='flex mt-10 flex-wrap gap-x-5 gap-y-10'>
                     {
