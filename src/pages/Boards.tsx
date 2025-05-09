@@ -57,7 +57,7 @@ export default function BoardsPage() {
         <>
             <div className=''>
                 <div className='flex justify-between'>
-                    <span className='text-xl font-bold'>All boards</span>
+                    <h2 className='text-xl font-bold'>All boards</h2>
                     <Button 
                         onClick={() => createBoard.mutate()}
                         disabled={createBoard.isPending}
