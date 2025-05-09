@@ -6,18 +6,18 @@ import './index.css'
 
 
 import {
-    createBrowserRouter, Outlet,
+    createBrowserRouter,
     RouterProvider,
 } from "react-router-dom";
 import Auth from "@/routes/Auth.tsx";
 import Login from "@/pages/Auth/Login.tsx";
 import Register from "@/pages/Auth/Register.tsx";
 import { Toaster } from "react-hot-toast";
-import Root from "@/routes/Root.tsx";
 import PrivateRoute from "@/routes/PrivateRoute.tsx";
 import BoardsRoute from "@/routes/Boards.tsx";
 import BoardsPage from "@/pages/Boards.tsx";
 import SingleBoard from "@/pages/SingleBoard.tsx";
+import Search from './pages/Search';
 
 const router = createBrowserRouter([
     {
@@ -46,6 +46,10 @@ const router = createBrowserRouter([
                 path: "/boards",
                 element: <BoardsPage />,
             },
+            {
+                path: "/boards/search",
+                element: <Search />
+            }
         ]
     },
     {
