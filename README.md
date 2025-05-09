@@ -62,4 +62,7 @@
     - [ ] Undo redo
 - Refactor & bug fixes
   - [ ] Fix: ShapesDropdown top position
+  - [ ] Fix: sidebar menu in mobile
+  - [ ] A component to handle boards list
+    - [ ] Change error messages on boards list (user) or make it dynamic. Change colors.
 
