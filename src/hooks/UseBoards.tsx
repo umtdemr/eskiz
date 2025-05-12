@@ -2,6 +2,7 @@ import { API_ENDPOINTS } from "@/helpers/Constant";
 import { useBoundStore } from "@/store/store";
 import { useQuery } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
+import { BoardsWithPagination} from "@/types/Board.ts";
 
 export type SortByFilter = '-created_at' | 'name'
 
@@ -16,7 +17,7 @@ type BoardsApiQuery = {
 export function useBoards(props?: BoardsApiQuery) {
     const token = useBoundStore(useShallow((state) => state.token))
 
-    const boardsQuery = useQuery({
+    const boardsQuery = useQuery<BoardsWithPagination>({
         queryKey: ['board_results', token, props],
         queryFn: async () => {
             const boardsUrl = new URL(API_ENDPOINTS.BOARDS)
@@ -42,8 +43,7 @@ export function useBoards(props?: BoardsApiQuery) {
                 throw new Error('Network response was not ok')
             }
             
-            const jsonResponse = await boardResponse.json()
-            return jsonResponse.board_results
+            return await boardResponse.json()
         },
     })
     

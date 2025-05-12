@@ -5,6 +5,10 @@ export type BoardResult = {
     created_at: string
 }
 
+export type BoardsWithPagination = {
+    board_results: BoardResult[],
+}
+
 export type BoardCreateResult = {
     name: string,
     slug_id: string,
