@@ -33,18 +33,9 @@ const sidebarItems = [
         icon: <PresentationIcon />
     },
     {
-        title: 'My boards',
-        disabled: true,
-        url: '#',
-        icon: <span className='relative'>
-                <PresentationIcon className='w-[16px] h-[16px]' /> 
-                <User className='absolute left-[5px] top-[3px] w-[8px] h-[8px]' />
-            </span>
-    },
-    {
         title: 'Deleted boards',
         disabled: true,
-        url: '#',
+        url: '/boards/deleted',
         icon: <Trash />
     },
     

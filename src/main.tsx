@@ -18,6 +18,7 @@ import BoardsRoute from "@/routes/Boards.tsx";
 import BoardsPage from "@/pages/Boards.tsx";
 import SingleBoard from "@/pages/SingleBoard.tsx";
 import Search from './pages/Search';
+import {Deleted} from "@/pages/Deleted.tsx";
 
 const router = createBrowserRouter([
     {
@@ -49,6 +50,10 @@ const router = createBrowserRouter([
             {
                 path: "/boards/search",
                 element: <Search />
+            },
+            {
+                path: "/boards/deleted",
+                element: <Deleted />
             }
         ]
     },
