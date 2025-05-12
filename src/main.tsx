@@ -15,10 +15,10 @@ import Register from "@/pages/Auth/Register.tsx";
 import { Toaster } from "react-hot-toast";
 import PrivateRoute from "@/routes/PrivateRoute.tsx";
 import BoardsRoute from "@/routes/Boards.tsx";
-import BoardsPage from "@/pages/Boards.tsx";
-import SingleBoard from "@/pages/SingleBoard.tsx";
-import Search from './pages/Search';
-import {Deleted} from "@/pages/Deleted.tsx";
+import BoardsPage from "@/pages/boards/Boards.tsx";
+import SingleBoard from "@/pages/boards/SingleBoard.tsx";
+import Search from './pages/boards/Search';
+import {Deleted} from "@/pages/boards/Deleted.tsx";
 
 const router = createBrowserRouter([
     {
