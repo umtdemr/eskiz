@@ -1,16 +1,15 @@
 import {Button} from "@/components/ui/button.tsx";
-import {LoaderCircle, MousePointer2, Plus} from "lucide-react";
+import {LoaderCircle, Plus} from "lucide-react";
 import {useMutation} from "@tanstack/react-query";
 import {API_ENDPOINTS} from "@/helpers/Constant.ts";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
-import {BoardList} from "@/components/board/boardList/BoardList.tsx";
 import {toast} from "react-hot-toast";
 import {useNavigate} from "react-router-dom";
-import BoardsListSkeleton from "@/components/board/boardList/BoardsListSkeleton.tsx";
 import { SortByFilter, useBoards } from "@/hooks/UseBoards";
 import Filter from "@/components/board/boardList/Filter";
 import { useState } from "react";
+import {BoardListWrapper} from "@/components/board/boardList/BoardListWrapper.tsx";
 
 export type OwnedByFilter = {
     isOwner?: boolean
@@ -92,46 +91,7 @@ export default function BoardsPage() {
                         changeSortByFilter={(newSortFilter: SortByFilter) => setSortByFilter(newSortFilter)}
                     />
                 </div>
-                <div className='flex mt-10 flex-wrap gap-x-5 gap-y-10'>
-                    {
-                        boardsQuery.isError ? (
-                            <div
-                                className='w-full relative flex h-40'
-                                style={{ backgroundSize: '40px 40px', backgroundImage: 'radial-gradient(circle, #999 1px, rgba(0 0 0 / 0%) 1px)'}}>
-                                <div className='w-full flex justify-center items-center'>
-                                    <span className='border-2 p-2 border-blue-200 font-mono text-sm'>
-                                        We couldn't load the boards. Try again later.
-                                    </span>
-                                    <MousePointer2 className='absolute left-[60%] lg:left-[57%] top-[59%] fill-red-500 stroke-red-500' />
-                                    <span className='absolute left-[61%] top-[74%] lg:left-[58%]  border-2 rounded-xl p-2 text-xs border-red-500 shadow-md text-white bg-red-500'>
-                                        Penelope
-                                    </span>
-                                </div>
-                            </div>
-                        ) : null
-                    }
-                    {
-                        boardsQuery.isPending ? <BoardsListSkeleton /> : null
-                    }
-                    {
-                        boardsQuery.isSuccess ? (
-                            boardsQuery.data.length ? <BoardList boards={boardsQuery.data} />
-                                : <div 
-                                    className='w-full relative flex h-40' 
-                                    style={{ backgroundSize: '40px 40px', backgroundImage: 'radial-gradient(circle, #999 1px, rgba(0 0 0 / 0%) 1px)'}}>
-                                    <div className='w-full flex justify-center items-center'>
-                                        <span className='border-2 p-2 border-blue-200 font-mono text-sm'>
-                                            You don't have any board. Create one.
-                                        </span>
-                                        <MousePointer2 className='absolute left-[60%] lg:left-[57%] top-[59%] fill-red-500 stroke-red-500' />
-                                        <span className='absolute left-[61%] top-[74%] lg:left-[58%]  border-2 rounded-xl p-2 text-xs border-red-500 shadow-md text-white bg-red-500'>
-                                            Penelope
-                                        </span>
-                                    </div>
-                                </div>
-                        ) : null
-                    }
-                </div>
+                <BoardListWrapper boardsQuery={boardsQuery} />
             </div>
         </>
     )
