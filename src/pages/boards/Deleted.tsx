@@ -1,8 +1,10 @@
+import {useRef} from "react";
 import {useBoards} from "@/hooks/UseBoards.tsx";
 import {BoardListWrapper} from "@/components/board/boardList/BoardListWrapper.tsx";
 
 export function Deleted() {
-    const boardsQuery = useBoards({ is_deleted: true, sort: '-created_at' })
+    const nextPageLoaderRef = useRef<HTMLDivElement>(null);
+    const boardsQuery = useBoards({ is_deleted: false, sort: '-created_at' }, nextPageLoaderRef)
 
     return (
         <>
@@ -12,6 +14,7 @@ export function Deleted() {
                 boardsQuery={boardsQuery}
                 notFoundMessage="You don't have any deleted boards."
                 className="mt-10"
+                ref={nextPageLoaderRef}
             />
         </>
     )
