@@ -1,12 +1,12 @@
 import {MousePointer2} from "lucide-react";
 import BoardsListSkeleton from "@/components/board/boardList/BoardsListSkeleton.tsx";
 import {BoardList} from "@/components/board/boardList/BoardList.tsx";
-import {UseQueryResult} from "@tanstack/react-query";
+import {InfiniteData, UseInfiniteQueryResult} from "@tanstack/react-query";
 import {BoardsWithPagination} from "@/types/Board.ts";
 import {clsx} from "clsx";
 
 type BoardListWrapperProps = {
-    boardsQuery: UseQueryResult<BoardsWithPagination, Error>;
+    boardsQuery: UseInfiniteQueryResult<InfiniteData<BoardsWithPagination>>
     notFoundMessage?: string;
     errorMessage?: string;
     className?: string;
@@ -42,8 +42,9 @@ export function BoardListWrapper({
             }
             {
                 boardsQuery.isSuccess ? (
-                    boardsQuery.data?.board_results?.length ? <BoardList boards={boardsQuery.data.board_results} />
-                        : <div
+                    boardsQuery.data.pages[0]?.board_results?.length ? boardsQuery.data.pages.map(page => (
+                        <BoardList boards={page.board_results} key={page.metadata.current_page} />
+                    )) : <div
                             className='w-full relative flex h-40'
                             style={{ backgroundSize: '40px 40px', backgroundImage: 'radial-gradient(circle, #999 1px, rgba(0 0 0 / 0%) 1px)'}}>
                             <div className='w-full flex justify-center items-center'>

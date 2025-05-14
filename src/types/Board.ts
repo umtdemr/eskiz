@@ -1,3 +1,5 @@
+import {metadata} from "@/types/Pagination.ts";
+
 export type BoardResult = {
     name: string,
     slug_id: string,
@@ -7,6 +9,7 @@ export type BoardResult = {
 
 export type BoardsWithPagination = {
     board_results: BoardResult[],
+    metadata: metadata
 }
 
 export type BoardCreateResult = {

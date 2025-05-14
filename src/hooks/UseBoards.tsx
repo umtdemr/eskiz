@@ -1,6 +1,6 @@
 import { API_ENDPOINTS } from "@/helpers/Constant";
 import { useBoundStore } from "@/store/store";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { useShallow } from "zustand/react/shallow";
 import { BoardsWithPagination} from "@/types/Board.ts";
 
@@ -17,9 +17,9 @@ type BoardsApiQuery = {
 export function useBoards(props?: BoardsApiQuery) {
     const token = useBoundStore(useShallow((state) => state.token))
 
-    const boardsQuery = useQuery<BoardsWithPagination>({
+   return useInfiniteQuery<BoardsWithPagination>({
         queryKey: ['board_results', token, props],
-        queryFn: async () => {
+        queryFn: async ({ pageParam }) => {
             const boardsUrl = new URL(API_ENDPOINTS.BOARDS)
 
             // set filters
@@ -29,6 +29,8 @@ export function useBoards(props?: BoardsApiQuery) {
                     boardsUrl.searchParams.set(key, value.toString())
                 }
             }
+
+            boardsUrl.searchParams.set('page', pageParam!.toString())
 
             const boardResponse = await fetch(boardsUrl.toString(), {
                 method: 'GET',
@@ -45,7 +47,12 @@ export function useBoards(props?: BoardsApiQuery) {
             
             return await boardResponse.json()
         },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage) => {
+            if (lastPage.metadata.current_page + 1 <= lastPage.metadata.last_page) {
+                return lastPage.metadata.current_page + 1
+            }
+            return undefined
+        },
     })
-    
-    return boardsQuery;
 }
