@@ -8,7 +8,7 @@ import {toast} from "react-hot-toast";
 import {useNavigate} from "react-router-dom";
 import { SortByFilter, useBoards } from "@/hooks/UseBoards";
 import Filter from "@/components/board/boardList/Filter";
-import { useState } from "react";
+import {useRef, useState} from "react";
 import {BoardListWrapper} from "@/components/board/boardList/BoardListWrapper.tsx";
 
 export type OwnedByFilter = {
@@ -19,6 +19,7 @@ export default function BoardsPage() {
     const [ownedByFilter, setOwnedByFilter] = useState<OwnedByFilter>({})
     const [sortByFilter, setSortByFilter] = useState<SortByFilter>('-created_at')
     const token = useBoundStore(useShallow((state) => state.token))
+    const nextPageLoaderRef = useRef<HTMLDivElement>(null);
     const navigate = useNavigate();
 
     const boardsFilter = {
@@ -26,7 +27,7 @@ export default function BoardsPage() {
         is_owner: ownedByFilter?.isOwner,
         sort: sortByFilter
     }
-    const boardsQuery = useBoards(boardsFilter)
+    const boardsQuery = useBoards(boardsFilter, nextPageLoaderRef)
 
     const createBoard = useMutation({
         mutationFn: () => {
@@ -91,7 +92,7 @@ export default function BoardsPage() {
                         changeSortByFilter={(newSortFilter: SortByFilter) => setSortByFilter(newSortFilter)}
                     />
                 </div>
-                <BoardListWrapper boardsQuery={boardsQuery} />
+                <BoardListWrapper boardsQuery={boardsQuery} ref={nextPageLoaderRef} />
             </div>
         </>
     )

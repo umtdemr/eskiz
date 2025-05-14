@@ -8,6 +8,7 @@ export default function Search() {
     const [name, setName] = useState('');
     const [nameFilter, setNameFilter] = useState('');
     const setFilterTimeout = useRef<NodeJS.Timeout>();
+    const nextPageLoaderRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         clearTimeout(setFilterTimeout.current);
@@ -17,7 +18,7 @@ export default function Search() {
         }, 200)
     }, [name])
 
-    const boardsQuery = useBoards({ name: nameFilter, sort: '-created_at' })
+    const boardsQuery = useBoards({ name: nameFilter, sort: '-created_at' }, nextPageLoaderRef)
     return (
         <>
             <h2 className='text-xl font-bold'>Search</h2>
@@ -31,6 +32,7 @@ export default function Search() {
                 notFoundMessage="We couldn't find any boards based on your search. Please try again with different filter."
                 errorMessage="We couldn't load the boards. Try again later."
                 className="mt-10"
+                ref={nextPageLoaderRef}
             />
         </>
     )

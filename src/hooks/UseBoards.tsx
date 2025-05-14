@@ -1,3 +1,4 @@
+import {useEffect, RefObject} from "react";
 import { API_ENDPOINTS } from "@/helpers/Constant";
 import { useBoundStore } from "@/store/store";
 import { useInfiniteQuery } from "@tanstack/react-query";
@@ -14,10 +15,9 @@ type BoardsApiQuery = {
 }
 
 
-export function useBoards(props?: BoardsApiQuery) {
+export function useBoards(props: BoardsApiQuery, nextPageLoaderRef: RefObject<HTMLDivElement>) {
     const token = useBoundStore(useShallow((state) => state.token))
-
-   return useInfiniteQuery<BoardsWithPagination>({
+   const boardsQuery = useInfiniteQuery<BoardsWithPagination>({
         queryKey: ['board_results', token, props],
         queryFn: async ({ pageParam }) => {
             const boardsUrl = new URL(API_ENDPOINTS.BOARDS)
@@ -55,4 +55,28 @@ export function useBoards(props?: BoardsApiQuery) {
             return undefined
         },
     })
+
+    useEffect(() => {
+        // fetch boards with infinite scroll
+        // todo: we can add windowing
+        if (boardsQuery.hasNextPage && nextPageLoaderRef.current) {
+            const nextPageLoaderRefBackup = nextPageLoaderRef.current
+            const observer = new IntersectionObserver((entries) => {
+                if (entries[0].isIntersecting) {
+                    console.log('fetch')
+                    boardsQuery.fetchNextPage()
+                }
+            }, {
+                root: null,
+                rootMargin: '500px',
+                threshold: 0.5
+            })
+            observer.observe(nextPageLoaderRef.current)
+            return () => observer.unobserve(
+                nextPageLoaderRefBackup
+            )
+        }
+    }, [boardsQuery.hasNextPage, nextPageLoaderRef, boardsQuery])
+
+    return boardsQuery
 }

@@ -1,9 +1,10 @@
-import {MousePointer2} from "lucide-react";
+import {LoaderCircle, MousePointer2} from "lucide-react";
 import BoardsListSkeleton from "@/components/board/boardList/BoardsListSkeleton.tsx";
 import {BoardList} from "@/components/board/boardList/BoardList.tsx";
 import {InfiniteData, UseInfiniteQueryResult} from "@tanstack/react-query";
 import {BoardsWithPagination} from "@/types/Board.ts";
 import {clsx} from "clsx";
+import {ForwardedRef, forwardRef} from "react";
 
 type BoardListWrapperProps = {
     boardsQuery: UseInfiniteQueryResult<InfiniteData<BoardsWithPagination>>
@@ -12,13 +13,14 @@ type BoardListWrapperProps = {
     className?: string;
 }
 
-export function BoardListWrapper({
+export const BoardListWrapper = forwardRef(function BoardListWrapper({
      boardsQuery,
      notFoundMessage = "You don't have any board. Create one.",
      errorMessage = "We couldn't load the boards. Try again later.",
      className = "We couldn't load the boards. Try again later."
-}: BoardListWrapperProps){
+}: BoardListWrapperProps, ref: ForwardedRef<HTMLDivElement>){
     return (
+        <>
         <div className={clsx('flex flex-wrap gap-x-5 gap-y-10', className)}>
             {
                 boardsQuery.isError ? (
@@ -60,5 +62,27 @@ export function BoardListWrapper({
                 ) : null
             }
         </div>
+        <div className='relative'>
+            {
+                boardsQuery.hasNextPage && (
+                    <div ref={ref} className='absolute bg-transparent top-[-230px] h-[230px] w-full z-[-1]' ></div>
+                )
+            }
+        </div>
+
+        {/* Loading */}
+        {
+            boardsQuery.isFetchingNextPage && (
+                <div className='flex justify-center py-10'>
+                    <LoaderCircle
+                        className='animate-spin'
+                        role="progressbar"
+                        aria-busy="true"
+                        aria-label="Loading next boards"
+                    />
+                </div>
+            )
+        }
+        </>
     )
-}
+})
