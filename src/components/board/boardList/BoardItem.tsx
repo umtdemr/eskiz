@@ -1,6 +1,14 @@
 import {Badge} from "@/components/ui/badge.tsx";
 import {BoardResult} from "@/types/Board.ts";
 import {Link} from "react-router-dom";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger
+} from "@/components/ui/dropdown-menu.tsx";
+import {Button} from "@/components/ui/button.tsx";
+import {Ellipsis} from "lucide-react";
 
 export function BoardItem({ board }: { board: BoardResult }) {
     return (
@@ -11,6 +19,19 @@ export function BoardItem({ board }: { board: BoardResult }) {
             aria-label={board.name}
         >
             <div className='h-36 relative flex justify-center items-center' style={{ backgroundSize: '15px 15px', backgroundImage: 'radial-gradient(circle, #999 1px, rgba(0 0 0 / 0%) 1px)'}}>
+                <div className="absolute left-0 top-0 w-full h-full bg-gradient-to-r from-blue-500 to-blue-400 opacity-50"></div>
+                <div className='absolute right-2 top-2'>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button className="" variant="secondary" size="icon"><Ellipsis /></Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent side="left">
+                            <DropdownMenuItem>
+                                Delete board
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
                 <div className="absolute right-2 bottom-2 flex gap-2">
                     {
                         board.is_owner ? <Badge className='select-none'>
