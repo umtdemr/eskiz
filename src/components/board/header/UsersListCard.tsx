@@ -6,14 +6,7 @@ import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
 import {Badge} from "@/components/ui/badge.tsx";
 import {useBoundStore} from "@/store/store.ts";
 
-export function UsersListCard({
-    users
-}: {
-    users: {
-        avatar: string,
-            name: string
-    }[]
-}) {
+export function UsersListCard() {
     const closeAllWindows = useBoundStore(useShallow((state) => state.closeAllWindows))
     const userData = useBoundStore(useShallow(state => state.userData))
     const collaborators = useBoundStore(useShallow((state) => state.collaboratorsList)).filter((_, i) => i < 3)
@@ -37,8 +30,8 @@ export function UsersListCard({
             </CardHeader>
             <CardContent className='grid gap-4 max-h-60 overflow-y-auto'>
                 {
-                    collaborators.map((user, i) => (
-                        <div className='flex justify-between items-center'>
+                    collaborators.map((user) => (
+                        <div className='flex justify-between items-center' key={user.id}>
                             <div className='flex gap-2'>
                                 <Avatar>
                                     <AvatarFallback>{user.avatar}</AvatarFallback>

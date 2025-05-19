@@ -18,26 +18,6 @@ export default function Header({ name }: { name: string }) {
         
         openWindow(null);
     }, [isInviteModalActive, openWindow])
-    
-    // this is dummy data
-    const allUsers = [
-        {
-            name: 'ümit demir',
-            avatar: 'UD'
-        },
-        {
-            name: 'ümit demir',
-            avatar: 'KD'
-        },
-        {
-            name: 'ümit demir',
-            avatar: 'MD'
-        },
-        {
-            name: 'ümit demir',
-            avatar: 'TD'
-        },
-    ]
 
     return (
         <>
@@ -53,8 +33,8 @@ export default function Header({ name }: { name: string }) {
                 </div>
             </div>
             <div className='fixed top-5 right-5 flex bg-white shadow px-2 py-2 rounded-xl h-12 items-center gap-2'>
-                <UsersListDropdown users={allUsers} />
-                { isUsersListCardActive ? <UsersListCard users={allUsers} /> : null }
+                <UsersListDropdown />
+                { isUsersListCardActive ? <UsersListCard /> : null }
             </div>
             {
                 isInviteModalActive ? <InviteModal isOpen={true} closeModal={closeInviteModal} /> : null

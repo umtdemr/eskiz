@@ -5,14 +5,7 @@ import {ChevronDown, UserRoundPlus} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
 import {useBoundStore} from "@/store/store.ts";
 
-export function UsersListDropdown({
-    users
-}: { 
-    users: {
-        avatar: string,
-        name: string
-    }[]
-}) {
+export function UsersListDropdown() {
     const isUsersListCardActive = useBoundStore(useShallow((state) => state.activeWindow)) === 'online_users_list'
     const openNewWindow = useBoundStore(useShallow((state) => state.openWindow))
     const closeAllWindows = useBoundStore(useShallow((state) => state.closeAllWindows))
