@@ -14,12 +14,18 @@ import {
 } from "@/components/ui/dropdown-menu.tsx";
 import {DropdownMenuTrigger} from "@radix-ui/react-dropdown-menu";
 import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
-import {LogOut, PresentationIcon, Trash, User} from "lucide-react";
+import {LogOut, PresentationIcon, Search, Trash, User} from "lucide-react";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
 import useAuth from "@/hooks/UseAuth.tsx";
 
 const sidebarItems = [
+    {
+        title: 'Search',
+        disabled: false,
+        url: '/boards/search',
+        icon: <Search />
+    },
     {
         title: 'All boards',
         disabled: false,
@@ -27,18 +33,9 @@ const sidebarItems = [
         icon: <PresentationIcon />
     },
     {
-        title: 'My boards',
-        disabled: true,
-        url: '#',
-        icon: <span className='relative'>
-                <PresentationIcon className='w-[16px] h-[16px]' /> 
-                <User className='absolute left-[5px] top-[3px] w-[8px] h-[8px]' />
-            </span>
-    },
-    {
         title: 'Deleted boards',
         disabled: true,
-        url: '#',
+        url: '/boards/deleted',
         icon: <Trash />
     },
     
