@@ -186,7 +186,7 @@ export default function SingleBoard() {
             {
                 ((boardQuery.isSuccess && isInitialized) && !connectionError) ? (
                     <>
-                        <Header name={boardQuery.data.name} />
+                        <Header />
                         <Toolbar engine={engineRef.current!} />
                         <Footer engine={engineRef.current!} />
                     </>
