@@ -58,7 +58,6 @@ export function BoardName({ engine }: { engine: Engine }) {
             })
             setIsEditingDisabled(true)
             const toastId = toast.loading('Saving...')
-            await new Promise(resolve => setTimeout(resolve, 8330))
             try {
                 const message = await engine.wsEngine.sendAsyncMessage<"changeBoardName">({
                     type: "changeBoardName",

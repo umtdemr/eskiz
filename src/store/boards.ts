@@ -22,6 +22,7 @@ export interface BoardsSlice {
     users: BoardUser[],
     setBoardData: (data: Board) => void
     addToUsers: (data: BoardUser[]) => void
+    changeBoardName: (newName: string) => void
 }
 
 
@@ -41,5 +42,10 @@ export const createBoardsSlice: StateCreator<
     users: [],
     isBoardFetched: false,
     setBoardData: (data: Board) => set({ boardData: data, isBoardFetched: true }),
-    addToUsers: (data: BoardUser[]) => set(state => ({ users: [ ...state.users, ...data ] }))
+    addToUsers: (data: BoardUser[]) => set(state => ({ users: [ ...state.users, ...data ] })),
+    changeBoardName: (newName: string) => set(state => ({ boardData: {
+            ...state.boardData,
+            name: newName
+        }
+    }))
 })
