@@ -8,10 +8,12 @@ import {getTextDimension} from "@/helpers/TextHelpers.ts";
 import {clsx} from "clsx";
 import {Check} from "lucide-react";
 import {toast} from "react-hot-toast"
+import {Engine} from "@/core/engine/Engine.ts";
 
 
-export function BoardName() {
+export function BoardName({ engine }: { engine: Engine }) {
     const [isEditing, setIsEditing] = useState(false)
+    const [isEditingDisabled, setIsEditingDisabled] = useState(false)
     const board = useBoundStore(useShallow((state) => state.boardData))
     const [value, setValue] = useState(board?.name || '')
     const user = useBoundStore(useShallow((state) => state.userData))
@@ -39,7 +41,7 @@ export function BoardName() {
         setValue(e.target.value)
     }
 
-    const saveName = () => {
+    const saveName = async () => {
         if (value.trim() === "") {
             toast.error('Name cannot be empty')
             setIsEditing(false)
@@ -47,13 +49,48 @@ export function BoardName() {
         }
         setIsEditing(false)
         if (value !== board.name) {
-            toast.success('Saved')
+            const oldName = board.name
             useBoundStore.setState({
                 boardData: {
                     ...board,
                     name: value
                 }
             })
+            setIsEditingDisabled(true)
+            const toastId = toast.loading('Saving...')
+            await new Promise(resolve => setTimeout(resolve, 8330))
+            try {
+                const message = await engine.wsEngine.sendAsyncMessage<"changeBoardName">({
+                    type: "changeBoardName",
+                    data: {
+                        name: value,
+                        board_id: board.id
+                    }
+                })
+                if (message.error) {
+                    toast.error(`Failed to saved: ${message.error.message}`, { id: toastId })
+                    console.error('[changeBoardName] Failed to save', message.error, message.error.code)
+                } else {
+                    toast.success('Saved', { id: toastId })
+                    useBoundStore.setState({
+                        boardData: {
+                            ...board,
+                            name: message.changeBoardName?.name || value
+                        }
+                    })
+                }
+            } catch (er) {
+                console.error(er)
+                toast.error('Failed to save. Try again later')
+                useBoundStore.setState({
+                    boardData: {
+                        ...board,
+                        name: oldName
+                    }
+                })
+            } finally {
+                setIsEditingDisabled(false)
+            }
         }
     }
 
@@ -98,6 +135,7 @@ export function BoardName() {
                                         "border-2 border-solid border-blue-400": isEditing
                                     })}
                                     size="sm"
+                                    disabled={isEditingDisabled}
                                     onClick={nameBtnClickHandler}>
                                     { isEditing ? (
                                         <input
