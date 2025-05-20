@@ -17,7 +17,8 @@ export const ZOOM_LEVELS = {
 export const WS_EVENTS = {
     USER_JOINED: 'USER_JOINED',
     USER_LEFT: 'USER_LEFT',
-    CURSOR: 'CURSOR'
+    CURSOR: 'CURSOR',
+    CHANGE_BOARD_NAME: 'CHANGE_BOARD_NAME',
 } as const;
 
 export const COLLAB_CURSOR_THROTTLING_TIME = 300 as const;

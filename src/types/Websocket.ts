@@ -98,8 +98,18 @@ export type EventCursor = {
     }
 }
 
+export type EventBoardNameChanged = {
+    event: typeof WS_EVENTS.CHANGE_BOARD_NAME,
+    data: {
+        changeBoardName: {
+            name: string
+        }
+    }
+}
+
 export type WsEvents = 
     | EventUserLeft
     | EventUserJoined
     | EventCursor
+    | EventBoardNameChanged
     
