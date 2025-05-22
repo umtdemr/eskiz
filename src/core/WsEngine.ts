@@ -2,13 +2,13 @@ import Pako from 'pako';
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {nanoid} from "nanoid";
 import {WsCommand, WsMessage, WsPayload, WsResponse} from "../types/Websocket.ts";
-import {WS_EVENTS} from './../helpers/constant.ts';
+import {WS_EVENTS} from './../helpers/Constant.ts';
 
 type WsEngineStatus = 'idle' | 'open' | 'error' | 'closed';
 
 type WsEngineEventMap = {
     'statusChange': WsEngineStatus,
-    'event': { event: keyof WS_EVENTS, data: any } 
+    'event': { event: keyof typeof WS_EVENTS, data: any }
 }
 
 type MsgCallback<T extends WsCommand> = {

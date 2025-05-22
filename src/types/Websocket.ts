@@ -2,11 +2,12 @@ import {UserPublicData} from "@/types/Auth.ts";
 import {WS_EVENTS} from "@/helpers/Constant.ts";
 
 
-export type WsCommand = "join" | "other"
+export type WsCommand = "join" | "changeBoardName" | "other"
 
 // defines responses for each request
 type CommandBaseResponse = {
     join: WsJoinResponse,
+    changeBoardName: WsChangeBoardNameResponse,
     other: string
 }
 
@@ -14,6 +15,7 @@ type CommandBaseResponse = {
 type CommandBasePayload = {
     join: WsJoinPayload,
     cursor: WsCursorPayload
+    changeBoardName: WsChangeBoardNamePayload,
 }
 
 // defines typical error message for the request
@@ -54,6 +56,15 @@ export type WsCursorPayload = {
     y: number
 }
 
+export type WsChangeBoardNamePayload = {
+    board_id: number,
+    name: string
+}
+
+export type WsChangeBoardNameResponse = {
+    name: string
+}
+
 
 export type WsMessage = {
     reply_to?: string
@@ -87,8 +98,18 @@ export type EventCursor = {
     }
 }
 
+export type EventBoardNameChanged = {
+    event: typeof WS_EVENTS.CHANGE_BOARD_NAME,
+    data: {
+        changeBoardName: {
+            name: string
+        }
+    }
+}
+
 export type WsEvents = 
     | EventUserLeft
     | EventUserJoined
     | EventCursor
+    | EventBoardNameChanged
     
