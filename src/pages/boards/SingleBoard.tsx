@@ -42,8 +42,6 @@ export default function SingleBoard() {
     const userData = useBoundStore(useShallow((state) => state.userData))
     const setBoardData = useBoundStore(useShallow(state => state.setBoardData))
     const setCollaborators = useBoundStore(useShallow((state) => state.setCollaborators));
-    const addToCollaborators = useBoundStore(useShallow((state) => state.addToCollaborators));
-    const removeFromCollaborators = useBoundStore(useShallow((state) => state.removeFromCollaborators));
     const addToUsers = useBoundStore(useShallow((state) => state.addToUsers))
 
     const navigate = useNavigate()
@@ -143,32 +141,7 @@ export default function SingleBoard() {
         initializeApp()
     }, [boardQuery.isSuccess, userData])
 
-    useEffect(() => {
-        if (isInitialized) {
-            const eventHandler = (msg: WsEvents) => {
-                if (msg.event === WS_EVENTS.USER_JOINED) {
-                    const collaborator: BoardUser = {
-                        full_name: msg.data.user.full_name!,
-                        email: msg.data.user.email,
-                        id: msg.data.user.id,
-                        role: 'editor',
-                        avatar: getAvatar(msg.data.user.full_name)
-                    }
-                    addToCollaborators(collaborator)
-                } else if (msg.event === WS_EVENTS.USER_LEFT) {
-                    removeFromCollaborators(msg.data.user.id)
-                } else if (msg.event === WS_EVENTS.CURSOR) {
-                    engineRef.current?.upperCanvasRenderer.handleCursorEvent(msg, canvasRef.current!)
-                }
-            }
-            engineRef.current?.wsEngine.on('event', eventHandler)
-            
-            return () => {
-                engineRef.current?.wsEngine.off('event', eventHandler)
-            }
-        }
-    }, [isInitialized]);
-    
+
     return (
         <div className='whiteboard'>
             <div className='canvas_wrapper'>
