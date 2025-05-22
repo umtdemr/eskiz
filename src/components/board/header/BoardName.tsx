@@ -9,6 +9,7 @@ import {clsx} from "clsx";
 import {Check} from "lucide-react";
 import {toast} from "react-hot-toast"
 import {Engine} from "@/core/engine/Engine.ts";
+import {BoardNameService} from "@/core/services/BoardNameService.ts";
 
 
 export function BoardName({ engine }: { engine: Engine }) {
@@ -58,14 +59,10 @@ export function BoardName({ engine }: { engine: Engine }) {
             })
             setIsEditingDisabled(true)
             const toastId = toast.loading('Saving...')
+            const boardNameService = engine.getService<BoardNameService>("boardName")
             try {
-                const message = await engine.wsEngine.sendAsyncMessage<"changeBoardName">({
-                    type: "changeBoardName",
-                    data: {
-                        name: value,
-                        board_id: board.id
-                    }
-                })
+                const message = await boardNameService.changeBoardName(value, board.id)
+
                 if (message.error) {
                     toast.error(`Failed to saved: ${message.error.message}`, { id: toastId })
                     console.error('[changeBoardName] Failed to save', message.error, message.error.code)

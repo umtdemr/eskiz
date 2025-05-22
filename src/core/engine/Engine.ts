@@ -14,6 +14,9 @@ import { CursorSenderService } from "../services/CursorSenderService";
 import { ToolService } from "../services/ToolService";
 import { Signal } from "../signal/Signal";
 import { WheelService } from "../services/WheelService";
+import {WebsocketEventService} from "@/core/services/WebsocketEventService.ts";
+import {BoardNameService} from "@/core/services/BoardNameService.ts";
+import {CollaboratorsService} from "@/core/services/CollaboratorsService.ts";
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -49,7 +52,7 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.initializeServices();
 
         this._stage = new Stage(this);
-        this.canvas = new Canvas(this._slugId, this._stage)
+        this.canvas = new Canvas(this._stage)
 
         this.upperCanvasRenderer = new UpperCanvasRenderer();
         
@@ -65,7 +68,7 @@ export class Engine extends Emitter<EngineEventsMap>{
         upperCanvasEl.width = this.canvas.canvasEl.width;
         upperCanvasEl.height = this.canvas.canvasEl.height;
         upperCanvasEl.id = 'upperCanvas'
-        this.canvas.canvasEl.parentNode.appendChild(upperCanvasEl)
+        this.canvas.canvasEl.parentNode!.appendChild(upperCanvasEl)
 
         this._upperCanvasEl = upperCanvasEl
         setCanvasStyles(this._upperCanvasEl)
@@ -100,8 +103,11 @@ export class Engine extends Emitter<EngineEventsMap>{
     }
     
     private initializeServices() {
+        const wsEventService = new WebsocketEventService(this);
         const toolService = new ToolService(this)
         const selectionService = new SelectionService(this, toolService);
+
+        this.serviceManager.register('wsEventService', wsEventService);
         this.serviceManager.register('toolService', toolService);
         this.serviceManager.register('selection', selectionService);
         this.serviceManager.register('selectTool', new SelectToolService(this, this._mouseController, toolService));
@@ -109,6 +115,8 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.serviceManager.register('wheel', new WheelService(this, this._mouseController));
         this.serviceManager.register('shapeDrawer', new ShapeDrawerToolService(this, this._mouseController, toolService, selectionService));
         this.serviceManager.register('cursorSender', new CursorSenderService(this, this.wsEngine, this._mouseController));
+        this.serviceManager.register('boardName', new BoardNameService(this, wsEventService));
+        this.serviceManager.register('collaborators', new CollaboratorsService(this, wsEventService));
     }
 
     getService<T>(name: string): T {
