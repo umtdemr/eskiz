@@ -1,8 +1,9 @@
 import Pako from 'pako';
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {nanoid} from "nanoid";
-import {WsCommand, WsMessage, WsPayload, WsResponse} from "../types/Websocket.ts";
+import {WsCommand, WsEvents, WsPayload, WsResponse} from "../types/Websocket.ts";
 import {WS_EVENTS} from './../helpers/Constant.ts';
+import {Signal} from "@/core/signal/Signal.ts";
 
 type WsEngineStatus = 'idle' | 'open' | 'error' | 'closed';
 
@@ -23,6 +24,8 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private _boardSlugId: string;
     private messageCallbacks= new Map<string, (data: MsgCallback<any>) => void>();
     private msgTimeoutDuration = 10_000;
+
+    eventReceived = new Signal<WsEvents>()
 
     constructor(url: string, slugId: string) {
         super()
@@ -57,6 +60,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         
         if (data.event) {
             this.emit('event', data)
+            this.eventReceived.dispatch(data)
         }
     }
     

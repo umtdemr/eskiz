@@ -14,6 +14,8 @@ import { CursorSenderService } from "../services/CursorSenderService";
 import { ToolService } from "../services/ToolService";
 import { Signal } from "../signal/Signal";
 import { WheelService } from "../services/WheelService";
+import {WebsocketEventService} from "@/core/services/WebsocketEventService.ts";
+import {BoardNameService} from "@/core/services/BoardNameService.ts";
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -100,8 +102,11 @@ export class Engine extends Emitter<EngineEventsMap>{
     }
     
     private initializeServices() {
+        const wsEventService = new WebsocketEventService(this);
         const toolService = new ToolService(this)
         const selectionService = new SelectionService(this, toolService);
+
+        this.serviceManager.register('wsEventService', wsEventService);
         this.serviceManager.register('toolService', toolService);
         this.serviceManager.register('selection', selectionService);
         this.serviceManager.register('selectTool', new SelectToolService(this, this._mouseController, toolService));
@@ -109,6 +114,7 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.serviceManager.register('wheel', new WheelService(this, this._mouseController));
         this.serviceManager.register('shapeDrawer', new ShapeDrawerToolService(this, this._mouseController, toolService, selectionService));
         this.serviceManager.register('cursorSender', new CursorSenderService(this, this.wsEngine, this._mouseController));
+        this.serviceManager.register('boardName', new BoardNameService(this, wsEventService));
     }
 
     getService<T>(name: string): T {
