@@ -45,7 +45,6 @@ export default function SingleBoard() {
     const addToCollaborators = useBoundStore(useShallow((state) => state.addToCollaborators));
     const removeFromCollaborators = useBoundStore(useShallow((state) => state.removeFromCollaborators));
     const addToUsers = useBoundStore(useShallow((state) => state.addToUsers))
-    const changeBoardName = useBoundStore(useShallow((state) => state.changeBoardName))
 
     const navigate = useNavigate()
 
@@ -160,8 +159,6 @@ export default function SingleBoard() {
                     removeFromCollaborators(msg.data.user.id)
                 } else if (msg.event === WS_EVENTS.CURSOR) {
                     engineRef.current?.upperCanvasRenderer.handleCursorEvent(msg, canvasRef.current!)
-                } else if (msg.event === WS_EVENTS.CHANGE_BOARD_NAME) {
-                    changeBoardName(msg.data.changeBoardName.name)
                 }
             }
             engineRef.current?.wsEngine.on('event', eventHandler)
