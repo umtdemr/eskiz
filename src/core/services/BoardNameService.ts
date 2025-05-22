@@ -28,4 +28,19 @@ export class BoardNameService extends Service {
 
         this.boardNameChanged.dispatch(event.data.changeBoardName.name);
     }
+
+    async changeBoardName(name: string, board_id: number, shouldDispatch = true) {
+        const response = await this.engine.wsEngine.sendAsyncMessage<"changeBoardName">({
+            type: "changeBoardName",
+            data: {
+                name,
+                board_id,
+            }
+        })
+
+        if (shouldDispatch && !response.error) {
+            this.boardNameChanged.dispatch(name);
+        }
+        return response
+    }
 }
