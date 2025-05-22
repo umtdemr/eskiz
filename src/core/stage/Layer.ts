@@ -1,4 +1,3 @@
-import { Canvas as SkiaCanvas } from "canvaskit-wasm";
 import { LinkedList } from "../dataStructures/LinkedList";
 import { Widget } from "../shapes/Widget";
 import { RenderContext } from "../canvas/Canvas";

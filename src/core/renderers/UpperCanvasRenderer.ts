@@ -5,7 +5,7 @@ import {Canvas} from "@/core/canvas/Canvas.ts";
 function animate({ timing, draw, duration}: { 
     timing: (fraction: number) => number,  draw: (progress: number) => void, duration: number
 }) {
-    let start = performance.now()
+    const start = performance.now()
     
     requestAnimationFrame(function animate(time) {
         // timeFraction goes from 0 to 1
@@ -13,7 +13,7 @@ function animate({ timing, draw, duration}: {
         if (timeFraction > 1) timeFraction = 1;
 
         // calculate the current animation state
-        let progress = timing(timeFraction)
+        const progress = timing(timeFraction)
 
         draw(progress); // draw it
 
@@ -25,7 +25,7 @@ function animate({ timing, draw, duration}: {
 
 export class UpperCanvasRenderer {
     private _needsRender: boolean = false
-    private _upperCanvasEl
+    private _upperCanvasEl: HTMLCanvasElement
     private collaboratorsRenderer: CollaboratorsRenderer
     private collabCursors: collaboratorCursor[] = []
     

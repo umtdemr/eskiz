@@ -1,7 +1,5 @@
 import CanvasKitInit, {CanvasKit, Surface, Canvas as SkiaCanvas, FontMgr} from "canvaskit-wasm";
 import {ZOOM_LEVELS} from "@/helpers/Constant.ts";
-import {Rectangle} from "@/core/shapes/Rectangle.ts";
-import {Widget} from "@/core/shapes/Widget.ts";
 import { Stage } from "../stage/Stage";
 import { Signal } from "../signal/Signal";
 
@@ -33,14 +31,12 @@ export class Canvas {
 
     private needsRender = false;
     private scale = 1;
-    private _slugId: string;
 
     tickBefore = new Signal();
     tick = new Signal();
     
-    constructor(slugId: string, stage: Stage) {
-        this._slugId = slugId;
-        this._stage = stage 
+    constructor(stage: Stage) {
+        this._stage = stage
     }
 
     async initialize() {
@@ -65,7 +61,7 @@ export class Canvas {
     
     render() {
         const draw = (ctx: SkiaCanvas) => {
-            ctx.clear(canvasKit.WHITE);
+            ctx.clear(canvasKit.Color(239, 239, 239, 1));
 
             ctx.save()
             ctx.scale(this.scale, this.scale)
@@ -165,10 +161,7 @@ export class Canvas {
         })
     }
 
-    dispose() {
-        // @ts-ignore
-        this.upperCanvasEl.removeEventListener('wheel', this.onMouseWheel);
-    }
+    dispose() {}
 
     getPointer(e: MouseEvent): Point {
         const pointer = {
@@ -178,7 +171,7 @@ export class Canvas {
 
         return this.transformPoint(
             pointer,
-            this.invertTransform(this.viewportTransform)
+            this.invertTransform(this.viewportTransform) as Transform,
         );
     }
 
@@ -196,8 +189,8 @@ export class Canvas {
     }
 
     invertTransform(t: Transform) {
-        let a = 1 / (t[0] * t[3] - t[1] * t[2]),
-        r = [a * t[3], -a * t[1], -a * t[2], a * t[0]],
+        const a = 1 / (t[0] * t[3] - t[1] * t[2]),
+        r = [a * t[3], -a * t[1], -a * t[2], a * t[0]] as unknown as Transform,
         o = this.transformPoint({ x: t[4], y: t[5] }, r, true);
         r[4] = -o.x;
         r[5] = -o.y;
