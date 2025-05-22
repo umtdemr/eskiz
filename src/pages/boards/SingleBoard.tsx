@@ -2,7 +2,7 @@ import {useEffect, useRef, useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import Header from "@/components/board/header/Header.tsx";
 import {useQuery} from "@tanstack/react-query";
-import {API_ENDPOINTS, WS_EVENTS} from "@/helpers/Constant.ts";
+import {API_ENDPOINTS} from "@/helpers/Constant.ts";
 import {useBoundStore} from "@/store/store.ts";
 import {useShallow} from "zustand/react/shallow";
 import SkeletonHeader from "@/components/board/header/SkeletonHeader.tsx";
@@ -23,10 +23,9 @@ import {
 } from "@/components/ui/dialog.tsx";
 import {CircleX} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
-import {WsErrorMessage, WsEvents} from "@/types/Websocket.ts";
+import {WsErrorMessage} from "@/types/Websocket.ts";
 import {BoardRetrieveResponse} from "@/types/Board.ts";
 import {getAvatar} from "@/helpers/AuthHelper.ts";
-import {BoardUser} from "@/store/boards.ts";
 import {CollaboratorUser} from "@/store/collaborators.ts";
 
 
@@ -93,9 +92,9 @@ export default function SingleBoard() {
         const initializeApp = async () => {
             try {
                 engineRef.current = new Engine(slugId!)
-                const isEngineInitialized = await engineRef.current?.initialize()!;
-                canvasRef.current = engineRef.current?.canvas!
-                const connectResp = await engineRef.current?.wsEngine.connect(token)!
+                const isEngineInitialized = await engineRef.current?.initialize();
+                canvasRef.current = engineRef.current?.canvas
+                const connectResp = await engineRef.current?.wsEngine.connect(token)
                 if (connectResp.error) {
                     setConnectionError(connectResp.error)
                     return
@@ -119,7 +118,7 @@ export default function SingleBoard() {
                 })
                 
                 setCollaborators(allCollaborators)
-                let isOkayToProceed = isEngineInitialized! && !!connectResp.join;
+                const isOkayToProceed = isEngineInitialized! && !!connectResp.join;
                 setIsInitialized(isOkayToProceed)
                 if (isOkayToProceed) {
                     engineRef.current?.run()
@@ -160,7 +159,7 @@ export default function SingleBoard() {
                 ((boardQuery.isSuccess && isInitialized) && !connectionError) ? (
                     <>
                         <Header engine={engineRef.current!} />
-                        <Toolbar engine={engineRef.current!} />
+                        <Toolbar />
                         <Footer engine={engineRef.current!} />
                     </>
                 ) : null
