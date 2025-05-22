@@ -1,14 +1,13 @@
 import Pako from 'pako';
 import {Emitter} from "@/core/emitter/Emitter.ts";
 import {nanoid} from "nanoid";
-import {WsCommand, WsMessage, WsPayload, WsResponse} from "../types/Websocket.ts";
-import {WS_EVENTS} from './../helpers/Constant.ts';
+import {WsCommand, WsEvents, WsPayload, WsResponse} from "../types/Websocket.ts";
+import {Signal} from "@/core/signal/Signal.ts";
 
 type WsEngineStatus = 'idle' | 'open' | 'error' | 'closed';
 
 type WsEngineEventMap = {
     'statusChange': WsEngineStatus,
-    'event': { event: keyof typeof WS_EVENTS, data: any }
 }
 
 type MsgCallback<T extends WsCommand> = {
@@ -21,8 +20,10 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private _status: 'idle' | 'open' | 'error' | 'closed' = 'idle';
     private _wsConnectTimeout = 5000;
     private _boardSlugId: string;
-    private messageCallbacks= new Map<string, (data: MsgCallback<any>) => void>();
+    private messageCallbacks= new Map<string, (data: MsgCallback<WsCommand>) => void>();
     private msgTimeoutDuration = 10_000;
+
+    eventReceived = new Signal<WsEvents>()
 
     constructor(url: string, slugId: string) {
         super()
@@ -56,7 +57,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         }
         
         if (data.event) {
-            this.emit('event', data)
+            this.eventReceived.dispatch(data)
         }
     }
     
@@ -94,7 +95,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         this.messageCallbacks.clear();
     }
     
-    sendMessage<T>(data: WsPayload<T>, cb?: (data: MsgCallback<T>) => void) {
+    sendMessage<T extends WsCommand>(data: WsPayload<T>, cb?: (data: MsgCallback<T>) => void) {
         const sendingData = {
             ...data,
             id: nanoid()
@@ -107,7 +108,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     }
     
     // sends message using sendMessage. But this method returns a promise. Useful when relying on callbacks
-    async sendAsyncMessage<T>(data: WsPayload<T>): Promise<WsResponse<T>> {
+    async sendAsyncMessage<T extends WsCommand>(data: WsPayload<T>): Promise<WsResponse<T>> {
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 reject('timeout')
