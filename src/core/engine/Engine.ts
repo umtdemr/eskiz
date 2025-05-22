@@ -52,7 +52,7 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.initializeServices();
 
         this._stage = new Stage(this);
-        this.canvas = new Canvas(this._slugId, this._stage)
+        this.canvas = new Canvas(this._stage)
 
         this.upperCanvasRenderer = new UpperCanvasRenderer();
         
@@ -68,7 +68,7 @@ export class Engine extends Emitter<EngineEventsMap>{
         upperCanvasEl.width = this.canvas.canvasEl.width;
         upperCanvasEl.height = this.canvas.canvasEl.height;
         upperCanvasEl.id = 'upperCanvas'
-        this.canvas.canvasEl.parentNode.appendChild(upperCanvasEl)
+        this.canvas.canvasEl.parentNode!.appendChild(upperCanvasEl)
 
         this._upperCanvasEl = upperCanvasEl
         setCanvasStyles(this._upperCanvasEl)

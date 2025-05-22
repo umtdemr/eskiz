@@ -20,7 +20,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private _status: 'idle' | 'open' | 'error' | 'closed' = 'idle';
     private _wsConnectTimeout = 5000;
     private _boardSlugId: string;
-    private messageCallbacks= new Map<string, (data: MsgCallback<any>) => void>();
+    private messageCallbacks= new Map<string, (data: MsgCallback<WsCommand>) => void>();
     private msgTimeoutDuration = 10_000;
 
     eventReceived = new Signal<WsEvents>()
@@ -95,7 +95,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         this.messageCallbacks.clear();
     }
     
-    sendMessage<T>(data: WsPayload<T>, cb?: (data: MsgCallback<T>) => void) {
+    sendMessage<T extends WsCommand>(data: WsPayload<T>, cb?: (data: MsgCallback<T>) => void) {
         const sendingData = {
             ...data,
             id: nanoid()
@@ -108,7 +108,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     }
     
     // sends message using sendMessage. But this method returns a promise. Useful when relying on callbacks
-    async sendAsyncMessage<T>(data: WsPayload<T>): Promise<WsResponse<T>> {
+    async sendAsyncMessage<T extends WsCommand>(data: WsPayload<T>): Promise<WsResponse<T>> {
         return new Promise((resolve, reject) => {
             const timeout = setTimeout(() => {
                 reject('timeout')
