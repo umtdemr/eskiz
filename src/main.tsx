@@ -19,6 +19,7 @@ import BoardsPage from "@/pages/boards/Boards.tsx";
 import SingleBoard from "@/pages/boards/SingleBoard.tsx";
 import Search from './pages/boards/Search';
 import {Deleted} from "@/pages/boards/Deleted.tsx";
+import {initializeAllWidgets} from "@/core/initializers/registerWidgets.ts";
 
 const router = createBrowserRouter([
     {
@@ -78,3 +79,5 @@ createRoot(document.getElementById('root')!).render(
       </QueryClientProvider>
   </StrictMode>,
 )
+
+initializeAllWidgets()
