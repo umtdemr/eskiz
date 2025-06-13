@@ -27,6 +27,12 @@ export type BoardRetrieveResponse = {
             owner_id: number
             slug_id: string
             created_at: string
+            pages: {
+                id: number
+                board_id: number
+                created_at: string
+                name: string
+            }[]
         },
         users: {
             full_name: string
