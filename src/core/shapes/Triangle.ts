@@ -1,6 +1,6 @@
 import {Shape, ShapeProps} from "@/core/shapes/Shape.ts";
-import {Canvas as SkiaCanvas} from "canvaskit-wasm";
 import { canvasKit, RenderContext } from "@/core/canvas/Canvas";
+import { WsWidget } from "@/types/Websocket.ts";
 
 export class Triangle extends Shape {
     constructor(props: ShapeProps) {
@@ -43,5 +43,9 @@ export class Triangle extends Shape {
         paint.setStyle(canvasKit.PaintStyle.Stroke);
 
         ctx.drawPath(pathStroke, paint)
+    }
+
+    static loadFromJson(json: WsWidget): Triangle {
+        return new Triangle(json)
     }
 }
