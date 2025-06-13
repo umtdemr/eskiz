@@ -1,18 +1,25 @@
-import {Canvas as SkiaCanvas, CanvasKit} from "canvaskit-wasm";
 import { Layer }from "../stage/Layer";
 import { BoundingBox } from "../geometry/BoundingBox";
 import { RenderContext } from "../canvas/Canvas";
 import { LinkedList } from "../dataStructures/LinkedList";
 import { Signal } from "../signal/Signal";
+import { ShapeType } from "@/core/shapes/Shape.ts";
+import {WsWidget} from "@/types/Websocket.ts";
 
 export type WidgetType = 'shape' | 'text' | 'multiSelector' | 'border'
+
+export type DbWidgetType = 'shape'
+
+export type SubType = ShapeType
+
+export type WidgetFullType = `${DbWidgetType}_${SubType}`
 
 export interface WidgetProps {
     x: number
     y: number
     width: number
     height?: number
-    parentLayer: Layer
+    parentLayer?: Layer
     visible?: boolean
 }
 
@@ -22,7 +29,7 @@ export abstract class Widget extends Layer {
     protected _y: number
     protected _width: number
     protected _height: number
-    protected _layer: Layer
+    protected _layer?: Layer
     protected _bounds: BoundingBox       // Global bounds (including parent transforms)
     protected _localBounds: BoundingBox  // Local bounds (object's own space)
     protected _selected: boolean = false;
@@ -118,6 +125,10 @@ export abstract class Widget extends Layer {
             width: this.width,
             height: this.height,
         }
+    }
+
+    static loadFromJson(json: WsWidget): Widget {
+        throw new Error(`loadFromJson is not implemented for ${json.widget_type}_${json.sub_type}`)
     }
 
     get width() {
