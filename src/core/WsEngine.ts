@@ -30,6 +30,8 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private reconnectTimeoutId: ReturnType<typeof setTimeout> | null = null;
     private baseReconnectDelay = 1000; // 1 second
     private maxReconnectDelay = 30000; // 30 seconds
+    private _networkStatus: 'online' | 'offline' = 'online';
+    private _isSuccessfullyJoined = false;
 
     // Ping/Pong (Heartbeat) variables
     private serverPingTimeoutId: ReturnType<typeof setTimeout> | null = null;
@@ -37,6 +39,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private serverPingTolerance = 5000; // Extra time before considering unresponsive
 
     eventReceived = new Signal<WsEvents>()
+    reconnected = new Signal();
 
     constructor(url: string, slugId: string) {
         super()
@@ -57,25 +60,22 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     }
 
     private onNetworkOnline() {
+        this._networkStatus = 'online';
         console.log('Browser is online. Checking WebSocket connection...');
-        // If WebSocket is not open, try to (re)connect immediately
         if (this.websocket?.readyState !== WebSocket.OPEN) {
             console.log('Network back online, attempting WebSocket reconnection...');
-            this.handleDisconnection(); // Trigger reconnection logic
+            this.handleDisconnection(true)
         }
         // If it was already open, great. If not, handleDisconnection will take care of it.
     }
 
     private onNetworkOffline() {
+        this._networkStatus = 'offline';
         console.warn('Browser is offline. WebSocket connection likely affected.');
-        // If we detect offline, proactively close the WebSocket if it's open.
-        // This will trigger onClose and then handleDisconnection immediately.
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
             console.log('Force closing WebSocket due to offline event.');
-            this.websocket.close(1000, 'Browser offline'); // Code 1001: Going Away
-        } else if (this.websocket?.readyState === WebSocket.CONNECTING || this.websocket?.readyState === WebSocket.RECONNECTING) {
-            // If currently trying to connect, it's likely to fail,
-            // so setting status to error might be appropriate.
+            this.websocket.close(1000, 'Browser offline');
+        } else if (this.websocket?.readyState === WebSocket.CONNECTING) {
             this.status = 'error';
         }
         // todo: emit disconnected
@@ -98,7 +98,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         this.websocket.onopen = this.onOpen.bind(this);
         this.websocket.onclose = this.onClose.bind(this);
     }
-    
+
     private onError(err){
         console.log('err', err)
         this.status = 'error';
@@ -109,11 +109,20 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         this.reconnectAttempts = 0; // reset attempts
         this.clearReconnectTimeout();
         this.resetServerPingTimeout(); // Start ping timeout monitoring
+
+        if (this._isSuccessfullyJoined) {
+            this.reconnected.dispatch();
+        }
     }
 
-    private onClose() {
+    private onClose(event: CloseEvent) {
+        console.log('closed', this._status)
         this.status = 'closed';
         this.clearServerPingTimeout();
+        if (event?.code === 1000) {
+            console.log('Clean disconnection. No reconnection attempt.');
+            return;
+        }
         this.handleDisconnection(); // Attempt reconnection
     }
 
@@ -121,39 +130,45 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         this.resetServerPingTimeout(); // Reset ping timeout on ANY message from server
 
         const data = JSON.parse(Pako.inflate(message.data, { to: 'string', encoding: 'utf8' }))
+        console.log('message', data)
         if (data.reply_to) {
             if (this.messageCallbacks.has(data.reply_to)) {
                 this.messageCallbacks.get(data.reply_to)!(data)
             }
         }
-        
+
         if (data.event) {
             this.eventReceived.dispatch(data)
         }
     }
 
     // todo: force immediate
-    private handleDisconnection() {
-        if (this._status === 'closed' || this._status === 'error' || this._status === 'reconnecting') {
-            if (this.reconnectAttempts < this.maxReconnectAttempts) {
-                this.reconnectAttempts++;
-                const delay = Math.min(this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1), this.maxReconnectDelay);
-                console.log(`Attempting to reconnect in ${delay / 1000} seconds (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
+    private handleDisconnection(forceImmediate = false) {
+        if (this._networkStatus === 'offline') {
+            return
+        }
 
-                this.clearReconnectTimeout(); // Clear any existing timeout
-                this.reconnectTimeoutId = setTimeout(() => {
-                    this.createWebsocket();
-                }, delay);
-            } else {
-                console.warn('Max reconnection attempts reached. Giving up.');
-                this.status = 'closed'; // Permanently closed
-                this.clearReconnectTimeout();
-                this.clearServerPingTimeout();
-                // todo: emit event
-            }
+        if (this._status !== 'closed' && this._status !== 'error' && this._status !== 'reconnecting') {
+            return
+        }
+
+        if (this.reconnectAttempts < this.maxReconnectAttempts) {
+            this.reconnectAttempts++;
+            const delay = forceImmediate ? 0 : Math.min(this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1), this.maxReconnectDelay);
+            console.log(`Attempting to reconnect in ${delay / 1000} seconds (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
+
+            this.clearReconnectTimeout(); // Clear any existing timeout
+            this.reconnectTimeoutId = setTimeout(() => {
+                this.createWebsocket();
+            }, delay);
+        } else {
+            console.warn('Max reconnection attempts reached. Giving up.');
+            this.status = 'closed'; // Permanently closed
+            this.clearReconnectTimeout();
+            this.clearServerPingTimeout();
+            // todo: emit event
         }
     }
-
 
     private resetServerPingTimeout() {
         this.clearServerPingTimeout();
@@ -180,7 +195,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
             this.reconnectTimeoutId = null;
         }
     }
-    
+
     async initialize() {
         if (this._status === 'open') {
             return Promise.resolve(true)
@@ -197,7 +212,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
                     this.status = 'error';
                     reject('connection timeout')
                 }, this._wsConnectTimeout)
-                
+
                 const handleStatusChange = (newStatus: WsEngineStatus) => {
                     if (newStatus === 'open') {
                         cleanup()
@@ -213,17 +228,17 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
                         reject('connection closed prematurely')
                     }
                 }
-                
+
                 const cleanup = () => {
                     this.off('statusChange', handleStatusChange);
                 }
-                
+
                 this.on('statusChange', handleStatusChange);
             })
         }
         return Promise.resolve(false)
     }
-    
+
     dispose() {
         this.clearReconnectTimeout();
         this.clearServerPingTimeout();
@@ -234,7 +249,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         }
         this.messageCallbacks.clear();
     }
-    
+
     sendMessage<T extends WsCommand>(data: WsPayload<T>, cb?: (data: MsgCallback<T>) => void) {
         const sendingData = {
             ...data,
@@ -246,7 +261,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         const compressed = Pako.deflate(JSON.stringify(sendingData))
         this.websocket!.send(compressed)
     }
-    
+
     // sends message using sendMessage. But this method returns a promise. Useful when relying on callbacks
     async sendAsyncMessage<T extends WsCommand>(data: WsPayload<T>): Promise<WsResponse<T>> {
         return new Promise((resolve, reject) => {
@@ -262,17 +277,20 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
             )
         }) as Promise<WsResponse<T>>
     }
-    
+
     async connect(userAuthToken: string): Promise<WsResponse<"join">>{
-        return await this.sendAsyncMessage<"join">({
+        const connectResp = await this.sendAsyncMessage<"join">({
             type: 'join',
             data: {
                 board_slug_id: this._boardSlugId,
                 user_auth_token: userAuthToken,
             },
         });
+
+        this._isSuccessfullyJoined = !connectResp.error;
+        return connectResp;
     }
-    
+
     set status(newStatus: WsEngineStatus){
         this._status = newStatus;
         this.emit('statusChange', newStatus)
