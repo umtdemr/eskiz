@@ -20,9 +20,11 @@ export interface BoardsSlice {
     isBoardFetched: boolean
     boardData: Board,
     users: BoardUser[],
+    isDisconnected: boolean
     setBoardData: (data: Board) => void
     addToUsers: (data: BoardUser[]) => void
     changeBoardName: (newName: string) => void
+    setIsDisconnected: (val: boolean) => void
 }
 
 
@@ -41,11 +43,13 @@ export const createBoardsSlice: StateCreator<
     },
     users: [],
     isBoardFetched: false,
+    isDisconnected: false,
     setBoardData: (data: Board) => set({ boardData: data, isBoardFetched: true }),
     addToUsers: (data: BoardUser[]) => set(state => ({ users: [ ...state.users, ...data ] })),
     changeBoardName: (newName: string) => set(state => ({ boardData: {
             ...state.boardData,
             name: newName
         }
-    }))
+    })),
+    setIsDisconnected: (val: boolean) => set({ isDisconnected: val }),
 })

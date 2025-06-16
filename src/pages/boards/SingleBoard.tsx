@@ -36,12 +36,15 @@ export default function SingleBoard() {
     const canvasRef = useRef<Canvas | null>(null);
     const engineRef = useRef<Engine | null>(null)
     const [connectionError, setConnectionError] = useState<WsErrorMessage>(null)
+    const disconnectionToastId = useRef('');
     
     const token = useBoundStore(useShallow((state) => state.token))
     const userData = useBoundStore(useShallow((state) => state.userData))
     const setBoardData = useBoundStore(useShallow(state => state.setBoardData))
     const setCollaborators = useBoundStore(useShallow((state) => state.setCollaborators));
     const addToUsers = useBoundStore(useShallow((state) => state.addToUsers))
+    const setIsDisconnected = useBoundStore(useShallow((state) => state.setIsDisconnected))
+    const isDisconnected = useBoundStore(useShallow((state) => state.isDisconnected))
 
     const navigate = useNavigate()
 
@@ -154,13 +157,28 @@ export default function SingleBoard() {
         const reconnectListener = async () => {
             const connectResp = await engineRef.current?.wsEngine.connect(token)
             processSuccessfulJoin(connectResp!)
+            setIsDisconnected(false);
+            toast.success("Reconnected.", {
+                id: disconnectionToastId.current,
+                duration: 3000,
+            })
         }
+        const disconnectListener = async () => {
+            setIsDisconnected(true);
+            disconnectionToastId.current = toast.loading('Disconnected. Reconnecting...', {
+                id: 'disconnection',
+                duration: Infinity,
+            })
+        }
+
         engineRef.current?.wsEngine.reconnected.add(reconnectListener)
+        engineRef.current?.wsEngine.disconnected.add(disconnectListener)
 
         return () => {
             engineRef.current?.wsEngine.reconnected.remove(reconnectListener)
+            engineRef.current?.wsEngine.disconnected.remove(disconnectListener)
         }
-    }, [isInitialized, token, processSuccessfulJoin])
+    }, [isInitialized, token, processSuccessfulJoin, setIsDisconnected])
 
     return (
         <div className='whiteboard'>
@@ -180,14 +198,14 @@ export default function SingleBoard() {
                 ((boardQuery.isSuccess && isInitialized) && !connectionError) ? (
                     <>
                         <Header engine={engineRef.current!} />
-                        <Toolbar />
-                        <Footer engine={engineRef.current!} />
+                        {!isDisconnected ? <Toolbar /> : null}
+                        {!isDisconnected ? <Footer engine={engineRef.current!} /> : null}
                     </>
                 ) : null
             }
 
             {
-                connectionError ? (
+                connectionError && !isDisconnected ? (
                     <Dialog open={true}>
                         <DialogContent showCloseIcon={false}>
                             <DialogHeader>
