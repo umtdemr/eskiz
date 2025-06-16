@@ -38,12 +38,14 @@ export class Engine extends Emitter<EngineEventsMap>{
     canvas: Canvas
     wsEngine: WsEngine
     private serviceManager: ServiceManager;
+    private _isRunning = false;
 
     upperCanvasRenderer: UpperCanvasRenderer
 
     stagesInitiated = new Signal()
     canvasInitiated = new Signal<Canvas>()
-    
+    initialized = new Signal();
+
     constructor(slugId: string) {
         super()
         this._slugId = slugId
@@ -83,12 +85,17 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.upperCanvasRenderer.run() // start rendering upper canvas
 
         this.canvasInitiated.dispatch(this.canvas)
+        this.initialized.dispatch()
         return true
     }
     
     run() {
+        if (this._isRunning) {
+            return
+        }
         this.canvas.draw()
         this.canvas.requestRender()
+        this._isRunning = true;
     }
 
     dispose() {
