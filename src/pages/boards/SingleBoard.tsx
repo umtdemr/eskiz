@@ -178,12 +178,12 @@ export default function SingleBoard() {
 
         engineRef.current?.wsEngine.reconnected.add(reconnectListener)
         engineRef.current?.wsEngine.disconnected.add(disconnectListener)
-        engineRef.current?.wsEngine.disconnected.add(gaveUpListener)
+        engineRef.current?.wsEngine.gaveUp.add(gaveUpListener)
 
         return () => {
             engineRef.current?.wsEngine.reconnected.remove(reconnectListener)
             engineRef.current?.wsEngine.disconnected.remove(disconnectListener)
-            engineRef.current?.wsEngine.disconnected.remove(gaveUpListener)
+            engineRef.current?.wsEngine.gaveUp.remove(gaveUpListener)
         }
     }, [isInitialized, token, processSuccessfulJoin, setIsDisconnected, navigate])
 
