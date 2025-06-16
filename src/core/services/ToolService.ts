@@ -24,7 +24,7 @@ export class ToolService extends Service {
         this._storeListener = useBoundStore.subscribe(
             this.onStateChange.bind(this)
         )
-
+        this.engine.wsEngine.disconnected.add(this.onDisconnected, this)
     }
 
     private onStateChange(state: ZState, prevState: ZState) {
@@ -40,6 +40,11 @@ export class ToolService extends Service {
             this.subModeChanged.dispatch({ subTool: this._subTool, prevSubTool: this._prevSubTool, tool: this._tool, prevTool: this._prevTool })
         }
     }
+
+    private onDisconnected() {
+        this.changeTool('PAN')
+    }
+
 
     changeTool(tool: keyof typeof ACTION_MODES, subTool?: keyof typeof SUB_ACTION_MODES) {
         useBoundStore.setState((state: ZState) => ({

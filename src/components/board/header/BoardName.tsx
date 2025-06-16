@@ -19,6 +19,7 @@ export function BoardName({ engine }: { engine: Engine }) {
     const [value, setValue] = useState(board?.name || '')
     const user = useBoundStore(useShallow((state) => state.userData))
     const inputRef = useRef<HTMLInputElement>(null)
+    const isDisconnected = useBoundStore(useShallow((state) => state.isDisconnected))
 
     const nameBtnClickHandler = () => {
         if (isEditing) {
@@ -110,7 +111,7 @@ export function BoardName({ engine }: { engine: Engine }) {
             <TooltipProvider>
                 <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>
-                        <Button variant="ghost" asChild size="sm" className="text-base font-bold">
+                        <Button variant="ghost" size="sm" className="text-base font-bold" disabled={isDisconnected}>
                             <Link to={"/boards"}>
                                 WB
                             </Link>
@@ -121,7 +122,7 @@ export function BoardName({ engine }: { engine: Engine }) {
             </TooltipProvider>
 
             {
-                board.owner_id === user.id ? (
+                board.owner_id === user.id && !isDisconnected ? (
                     <TooltipProvider>
                         <Tooltip delayDuration={0}>
                             <TooltipTrigger asChild>
@@ -153,7 +154,7 @@ export function BoardName({ engine }: { engine: Engine }) {
                 ) : <span className="text-sm px-3">{board.name}</span>
             }
             {
-                board.owner_id === user.id && isEditing  ? (
+                board.owner_id === user.id && isEditing && !isDisconnected  ? (
                     <TooltipProvider>
                         <Tooltip delayDuration={0}>
                             <TooltipTrigger asChild>

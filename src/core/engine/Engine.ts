@@ -17,6 +17,8 @@ import { WheelService } from "../services/WheelService";
 import {WebsocketEventService} from "@/core/services/WebsocketEventService.ts";
 import {BoardNameService} from "@/core/services/BoardNameService.ts";
 import {CollaboratorsService} from "@/core/services/CollaboratorsService.ts";
+import {WidgetsService} from "@/core/services/WidgetsService.ts";
+import {PageService} from "@/core/services/PageService.ts";
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -36,12 +38,14 @@ export class Engine extends Emitter<EngineEventsMap>{
     canvas: Canvas
     wsEngine: WsEngine
     private serviceManager: ServiceManager;
+    private _isRunning = false;
 
     upperCanvasRenderer: UpperCanvasRenderer
 
     stagesInitiated = new Signal()
     canvasInitiated = new Signal<Canvas>()
-    
+    initialized = new Signal();
+
     constructor(slugId: string) {
         super()
         this._slugId = slugId
@@ -81,12 +85,17 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.upperCanvasRenderer.run() // start rendering upper canvas
 
         this.canvasInitiated.dispatch(this.canvas)
+        this.initialized.dispatch()
         return true
     }
     
     run() {
+        if (this._isRunning) {
+            return
+        }
         this.canvas.draw()
         this.canvas.requestRender()
+        this._isRunning = true;
     }
 
     dispose() {
@@ -117,6 +126,8 @@ export class Engine extends Emitter<EngineEventsMap>{
         this.serviceManager.register('cursorSender', new CursorSenderService(this, this.wsEngine, this._mouseController));
         this.serviceManager.register('boardName', new BoardNameService(this, wsEventService));
         this.serviceManager.register('collaborators', new CollaboratorsService(this, wsEventService));
+        this.serviceManager.register('page', new PageService(this));
+        this.serviceManager.register('widgets', new WidgetsService(this));
     }
 
     getService<T>(name: string): T {

@@ -1,24 +1,22 @@
-import {Canvas as SkiaCanvas} from 'canvaskit-wasm';
-import {Shape} from "@/core/shapes/Shape.ts";
-import {RGBA} from "@/core/shapes/Color.ts";
+import {Shape, ShapeProperties, ShapeProps} from "@/core/shapes/Shape.ts";
 import {SHAPES} from "@/helpers/Constant.ts";
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas';
 
-export type RectangleProps = {
-    x: number
-    y: number
-    width: number
-    height: number
-    strokeColor?: RGBA
-    fillColor?: RGBA
-    radius?: number
+export interface RectangleProps extends ShapeProps {
+    properties: RectangleShapeProperties
+}
+
+export interface RectangleShapeProperties extends ShapeProperties {
+    radius?: number;
 }
 
 export class Rectangle extends Shape {
     private _radius: number
     constructor(props: RectangleProps) {
         super(SHAPES.RECTANGLE, props)
-        this._radius = props.radius >= 0 && props.radius <= 20 ? props.radius! : 0
+        if (props.properties?.radius) {
+            this._radius = props.properties.radius >= 0 && props.properties.radius <= 20 ? props.properties.radius! : 0
+        }
     }
     
     protected renderContent(renderContext: RenderContext) {
@@ -79,5 +77,9 @@ export class Rectangle extends Shape {
         } else {
             ctx.drawRect(strokeRect, paint)
         }
+    }
+
+    static loadFromJson(json: RectangleProps): Rectangle {
+        return new Rectangle(json)
     }
 }

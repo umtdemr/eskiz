@@ -81,7 +81,8 @@ export class ShapeDrawerToolService extends Service {
                 y: data.pointer.y,
                 width: 1,
                 height: 1,
-                parentLayer: this.engine.stage.widgetsDefaultLayer
+                parentLayer: this.engine.stage.widgetsDefaultLayer,
+                properties: {},
             })
             this.engine.stage.addWidget(this.shape!)
             this.drawingStarted = true;

@@ -82,7 +82,7 @@ export const CANVAS_COLORS = {
 
 export const SHAPES = {
     RECTANGLE: 'rectangle'
-}
+} as const;
 
 export const STAGE_LAYERS = {
     ROOT: 'RootContainer',

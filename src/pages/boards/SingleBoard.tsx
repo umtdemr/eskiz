@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from "react";
+import {useCallback, useEffect, useRef, useState} from "react";
 import {Link, useNavigate, useParams} from "react-router-dom";
 import Header from "@/components/board/header/Header.tsx";
 import {useQuery} from "@tanstack/react-query";
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog.tsx";
 import {CircleX} from "lucide-react";
 import {Button} from "@/components/ui/button.tsx";
-import {WsErrorMessage} from "@/types/Websocket.ts";
+import {WsErrorMessage, WsResponse} from "@/types/Websocket.ts";
 import {BoardRetrieveResponse} from "@/types/Board.ts";
 import {getAvatar} from "@/helpers/AuthHelper.ts";
 import {CollaboratorUser} from "@/store/collaborators.ts";
@@ -36,12 +36,15 @@ export default function SingleBoard() {
     const canvasRef = useRef<Canvas | null>(null);
     const engineRef = useRef<Engine | null>(null)
     const [connectionError, setConnectionError] = useState<WsErrorMessage>(null)
+    const disconnectionToastId = useRef('');
     
     const token = useBoundStore(useShallow((state) => state.token))
     const userData = useBoundStore(useShallow((state) => state.userData))
     const setBoardData = useBoundStore(useShallow(state => state.setBoardData))
     const setCollaborators = useBoundStore(useShallow((state) => state.setCollaborators));
     const addToUsers = useBoundStore(useShallow((state) => state.addToUsers))
+    const setIsDisconnected = useBoundStore(useShallow((state) => state.setIsDisconnected))
+    const isDisconnected = useBoundStore(useShallow((state) => state.isDisconnected))
 
     const navigate = useNavigate()
 
@@ -82,6 +85,39 @@ export default function SingleBoard() {
             return boardData
         },
     })
+
+    const processSuccessfulJoin = useCallback((connectResp: WsResponse<"join">) => {
+        if (connectResp.error) {
+            setConnectionError(connectResp.error)
+            return
+        }
+
+        const collaborators = (connectResp.join?.online_users.map(data => ({
+            id: data.user.id,
+            email: data.user.email,
+            full_name: data.user.full_name,
+            role: 'editor',
+            avatar: getAvatar(data.user.full_name),
+        }))  || []) as CollaboratorUser[]
+
+        const allCollaborators = collaborators.concat({
+            id: userData.id,
+            email: userData.email,
+            full_name: userData.full_name,
+            role: 'editor',
+            avatar: getAvatar(userData.full_name),
+            is_current_user: true
+        })
+
+        setCollaborators(allCollaborators)
+        setIsInitialized((prev) => {
+            if (!prev) return true
+            return prev
+        });
+        if (engineRef.current) {
+            engineRef.current.run();
+        }
+    }, [setCollaborators, userData])
     
     useEffect(() => {
         const navigateToBoardOnErr = () => {
@@ -89,40 +125,14 @@ export default function SingleBoard() {
             toast.error('Error while initializing the board')
             navigate('/boards') 
         }
+
         const initializeApp = async () => {
             try {
                 engineRef.current = new Engine(slugId!)
-                const isEngineInitialized = await engineRef.current?.initialize();
+                await engineRef.current?.initialize();
                 canvasRef.current = engineRef.current?.canvas
                 const connectResp = await engineRef.current?.wsEngine.connect(token)
-                if (connectResp.error) {
-                    setConnectionError(connectResp.error)
-                    return
-                }
-                
-                const collaborators = (connectResp.join?.online_users.map(data => ({
-                    id: data.user.id,
-                    email: data.user.email,
-                    full_name: data.user.full_name,
-                    role: 'editor',
-                    avatar: getAvatar(data.user.full_name),
-                }))  || []) as CollaboratorUser[]
-                
-                const allCollaborators = collaborators.concat({
-                    id: userData.id,
-                    email: userData.email,
-                    full_name: userData.full_name,
-                    role: 'editor',
-                    avatar: getAvatar(userData.full_name),
-                    is_current_user: true
-                })
-                
-                setCollaborators(allCollaborators)
-                const isOkayToProceed = isEngineInitialized! && !!connectResp.join;
-                setIsInitialized(isOkayToProceed)
-                if (isOkayToProceed) {
-                    engineRef.current?.run()
-                }
+                processSuccessfulJoin(connectResp)
             } catch (err) {
                 console.error(err)
                 navigateToBoardOnErr();
@@ -135,11 +145,47 @@ export default function SingleBoard() {
         if (engineRef.current) {
             if (engineRef.current?.canvas.initialized) return
         }
-        
-        
-        initializeApp()
-    }, [boardQuery.isSuccess, userData])
 
+        initializeApp()
+    }, [boardQuery, userData, slugId, token, setCollaborators, navigate, processSuccessfulJoin])
+
+    useEffect(() => {
+        if (!isInitialized || !token) {
+            return
+        }
+
+        const reconnectListener = async () => {
+            const connectResp = await engineRef.current?.wsEngine.connect(token)
+            processSuccessfulJoin(connectResp!)
+            setIsDisconnected(false);
+            toast.success("Reconnected.", {
+                id: disconnectionToastId.current,
+                duration: 3000,
+            })
+        }
+        const disconnectListener = () => {
+            setIsDisconnected(true);
+            disconnectionToastId.current = toast.loading('Disconnected. Reconnecting...', {
+                id: 'disconnection',
+                duration: Infinity,
+            })
+        }
+
+        const gaveUpListener = () => {
+            toast.error("Sorry, we could not connect you to the server.")
+            navigate('/boards')
+        }
+
+        engineRef.current?.wsEngine.reconnected.add(reconnectListener)
+        engineRef.current?.wsEngine.disconnected.add(disconnectListener)
+        engineRef.current?.wsEngine.gaveUp.add(gaveUpListener)
+
+        return () => {
+            engineRef.current?.wsEngine.reconnected.remove(reconnectListener)
+            engineRef.current?.wsEngine.disconnected.remove(disconnectListener)
+            engineRef.current?.wsEngine.gaveUp.remove(gaveUpListener)
+        }
+    }, [isInitialized, token, processSuccessfulJoin, setIsDisconnected, navigate])
 
     return (
         <div className='whiteboard'>
@@ -159,14 +205,14 @@ export default function SingleBoard() {
                 ((boardQuery.isSuccess && isInitialized) && !connectionError) ? (
                     <>
                         <Header engine={engineRef.current!} />
-                        <Toolbar />
-                        <Footer engine={engineRef.current!} />
+                        {!isDisconnected ? <Toolbar /> : null}
+                        {!isDisconnected ? <Footer engine={engineRef.current!} /> : null}
                     </>
                 ) : null
             }
 
             {
-                connectionError ? (
+                connectionError && !isDisconnected ? (
                     <Dialog open={true}>
                         <DialogContent showCloseIcon={false}>
                             <DialogHeader>

@@ -1,21 +1,26 @@
 import {UserPublicData} from "@/types/Auth.ts";
 import {WS_EVENTS} from "@/helpers/Constant.ts";
+import {DbWidgetType, SubType} from "@/core/shapes/Widget.ts";
 
 
-export type WsCommand = "join" | "changeBoardName" | "other"
+export type WsCommand = "join" | "changeBoardName" | "addWidget" | "fetchPageDetails" | "other"
 
 // defines responses for each request
 type CommandBaseResponse = {
-    join: WsJoinResponse,
-    changeBoardName: WsChangeBoardNameResponse,
+    join: WsJoinResponse
+    changeBoardName: WsChangeBoardNameResponse
+    addWidget: AddWidgetResponse
+    fetchPageDetails: FetchPageDetailsResponse
     other: string
 }
 
-// defines responses for each request
+// defines payloads for each request
 type CommandBasePayload = {
-    join: WsJoinPayload,
+    join: WsJoinPayload
     cursor: WsCursorPayload
-    changeBoardName: WsChangeBoardNamePayload,
+    changeBoardName: WsChangeBoardNamePayload
+    fetchPageDetails: FetchPageDetailsPayload
+    addWidget: AddWidgetPayload // todo: implement
 }
 
 // defines typical error message for the request
@@ -65,6 +70,44 @@ export type WsChangeBoardNameResponse = {
     name: string
 }
 
+export type AddWidgetPayload = {
+    page_id: number
+    widget_type: DbWidgetType
+    sub_type?: SubType
+    parent_widget_id?: number
+    x: number
+    y: number
+    width: number
+    height: number
+    z_index: string
+    uuid: string
+    properties: Record<string, unknown>
+}
+
+export type WsWidget = {
+    x: number
+    y: number
+    width: number
+    height: number
+    z_index: string
+    uuid: string
+    properties: Record<string, unknown>
+    is_deleted: boolean
+    widget_type: string
+    sub_type: string
+}
+
+export type AddWidgetResponse = {
+    widget: any
+}
+
+export type FetchPageDetailsPayload = {
+    page_id: number
+}
+
+export type FetchPageDetailsResponse = {
+    widgets: WsWidget[]
+}
 
 export type WsMessage = {
     reply_to?: string
