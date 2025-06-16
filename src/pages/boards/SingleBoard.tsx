@@ -163,7 +163,7 @@ export default function SingleBoard() {
                 duration: 3000,
             })
         }
-        const disconnectListener = async () => {
+        const disconnectListener = () => {
             setIsDisconnected(true);
             disconnectionToastId.current = toast.loading('Disconnected. Reconnecting...', {
                 id: 'disconnection',
@@ -171,14 +171,21 @@ export default function SingleBoard() {
             })
         }
 
+        const gaveUpListener = () => {
+            toast.error("Sorry, we could not connect you to the server.")
+            navigate('/boards')
+        }
+
         engineRef.current?.wsEngine.reconnected.add(reconnectListener)
         engineRef.current?.wsEngine.disconnected.add(disconnectListener)
+        engineRef.current?.wsEngine.disconnected.add(gaveUpListener)
 
         return () => {
             engineRef.current?.wsEngine.reconnected.remove(reconnectListener)
             engineRef.current?.wsEngine.disconnected.remove(disconnectListener)
+            engineRef.current?.wsEngine.disconnected.remove(gaveUpListener)
         }
-    }, [isInitialized, token, processSuccessfulJoin, setIsDisconnected])
+    }, [isInitialized, token, processSuccessfulJoin, setIsDisconnected, navigate])
 
     return (
         <div className='whiteboard'>
