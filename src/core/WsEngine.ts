@@ -41,6 +41,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     eventReceived = new Signal<WsEvents>()
     reconnected = new Signal();
     disconnected = new Signal();
+    gaveUp = new Signal(); // tried all our best, giving up signal
 
     constructor(url: string, slugId: string) {
         super()
@@ -136,7 +137,6 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         }
     }
 
-    // todo: force immediate
     private handleDisconnection(forceImmediate = false) {
         if (this._networkStatus === 'offline') {
             return
@@ -159,7 +159,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
             this.status = 'closed'; // Permanently closed
             this.clearReconnectTimeout();
             this.clearServerPingTimeout();
-            // todo: emit event
+            this.gaveUp.dispatch();
         }
     }
 
