@@ -1,6 +1,6 @@
 import {Shape, ShapeProps} from "@/core/shapes/Shape.ts";
-import {Canvas as SkiaCanvas} from "canvaskit-wasm";
 import { canvasKit, RenderContext } from "@/core/canvas/Canvas";
+import {WsWidget} from "@/types/Websocket.ts";
 
 export class Ellipse extends Shape {
     constructor(props: ShapeProps) {
@@ -47,5 +47,9 @@ export class Ellipse extends Shape {
         paint.setStrokeWidth(2)
         ctx.drawOval(strokeEllipse, paint)
 
+    }
+
+    static loadFromJson(json: WsWidget): Ellipse {
+        return new Ellipse(json)
     }
 }

@@ -14,7 +14,8 @@ export default function Header({
     const openWindow = useBoundStore(useShallow((state) => state.openWindow));
     const isUsersListCardActive = activeWindow === 'online_users_list';
     const isInviteModalActive = activeWindow === 'invite';
-    
+    const isDisconnected = useBoundStore(useShallow((state) => state.isDisconnected))
+
     const closeInviteModal = useCallback(() => {
         if (!isInviteModalActive) {
             return
@@ -30,13 +31,17 @@ export default function Header({
                 id='header_left'>
                 <BoardName engine={engine} />
             </div>
-            <div className='fixed top-5 right-5 flex bg-white shadow px-2 py-2 rounded-xl h-12 items-center gap-2'>
-                <UsersListDropdown />
-                { isUsersListCardActive ? <UsersListCard /> : null }
-            </div>
-            {
-                isInviteModalActive ? <InviteModal isOpen={true} closeModal={closeInviteModal} /> : null
-            }
+            {!isDisconnected ? (
+                <>
+                    <div className='fixed top-5 right-5 flex bg-white shadow px-2 py-2 rounded-xl h-12 items-center gap-2'>
+                        <UsersListDropdown />
+                        { isUsersListCardActive ? <UsersListCard /> : null }
+                    </div>
+                    {
+                        isInviteModalActive ? <InviteModal isOpen={true} closeModal={closeInviteModal} /> : null
+                    }
+                </>
+            ) : null}
         </>
     )
 }
