@@ -40,6 +40,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
 
     eventReceived = new Signal<WsEvents>()
     reconnected = new Signal();
+    disconnected = new Signal();
 
     constructor(url: string, slugId: string) {
         super()
@@ -75,10 +76,11 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
             console.log('Force closing WebSocket due to offline event.');
             this.websocket.close(1000, 'Browser offline');
+            this.disconnected.dispatch();
         } else if (this.websocket?.readyState === WebSocket.CONNECTING) {
             this.status = 'error';
+            this.disconnected.dispatch();
         }
-        // todo: emit disconnected
     }
 
     private createWebsocket() {
@@ -124,6 +126,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
             return;
         }
         this.handleDisconnection(); // Attempt reconnection
+        this.disconnected.dispatch();
     }
 
     private async onMessage(message: MessageEvent) {
