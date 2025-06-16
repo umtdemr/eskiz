@@ -62,19 +62,14 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
 
     private onNetworkOnline() {
         this._networkStatus = 'online';
-        console.log('Browser is online. Checking WebSocket connection...');
         if (this.websocket?.readyState !== WebSocket.OPEN) {
-            console.log('Network back online, attempting WebSocket reconnection...');
             this.handleDisconnection(true)
         }
-        // If it was already open, great. If not, handleDisconnection will take care of it.
     }
 
     private onNetworkOffline() {
         this._networkStatus = 'offline';
-        console.warn('Browser is offline. WebSocket connection likely affected.');
         if (this.websocket && this.websocket.readyState === WebSocket.OPEN) {
-            console.log('Force closing WebSocket due to offline event.');
             this.websocket.close(1000, 'Browser offline');
             this.disconnected.dispatch();
         } else if (this.websocket?.readyState === WebSocket.CONNECTING) {
@@ -101,8 +96,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         this.websocket.onclose = this.onClose.bind(this);
     }
 
-    private onError(err){
-        console.log('err', err)
+    private onError(){
         this.status = 'error';
     }
 
@@ -118,11 +112,9 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     }
 
     private onClose(event: CloseEvent) {
-        console.log('closed', this._status)
         this.status = 'closed';
         this.clearServerPingTimeout();
         if (event?.code === 1000) {
-            console.log('Clean disconnection. No reconnection attempt.');
             return;
         }
         this.handleDisconnection(); // Attempt reconnection
@@ -133,7 +125,6 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         this.resetServerPingTimeout(); // Reset ping timeout on ANY message from server
 
         const data = JSON.parse(Pako.inflate(message.data, { to: 'string', encoding: 'utf8' }))
-        console.log('message', data)
         if (data.reply_to) {
             if (this.messageCallbacks.has(data.reply_to)) {
                 this.messageCallbacks.get(data.reply_to)!(data)
@@ -158,7 +149,6 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         if (this.reconnectAttempts < this.maxReconnectAttempts) {
             this.reconnectAttempts++;
             const delay = forceImmediate ? 0 : Math.min(this.baseReconnectDelay * Math.pow(2, this.reconnectAttempts - 1), this.maxReconnectDelay);
-            console.log(`Attempting to reconnect in ${delay / 1000} seconds (attempt ${this.reconnectAttempts}/${this.maxReconnectAttempts})...`);
 
             this.clearReconnectTimeout(); // Clear any existing timeout
             this.reconnectTimeoutId = setTimeout(() => {
