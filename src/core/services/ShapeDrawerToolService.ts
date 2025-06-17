@@ -8,6 +8,9 @@ import { Triangle } from "../shapes/Triangle";
 import { SubModeChangedState, ToolService } from "./ToolService";
 import { ACTION_MODES, SUB_ACTION_MODES, DRAWING_MODES } from "@/helpers/Constant";
 import { SelectionService } from "./SelectionService";
+import {WidgetsService} from "@/core/services/WidgetsService.ts";
+import {AddWidgetPayload} from "@/types/Websocket.ts";
+import {nanoid} from "nanoid";
 
 export class ShapeDrawerToolService extends Service {
     private mouseController: MouseController
@@ -132,6 +135,14 @@ export class ShapeDrawerToolService extends Service {
         if (this.shape) {
             this.selectionService.selectWidget(this.shape)
         }
+        const uuid = nanoid()
+        const widgetsService = this.engine.getService<WidgetsService>("widgets")
+        const shape = this.shape!
+        shape.uuid = uuid
+        const json = {...shape?.toJson(), page_id: 53}
+
+        // todo: check error, if necessary delete from canvas
+        widgetsService.addWidget(json as AddWidgetPayload)
         this.reset()
     }
     
