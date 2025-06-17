@@ -1,6 +1,7 @@
 import {Shape, ShapeProperties, ShapeProps} from "@/core/shapes/Shape.ts";
 import {SHAPES} from "@/helpers/Constant.ts";
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas';
+import {WidgetJson} from "@/core/shapes/Widget.ts";
 
 export interface RectangleProps extends ShapeProps {
     properties: RectangleShapeProperties
@@ -18,7 +19,7 @@ export class Rectangle extends Shape {
             this._radius = props.properties.radius >= 0 && props.properties.radius <= 20 ? props.properties.radius! : 0
         }
     }
-    
+
     protected renderContent(renderContext: RenderContext) {
         const ctx = renderContext.ctx
         // can not render if width or height is less than 0
@@ -77,6 +78,16 @@ export class Rectangle extends Shape {
         } else {
             ctx.drawRect(strokeRect, paint)
         }
+    }
+
+    toJson(): WidgetJson {
+        const jsonData = this.generateJson()
+        if (this._radius) {
+            jsonData.properties.radius = this._radius
+        }
+        console.log(jsonData)
+
+        return jsonData;
     }
 
     static loadFromJson(json: RectangleProps): Rectangle {

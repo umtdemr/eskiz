@@ -21,6 +21,22 @@ export interface WidgetProps {
     height?: number
     parentLayer?: Layer
     visible?: boolean
+    uuid?: string
+    z_index?: string
+    parent_widget_id?: string
+}
+
+export type WidgetJson = {
+    x: number
+    y: number
+    width: number
+    height: number
+    z_index: string
+    uuid: string
+    properties: Record<string, unknown>
+    widget_type: DbWidgetType
+    sub_type?: SubType
+    parent_widget_id?: string
 }
 
 export abstract class Widget extends Layer {
@@ -29,6 +45,8 @@ export abstract class Widget extends Layer {
     protected _y: number
     protected _width: number
     protected _height: number
+    protected _uuid?: string
+    protected _parent_widget_id?: string
     protected _layer?: Layer
     protected _bounds: BoundingBox       // Global bounds (including parent transforms)
     protected _localBounds: BoundingBox  // Local bounds (object's own space)
@@ -56,7 +74,16 @@ export abstract class Widget extends Layer {
         if (props.visible !== undefined) {
             this.visible = props.visible
         }
-        
+        if (props.z_index) {
+            this._zIndex = props.z_index
+        }
+        if (props.uuid) {
+            this._uuid = props.uuid
+        }
+        if (props.parent_widget_id) {
+            this._parent_widget_id = props.parent_widget_id
+        }
+
         this.updateBounds()
     }
 
@@ -125,6 +152,10 @@ export abstract class Widget extends Layer {
             width: this.width,
             height: this.height,
         }
+    }
+
+    toJson(): WidgetJson {
+        throw new Error("must be implemented");
     }
 
     static loadFromJson(json: WsWidget): Widget {
