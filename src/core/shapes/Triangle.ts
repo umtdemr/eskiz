@@ -1,6 +1,7 @@
 import {Shape, ShapeProps} from "@/core/shapes/Shape.ts";
 import { canvasKit, RenderContext } from "@/core/canvas/Canvas";
 import { WsWidget } from "@/types/Websocket.ts";
+import {WidgetJson} from "@/core/shapes/Widget.ts";
 
 export class Triangle extends Shape {
     constructor(props: ShapeProps) {
@@ -43,6 +44,10 @@ export class Triangle extends Shape {
         paint.setStyle(canvasKit.PaintStyle.Stroke);
 
         ctx.drawPath(pathStroke, paint)
+    }
+
+    toJson(): WidgetJson {
+        return this.generateJson()
     }
 
     static loadFromJson(json: WsWidget): Triangle {

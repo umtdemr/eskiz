@@ -1,6 +1,6 @@
 import {UserPublicData} from "@/types/Auth.ts";
 import {WS_EVENTS} from "@/helpers/Constant.ts";
-import {DbWidgetType, SubType} from "@/core/shapes/Widget.ts";
+import {WidgetJson} from "@/core/shapes/Widget.ts";
 
 
 export type WsCommand = "join" | "changeBoardName" | "addWidget" | "fetchPageDetails" | "other"
@@ -70,18 +70,8 @@ export type WsChangeBoardNameResponse = {
     name: string
 }
 
-export type AddWidgetPayload = {
+export type AddWidgetPayload = WidgetJson & {
     page_id: number
-    widget_type: DbWidgetType
-    sub_type?: SubType
-    parent_widget_id?: number
-    x: number
-    y: number
-    width: number
-    height: number
-    z_index: string
-    uuid: string
-    properties: Record<string, unknown>
 }
 
 export type WsWidget = {
