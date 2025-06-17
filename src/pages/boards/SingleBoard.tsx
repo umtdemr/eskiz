@@ -27,6 +27,7 @@ import {WsErrorMessage, WsResponse} from "@/types/Websocket.ts";
 import {BoardRetrieveResponse} from "@/types/Board.ts";
 import {getAvatar} from "@/helpers/AuthHelper.ts";
 import {CollaboratorUser} from "@/store/collaborators.ts";
+import {PageService} from "@/core/services/PageService.ts";
 
 
 export default function SingleBoard() {
@@ -86,7 +87,7 @@ export default function SingleBoard() {
         },
     })
 
-    const processSuccessfulJoin = useCallback((connectResp: WsResponse<"join">) => {
+    const processSuccessfulJoin = useCallback(async (connectResp: WsResponse<"join">) => {
         if (connectResp.error) {
             setConnectionError(connectResp.error)
             return
@@ -110,14 +111,22 @@ export default function SingleBoard() {
         })
 
         setCollaborators(allCollaborators)
+
+        const pageService = engineRef.current?.getService<PageService>("page");
+        if (boardQuery.data?.pages?.length) {
+            const pageDetails = await pageService!.fetchPageDetails(boardQuery.data?.pages[0].id)
+            pageService?.addWidgetsToCanvas(pageDetails.fetchPageDetails?.widgets ?? []);
+        }
+
+        if (engineRef.current) {
+            engineRef.current.run();
+        }
+
         setIsInitialized((prev) => {
             if (!prev) return true
             return prev
         });
-        if (engineRef.current) {
-            engineRef.current.run();
-        }
-    }, [setCollaborators, userData])
+    }, [setCollaborators, userData, boardQuery])
     
     useEffect(() => {
         const navigateToBoardOnErr = () => {
@@ -132,7 +141,7 @@ export default function SingleBoard() {
                 await engineRef.current?.initialize();
                 canvasRef.current = engineRef.current?.canvas
                 const connectResp = await engineRef.current?.wsEngine.connect(token)
-                processSuccessfulJoin(connectResp)
+                await processSuccessfulJoin(connectResp)
             } catch (err) {
                 console.error(err)
                 navigateToBoardOnErr();
@@ -156,7 +165,7 @@ export default function SingleBoard() {
 
         const reconnectListener = async () => {
             const connectResp = await engineRef.current?.wsEngine.connect(token)
-            processSuccessfulJoin(connectResp!)
+            await processSuccessfulJoin(connectResp!)
             setIsDisconnected(false);
             toast.success("Reconnected.", {
                 id: disconnectionToastId.current,
