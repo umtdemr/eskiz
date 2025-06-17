@@ -85,7 +85,6 @@ export class Rectangle extends Shape {
         if (this._radius) {
             jsonData.properties.radius = this._radius
         }
-        console.log(jsonData)
 
         return jsonData;
     }
