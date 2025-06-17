@@ -8,12 +8,10 @@ export class WidgetsService extends Service {
         super(engine);
     }
 
-    private async addWidget(params: AddWidgetPayload) {
-        const widget = await this.engine.wsEngine.sendAsyncMessage<"addWidget">({
+    async addWidget(params: AddWidgetPayload) {
+        return await this.engine.wsEngine.sendAsyncMessage<"addWidget">({
             type: 'addWidget',
             data: params
         })
-
-        return widget;
     }
 }

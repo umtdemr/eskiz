@@ -249,4 +249,15 @@ export abstract class Widget extends Layer {
     set selected(val: boolean) {
         this._selected = val
     }
+
+    get uuid(): string | undefined {
+        return this._uuid;
+    }
+
+    set uuid(uuid: string) {
+        if (this._uuid) {
+            return
+        }
+        this._uuid = uuid
+    }
 }
