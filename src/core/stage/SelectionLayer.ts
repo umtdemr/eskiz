@@ -3,11 +3,14 @@ import { SelectionService } from "../services/SelectionService";
 import { Border } from "../shapes/nonCanvasShapes/Border";
 import { Widget } from "../shapes/Widget";
 import { Layer } from "./Layer";
+import {Control, ControlPosition} from "@/core/shapes/nonCanvasShapes/Control.ts";
 
 export class SelectionLayer extends Layer {
     private engine: Engine
     private selectionService: SelectionService
     private _selected: Widget[]
+    private selectionBorder: Border | null = null;
+    private controls: Control[] = [];
 
     constructor(engine: Engine, selectionService: SelectionService) {
         super({ name: 'selection_layer' })
@@ -23,7 +26,7 @@ export class SelectionLayer extends Layer {
      */
     onSelectionChanged() {
         this._selected = this.selectionService.selected
-        this.handleBordersOnSelectionChange(this._selected)
+        this.createSelectionUI(this._selected);
     }
 
     /**
@@ -56,6 +59,39 @@ export class SelectionLayer extends Layer {
         }
     }
 
+    private createSelectionUI(widgets: Widget[]) {
+        this.clearSelection()
+        if (!widgets.length) return;
+
+        this.addBorders(widgets)
+        // todo: listens selection border bounds change
+        if (widgets.length > 1) {
+            this.selectionBorder = this.drawBoundinBoxOfSelection(widgets)
+        } else {
+            this.selectionBorder = this.children.first! as Border
+        }
+
+        const handlePositions = [
+            ControlPosition.TOP_LEFT,
+            ControlPosition.TOP_RIGHT,
+            ControlPosition.BOTTOM_LEFT, ControlPosition.BOTTOM_RIGHT,
+        ]
+
+        for (const position of handlePositions) {
+            const handle = new Control({
+                position,
+                x: 0,
+                y: 0,
+                selectionLayer: this
+            })
+
+            this.controls.push(handle);
+            this.addChildren(handle);
+        }
+
+        this.updateControlPositions();
+    }
+
 
     /**
      * Adds bounding box border for the given widgets.
@@ -78,13 +114,13 @@ export class SelectionLayer extends Layer {
      * @param widgets Widgets to draw bounding box.
      */
     private drawBoundinBoxOfSelection(widgets: Widget[]) {
-        this.addChildren(
-            new Border({
-                widgets,
-                parentLayer: this,
-                engine: this.engine
-            })
-        )
+        const border = new Border({
+            widgets,
+            parentLayer: this,
+            engine: this.engine
+        })
+        this.addChildren(border)
+        return border;
     }
 
     private clearSelection() {
@@ -92,5 +128,30 @@ export class SelectionLayer extends Layer {
             border.destroy()
         }
         this._children.clear()
+        this.controls.length = 0;
+    }
+
+    private updateControlPositions() {
+        const box = this.selectionBorder!
+        for (const control of this.controls) {
+            switch (control.position) {
+                case ControlPosition.TOP_LEFT:
+                    control.left = box.left;
+                    control.top = box.top;
+                    break;
+                case ControlPosition.TOP_RIGHT:
+                    control.left = box.right;
+                    control.top = box.top;
+                    break;
+                case ControlPosition.BOTTOM_LEFT:
+                    control.left = box.left;
+                    control.top = box.bottom;
+                    break;
+                case ControlPosition.BOTTOM_RIGHT:
+                    control.left = box.right;
+                    control.top = box.bottom;
+                    break;
+            }
+        }
     }
 }

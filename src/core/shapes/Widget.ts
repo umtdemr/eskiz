@@ -6,7 +6,7 @@ import { Signal } from "../signal/Signal";
 import { ShapeType } from "@/core/shapes/Shape.ts";
 import {WsWidget} from "@/types/Websocket.ts";
 
-export type WidgetType = 'shape' | 'text' | 'multiSelector' | 'border'
+export type WidgetType = 'shape' | 'text' | 'multiSelector' | 'border' | 'control'
 
 export type DbWidgetType = 'shape'
 
