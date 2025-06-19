@@ -1,5 +1,6 @@
 import { Engine } from "../engine/Engine";
 import { SelectionService } from "../services/SelectionService";
+import { SelectToolService } from "@/core/services/SelectToolService";
 import { Border } from "../shapes/nonCanvasShapes/Border";
 import { Widget } from "../shapes/Widget";
 import { Layer } from "./Layer";
@@ -11,6 +12,7 @@ export class SelectionLayer extends Layer {
     private _selected: Widget[]
     private selectionBorder: Border | null = null;
     private controls: Control[] = [];
+    private selectToolService: SelectToolService;
 
     constructor(engine: Engine, selectionService: SelectionService) {
         super({ name: 'selection_layer' })
@@ -19,6 +21,10 @@ export class SelectionLayer extends Layer {
 
         this.selectionService.selectionChanged.add(this.onSelectionChanged, this)
         this.selectionService.drawingSelectionUpdated.add(this.onDrawingSelectionUpdated, this)
+
+        this.selectToolService = this.engine.getService<SelectToolService>('selectTool');
+        this.selectToolService.moveStarted.add(this.onMoveStarted, this);
+        this.selectToolService.moveFinished.add(this.onMoveFinished, this);
     }
 
     /**
@@ -43,6 +49,16 @@ export class SelectionLayer extends Layer {
 
     finishMoving() {
         this.clearSelection()
+    }
+
+    onMoveStarted() {
+        this.hideControls()
+    }
+
+    onMoveFinished() {
+        this.showControls()
+        this.updateControlPositions()
+        this.engine.canvas.requestRender()
     }
 
     /**
@@ -153,5 +169,18 @@ export class SelectionLayer extends Layer {
                     break;
             }
         }
+    }
+
+    private changeControlsVisibility(visible: boolean) {
+        this.controls.forEach(control => {
+            control.visible = visible;
+        })
+    }
+
+    private hideControls() {
+        this.changeControlsVisibility(false);
+    }
+    private showControls() {
+        this.changeControlsVisibility(true);
     }
 }

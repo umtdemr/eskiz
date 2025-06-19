@@ -2,6 +2,7 @@ import { Point } from "../canvas/Canvas";
 import { CanvasMouseEvent, Engine } from "../engine/Engine";
 import { MouseController } from "../engine/MouseController";
 import { Widget } from "../shapes/Widget";
+import { Signal } from "@/core/signal/Signal";
 import { Layer } from "../stage/Layer";
 import { SelectionLayer } from "../stage/SelectionLayer";
 import { SelectionService } from "./SelectionService";
@@ -31,6 +32,9 @@ export class SelectToolService extends Service {
     }
     private isStageInitated: boolean = false;
     private mainMode: keyof typeof ACTION_MODES | null;
+    
+    moveStarted = new Signal<{ widgets: Widget[] }>()
+    moveFinished = new Signal<{ widgets: Widget[] }>()
 
     constructor(engine: Engine, mouseController: MouseController, toolService: ToolService) {
         super(engine)
@@ -134,6 +138,11 @@ export class SelectToolService extends Service {
             if (this.movingObjectState.movingShape.length === 1 && !this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
                 this.selectionLayer.startInstantMoving(this.movingObjectState.movingShape[0])
             }
+            
+            // if selected object is moved, dispatch moveStarted
+            if (this.movingObjectState.movingShape.length > 0 && !this.movingObjectState.isObjectMoved && this.movingObjectState.isObjectAlreadySelected){
+                this.moveStarted.dispatch({ widgets: this.movingObjectState.movingShape });
+            }
 
             this.movingObjectState.isObjectMoved = true;
             return
@@ -148,12 +157,15 @@ export class SelectToolService extends Service {
     }
 
     onMouseUp(data: CanvasMouseEvent): void {
-        this.movingObjectState.movingShape = [];
         if (this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
             this.selectionLayer.finishMoving()
             this.engine.canvas.requestRender()
             return
+        } else if (this.movingObjectState.isObjectMoved) {
+            // if selected object is moved, dispatch moveFinished
+            this.moveFinished.dispatch({ widgets: this.movingObjectState.movingShape })
         }
+        this.movingObjectState.movingShape = [];
 
         if (this.isDrawing) {
             this.isDrawing = false;
