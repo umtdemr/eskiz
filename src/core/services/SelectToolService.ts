@@ -4,7 +4,6 @@ import { MouseController } from "../engine/MouseController";
 import { Widget } from "../shapes/Widget";
 import { Signal } from "@/core/signal/Signal";
 import { Layer } from "../stage/Layer";
-import { SelectionLayer } from "../stage/SelectionLayer";
 import { SelectionService } from "./SelectionService";
 import { Service } from "./Service";
 import { MainModeChangedState, ToolService } from "./ToolService";
@@ -15,7 +14,6 @@ export class SelectToolService extends Service {
     private toolService: ToolService
     private isDrawing: boolean = false
     private shapesLayer: Layer
-    private selectionLayer: SelectionLayer
     private selectionService: SelectionService
     private movingObjectState: { 
         movingShape: Widget[]
@@ -33,8 +31,13 @@ export class SelectToolService extends Service {
     private isStageInitated: boolean = false;
     private mainMode: keyof typeof ACTION_MODES | null;
     
+    // signals for move
     moveStarted = new Signal<{ widgets: Widget[] }>()
     moveFinished = new Signal<{ widgets: Widget[] }>()
+
+    // signals for temp move. means when the shape is moved without selecting it
+    tempMoveStarted = new Signal<{ widget: Widget }>()
+    tempMoveFinished = new Signal<{ widget: Widget }>()
 
     constructor(engine: Engine, mouseController: MouseController, toolService: ToolService) {
         super(engine)
@@ -72,7 +75,6 @@ export class SelectToolService extends Service {
         this.engine.upperCanvasEl.style.cursor = 'default';
         this.shapesLayer = this.engine.stage.widgetsDefaultLayer;
         this.selectionService = this.engine.getService('selection')
-        this.selectionLayer = this.engine.stage.nonCanvasDynamicContainer.selectionLayer;
 
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
@@ -136,7 +138,7 @@ export class SelectToolService extends Service {
             this.engine.canvas.requestRender();
 
             if (this.movingObjectState.movingShape.length === 1 && !this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
-                this.selectionLayer.startInstantMoving(this.movingObjectState.movingShape[0])
+                this.tempMoveStarted.dispatch({ widget :this.movingObjectState.movingShape[0] })
             }
             
             // if selected object is moved, dispatch moveStarted
@@ -158,8 +160,9 @@ export class SelectToolService extends Service {
 
     onMouseUp(data: CanvasMouseEvent): void {
         if (this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
-            this.selectionLayer.finishMoving()
+            this.tempMoveFinished.dispatch({ widget: this.movingObjectState.movingShape[0] })
             this.engine.canvas.requestRender()
+            this.movingObjectState.movingShape = [];
             return
         } else if (this.movingObjectState.isObjectMoved) {
             // if selected object is moved, dispatch moveFinished

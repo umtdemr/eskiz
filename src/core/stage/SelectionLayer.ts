@@ -25,6 +25,8 @@ export class SelectionLayer extends Layer {
         this.selectToolService = this.engine.getService<SelectToolService>('selectTool');
         this.selectToolService.moveStarted.add(this.onMoveStarted, this);
         this.selectToolService.moveFinished.add(this.onMoveFinished, this);
+        this.selectToolService.tempMoveStarted.add(this.onTempMoveStarted, this);
+        this.selectToolService.tempMoveFinished.add(this.onTempMoveFinished, this);
     }
 
     /**
@@ -43,10 +45,6 @@ export class SelectionLayer extends Layer {
         this.handleBordersOnSelectionChange(selectedWidgets)
     }
 
-    startInstantMoving(widget: Widget) {
-        this.addBorders([widget])
-    }
-
     finishMoving() {
         this.clearSelection()
     }
@@ -59,6 +57,14 @@ export class SelectionLayer extends Layer {
         this.showControls()
         this.updateControlPositions()
         this.engine.canvas.requestRender()
+    }
+
+    onTempMoveStarted({ widget }: { widget: Widget }) {
+        this.addBorders([widget])
+    }
+
+    onTempMoveFinished() {
+        this.clearSelection();
     }
 
     /**
