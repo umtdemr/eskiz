@@ -19,7 +19,7 @@ export interface ControlProps {
 export class Control extends Widget {
     position: ControlPosition
     constructor(props: ControlProps) {
-        super('control', {...props, width: 5, height: 5, parentLayer: props.selectionLayer});
+        super('control', {...props, width: 10, height: 10, parentLayer: props.selectionLayer});
         this.position = props.position;
         this._isDynamic = true;
         this._interactive = true;
@@ -32,10 +32,10 @@ export class Control extends Widget {
         const w = this.width / renderContext.scale
         const h = this.height / renderContext.scale
         const rect = canvasKit.LTRBRect(
-            0 - w,
-            0 - h,
-            w,
-            h
+            0 - w / 2,
+            0 - h / 2,
+            w / 2,
+            h / 2
         )
 
         paint.setStrokeWidth(0)
@@ -45,14 +45,24 @@ export class Control extends Widget {
         renderContext.ctx.drawOval(rect, paint)
     }
 
-    contains(x: number, y: number, scale: number): boolean {
-        const width = this._width / scale,
-            height = this._height / scale;
-        if (width <= 0 || height <= 0) return false;
-        if (x >= this._x - width / 2  && x <= this._x - width / 2 + width) {
-            if (y >= this._y - height / 2 && y <= this._y - height / 2 + height) return true;
-        }
+    contains(pointX: number, pointY: number, scale: number): boolean {
+        const worldWidth = this.width / scale;
+        const worldHeight = this.height / scale;
 
-        return false;
+        const halfWidth = worldWidth / 2;
+        const left = this._x - halfWidth;
+        const right = this._x + halfWidth;
+
+        const halfHeight = worldHeight / 2;
+        const top = this._y - halfHeight;
+        const bottom = this._y + halfHeight;
+        const isInside = (
+            pointX >= left &&
+            pointX <= right &&
+            pointY >= top &&
+            pointY <= bottom
+        );
+
+        return isInside;
     }
 }
