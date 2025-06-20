@@ -19,8 +19,10 @@ export interface ControlProps {
 export class Control extends Widget {
     position: ControlPosition
     constructor(props: ControlProps) {
-        super('control', {...props, width: 3, height: 3, parentLayer: props.selectionLayer});
+        super('control', {...props, width: 5, height: 5, parentLayer: props.selectionLayer});
         this.position = props.position;
+        this._isDynamic = true;
+        this._interactive = true;
     }
 
     protected renderContent(renderContext: RenderContext) {
@@ -40,7 +42,17 @@ export class Control extends Widget {
         const fillColor = canvasKit.Color(255, 0, 0, 1)
         paint.setColor(fillColor);
         paint.setStyle(canvasKit.PaintStyle.Fill);
-
         renderContext.ctx.drawOval(rect, paint)
+    }
+
+    contains(x: number, y: number, scale: number): boolean {
+        const width = this._width / scale,
+            height = this._height / scale;
+        if (width <= 0 || height <= 0) return false;
+        if (x >= this._x - width / 2  && x <= this._x - width / 2 + width) {
+            if (y >= this._y - height / 2 && y <= this._y - height / 2 + height) return true;
+        }
+
+        return false;
     }
 }

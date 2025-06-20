@@ -51,6 +51,7 @@ export abstract class Widget extends Layer {
     protected _bounds: BoundingBox       // Global bounds (including parent transforms)
     protected _localBounds: BoundingBox  // Local bounds (object's own space)
     protected _selected: boolean = false;
+    protected _isDynamic: boolean = false;
 
     boundsChanged = new Signal()
     
@@ -157,6 +158,10 @@ export abstract class Widget extends Layer {
     toJson(): WidgetJson {
         throw new Error("must be implemented");
     }
+    
+    contains(x: number, y: number, scale: number): boolean {
+        return this.bounds.contains(x * scale, y * scale);
+    }
 
     static loadFromJson(json: WsWidget): Widget {
         throw new Error(`loadFromJson is not implemented for ${json.widget_type}_${json.sub_type}`)
@@ -259,5 +264,9 @@ export abstract class Widget extends Layer {
             return
         }
         this._uuid = uuid
+    }
+
+    get isDynamic(): boolean {
+        return this._isDynamic;
     }
 }
