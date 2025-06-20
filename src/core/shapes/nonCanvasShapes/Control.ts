@@ -45,6 +45,12 @@ export class Control extends Widget {
         renderContext.ctx.drawOval(rect, paint)
     }
 
+    protected mouseEnter(): void {
+    }
+
+    protected mouseLeave(): void {
+    }
+
     contains(pointX: number, pointY: number, scale: number): boolean {
         const worldWidth = this.width / scale;
         const worldHeight = this.height / scale;

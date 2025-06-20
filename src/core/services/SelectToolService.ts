@@ -30,6 +30,7 @@ export class SelectToolService extends Service {
     }
     private isStageInitated: boolean = false;
     private mainMode: keyof typeof ACTION_MODES | null;
+    private _oldHoveredWidget: Widget | null = null;
     
     // signals for move
     moveStarted = new Signal<{ widgets: Widget[] }>()
@@ -86,7 +87,7 @@ export class SelectToolService extends Service {
         this.clearMovingObjectState()
 
         const selectionBound = this.selectionService.bounds
-        const movingWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
+        const movingWidget = this.checksObjectsInLayer(data)
 
         if (selectionBound.isFinite() && selectionBound.contains(data.pointer.x, data.pointer.y)) {
             this.isDrawing = false
@@ -125,6 +126,24 @@ export class SelectToolService extends Service {
     }
 
     onMouseMove(data: CanvasMouseEvent): void {
+        // if no object is moving and we are not drawing a selection rectangle
+        if (!this.movingObjectState.movingShape.length && !this.isDrawing) {
+            const widget = this.checksObjectsInLayer(data)
+
+            // fire mouse enter and mouse leave events
+            if (this._oldHoveredWidget && (!widget || this._oldHoveredWidget !== widget)) {
+                this._oldHoveredWidget.mouseLeave();
+                this._oldHoveredWidget = null;
+            } 
+
+            if (widget && (!this._oldHoveredWidget || this._oldHoveredWidget !== widget))  {
+                widget.mouseEnter()
+                this._oldHoveredWidget = widget;
+            }
+
+            return
+        }
+
         if (this.movingObjectState.movingShape.length > 0) {
             const deltaX = data.pointer.x - this.movingObjectState.initialPointer.x
             const deltaY = data.pointer.y - this.movingObjectState.initialPointer.y
@@ -182,22 +201,36 @@ export class SelectToolService extends Service {
         }
 
         if (!this.movingObjectState.isObjectAlreadySelected) {
-            const clickedWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
+            const clickedWidget = this.checksObjectsInLayer(data)
             if (clickedWidget) {
                 this.selectionService.selectWidget(clickedWidget)
             }
         }
     }
 
-    checksObjectsInLayer(layer: Layer, pointer: Point): Widget | null {
-        for (const widget of layer.children) {
-            if (!(widget instanceof Widget)) continue
+    checksObjectsInLayer(mouseData: CanvasMouseEvent): Widget | null {
+        const searchLayers = [this.engine.stage.nonCanvasDynamicContainer.children.first!, this.engine.stage.widgetsDefaultLayer]
+        const pointer = mouseData.pointer;
+        for (const layer of searchLayers) {
+            if (layer.children.length === 0) continue
+            for (const widget of layer.children) {
+                if (!(widget instanceof Widget)) continue
 
-            if (widget.bounds.contains(pointer.x, pointer.y)) {
-                return widget
+                if (!widget.interactive) {
+                    continue
+                }
+
+                if (widget.isDynamic) {
+                    if (widget.contains(pointer.x, pointer.y, mouseData.canvas.zoom)) {
+                        return widget
+                    }
+                } else {
+                    if (widget.bounds.contains(pointer.x, pointer.y)) {
+                        return widget
+                    }
+                }
             }
         }
-
         return null
     }
 
