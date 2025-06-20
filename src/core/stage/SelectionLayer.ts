@@ -96,7 +96,8 @@ export class SelectionLayer extends Layer {
         const handlePositions = [
             ControlPosition.TOP_LEFT,
             ControlPosition.TOP_RIGHT,
-            ControlPosition.BOTTOM_LEFT, ControlPosition.BOTTOM_RIGHT,
+            ControlPosition.BOTTOM_LEFT,
+            ControlPosition.BOTTOM_RIGHT,
         ]
 
         for (const position of handlePositions) {
