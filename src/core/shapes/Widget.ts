@@ -163,8 +163,8 @@ export abstract class Widget extends Layer {
         return this.bounds.contains(x * scale, y * scale);
     }
 
-    mouseEnter() {}
-    mouseLeave() {}
+    onMouseEnter() {}
+    onMouseLeave() {}
 
     static loadFromJson(json: WsWidget): Widget {
         throw new Error(`loadFromJson is not implemented for ${json.widget_type}_${json.sub_type}`)
