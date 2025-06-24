@@ -55,7 +55,6 @@ export class SelectionLayer extends Layer {
 
     onMoveFinished() {
         this.showControls()
-        this.updateControlPositions()
         this.engine.canvas.requestRender()
     }
 
@@ -115,8 +114,6 @@ export class SelectionLayer extends Layer {
             this.controls.push(handle);
             this.addChildren(handle);
         }
-
-        this.updateControlPositions();
     }
 
 
@@ -156,30 +153,6 @@ export class SelectionLayer extends Layer {
         }
         this._children.clear()
         this.controls.length = 0;
-    }
-
-    private updateControlPositions() {
-        const box = this.selectionBorder!
-        for (const control of this.controls) {
-            switch (control.position) {
-                case ControlPosition.TOP_LEFT:
-                    control.left = box.left;
-                    control.top = box.top;
-                    break;
-                case ControlPosition.TOP_RIGHT:
-                    control.left = box.right;
-                    control.top = box.top;
-                    break;
-                case ControlPosition.BOTTOM_LEFT:
-                    control.left = box.left;
-                    control.top = box.bottom;
-                    break;
-                case ControlPosition.BOTTOM_RIGHT:
-                    control.left = box.right;
-                    control.top = box.bottom;
-                    break;
-            }
-        }
     }
 
     private changeControlsVisibility(visible: boolean) {

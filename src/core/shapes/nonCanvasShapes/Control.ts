@@ -3,7 +3,6 @@ import {Layer} from "@/core/stage/Layer.ts";
 import {canvasKit, RenderContext} from "@/core/canvas/Canvas.ts";
 import {CanvasMouseEvent, Engine} from "@/core/engine/Engine.ts";
 import {SelectionService} from "@/core/services/SelectionService.ts";
-import {Signal} from "@/core/signal/Signal.ts";
 
 export enum ControlPosition {
     TOP_LEFT,
@@ -35,8 +34,6 @@ export class Control extends Widget {
         aspectRatio: 1,
     };
 
-    actionHandled = new Signal();
-
     constructor(props: ControlProps, engine: Engine, selectionService: SelectionService) {
         super('control', {...props, width: 10, height: 10, parentLayer: props.selectionLayer});
         this.position = props.position;
@@ -45,6 +42,13 @@ export class Control extends Widget {
         this.engine = engine;
         this.selectionService = selectionService;
         this.shape = this.selectionService.selected[0]
+
+        this.shape.boundsChanged.add(this.onShapeBoundsChanged, this);
+        this.updatePosition()
+    }
+
+    private onShapeBoundsChanged() {
+        this.updatePosition()
     }
 
     protected renderContent(renderContext: RenderContext) {
@@ -89,7 +93,6 @@ export class Control extends Widget {
         this.shape.width = this.initialBounds.width + data.pointer.x - this.initialBounds.pointerX;
         this.shape.height = this.initialBounds.height + data.pointer.y - this.initialBounds.pointerY;
         this.engine.canvas.requestRender()
-        this.actionHandled.dispatch();
 
         let deltaX = data.pointer.x - this.initialBounds.pointerX;
         let deltaY = data.pointer.y - this.initialBounds.pointerY;
@@ -145,12 +148,10 @@ export class Control extends Widget {
         }
 
         this.engine.canvas.requestRender();
-        this.actionHandled.dispatch();
     }
 
     onMouseUp(data: CanvasMouseEvent): void {
         console.log('up')
-
     }
 
     contains(pointX: number, pointY: number, scale: number): boolean {
@@ -172,5 +173,26 @@ export class Control extends Widget {
         );
 
         return isInside;
+    }
+
+    updatePosition() {
+        switch (this.position) {
+            case ControlPosition.TOP_LEFT:
+                this._x = this.shape.left;
+                this._y = this.shape.top;
+                break;
+            case ControlPosition.TOP_RIGHT:
+                this._x = this.shape.right;
+                this._y = this.shape.top;
+                break;
+            case ControlPosition.BOTTOM_LEFT:
+                this._x = this.shape.left;
+                this._y = this.shape.bottom;
+                break;
+            case ControlPosition.BOTTOM_RIGHT:
+                this._x = this.shape.right;
+                this._y = this.shape.bottom;
+                break;
+        }
     }
 }
