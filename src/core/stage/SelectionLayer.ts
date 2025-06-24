@@ -101,12 +101,16 @@ export class SelectionLayer extends Layer {
         ]
 
         for (const position of handlePositions) {
-            const handle = new Control({
-                position,
-                x: 0,
-                y: 0,
-                selectionLayer: this
-            })
+            const handle = new Control(
+                {
+                    position,
+                    x: 0,
+                    y: 0,
+                    selectionLayer: this
+                },
+                this.engine,
+                this.selectionService,
+            )
 
             this.controls.push(handle);
             this.addChildren(handle);
