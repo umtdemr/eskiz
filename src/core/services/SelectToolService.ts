@@ -8,6 +8,7 @@ import { SelectionService } from "./SelectionService";
 import { Service } from "./Service";
 import { MainModeChangedState, ToolService } from "./ToolService";
 import { ACTION_MODES } from "@/helpers/Constant";
+import {Control} from "@/core/shapes/nonCanvasShapes/Control.ts";
 
 export class SelectToolService extends Service {
     private mouseController: MouseController
@@ -15,6 +16,7 @@ export class SelectToolService extends Service {
     private isDrawing: boolean = false
     private shapesLayer: Layer
     private selectionService: SelectionService
+    private controlOwned: Control | null = null;
     private movingObjectState: { 
         movingShape: Widget[]
         isObjectMoved: boolean
@@ -87,9 +89,14 @@ export class SelectToolService extends Service {
         this.clearMovingObjectState()
 
         const selectionBound = this.selectionService.bounds
-        const movingWidget = this.checksObjectsInLayer(data)
+        const mouseDownWidget = this.checksObjectsInLayer(data)
 
-        if (selectionBound.isFinite() && selectionBound.contains(data.pointer.x, data.pointer.y)) {
+        // if there is control, control instance should own the mouse down, move and up events
+        if (mouseDownWidget && mouseDownWidget instanceof Control) {
+            this.isDrawing = false
+            this.controlOwned = mouseDownWidget;
+            this.controlOwned.onMouseDown(data);
+        } else if (selectionBound.isFinite() && selectionBound.contains(data.pointer.x, data.pointer.y)) {
             this.isDrawing = false
             this.movingObjectState.movingShape = this.selectionService.selected
             this.movingObjectState.isObjectAlreadySelected = true
@@ -102,10 +109,10 @@ export class SelectToolService extends Service {
                 left: widget.left,
                 top: widget.top,
             }))
-        } else if (movingWidget) {
+        } else if (mouseDownWidget) {
                 this.isDrawing = false
-                this.movingObjectState.movingShape = [movingWidget]
-                this.movingObjectState.isObjectAlreadySelected = !!movingWidget.selected
+                this.movingObjectState.movingShape = [mouseDownWidget]
+                this.movingObjectState.isObjectAlreadySelected = !!mouseDownWidget.selected
     
                 if (!this.movingObjectState.isObjectAlreadySelected) {
                     this.selectionService.clearSelection()
@@ -115,7 +122,7 @@ export class SelectToolService extends Service {
                     x: data.pointer.x,
                     y: data.pointer.y,
                 }
-                this.movingObjectState.initialWidgetPositions = [{ left: movingWidget.left, top: movingWidget.top }]
+                this.movingObjectState.initialWidgetPositions = [{ left: mouseDownWidget.left, top: mouseDownWidget.top }]
         } else {
             this.selectionService.clearSelection()
             this.isDrawing = true
@@ -127,17 +134,22 @@ export class SelectToolService extends Service {
 
     onMouseMove(data: CanvasMouseEvent): void {
         // if no object is moving and we are not drawing a selection rectangle
+        if (this.controlOwned) {
+            this.controlOwned.onMouseMove(data);
+            return;
+        }
+
         if (!this.movingObjectState.movingShape.length && !this.isDrawing) {
             const widget = this.checksObjectsInLayer(data)
 
             // fire mouse enter and mouse leave events
             if (this._oldHoveredWidget && (!widget || this._oldHoveredWidget !== widget)) {
-                this._oldHoveredWidget.mouseLeave();
+                this._oldHoveredWidget.onMouseLeave();
                 this._oldHoveredWidget = null;
             } 
 
             if (widget && (!this._oldHoveredWidget || this._oldHoveredWidget !== widget))  {
-                widget.mouseEnter()
+                widget.onMouseEnter()
                 this._oldHoveredWidget = widget;
             }
 
@@ -178,6 +190,11 @@ export class SelectToolService extends Service {
     }
 
     onMouseUp(data: CanvasMouseEvent): void {
+        if (this.controlOwned) {
+            this.controlOwned.onMouseUp(data);
+            this.controlOwned = null;
+            return
+        }
         if (this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
             this.tempMoveFinished.dispatch({ widget: this.movingObjectState.movingShape[0] })
             this.engine.canvas.requestRender()
