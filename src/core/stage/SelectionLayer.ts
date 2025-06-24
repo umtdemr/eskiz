@@ -148,8 +148,8 @@ export class SelectionLayer extends Layer {
     }
 
     private clearSelection() {
-        for (const border of this.children) {
-            border.destroy()
+        for (const widget of this.children) {
+            widget.destroy()
         }
         this._children.clear()
         this.controls.length = 0;

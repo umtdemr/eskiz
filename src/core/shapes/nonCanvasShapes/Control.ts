@@ -195,4 +195,8 @@ export class Control extends Widget {
                 break;
         }
     }
+
+    destroy() {
+        this.shape.boundsChanged.remove(this.onShapeBoundsChanged, this);
+    }
 }
