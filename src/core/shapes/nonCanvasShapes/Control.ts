@@ -33,9 +33,10 @@ export class Control extends Widget {
         height: 0,
         aspectRatio: 1,
     };
+    private strokeWidth = 1.5;
 
     constructor(props: ControlProps, engine: Engine, selectionService: SelectionService) {
-        super('control', {...props, width: 10, height: 10, parentLayer: props.selectionLayer});
+        super('control', {...props, width: 12, height: 12, parentLayer: props.selectionLayer});
         this.position = props.position;
         this._isDynamic = true;
         this._interactive = true;
@@ -64,11 +65,27 @@ export class Control extends Widget {
             h / 2
         )
 
+        const strokeHalf = (this.strokeWidth / 2) / renderContext.scale;
+        const strokeRect = canvasKit.LTRBRect(
+            (0 - w / 2) + strokeHalf,
+            (0 - h / 2) + strokeHalf,
+            (w / 2) - strokeHalf,
+            (h / 2) - strokeHalf
+        )
+
+        // render fill
         paint.setStrokeWidth(0)
-        const fillColor = canvasKit.Color(255, 0, 0, 1)
+        const fillColor = canvasKit.Color(255, 255, 255, 1)
         paint.setColor(fillColor);
         paint.setStyle(canvasKit.PaintStyle.Fill);
         renderContext.ctx.drawOval(rect, paint)
+
+        // render stroke
+        paint.setStrokeWidth(this.strokeWidth / renderContext.scale)
+        const strokeColor = canvasKit.Color(170, 170, 170, 1)
+        paint.setColor(strokeColor);
+        paint.setStyle(canvasKit.PaintStyle.Stroke);
+        renderContext.ctx.drawOval(strokeRect, paint)
     }
 
     onMouseEnter(): void {
