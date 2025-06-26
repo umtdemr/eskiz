@@ -4,7 +4,8 @@ import { SelectToolService } from "@/core/services/SelectToolService";
 import { Border } from "../shapes/nonCanvasShapes/Border";
 import { Widget } from "../shapes/Widget";
 import { Layer } from "./Layer";
-import {Control, ControlPosition} from "@/core/shapes/nonCanvasShapes/Control.ts";
+import {Control} from "@/core/shapes/nonCanvasShapes/Control.ts";
+import {CornerControl, CornerPosition} from "@/core/shapes/nonCanvasShapes/CornerControl.ts";
 
 export class SelectionLayer extends Layer {
     private engine: Engine
@@ -93,14 +94,14 @@ export class SelectionLayer extends Layer {
         }
 
         const handlePositions = [
-            ControlPosition.TOP_LEFT,
-            ControlPosition.TOP_RIGHT,
-            ControlPosition.BOTTOM_LEFT,
-            ControlPosition.BOTTOM_RIGHT,
+            CornerPosition.TOP_LEFT,
+            CornerPosition.TOP_RIGHT,
+            CornerPosition.BOTTOM_LEFT,
+            CornerPosition.BOTTOM_RIGHT,
         ]
 
         for (const position of handlePositions) {
-            const handle = new Control(
+            const handle = new CornerControl(
                 {
                     position,
                     x: 0,

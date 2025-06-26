@@ -1,91 +1,35 @@
 import {Widget} from "@/core/shapes/Widget.ts";
 import {Layer} from "@/core/stage/Layer.ts";
-import {canvasKit, RenderContext} from "@/core/canvas/Canvas.ts";
+import {RenderContext} from "@/core/canvas/Canvas.ts";
 import {CanvasMouseEvent, Engine} from "@/core/engine/Engine.ts";
 import {SelectionService} from "@/core/services/SelectionService.ts";
-
-export enum ControlPosition {
-    TOP_LEFT,
-    TOP_RIGHT,
-    BOTTOM_LEFT,
-    BOTTOM_RIGHT,
-}
 
 export interface ControlProps {
     x: number;
     y: number;
-    position: ControlPosition;
     selectionLayer: Layer;
 }
 
-export class Control extends Widget {
-    position: ControlPosition
-    private shape: Widget;
-    private engine: Engine;
-    private selectionService: SelectionService;
-    private _shiftDominantAxis: 'x' | 'y' | undefined;
-    private initialBounds = {
-        pointerX: 0,
-        pointerY: 0,
-        widgetX: 0,
-        widgetY: 0,
-        width: 0,
-        height: 0,
-        aspectRatio: 1,
-    };
-    private strokeWidth = 1.5;
+export type ControlTypes = "corner"
 
-    constructor(props: ControlProps, engine: Engine, selectionService: SelectionService) {
+/**
+ * Control is mostly a base class for all the other controllers.
+ */
+export class Control extends Widget {
+    protected engine: Engine;
+    protected selectionService: SelectionService;
+    protected _subType: "corner"
+
+    constructor(props: ControlProps, subType: ControlTypes, engine: Engine, selectionService: SelectionService) {
         super('control', {...props, width: 12, height: 12, parentLayer: props.selectionLayer});
-        this.position = props.position;
         this._isDynamic = true;
         this._interactive = true;
         this.engine = engine;
         this.selectionService = selectionService;
-        this.shape = this.selectionService.selected[0]
-
-        this.shape.boundsChanged.add(this.onShapeBoundsChanged, this);
-        this.updatePosition()
-    }
-
-    private onShapeBoundsChanged() {
-        this.updatePosition()
+        this._subType = subType;
     }
 
     protected renderContent(renderContext: RenderContext) {
-        const paint = new canvasKit.Paint();
-        paint.setAntiAlias(true);
-
-        const w = this.width / renderContext.scale
-        const h = this.height / renderContext.scale
-        const rect = canvasKit.LTRBRect(
-            0 - w / 2,
-            0 - h / 2,
-            w / 2,
-            h / 2
-        )
-
-        const strokeHalf = (this.strokeWidth / 2) / renderContext.scale;
-        const strokeRect = canvasKit.LTRBRect(
-            (0 - w / 2) + strokeHalf,
-            (0 - h / 2) + strokeHalf,
-            (w / 2) - strokeHalf,
-            (h / 2) - strokeHalf
-        )
-
-        // render fill
-        paint.setStrokeWidth(0)
-        const fillColor = canvasKit.Color(255, 255, 255, 1)
-        paint.setColor(fillColor);
-        paint.setStyle(canvasKit.PaintStyle.Fill);
-        renderContext.ctx.drawOval(rect, paint)
-
-        // render stroke
-        paint.setStrokeWidth(this.strokeWidth / renderContext.scale)
-        const strokeColor = canvasKit.Color(170, 170, 170, 1)
-        paint.setColor(strokeColor);
-        paint.setStyle(canvasKit.PaintStyle.Stroke);
-        renderContext.ctx.drawOval(strokeRect, paint)
     }
 
     onMouseEnter(): void {
@@ -94,82 +38,11 @@ export class Control extends Widget {
     onMouseLeave(): void {
     }
 
-    onMouseDown(data: CanvasMouseEvent): void {
-        this.initialBounds = {
-            pointerX: data.pointer.x,
-            pointerY: data.pointer.y,
-            widgetX: this.shape.left,
-            widgetY: this.shape.top,
-            width: this.shape.width,
-            height: this.shape.height,
-            aspectRatio: this.shape.width / this.shape.height,
-        }
-    }
+    onMouseDown(data: CanvasMouseEvent): void {}
 
-    onMouseMove(data: CanvasMouseEvent): void {
-        this.shape.width = this.initialBounds.width + data.pointer.x - this.initialBounds.pointerX;
-        this.shape.height = this.initialBounds.height + data.pointer.y - this.initialBounds.pointerY;
-        this.engine.canvas.requestRender()
+    onMouseMove(data: CanvasMouseEvent): void {}
 
-        let deltaX = data.pointer.x - this.initialBounds.pointerX;
-        let deltaY = data.pointer.y - this.initialBounds.pointerY;
-        const initial = this.initialBounds;
-
-        // if shift is pressed, need to scale equally
-        if (data.e.shiftKey && initial.aspectRatio) {
-            // determine the dominant axis
-            if (!this._shiftDominantAxis) {
-                if (Math.abs(deltaX) / initial.width > Math.abs(deltaY) / initial.height) {
-                    this._shiftDominantAxis = 'x';
-                } else {
-                    this._shiftDominantAxis = 'y';
-                }
-            }
-
-            const isDiagonalFlip = this.position === ControlPosition.TOP_RIGHT
-                || this.position === ControlPosition.BOTTOM_LEFT;
-
-            if (this._shiftDominantAxis === 'x') {
-                const lockedY = deltaX / initial.aspectRatio;
-                deltaY = isDiagonalFlip ? -lockedY : lockedY;
-            } else {
-                const lockedX = deltaY * initial.aspectRatio;
-                deltaX = isDiagonalFlip ? -lockedX : lockedX;
-            }
-        }
-
-        switch (this.position) {
-            case ControlPosition.BOTTOM_RIGHT:
-                this.shape.width = initial.width + deltaX;
-                this.shape.height = initial.height + deltaY;
-                break;
-
-            case ControlPosition.BOTTOM_LEFT: // Bottom-Left: Anchor is Top-Right
-                this.shape.width = initial.width - deltaX;
-                this.shape.height = initial.height + deltaY;
-                this.shape.left = initial.widgetX + deltaX;
-                break;
-
-            case ControlPosition.TOP_RIGHT:
-                this.shape.width = initial.width + deltaX;
-                this.shape.height = initial.height - deltaY;
-                this.shape.top = initial.widgetY + deltaY;
-                break;
-
-            case ControlPosition.TOP_LEFT: // Top-Left: Anchor is Bottom-Right
-                this.shape.width = initial.width - deltaX;
-                this.shape.height = initial.height - deltaY;
-                this.shape.left = initial.widgetX + deltaX;
-                this.shape.top = initial.widgetY + deltaY;
-                break;
-        }
-
-        this.engine.canvas.requestRender();
-    }
-
-    onMouseUp(data: CanvasMouseEvent): void {
-        console.log('up')
-    }
+    onMouseUp(data: CanvasMouseEvent): void {}
 
     contains(pointX: number, pointY: number, scale: number): boolean {
         const worldWidth = this.width / scale;
@@ -190,30 +63,5 @@ export class Control extends Widget {
         );
 
         return isInside;
-    }
-
-    updatePosition() {
-        switch (this.position) {
-            case ControlPosition.TOP_LEFT:
-                this._x = this.shape.left;
-                this._y = this.shape.top;
-                break;
-            case ControlPosition.TOP_RIGHT:
-                this._x = this.shape.right;
-                this._y = this.shape.top;
-                break;
-            case ControlPosition.BOTTOM_LEFT:
-                this._x = this.shape.left;
-                this._y = this.shape.bottom;
-                break;
-            case ControlPosition.BOTTOM_RIGHT:
-                this._x = this.shape.right;
-                this._y = this.shape.bottom;
-                break;
-        }
-    }
-
-    destroy() {
-        this.shape.boundsChanged.remove(this.onShapeBoundsChanged, this);
     }
 }
