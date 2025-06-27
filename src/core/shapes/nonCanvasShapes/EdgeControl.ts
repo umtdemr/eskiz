@@ -26,7 +26,14 @@ export class EdgeControl extends Control {
     private _strokeThickness = 2;
     private _hitTestThreshold = 5;
     private _maxThreshold = 30;
-
+    private initialBounds = {
+        pointerX: 0,
+        pointerY: 0,
+        widgetX: 0,
+        widgetY: 0,
+        width: 0,
+        height: 0,
+    };
     constructor(props: EdgeControlProps, engine: Engine, selectionService: SelectionService) {
         super(props, "corner", engine, selectionService);
         this.position = props.position;
@@ -36,6 +43,7 @@ export class EdgeControl extends Control {
             this.direction = "horizontal";
         }
         this.shape = this.selectionService.selected[0]
+        this.shape.boundsChanged.add(this.onShapeBoundsChanged, this);
         this.updateTransform()
     }
 
@@ -101,6 +109,79 @@ export class EdgeControl extends Control {
         }
     }
 
+    private onShapeBoundsChanged() {
+        this.updateTransform()
+    }
+
+    onMouseDown(data: CanvasMouseEvent): void {
+        this.initialBounds = {
+            pointerX: data.pointer.x,
+            pointerY: data.pointer.y,
+            widgetX: this.shape.left,
+            widgetY: this.shape.top,
+            width: this.shape.width,
+            height: this.shape.height,
+        }
+    }
+
+    onMouseMove(data: CanvasMouseEvent): void {
+        const deltaX = data.pointer.x - this.initialBounds.pointerX;
+        const deltaY = data.pointer.y - this.initialBounds.pointerY;
+
+        switch (this.position) {
+            case EdgePosition.LEFT:
+                // with shift
+                if (data.e.shiftKey) {
+                    this.shape.width = this.initialBounds.width - (deltaX * 2);
+                    this.shape.left = this.initialBounds.widgetX + deltaX;
+                } else {
+                    // standard
+                    this.shape.width = this.initialBounds.width - deltaX
+                    this.shape.left = this.initialBounds.widgetX + deltaX;
+                }
+                break;
+            case EdgePosition.RIGHT:
+                // with shift
+                if (data.e.shiftKey) {
+                    this.shape.width = this.initialBounds.width + (deltaX * 2);
+                    this.shape.left = this.initialBounds.widgetX - deltaX;
+                } else {
+                    // standard
+                    this.shape.width = this.initialBounds.width + deltaX;
+                }
+                break;
+            case EdgePosition.TOP:
+                // with shift
+                if (data.e.shiftKey) {
+                    this.shape.height = this.initialBounds.height - (deltaY * 2)
+                    this.shape.top = this.initialBounds.widgetY + deltaY;
+                } else {
+                    // standard
+                    this.shape.height = this.initialBounds.height - deltaY
+                    this.shape.top = this.initialBounds.widgetY + deltaY;
+                }
+                break;
+            case EdgePosition.BOTTOM:
+                // with shift
+                if (data.e.shiftKey) {
+                    this.shape.height = this.initialBounds.height + (deltaY * 2)
+                    this.shape.top = this.initialBounds.widgetY - deltaY;
+                } else {
+                    // standard
+                    this.shape.height = this.initialBounds.height + deltaY
+                }
+                break;
+            default:
+                break;
+        }
+        this.updateTransform();
+        this.engine.canvas.requestRender()
+    }
+
+    onMouseUp(data: CanvasMouseEvent): void {
+        console.log('up')
+    }
+
     contains(pointX: number, pointY: number, scale: number): boolean {
         let w = this.width;
         let h = this.height;
@@ -135,6 +216,10 @@ export class EdgeControl extends Control {
         );
 
         return isInside;
+    }
+
+    destroy() {
+        this.shape.boundsChanged.remove(this.onShapeBoundsChanged, this);
     }
 
     set debug(bool: boolean) {
