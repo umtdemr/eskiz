@@ -1,5 +1,5 @@
 import {Control, ControlProps} from "@/core/shapes/nonCanvasShapes/Control.ts";
-import {Engine} from "@/core/engine/Engine.ts";
+import {CanvasMouseEvent, Engine} from "@/core/engine/Engine.ts";
 import {SelectionService} from "@/core/services/SelectionService.ts";
 import {Widget} from "@/core/shapes/Widget.ts";
 import {canvasKit, RenderContext} from "@/core/canvas/Canvas.ts";
@@ -24,6 +24,8 @@ export class EdgeControl extends Control {
     private direction: "horizontal" | "vertical";
     private _debug: boolean = false;
     private _strokeThickness = 2;
+    private _hitTestThreshold = 5;
+    private _maxThreshold = 30;
 
     constructor(props: EdgeControlProps, engine: Engine, selectionService: SelectionService) {
         super(props, "corner", engine, selectionService);
@@ -97,6 +99,42 @@ export class EdgeControl extends Control {
             default:
                 break;
         }
+    }
+
+    contains(pointX: number, pointY: number, scale: number): boolean {
+        let w = this.width;
+        let h = this.height;
+
+        if (this.direction === "vertical") {
+            w /= scale;
+        } else {
+            h /= scale;
+        }
+
+        let left = this.left;
+        let right = this.left + w;
+        let top = this.top;
+        let bottom = this.bottom + h;
+
+        let threshold = this._hitTestThreshold / scale;
+        threshold = Math.min(threshold, this._maxThreshold)
+
+        if (this.direction === "vertical") {
+            left -= threshold
+            right += threshold
+        } else {
+            top -= threshold
+            bottom += threshold
+        }
+
+        const isInside = (
+            pointX >= left &&
+            pointX <= right &&
+            pointY >= top &&
+            pointY <= bottom
+        );
+
+        return isInside;
     }
 
     set debug(bool: boolean) {
