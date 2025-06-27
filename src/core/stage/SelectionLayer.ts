@@ -107,8 +107,9 @@ export class SelectionLayer extends Layer {
             CornerPosition.BOTTOM_RIGHT,
         ]
 
-        for (const position of edgeControls) {
-            const handle = new EdgeControl(
+        // TODO: fix order of controls when I fix the widget searching algo
+        for (const position of cornerControls) {
+            const handle = new CornerControl(
                 {
                     position,
                     x: 0,
@@ -123,8 +124,8 @@ export class SelectionLayer extends Layer {
             this.addChildren(handle);
         }
 
-        for (const position of cornerControls) {
-            const handle = new CornerControl(
+        for (const position of edgeControls) {
+            const handle = new EdgeControl(
                 {
                     position,
                     x: 0,
