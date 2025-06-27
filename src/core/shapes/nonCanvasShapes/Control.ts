@@ -10,7 +10,7 @@ export interface ControlProps {
     selectionLayer: Layer;
 }
 
-export type ControlTypes = "corner"
+export type ControlTypes = "corner" | "edge"
 
 /**
  * Control is mostly a base class for all the other controllers.
@@ -18,7 +18,7 @@ export type ControlTypes = "corner"
 export class Control extends Widget {
     protected engine: Engine;
     protected selectionService: SelectionService;
-    protected _subType: "corner"
+    protected _subType: ControlTypes
 
     constructor(props: ControlProps, subType: ControlTypes, engine: Engine, selectionService: SelectionService) {
         super('control', {...props, width: 12, height: 12, parentLayer: props.selectionLayer});

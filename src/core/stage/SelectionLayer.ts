@@ -6,6 +6,7 @@ import { Widget } from "../shapes/Widget";
 import { Layer } from "./Layer";
 import {Control} from "@/core/shapes/nonCanvasShapes/Control.ts";
 import {CornerControl, CornerPosition} from "@/core/shapes/nonCanvasShapes/CornerControl.ts";
+import {EdgeControl, EdgePosition} from "@/core/shapes/nonCanvasShapes/EdgeControl.ts";
 
 export class SelectionLayer extends Layer {
     private engine: Engine
@@ -93,14 +94,36 @@ export class SelectionLayer extends Layer {
             this.selectionBorder = this.children.first! as Border
         }
 
-        const handlePositions = [
+        const edgeControls = [
+            EdgePosition.LEFT,
+            EdgePosition.RIGHT,
+            EdgePosition.TOP,
+            EdgePosition.BOTTOM,
+        ]
+        const cornerControls = [
             CornerPosition.TOP_LEFT,
             CornerPosition.TOP_RIGHT,
             CornerPosition.BOTTOM_LEFT,
             CornerPosition.BOTTOM_RIGHT,
         ]
 
-        for (const position of handlePositions) {
+        for (const position of edgeControls) {
+            const handle = new EdgeControl(
+                {
+                    position,
+                    x: 0,
+                    y: 0,
+                    selectionLayer: this
+                },
+                this.engine,
+                this.selectionService,
+            )
+
+            this.controls.push(handle);
+            this.addChildren(handle);
+        }
+
+        for (const position of cornerControls) {
             const handle = new CornerControl(
                 {
                     position,
