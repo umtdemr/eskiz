@@ -1,6 +1,6 @@
-import { LinkedList } from "../dataStructures/LinkedList";
-import { Widget } from "../shapes/Widget";
-import { RenderContext } from "../canvas/Canvas";
+import { LinkedList } from '../dataStructures/LinkedList'
+import { Widget } from '../shapes/Widget'
+import { RenderContext } from '../canvas/Canvas'
 
 interface LayerProps {
     name: string
@@ -15,15 +15,14 @@ export class Layer {
     protected _zIndex: string
     protected _parent: Layer | Widget | null = null
     protected _isLayer: boolean = true
-    protected _interactive: boolean = false;
+    protected _interactive: boolean = false
     protected _visible: boolean = true
 
-    
     constructor(props: LayerProps) {
         this.name = props.name
         this._children = new LinkedList<Layer | Widget>()
     }
-    
+
     addChildren(...children: Layer[]) {
         for (const child of children) {
             child._parent = this
@@ -55,7 +54,7 @@ export class Layer {
     get zIndex(): string {
         return this._zIndex
     }
-    
+
     set zIndex(val: string) {
         this._zIndex = val
     }
@@ -69,6 +68,6 @@ export class Layer {
     }
 
     set visible(val: boolean) {
-        this._visible = val;
+        this._visible = val
     }
 }

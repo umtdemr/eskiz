@@ -1,8 +1,7 @@
-import {RGBA} from "@/core/shapes/Color.ts";
-import {CANVAS_COLORS} from "@/helpers/Constant.ts";
-import {Widget, WidgetJson, WidgetProps} from "@/core/shapes/Widget.ts";
-import {WsWidget} from "@/types/Websocket.ts";
-
+import { RGBA } from '@/core/shapes/Color.ts'
+import { CANVAS_COLORS } from '@/helpers/Constant.ts'
+import { Widget, WidgetJson, WidgetProps } from '@/core/shapes/Widget.ts'
+import { WsWidget } from '@/types/Websocket.ts'
 
 export interface ShapeProps extends WidgetProps {
     properties: ShapeProperties
@@ -19,12 +18,16 @@ export abstract class Shape extends Widget {
     protected _strokeColor: RGBA
     protected _fillColor: RGBA
     private _shapeType: ShapeType
-    
+
     protected constructor(type: ShapeType, props: ShapeProps) {
         super('shape', props)
         this._shapeType = type
-        this._strokeColor = props.properties?.strokeColor ? props.properties.strokeColor : CANVAS_COLORS.BLACK
-        this._fillColor = props.properties?.fillColor ? props.properties.fillColor : CANVAS_COLORS.TRANSPARENT
+        this._strokeColor = props.properties?.strokeColor
+            ? props.properties.strokeColor
+            : CANVAS_COLORS.BLACK
+        this._fillColor = props.properties?.fillColor
+            ? props.properties.fillColor
+            : CANVAS_COLORS.TRANSPARENT
         this._interactive = true
     }
 
@@ -40,19 +43,19 @@ export abstract class Shape extends Widget {
             sub_type: this._shapeType,
             properties: {
                 fillColor: this._fillColor,
-                strokeColor: this._strokeColor
-            }
+                strokeColor: this._strokeColor,
+            },
         }
 
         if (this._parent_widget_id) {
             data.parent_widget_id = this._parent_widget_id
         }
 
-        return data;
+        return data
     }
 
     static loadFromJson(json: WsWidget): Shape {
-        throw new Error(`Shape (${json.sub_type}) be implemented by subclass`);
+        throw new Error(`Shape (${json.sub_type}) be implemented by subclass`)
     }
 
     get shapeType(): ShapeType {

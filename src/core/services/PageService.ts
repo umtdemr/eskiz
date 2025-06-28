@@ -1,14 +1,14 @@
-import {Service} from "@/core/services/Service.ts";
-import {WsWidget} from "@/types/Websocket.ts";
-import {WidgetFactory} from "@/core/engine/WidgetFactory.ts";
+import { Service } from '@/core/services/Service.ts'
+import { WsWidget } from '@/types/Websocket.ts'
+import { WidgetFactory } from '@/core/engine/WidgetFactory.ts'
 
 export class PageService extends Service {
     async fetchPageDetails(page_id: number) {
-        return await this.engine.wsEngine.sendAsyncMessage<"fetchPageDetails">({
-            type: "fetchPageDetails",
+        return await this.engine.wsEngine.sendAsyncMessage<'fetchPageDetails'>({
+            type: 'fetchPageDetails',
             data: {
                 page_id,
-            }
+            },
         })
     }
 
@@ -17,14 +17,14 @@ export class PageService extends Service {
      * @param widgets - Widgets to add.
      */
     addWidgetsToCanvas(widgets: WsWidget[]) {
-        const widgetLayer = this.engine.stage.widgetsDefaultLayer;
+        const widgetLayer = this.engine.stage.widgetsDefaultLayer
         for (const widget of widgets) {
-            const widgetClass = WidgetFactory.loadFromJson(widget);
+            const widgetClass = WidgetFactory.loadFromJson(widget)
             if (!widgetClass) {
-                continue;
+                continue
             }
 
-            widgetLayer.addChildren(widgetClass);
+            widgetLayer.addChildren(widgetClass)
         }
     }
 }

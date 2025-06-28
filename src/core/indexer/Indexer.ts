@@ -1,13 +1,11 @@
 import { generateKeyBetween } from 'fractional-indexing'
-import { Layer } from '@/core/stage/Layer';
+import { Layer } from '@/core/stage/Layer'
 
 /**
  * Indexer generates zIndexes for layers and widgets.
  */
 export class Indexer {
-
-    constructor() {
-    }
+    constructor() {}
 
     /**
      * Generates zIndex for root layer.
@@ -21,7 +19,7 @@ export class Indexer {
      * Generates zIndex between two layer.
      * @param prev Prev layer.
      * @param next Next Layer.
-     * @returns 
+     * @returns
      */
     generateIndex(prev: Layer, next: Layer | null) {
         return generateKeyBetween(prev.zIndex, next?.zIndex)
@@ -33,14 +31,14 @@ export class Indexer {
      * @param nextLayer Next most layer.
      * @returns Generated zIndex for this widget.
      */
-    generateIndexForWidget(layer: Layer, nextLayer: Layer|null): string {
+    generateIndexForWidget(layer: Layer, nextLayer: Layer | null): string {
         const lastObj = layer.children.last
         let prevZIndex = layer.zIndex
         if (lastObj) {
             prevZIndex = lastObj.zIndex
         }
 
-        return generateKeyBetween(prevZIndex, nextLayer?.zIndex);
+        return generateKeyBetween(prevZIndex, nextLayer?.zIndex)
     }
 
     /**
@@ -49,14 +47,14 @@ export class Indexer {
      * @returns A fractional index as a string.
      */
     generateIndexForChild(parentLayer: Layer): string {
-        let maxZIndex = parentLayer.zIndex;
+        let maxZIndex = parentLayer.zIndex
 
         // Find the maximum zIndex among siblings
         for (const child of parentLayer.children) {
-            maxZIndex = child.zIndex;
+            maxZIndex = child.zIndex
         }
 
         // Generate a new index after the maximum zIndex
-        return generateKeyBetween(maxZIndex, null);
+        return generateKeyBetween(maxZIndex, null)
     }
 }

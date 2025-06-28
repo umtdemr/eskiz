@@ -1,9 +1,13 @@
-import {UserPublicData} from "@/types/Auth.ts";
-import {WS_EVENTS} from "@/helpers/Constant.ts";
-import {WidgetJson} from "@/core/shapes/Widget.ts";
+import { UserPublicData } from '@/types/Auth.ts'
+import { WS_EVENTS } from '@/helpers/Constant.ts'
+import { WidgetJson } from '@/core/shapes/Widget.ts'
 
-
-export type WsCommand = "join" | "changeBoardName" | "addWidget" | "fetchPageDetails" | "other"
+export type WsCommand =
+    | 'join'
+    | 'changeBoardName'
+    | 'addWidget'
+    | 'fetchPageDetails'
+    | 'other'
 
 // defines responses for each request
 type CommandBaseResponse = {
@@ -25,44 +29,40 @@ type CommandBasePayload = {
 
 // defines typical error message for the request
 export type WsErrorMessage = {
-    code: number,
-    message: string,
+    code: number
+    message: string
     fields?: any
 }
 
 // defines response
 export type WsResponse<T extends WsCommand> = {
     error?: WsErrorMessage
-} & (
-   T extends keyof CommandBaseResponse 
-       ? { [K in T]? : CommandBaseResponse[T] }
-       : never
-)
+} & (T extends keyof CommandBaseResponse
+    ? { [K in T]?: CommandBaseResponse[T] }
+    : never)
 
 export type WsPayload<T extends WsCommand> = {
-    type: string,
-} & (
-    T extends keyof CommandBasePayload
-        ? { data: CommandBasePayload[T] }
-        : never
-)
+    type: string
+} & (T extends keyof CommandBasePayload
+    ? { data: CommandBasePayload[T] }
+    : never)
 
 export type WsJoinResponse = {
-    online_users: {user: UserPublicData, cursor?: {x: number, y: number}}[]
+    online_users: { user: UserPublicData; cursor?: { x: number; y: number } }[]
 }
 
 export type WsJoinPayload = {
-    board_slug_id: string,
+    board_slug_id: string
     user_auth_token: string
 }
 
 export type WsCursorPayload = {
-    x: number,
+    x: number
     y: number
 }
 
 export type WsChangeBoardNamePayload = {
-    board_id: number,
+    board_id: number
     name: string
 }
 
@@ -106,33 +106,33 @@ export type WsMessage = {
 }
 
 export type EventUserJoined = {
-    event: typeof WS_EVENTS.USER_JOINED,
+    event: typeof WS_EVENTS.USER_JOINED
     data: {
         user: UserPublicData
     }
 }
 
 export type EventUserLeft = {
-    event: typeof WS_EVENTS.USER_LEFT,
+    event: typeof WS_EVENTS.USER_LEFT
     data: {
         user: UserPublicData
     }
 }
 
 export type EventCursor = {
-    event: typeof WS_EVENTS.CURSOR,
+    event: typeof WS_EVENTS.CURSOR
     data: {
         cursor: {
             user_id: number
             user_name: string
             x: number
-            y: number 
+            y: number
         }
     }
 }
 
 export type EventBoardNameChanged = {
-    event: typeof WS_EVENTS.CHANGE_BOARD_NAME,
+    event: typeof WS_EVENTS.CHANGE_BOARD_NAME
     data: {
         changeBoardName: {
             name: string
@@ -140,9 +140,8 @@ export type EventBoardNameChanged = {
     }
 }
 
-export type WsEvents = 
+export type WsEvents =
     | EventUserLeft
     | EventUserJoined
     | EventCursor
     | EventBoardNameChanged
-    

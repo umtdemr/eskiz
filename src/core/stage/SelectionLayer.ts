@@ -1,34 +1,50 @@
-import { Engine } from "../engine/Engine";
-import { SelectionService } from "../services/SelectionService";
-import { SelectToolService } from "@/core/services/SelectToolService";
-import { Border } from "../shapes/nonCanvasShapes/Border";
-import { Widget } from "../shapes/Widget";
-import { Layer } from "./Layer";
-import {Control} from "@/core/shapes/nonCanvasShapes/Control.ts";
-import {CornerControl, CornerPosition} from "@/core/shapes/nonCanvasShapes/CornerControl.ts";
-import {EdgeControl, EdgePosition} from "@/core/shapes/nonCanvasShapes/EdgeControl.ts";
+import { Engine } from '../engine/Engine'
+import { SelectionService } from '../services/SelectionService'
+import { SelectToolService } from '@/core/services/SelectToolService'
+import { Border } from '../shapes/nonCanvasShapes/Border'
+import { Widget } from '../shapes/Widget'
+import { Layer } from './Layer'
+import { Control } from '@/core/shapes/nonCanvasShapes/Control.ts'
+import {
+    CornerControl,
+    CornerPosition,
+} from '@/core/shapes/nonCanvasShapes/CornerControl.ts'
+import {
+    EdgeControl,
+    EdgePosition,
+} from '@/core/shapes/nonCanvasShapes/EdgeControl.ts'
 
 export class SelectionLayer extends Layer {
     private engine: Engine
     private selectionService: SelectionService
     private _selected: Widget[]
-    private selectionBorder: Border | null = null;
-    private controls: Control[] = [];
-    private selectToolService: SelectToolService;
+    private selectionBorder: Border | null = null
+    private controls: Control[] = []
+    private selectToolService: SelectToolService
 
     constructor(engine: Engine, selectionService: SelectionService) {
         super({ name: 'selection_layer' })
-        this.engine = engine;
+        this.engine = engine
         this.selectionService = selectionService
 
-        this.selectionService.selectionChanged.add(this.onSelectionChanged, this)
-        this.selectionService.drawingSelectionUpdated.add(this.onDrawingSelectionUpdated, this)
+        this.selectionService.selectionChanged.add(
+            this.onSelectionChanged,
+            this,
+        )
+        this.selectionService.drawingSelectionUpdated.add(
+            this.onDrawingSelectionUpdated,
+            this,
+        )
 
-        this.selectToolService = this.engine.getService<SelectToolService>('selectTool');
-        this.selectToolService.moveStarted.add(this.onMoveStarted, this);
-        this.selectToolService.moveFinished.add(this.onMoveFinished, this);
-        this.selectToolService.tempMoveStarted.add(this.onTempMoveStarted, this);
-        this.selectToolService.tempMoveFinished.add(this.onTempMoveFinished, this);
+        this.selectToolService =
+            this.engine.getService<SelectToolService>('selectTool')
+        this.selectToolService.moveStarted.add(this.onMoveStarted, this)
+        this.selectToolService.moveFinished.add(this.onMoveFinished, this)
+        this.selectToolService.tempMoveStarted.add(this.onTempMoveStarted, this)
+        this.selectToolService.tempMoveFinished.add(
+            this.onTempMoveFinished,
+            this,
+        )
     }
 
     /**
@@ -36,7 +52,7 @@ export class SelectionLayer extends Layer {
      */
     onSelectionChanged() {
         this._selected = this.selectionService.selected
-        this.createSelectionUI(this._selected);
+        this.createSelectionUI(this._selected)
     }
 
     /**
@@ -65,16 +81,16 @@ export class SelectionLayer extends Layer {
     }
 
     onTempMoveFinished() {
-        this.clearSelection();
+        this.clearSelection()
     }
 
     /**
-     * Handles drawing borders for given widgets. 
+     * Handles drawing borders for given widgets.
      * @param widgets Widgets to draw new bounding box.
      */
     private handleBordersOnSelectionChange(widgets = this._selected) {
         this.clearSelection()
-        if (!widgets.length) return;
+        if (!widgets.length) return
 
         this.addBorders(widgets)
         if (widgets.length > 1) {
@@ -84,7 +100,7 @@ export class SelectionLayer extends Layer {
 
     private createSelectionUI(widgets: Widget[]) {
         this.clearSelection()
-        if (!widgets.length) return;
+        if (!widgets.length) return
 
         this.addBorders(widgets)
         // todo: listens selection border bounds change
@@ -114,14 +130,14 @@ export class SelectionLayer extends Layer {
                     position,
                     x: 0,
                     y: 0,
-                    selectionLayer: this
+                    selectionLayer: this,
                 },
                 this.engine,
                 this.selectionService,
             )
 
-            this.controls.push(handle);
-            this.addChildren(handle);
+            this.controls.push(handle)
+            this.addChildren(handle)
         }
 
         for (const position of edgeControls) {
@@ -130,17 +146,16 @@ export class SelectionLayer extends Layer {
                     position,
                     x: 0,
                     y: 0,
-                    selectionLayer: this
+                    selectionLayer: this,
                 },
                 this.engine,
                 this.selectionService,
             )
 
-            this.controls.push(handle);
-            this.addChildren(handle);
+            this.controls.push(handle)
+            this.addChildren(handle)
         }
     }
-
 
     /**
      * Adds bounding box border for the given widgets.
@@ -152,8 +167,8 @@ export class SelectionLayer extends Layer {
                 new Border({
                     widgets: [widget],
                     parentLayer: this,
-                    engine: this.engine
-                })
+                    engine: this.engine,
+                }),
             )
         }
     }
@@ -166,10 +181,10 @@ export class SelectionLayer extends Layer {
         const border = new Border({
             widgets,
             parentLayer: this,
-            engine: this.engine
+            engine: this.engine,
         })
         this.addChildren(border)
-        return border;
+        return border
     }
 
     private clearSelection() {
@@ -177,19 +192,19 @@ export class SelectionLayer extends Layer {
             widget.destroy()
         }
         this._children.clear()
-        this.controls.length = 0;
+        this.controls.length = 0
     }
 
     private changeControlsVisibility(visible: boolean) {
-        this.controls.forEach(control => {
-            control.visible = visible;
+        this.controls.forEach((control) => {
+            control.visible = visible
         })
     }
 
     private hideControls() {
-        this.changeControlsVisibility(false);
+        this.changeControlsVisibility(false)
     }
     private showControls() {
-        this.changeControlsVisibility(true);
+        this.changeControlsVisibility(true)
     }
 }
