@@ -223,7 +223,7 @@ export class EdgeControl extends Control {
         let left = this.left
         let right = this.left + w
         let top = this.top
-        let bottom = this.bottom + h
+        let bottom = this.top + h
 
         let threshold = this._hitTestThreshold / scale
         threshold = Math.min(threshold, this._maxThreshold)
