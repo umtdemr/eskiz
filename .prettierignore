@@ -1,0 +1,6 @@
+# Ignore artifacts:
+build
+coverage
+# shadcn ui files
+src/lib/utils.ts
+src/components/ui

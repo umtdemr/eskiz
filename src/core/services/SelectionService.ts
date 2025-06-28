@@ -1,10 +1,10 @@
-import { ACTION_MODES } from "@/helpers/Constant";
-import { CanvasMouseEvent, Engine } from "../engine/Engine";
-import { BoundingBox } from "../geometry/BoundingBox";
-import { Widget } from "../shapes/Widget";
-import { Signal } from "../signal/Signal";
-import { Service } from "./Service";
-import { MainModeChangedState, ToolService } from "./ToolService";
+import { ACTION_MODES } from '@/helpers/Constant'
+import { CanvasMouseEvent, Engine } from '../engine/Engine'
+import { BoundingBox } from '../geometry/BoundingBox'
+import { Widget } from '../shapes/Widget'
+import { Signal } from '../signal/Signal'
+import { Service } from './Service'
+import { MainModeChangedState, ToolService } from './ToolService'
 
 export class SelectionService extends Service {
     private _selected: Widget[] = []
@@ -30,22 +30,22 @@ export class SelectionService extends Service {
     }
 
     selectWidget(widget: Widget) {
-        widget.selected = true;
+        widget.selected = true
         this._selected = [widget]
         this.selectionChanged.dispatch()
         this.engine.canvas.requestRender()
     }
 
     clearSelection() {
-        this._selected.forEach(widget => widget.selected = false)
+        this._selected.forEach((widget) => (widget.selected = false))
         this._selected = []
         this.selectionChanged.dispatch()
     }
 
     checkObjectsInRect(rect: BoundingBox): Widget[] {
-        const shapesLayer = this.engine.stage.widgetsDefaultLayer; 
-        const allWidgets = new Set<Widget>();
-        
+        const shapesLayer = this.engine.stage.widgetsDefaultLayer
+        const allWidgets = new Set<Widget>()
+
         for (const child of shapesLayer.children) {
             if (!(child instanceof Widget) || !child.interactive) continue
 

@@ -1,9 +1,9 @@
-import { Layer } from "@/core/stage/Layer";
-import { STAGE_LAYERS } from "@/helpers/Constant";
-import { MultiSelector } from "../shapes/nonCanvasShapes/MultiSelector";
-import { SelectionLayer } from "./SelectionLayer";
-import { Engine } from "../engine/Engine";
-import { SelectionService } from "../services/SelectionService";
+import { Layer } from '@/core/stage/Layer'
+import { STAGE_LAYERS } from '@/helpers/Constant'
+import { MultiSelector } from '../shapes/nonCanvasShapes/MultiSelector'
+import { SelectionLayer } from './SelectionLayer'
+import { Engine } from '../engine/Engine'
+import { SelectionService } from '../services/SelectionService'
 
 /**
  * NonCanvasDynamicContainer handles dynamic non canvas layer for the app. Like multi selector, selection.
@@ -17,16 +17,12 @@ export class NonCanvasDynamicContainer extends Layer {
         this._mutliSelector = new MultiSelector({
             x: 0,
             y: 0,
-            parent: this
+            parent: this,
         })
         this._selectionLayer = new SelectionLayer(engine, selectionService)
 
-        this.addChildren(
-            this._selectionLayer
-        )
-        this.addChildren(
-            this._mutliSelector
-        )
+        this.addChildren(this._selectionLayer)
+        this.addChildren(this._mutliSelector)
     }
 
     get multiSelector(): MultiSelector {

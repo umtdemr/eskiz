@@ -1,13 +1,13 @@
-import { Paint } from "canvaskit-wasm";
-import { Widget } from "../Widget";
-import { canvasKit, RenderContext } from "@/core/canvas/Canvas";
-import { Layer } from "@/core/stage/Layer";
-import { BoundingBox } from "@/core/geometry/BoundingBox";
-import { Engine } from "@/core/engine/Engine";
+import { Paint } from 'canvaskit-wasm'
+import { Widget } from '../Widget'
+import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
+import { Layer } from '@/core/stage/Layer'
+import { BoundingBox } from '@/core/geometry/BoundingBox'
+import { Engine } from '@/core/engine/Engine'
 
 export interface BorderProps {
     parentLayer: Layer
-    widgets: Widget[],
+    widgets: Widget[]
     engine: Engine
 }
 
@@ -15,7 +15,7 @@ export class Border extends Widget {
     private engine: Engine
     private paint: Paint
     private bindWidgets?: Widget[]
-    private needsUpdate = false;
+    private needsUpdate = false
 
     constructor(props: BorderProps) {
         const boundingBox = BoundingBox.createWithMerge(...props.widgets)
@@ -24,28 +24,23 @@ export class Border extends Widget {
             y: boundingBox.top,
             width: boundingBox.width,
             height: boundingBox.height,
-            parentLayer: props.parentLayer
+            parentLayer: props.parentLayer,
         }
         super('border', widgetProps)
 
-        this.engine = props.engine;
+        this.engine = props.engine
         this.paint = new canvasKit.Paint()
         this.paint.setAntiAlias(true)
         this.paint.setStyle(canvasKit.PaintStyle.Stroke)
-        this.paint.setColor(canvasKit.Color(29, 78, 216, .8))
-        
+        this.paint.setColor(canvasKit.Color(29, 78, 216, 0.8))
+
         this.bindWidgets = props.widgets
         this.listenWidgets()
         this.engine.canvas.tick.add(this.onTick, this)
     }
 
     protected renderContent(renderContext: RenderContext): void {
-        const rect = canvasKit.XYWHRect(
-            0,
-            0,
-            this.width,
-            this.height,
-        )
+        const rect = canvasKit.XYWHRect(0, 0, this.width, this.height)
 
         this.paint.setStrokeWidth(1 / renderContext.scale)
         renderContext.ctx.drawRect(rect, this.paint)
@@ -57,15 +52,15 @@ export class Border extends Widget {
     }
 
     private onWidgetBoundsChanged() {
-        this.needsUpdate = true;
+        this.needsUpdate = true
     }
 
     private updateBbox() {
         const boundingBox = BoundingBox.createWithMerge(...this.bindWidgets!)
-        this.left = boundingBox.left;
-        this.top = boundingBox.top;
-        this.width = boundingBox.width;
-        this.height = boundingBox.height;
+        this.left = boundingBox.left
+        this.top = boundingBox.top
+        this.width = boundingBox.width
+        this.height = boundingBox.height
     }
 
     destroy(): void {
@@ -76,7 +71,7 @@ export class Border extends Widget {
     private onTick() {
         if (this.needsUpdate) {
             this.updateBbox()
-            this.needsUpdate = false;
+            this.needsUpdate = false
         }
     }
 }

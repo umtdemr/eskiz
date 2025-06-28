@@ -15,13 +15,13 @@ export class BoundingBox {
     private _height: number
 
     /**
-     * 
+     *
      * @param x Left of the bbox.
      * @param y Top of the bbox.
      * @param width Width of the bbox.
      * @param height Height of the bbox.
      */
-    constructor(x = 0, y = 0, width= 0, height = 0) {
+    constructor(x = 0, y = 0, width = 0, height = 0) {
         this._x = x
         this._y = y
         this._width = width
@@ -29,69 +29,57 @@ export class BoundingBox {
     }
 
     static createInfinite(): BoundingBox {
-        return new BoundingBox(
-            -Infinity,
-            -Infinity,
-            Infinity,
-            Infinity,
-        )
+        return new BoundingBox(-Infinity, -Infinity, Infinity, Infinity)
     }
     static createIndefinite(): BoundingBox {
-        return new BoundingBox(
-            Infinity,
-            Infinity,
-            -Infinity,
-            -Infinity,
-        )
+        return new BoundingBox(Infinity, Infinity, -Infinity, -Infinity)
     }
 
     static createWithMerge(...rects: LTRBRect[]): BoundingBox {
-        let left = Infinity, top = Infinity, right = -Infinity, bottom = -Infinity;
+        let left = Infinity,
+            top = Infinity,
+            right = -Infinity,
+            bottom = -Infinity
         rects.forEach((rect) => {
-            left = Math.min(left, rect.left);
-            right = Math.max(right, rect.right);
-            top = Math.min(top, rect.top);
-            bottom = Math.max(bottom, rect.bottom); 
+            left = Math.min(left, rect.left)
+            right = Math.max(right, rect.right)
+            top = Math.min(top, rect.top)
+            bottom = Math.max(bottom, rect.bottom)
         })
-    
-        return new BoundingBox(
-            left,
-            top,
-            right - left,
-            bottom - top
-        )
+
+        return new BoundingBox(left, top, right - left, bottom - top)
     }
 
     get x(): number {
-        return this._x;
+        return this._x
     }
 
     set x(val: number) {
-        this._x = val;
+        this._x = val
     }
 
     get y(): number {
-        return this._y;
+        return this._y
     }
-    
+
     set y(val: number) {
-        this._y = val;
+        this._y = val
     }
 
     get width(): number {
-        return this._width;
+        return this._width
     }
 
     set width(val: number) {
-        this._width = val;
+        this._width = val
     }
 
     get height() {
-        return this._height;
+        return this._height
     }
 
     set height(val: number) {
-        this._height = val;
+        this._height = val
     }
 
     get left(): number {
@@ -99,8 +87,8 @@ export class BoundingBox {
     }
 
     set left(val: number) {
-        this.width += this.x - val;
-        this.x = val;
+        this.width += this.x - val
+        this.x = val
         if (!isFinite(this.width)) this.width = -Infinity
     }
 
@@ -111,22 +99,30 @@ export class BoundingBox {
     set top(val: number) {
         this.height = val - this.y
         this.y = val
-        if (!isFinite(this.height)) this.height = -Infinity;
+        if (!isFinite(this.height)) this.height = -Infinity
     }
 
     get right(): number {
         const right = this._x + this._width
-        return isFinite(right) ? right : this.width === Infinity ? Infinity : -Infinity
+        return isFinite(right)
+            ? right
+            : this.width === Infinity
+              ? Infinity
+              : -Infinity
     }
 
     set right(val: number) {
-        this.width = val - this.x;
+        this.width = val - this.x
         if (!isFinite(this.width)) this.width = -Infinity
     }
 
     get bottom(): number {
         const bottom = this._y + this.height
-        return isFinite(bottom) ? bottom : this.height === Infinity ? Infinity : -Infinity
+        return isFinite(bottom)
+            ? bottom
+            : this.height === Infinity
+              ? Infinity
+              : -Infinity
     }
 
     set bottom(val: number) {
@@ -147,15 +143,15 @@ export class BoundingBox {
     }
 
     set minX(val: number) {
-        this.left = val;
+        this.left = val
     }
 
     get minY(): number {
-        return this.top;
+        return this.top
     }
 
     set minY(val: number) {
-        this.top = val;
+        this.top = val
     }
 
     get maxX(): number {
@@ -163,7 +159,7 @@ export class BoundingBox {
     }
 
     set maxX(val: number) {
-        this.right = val;
+        this.right = val
     }
 
     get maxY(): number {
@@ -180,13 +176,13 @@ export class BoundingBox {
      * @returns Updated bounding box instance.
      */
     merge(...rects: LTRBRect[]) {
-        rects.forEach(rect => {
-            this.left = Math.min(this.left, rect.left);
-            this.right = Math.max(this.right, rect.right);
-            this.top = Math.min(this.top, rect.top);
-            this.bottom = Math.max(this.bottom, rect.bottom);
-        });
-        return this;
+        rects.forEach((rect) => {
+            this.left = Math.min(this.left, rect.left)
+            this.right = Math.max(this.right, rect.right)
+            this.top = Math.min(this.top, rect.top)
+            this.bottom = Math.max(this.bottom, rect.bottom)
+        })
+        return this
     }
 
     /**
@@ -214,11 +210,11 @@ export class BoundingBox {
     }
 
     /**
-     * Resets the bounding box. 
+     * Resets the bounding box.
      * @returns Updated BoundingBox instance.
      */
     empty(): BoundingBox {
-        this.x = this.y = this.width = this.height = 0;
+        this.x = this.y = this.width = this.height = 0
         return this
     }
 
@@ -227,7 +223,12 @@ export class BoundingBox {
      * @returns `true` if all the values are finite.
      */
     isFinite(): boolean {
-        return isFinite(this.x) && isFinite(this.y) && isFinite(this.width) && isFinite(this.height)
+        return (
+            isFinite(this.x) &&
+            isFinite(this.y) &&
+            isFinite(this.width) &&
+            isFinite(this.height)
+        )
     }
 
     /**
@@ -261,11 +262,11 @@ export class BoundingBox {
      * @returns True if it contains
      */
     contains(x: number, y: number): boolean {
-        if (this.width <= 0 || this.height <= 0) return false;
+        if (this.width <= 0 || this.height <= 0) return false
         if (x >= this.x && x <= this.x + this.width) {
-            if (y >= this.y && y <= this.y + this.height) return true;
+            if (y >= this.y && y <= this.y + this.height) return true
         }
-        return false;
+        return false
     }
 
     /**
@@ -274,6 +275,11 @@ export class BoundingBox {
      * @returns True if given boundingbox contains this instance
      */
     containsRect(rect: BoundingBox) {
-        return this.left <= rect.left && this.right >= rect.right && this.top <= rect.top && this.bottom >= rect.bottom
+        return (
+            this.left <= rect.left &&
+            this.right >= rect.right &&
+            this.top <= rect.top &&
+            this.bottom >= rect.bottom
+        )
     }
 }

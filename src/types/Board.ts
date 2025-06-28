@@ -1,22 +1,22 @@
-import {metadata} from "@/types/Pagination.ts";
+import { metadata } from '@/types/Pagination.ts'
 
 export type BoardResult = {
-    name: string,
-    slug_id: string,
-    is_owner: boolean,
+    name: string
+    slug_id: string
+    is_owner: boolean
     created_at: string
 }
 
 export type BoardsWithPagination = {
-    board_results: BoardResult[],
+    board_results: BoardResult[]
     metadata: metadata
 }
 
 export type BoardCreateResult = {
-    name: string,
-    slug_id: string,
-    is_owner: boolean,
-    created_at: string 
+    name: string
+    slug_id: string
+    is_owner: boolean
+    created_at: string
 }
 
 export type BoardRetrieveResponse = {
@@ -33,7 +33,7 @@ export type BoardRetrieveResponse = {
                 created_at: string
                 name: string
             }[]
-        },
+        }
         users: {
             full_name: string
             email: string

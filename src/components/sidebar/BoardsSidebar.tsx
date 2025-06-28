@@ -1,68 +1,70 @@
 import {
     Sidebar,
-    SidebarContent, SidebarFooter,
+    SidebarContent,
+    SidebarFooter,
     SidebarGroup,
     SidebarGroupContent,
-    SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem
-} from "@/components/ui/sidebar.tsx";
-import {Link} from "react-router-dom";
+    SidebarHeader,
+    SidebarMenu,
+    SidebarMenuButton,
+    SidebarMenuItem,
+} from '@/components/ui/sidebar.tsx'
+import { Link } from 'react-router-dom'
 import {
     DropdownMenu,
-    DropdownMenuContent, DropdownMenuItem,
+    DropdownMenuContent,
+    DropdownMenuItem,
     DropdownMenuLabel,
-    DropdownMenuSeparator
-} from "@/components/ui/dropdown-menu.tsx";
-import {DropdownMenuTrigger} from "@radix-ui/react-dropdown-menu";
-import {Avatar, AvatarFallback} from "@/components/ui/avatar.tsx";
-import {LogOut, PresentationIcon, Search, Trash, User} from "lucide-react";
-import {useBoundStore} from "@/store/store.ts";
-import {useShallow} from "zustand/react/shallow";
-import useAuth from "@/hooks/UseAuth.tsx";
+    DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu.tsx'
+import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar.tsx'
+import { LogOut, PresentationIcon, Search, Trash, User } from 'lucide-react'
+import { useBoundStore } from '@/store/store.ts'
+import { useShallow } from 'zustand/react/shallow'
+import useAuth from '@/hooks/UseAuth.tsx'
 
 const sidebarItems = [
     {
         title: 'Search',
         disabled: false,
         url: '/boards/search',
-        icon: <Search />
+        icon: <Search />,
     },
     {
         title: 'All boards',
         disabled: false,
         url: '/boards',
-        icon: <PresentationIcon />
+        icon: <PresentationIcon />,
     },
     {
         title: 'Deleted boards',
         disabled: true,
         url: '/boards/deleted',
-        icon: <Trash />
+        icon: <Trash />,
     },
-    
 ]
 
 export default function BoardsSidebar() {
-    const userData = useBoundStore(useShallow((state) => state.userData));
+    const userData = useBoundStore(useShallow((state) => state.userData))
     const { logout } = useAuth()
 
     return (
         <Sidebar>
             <SidebarContent>
                 <SidebarGroup>
-                    <SidebarGroupContent className='mt-10'>
+                    <SidebarGroupContent className="mt-10">
                         <SidebarMenu>
-                            {
-                                sidebarItems.map(item => (
-                                    <SidebarMenuItem key={item.title}>
-                                       <SidebarMenuButton asChild>
-                                           <Link to={item.url}>
-                                               {item.icon}
-                                               {item.title}
-                                           </Link>
-                                       </SidebarMenuButton> 
-                                    </SidebarMenuItem>
-                                ))
-                            }
+                            {sidebarItems.map((item) => (
+                                <SidebarMenuItem key={item.title}>
+                                    <SidebarMenuButton asChild>
+                                        <Link to={item.url}>
+                                            {item.icon}
+                                            {item.title}
+                                        </Link>
+                                    </SidebarMenuButton>
+                                </SidebarMenuItem>
+                            ))}
                         </SidebarMenu>
                     </SidebarGroupContent>
                 </SidebarGroup>
@@ -72,41 +74,57 @@ export default function BoardsSidebar() {
                     <SidebarMenuItem>
                         <DropdownMenu state={open}>
                             <DropdownMenuTrigger asChild>
-                                <SidebarMenuButton className='py-5'>
+                                <SidebarMenuButton className="py-5">
                                     <div className="flex items-center gap-2 px-1 text-left text-sm">
                                         <Avatar className="h-8 w-8 rounded-lg">
-                                            <AvatarFallback className="rounded-lg">{userData.full_name[0].toUpperCase()}</AvatarFallback>
+                                            <AvatarFallback className="rounded-lg">
+                                                {userData.full_name[0].toUpperCase()}
+                                            </AvatarFallback>
                                         </Avatar>
                                         <div className="grid flex-1 text-left text-sm leading-tight">
-                                            <span className="truncate font-semibold">{userData.full_name}</span>
-                                            <span className="truncate text-xs">{userData.email}</span>
+                                            <span className="truncate font-semibold">
+                                                {userData.full_name}
+                                            </span>
+                                            <span className="truncate text-xs">
+                                                {userData.email}
+                                            </span>
                                         </div>
-                                    </div> 
+                                    </div>
                                 </SidebarMenuButton>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent
                                 className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg mb-2"
-                                side='right'
+                                side="right"
                                 sideOffset={15}
                             >
                                 <DropdownMenuLabel className="p-0 font-normal">
                                     <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                                         <Avatar className="h-8 w-8 rounded-lg">
-                                            <AvatarFallback className="rounded-lg">{userData.full_name[0].toUpperCase()}</AvatarFallback>
+                                            <AvatarFallback className="rounded-lg">
+                                                {userData.full_name[0].toUpperCase()}
+                                            </AvatarFallback>
                                         </Avatar>
                                         <div className="grid flex-1 text-left text-sm leading-tight">
-                                            <span className="truncate font-semibold">{userData.full_name}</span>
-                                            <span className="truncate text-xs">{userData.email}</span>
+                                            <span className="truncate font-semibold">
+                                                {userData.full_name}
+                                            </span>
+                                            <span className="truncate text-xs">
+                                                {userData.email}
+                                            </span>
                                         </div>
                                     </div>
                                 </DropdownMenuLabel>
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => { logout() }}>
+                                <DropdownMenuItem
+                                    onClick={() => {
+                                        logout()
+                                    }}
+                                >
                                     <LogOut />
                                     Logout
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
-                        </DropdownMenu> 
+                        </DropdownMenu>
                     </SidebarMenuItem>
                 </SidebarMenu>
             </SidebarFooter>

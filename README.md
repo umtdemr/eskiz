@@ -1,59 +1,60 @@
 # WB
 
 ## TODO
+
 - [ ] Auth
     - [ ] Store token
     - [ ] Redirect on getUser true
     - [ ] Activate page
 - [ ] Canvas
     - [x] Wheel
-      - [x] Panning
-        - [x] Pan with pan tool
-        - [x] Pan with mouse wheel
-      - [x] Zooming
-      - [x] Restrict wheel on mouse down
+        - [x] Panning
+            - [x] Pan with pan tool
+            - [x] Pan with mouse wheel
+        - [x] Zooming
+        - [x] Restrict wheel on mouse down
     - [x] Modes - select, pan
     - [x] Grid
     - [x] Zoom event listeners
     - [x] Collaboration list
-      - [x] Set on join
-      - [x] Handle user left and join events
+        - [x] Set on join
+        - [x] Handle user left and join events
     - [x] Collab cursors
-      - [x] Websocket connection
-      - [x] Handling events - sending them to the other classes like event dispatcher.
+        - [x] Websocket connection
+        - [x] Handling events - sending them to the other classes like event dispatcher.
     - [x] Adding rect.
     - [x] Refactor -> use `ctx` instead of `canvas`
     - [x] Create base class & Render with render methods
-      - [x] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
+        - [x] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
     - [x] Rendering shapes
-      - [x] Layering
-      - [x] Handling zIndexes
-      - [x] Handling multiple objects
-          - [x] Create local and world bounds
-          - [x] Implement left, top based rendering
-          - [x] Handle drawing borders correctly
-            - [x] Draw borders on multi selection
-            - [x] Remove borders on empty select
+        - [x] Layering
+        - [x] Handling zIndexes
+        - [x] Handling multiple objects
+            - [x] Create local and world bounds
+            - [x] Implement left, top based rendering
+            - [x] Handle drawing borders correctly
+                - [x] Draw borders on multi selection
+                - [x] Remove borders on empty select
     - [x] Selecting.
-      - [x] Selecting.
-      - [x] Adding multi selector
+        - [x] Selecting.
         - [x] Adding multi selector
-      - [x] Deselect on tool change
-      - [x] Auto select on new shape added
+            - [x] Adding multi selector
+        - [x] Deselect on tool change
+        - [x] Auto select on new shape added
     - [ ] Controls
-      - [ ] Handle changing width, height by controls
+        - [ ] Handle changing width, height by controls
     - [x] Movable objects
-      - [x] Single movable objects
-      - [x] Multiple movable objects
-        - [x] Implement moving
-        - [x] Fix: bounding box updating
+        - [x] Single movable objects
+        - [x] Multiple movable objects
+            - [x] Implement moving
+            - [x] Fix: bounding box updating
     - [x] Mid way refactor
-      - [x] Better event emitter
-      - [x] Canvas mouse controller service
-        - [x] Use it in select tool
-        - [x] Use it in shape drawer
-        - [x] Use it in cursor sender
-      - [x] Wheel service
+        - [x] Better event emitter
+        - [x] Canvas mouse controller service
+            - [x] Use it in select tool
+            - [x] Use it in shape drawer
+            - [x] Use it in cursor sender
+        - [x] Wheel service
     - [ ] Pagination and search
     - [x] Create better signal system
     - [ ] Adding pen tool
@@ -61,8 +62,7 @@
     - [ ] Sticky note
     - [ ] Undo redo
 - Refactor & bug fixes
-  - [ ] Fix: ShapesDropdown top position
-  - [ ] Fix: sidebar menu in mobile
-  - [ ] A component to handle boards list
-    - [ ] Change error messages on boards list (user) or make it dynamic. Change colors.
-
+    - [ ] Fix: ShapesDropdown top position
+    - [ ] Fix: sidebar menu in mobile
+    - [ ] A component to handle boards list
+        - [ ] Change error messages on boards list (user) or make it dynamic. Change colors.

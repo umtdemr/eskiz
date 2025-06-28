@@ -1,53 +1,62 @@
 interface SignalListener<T> {
-    callback: (...args: T[]) => void;
-    context?: unknown;
-    isOnce: boolean;
-    execute: (...args: T[]) => void;
+    callback: (...args: T[]) => void
+    context?: unknown
+    isOnce: boolean
+    execute: (...args: T[]) => void
 }
 
 export class SignalStorage<T> {
-    protected listeners: Set<SignalListener<T>> = new Set();
-    readonly supportsContext: boolean = true;
-    readonly supportsPriority: boolean = false;
+    protected listeners: Set<SignalListener<T>> = new Set()
+    readonly supportsContext: boolean = true
+    readonly supportsPriority: boolean = false
 
     add(listener: SignalListener<T>): void {
-        this.listeners.add(listener);
+        this.listeners.add(listener)
     }
 
     remove(callback: (...args: T[]) => void, context?: unknown): boolean {
         for (const listener of this.listeners) {
-            if (listener.callback === callback && listener.context === context) {
-                this.listeners.delete(listener);
-                return true;
+            if (
+                listener.callback === callback &&
+                listener.context === context
+            ) {
+                this.listeners.delete(listener)
+                return true
             }
         }
-        return false;
+        return false
     }
 
-    get(callback: (...args: T[]) => void, context?: unknown): SignalListener<T> | undefined {
+    get(
+        callback: (...args: T[]) => void,
+        context?: unknown,
+    ): SignalListener<T> | undefined {
         for (const listener of this.listeners) {
-            if (listener.callback === callback && listener.context === context) {
-                return listener;
+            if (
+                listener.callback === callback &&
+                listener.context === context
+            ) {
+                return listener
             }
         }
-        return undefined;
+        return undefined
     }
 
     has(callback: (...args: T[]) => void, context?: unknown): boolean {
-        return this.get(callback, context) !== undefined;
+        return this.get(callback, context) !== undefined
     }
 
     clear(): void {
-        this.listeners.clear();
+        this.listeners.clear()
     }
 
     size(): number {
-        return this.listeners.size;
+        return this.listeners.size
     }
 
     forEach(fn: (listener: SignalListener<T>) => boolean): void {
         for (const listener of this.listeners) {
-            if (!fn(listener)) break;
+            if (!fn(listener)) break
         }
     }
-} 
+}
