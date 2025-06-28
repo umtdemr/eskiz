@@ -1,20 +1,25 @@
-import {Service} from "@/core/services/Service.ts";
-import {Engine} from "@/core/engine/Engine.ts";
-import {WsEvents} from "@/types/Websocket.ts";
-import {WS_EVENTS} from "@/helpers/Constant.ts";
-import {Signal} from "@/core/signal/Signal.ts";
+import { Service } from '@/core/services/Service.ts'
+import { Engine } from '@/core/engine/Engine.ts'
+import { WsEvents } from '@/types/Websocket.ts'
+import { WS_EVENTS } from '@/helpers/Constant.ts'
+import { Signal } from '@/core/signal/Signal.ts'
 
 export class WebsocketEventService extends Service {
     eventDispatchers: Map<keyof typeof WS_EVENTS, Signal<WsEvents>>
 
     constructor(engine: Engine) {
-        super(engine);
-        this.eventDispatchers = new Map<keyof typeof WS_EVENTS, Signal<WsEvents>>()
+        super(engine)
+        this.eventDispatchers = new Map<
+            keyof typeof WS_EVENTS,
+            Signal<WsEvents>
+        >()
         for (const key of Object.keys(WS_EVENTS)) {
-            this.eventDispatchers.set(key as keyof typeof WS_EVENTS, new Signal<WsEvents>())
+            this.eventDispatchers.set(
+                key as keyof typeof WS_EVENTS,
+                new Signal<WsEvents>(),
+            )
         }
         this.engine.wsEngine.eventReceived.add(this.onEventReceived, this)
-
     }
 
     private onEventReceived(event: WsEvents) {
@@ -22,7 +27,7 @@ export class WebsocketEventService extends Service {
     }
 
     dispose() {
-        super.dispose();
-        this.eventDispatchers.clear();
+        super.dispose()
+        this.eventDispatchers.clear()
     }
 }

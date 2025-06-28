@@ -1,12 +1,17 @@
-import { Layer }from "../stage/Layer";
-import { BoundingBox } from "../geometry/BoundingBox";
-import { RenderContext } from "../canvas/Canvas";
-import { LinkedList } from "../dataStructures/LinkedList";
-import { Signal } from "../signal/Signal";
-import { ShapeType } from "@/core/shapes/Shape.ts";
-import {WsWidget} from "@/types/Websocket.ts";
+import { Layer } from '../stage/Layer'
+import { BoundingBox } from '../geometry/BoundingBox'
+import { RenderContext } from '../canvas/Canvas'
+import { LinkedList } from '../dataStructures/LinkedList'
+import { Signal } from '../signal/Signal'
+import { ShapeType } from '@/core/shapes/Shape.ts'
+import { WsWidget } from '@/types/Websocket.ts'
 
-export type WidgetType = 'shape' | 'text' | 'multiSelector' | 'border' | 'control'
+export type WidgetType =
+    | 'shape'
+    | 'text'
+    | 'multiSelector'
+    | 'border'
+    | 'control'
 
 export type DbWidgetType = 'shape'
 
@@ -48,17 +53,17 @@ export abstract class Widget extends Layer {
     protected _uuid?: string
     protected _parent_widget_id?: string
     protected _layer?: Layer
-    protected _bounds: BoundingBox       // Global bounds (including parent transforms)
-    protected _localBounds: BoundingBox  // Local bounds (object's own space)
-    protected _selected: boolean = false;
-    protected _isDynamic: boolean = false;
+    protected _bounds: BoundingBox // Global bounds (including parent transforms)
+    protected _localBounds: BoundingBox // Local bounds (object's own space)
+    protected _selected: boolean = false
+    protected _isDynamic: boolean = false
 
     boundsChanged = new Signal()
-    
+
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
 
-        this._children = new LinkedList<Widget>
+        this._children = new LinkedList<Widget>()
 
         this._widgetType = type
         this._x = props.x
@@ -102,16 +107,16 @@ export abstract class Widget extends Layer {
         const ctx = renderContext.ctx
 
         ctx.save()
-        
+
         // Apply this widget's transform
         ctx.translate(this._x, this._y)
-        
+
         // Render this widget
         this.renderContent(renderContext)
-        
+
         // Render children
         super.render(renderContext)
-        
+
         ctx.restore()
     }
 
@@ -156,18 +161,20 @@ export abstract class Widget extends Layer {
     }
 
     toJson(): WidgetJson {
-        throw new Error("must be implemented");
+        throw new Error('must be implemented')
     }
-    
+
     contains(x: number, y: number, scale: number): boolean {
-        return this.bounds.contains(x * scale, y * scale);
+        return this.bounds.contains(x * scale, y * scale)
     }
 
     onMouseEnter() {}
     onMouseLeave() {}
 
     static loadFromJson(json: WsWidget): Widget {
-        throw new Error(`loadFromJson is not implemented for ${json.widget_type}_${json.sub_type}`)
+        throw new Error(
+            `loadFromJson is not implemented for ${json.widget_type}_${json.sub_type}`,
+        )
     }
 
     get width() {
@@ -176,7 +183,7 @@ export abstract class Widget extends Layer {
 
     set width(width: number) {
         this._width = width
-        this.updateBounds();
+        this.updateBounds()
     }
 
     get height() {
@@ -185,7 +192,7 @@ export abstract class Widget extends Layer {
 
     set height(height: number) {
         this._height = height
-        this.updateBounds();
+        this.updateBounds()
     }
 
     get centerX() {
@@ -194,7 +201,7 @@ export abstract class Widget extends Layer {
 
     set centerX(centerX: number) {
         this._x = centerX
-        this.updateBounds();
+        this.updateBounds()
     }
 
     get centerY() {
@@ -203,7 +210,7 @@ export abstract class Widget extends Layer {
 
     set centerY(centerY: number) {
         this._y = centerY - this.height / 2
-        this.updateBounds();
+        this.updateBounds()
     }
 
     get left() {
@@ -212,7 +219,7 @@ export abstract class Widget extends Layer {
 
     set left(left: number) {
         this._x = left
-        this.updateBounds();
+        this.updateBounds()
     }
 
     get top() {
@@ -221,7 +228,7 @@ export abstract class Widget extends Layer {
 
     set top(top: number) {
         this._y = top
-        this.updateBounds();
+        this.updateBounds()
     }
 
     get right() {
@@ -230,7 +237,7 @@ export abstract class Widget extends Layer {
 
     set right(right: number) {
         this._x = right - this.width
-        this.updateBounds();
+        this.updateBounds()
     }
 
     get bottom() {
@@ -239,7 +246,7 @@ export abstract class Widget extends Layer {
 
     set bottom(bottom: number) {
         this._y = bottom - this.height
-        this.updateBounds();
+        this.updateBounds()
     }
 
     get bounds(): BoundingBox {
@@ -251,7 +258,7 @@ export abstract class Widget extends Layer {
     }
 
     get selected(): boolean {
-        return this._selected;
+        return this._selected
     }
 
     set selected(val: boolean) {
@@ -259,7 +266,7 @@ export abstract class Widget extends Layer {
     }
 
     get uuid(): string | undefined {
-        return this._uuid;
+        return this._uuid
     }
 
     set uuid(uuid: string) {
@@ -270,6 +277,6 @@ export abstract class Widget extends Layer {
     }
 
     get isDynamic(): boolean {
-        return this._isDynamic;
+        return this._isDynamic
     }
 }

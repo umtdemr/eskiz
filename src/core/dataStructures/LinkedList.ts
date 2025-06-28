@@ -2,11 +2,11 @@ export class Node<T> {
     private _next: Node<T> | null = null
     private _prev: Node<T> | null = null
     private _value: T
-    
+
     constructor(value: T) {
         this._value = value
     }
-    
+
     get next(): Node<T> | null {
         return this._next
     }
@@ -28,12 +28,11 @@ export class Node<T> {
 }
 
 export class LinkedList<T> {
-    private _root: Node<T> | null = null;
-    private _tail: Node<T> | null = null;
-    private _nodeCount: number = 0;
-    
-    constructor() {
-    }
+    private _root: Node<T> | null = null
+    private _tail: Node<T> | null = null
+    private _nodeCount: number = 0
+
+    constructor() {}
 
     /**
      * Adds item to linked list.
@@ -51,7 +50,6 @@ export class LinkedList<T> {
         this.addAt(0, value)
     }
 
-    
     /**
      * Adds given value in given index
      * @param index - Where to add
@@ -64,9 +62,9 @@ export class LinkedList<T> {
         const addingNode = new Node(value)
 
         if (!this._root) {
-            this._root = this._tail = addingNode;
-            this._nodeCount++;
-            return;
+            this._root = this._tail = addingNode
+            this._nodeCount++
+            return
         }
 
         if (idx === 0) {
@@ -81,7 +79,7 @@ export class LinkedList<T> {
             this._tail!.next = addingNode
             this._tail = addingNode
         } else {
-            const existingNode = this.getNodeAt(idx);
+            const existingNode = this.getNodeAt(idx)
             addingNode.prev = existingNode!.prev!
             addingNode.next = existingNode
             existingNode!.prev!.next = addingNode
@@ -97,9 +95,9 @@ export class LinkedList<T> {
     removeAt(idx: number): [boolean, T | null | undefined] {
         // empty list or invalid index
         if (!this._root || idx < 0 || idx >= this._nodeCount) {
-            return [false, null];
+            return [false, null]
         }
-        let removedNode = null;
+        let removedNode = null
         if (idx === 0) {
             removedNode = this._root
             this._root = this._root.next
@@ -114,18 +112,18 @@ export class LinkedList<T> {
             this._tail = this._tail!.prev
             this._tail!.next = null
         } else {
-            removedNode = this.getNodeAt(idx);
-            removedNode!.prev!.next = removedNode!.next;
-            removedNode!.next!.prev = removedNode!.prev;
+            removedNode = this.getNodeAt(idx)
+            removedNode!.prev!.next = removedNode!.next
+            removedNode!.next!.prev = removedNode!.prev
         }
 
-        this._nodeCount--;
+        this._nodeCount--
         return [true, removedNode?.value]
     }
 
     private getNodeAt(idx: number): Node<T> | null {
-        let next = this._root;
-        let countIdx = 0;
+        let next = this._root
+        let countIdx = 0
         while (next) {
             if (idx === countIdx) {
                 return next
@@ -140,14 +138,14 @@ export class LinkedList<T> {
      * Clears the list.
      */
     clear() {
-        this._root = this._tail = null;
-        this._nodeCount = 0;
+        this._root = this._tail = null
+        this._nodeCount = 0
     }
 
     /**
      * Searchs and returns given item's value in given index.
      * @param searchVal Searching value
-     * @returns 
+     * @returns
      */
     find(searchVal: unknown): unknown {
         return this.findCb((val: unknown) => val === searchVal)
@@ -158,7 +156,7 @@ export class LinkedList<T> {
      * @param cb Callback method to search item
      * @returns If found, returns value of element
      */
-    findCb(cb: (value: unknown) => boolean): unknown{
+    findCb(cb: (value: unknown) => boolean): unknown {
         let current = this._root
 
         while (current !== null) {
@@ -168,7 +166,7 @@ export class LinkedList<T> {
             current = current.next
         }
 
-        return undefined;
+        return undefined
     }
 
     /**
@@ -182,7 +180,7 @@ export class LinkedList<T> {
         while (current !== null) {
             arr.push(current.value)
             current = current.next
-        } 
+        }
 
         return arr
     }

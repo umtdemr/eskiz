@@ -1,7 +1,7 @@
-import {Shape, ShapeProps} from "@/core/shapes/Shape.ts";
-import { canvasKit, RenderContext } from "@/core/canvas/Canvas";
-import { WsWidget } from "@/types/Websocket.ts";
-import {WidgetJson} from "@/core/shapes/Widget.ts";
+import { Shape, ShapeProps } from '@/core/shapes/Shape.ts'
+import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
+import { WsWidget } from '@/types/Websocket.ts'
+import { WidgetJson } from '@/core/shapes/Widget.ts'
 
 export class Triangle extends Shape {
     constructor(props: ShapeProps) {
@@ -15,10 +15,10 @@ export class Triangle extends Shape {
             return
         }
         const path = new canvasKit.Path()
-        path.moveTo(0, this.height)           // Bottom left
-        path.lineTo(this.width / 2, 0)          // Top middle
-        path.lineTo(this.width, this.height)  // Bottom right
-        path.lineTo(0, this.height)           // Back to bottom left
+        path.moveTo(0, this.height) // Bottom left
+        path.lineTo(this.width / 2, 0) // Top middle
+        path.lineTo(this.width, this.height) // Bottom right
+        path.lineTo(0, this.height) // Back to bottom left
         path.close()
 
         const strokeHalf = 1
@@ -28,20 +28,30 @@ export class Triangle extends Shape {
         pathStroke.lineTo(this.width - strokeHalf, this.height - strokeHalf)
         pathStroke.lineTo(strokeHalf, this.height - strokeHalf)
         pathStroke.close()
-        
+
         const paint = new canvasKit.Paint()
         paint.setAntiAlias(true)
 
         paint.setStrokeWidth(0)
-        const fillColor = canvasKit.Color(this._fillColor.r, this._fillColor.g, this._fillColor.b, this._fillColor.a)
-        paint.setColor(fillColor);
+        const fillColor = canvasKit.Color(
+            this._fillColor.r,
+            this._fillColor.g,
+            this._fillColor.b,
+            this._fillColor.a,
+        )
+        paint.setColor(fillColor)
         paint.setStyle(canvasKit.PaintStyle.Fill)
         ctx.drawPath(path, paint)
 
         paint.setStrokeWidth(2)
-        const strokeColor = canvasKit.Color(this._strokeColor.r, this._strokeColor.g, this._strokeColor.b, this._strokeColor.a)
-        paint.setColor(strokeColor);
-        paint.setStyle(canvasKit.PaintStyle.Stroke);
+        const strokeColor = canvasKit.Color(
+            this._strokeColor.r,
+            this._strokeColor.g,
+            this._strokeColor.b,
+            this._strokeColor.a,
+        )
+        paint.setColor(strokeColor)
+        paint.setStyle(canvasKit.PaintStyle.Stroke)
 
         ctx.drawPath(pathStroke, paint)
     }

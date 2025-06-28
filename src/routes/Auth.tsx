@@ -1,15 +1,17 @@
-import {Outlet, useNavigate} from "react-router-dom";
-import useAuth from "@/hooks/UseAuth.tsx";
-import {useEffect} from "react";
-import {useBoundStore} from "@/store/store.ts";
-import {useShallow} from "zustand/react/shallow";
-
+import { Outlet, useNavigate } from 'react-router-dom'
+import useAuth from '@/hooks/UseAuth.tsx'
+import { useEffect } from 'react'
+import { useBoundStore } from '@/store/store.ts'
+import { useShallow } from 'zustand/react/shallow'
 
 export default function Auth() {
-    const { isLoggedIn, tryLoginWithCookie, isTokenExist, isLoginFailed } = useAuth()
-    const isNavigatedToLogin = useBoundStore(useShallow((state) => state.navigatedToLogin))
+    const { isLoggedIn, tryLoginWithCookie, isTokenExist, isLoginFailed } =
+        useAuth()
+    const isNavigatedToLogin = useBoundStore(
+        useShallow((state) => state.navigatedToLogin),
+    )
     const navigate = useNavigate()
-    
+
     useEffect(() => {
         if (isLoggedIn) {
             navigate('/boards')
@@ -20,9 +22,8 @@ export default function Auth() {
         if (!isNavigatedToLogin && !isLoginFailed && isTokenExist()) {
             tryLoginWithCookie()
         }
-    }, [isLoginFailed, isNavigatedToLogin]);
-    
-    
+    }, [isLoginFailed, isNavigatedToLogin])
+
     return (
         <div className="container relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">
             <div className="relative hidden h-full flex-col bg-muted p-10 text-white dark:border-r lg:flex">

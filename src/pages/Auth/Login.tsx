@@ -1,48 +1,51 @@
-import {Link, redirect, useNavigate} from 'react-router-dom'
-import { Button } from "@/components/ui/button.tsx";
-import { Input } from "@/components/ui/input.tsx"
-import { buttonVariants } from "@/components/ui/button.tsx"
-import {z} from "zod";
-import {useForm} from "react-hook-form";
-import {zodResolver} from "@hookform/resolvers/zod";
-import { DefaultError, useMutation } from "@tanstack/react-query";
-import { LoaderCircle } from 'lucide-react';
+import { Link, redirect, useNavigate } from 'react-router-dom'
+import { Button } from '@/components/ui/button.tsx'
+import { Input } from '@/components/ui/input.tsx'
+import { buttonVariants } from '@/components/ui/button.tsx'
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { DefaultError, useMutation } from '@tanstack/react-query'
+import { LoaderCircle } from 'lucide-react'
 import {
     Form,
     FormControl,
     FormField,
     FormItem,
     FormLabel,
-    FormMessage
-} from "@/components/ui/form.tsx";
-import {LoginRequest} from "@/types/Auth.ts";
-import {API_ENDPOINTS} from "@/helpers/Constant.ts";
-import useAuth from "@/hooks/UseAuth.tsx";
-import {toast} from "react-hot-toast";
+    FormMessage,
+} from '@/components/ui/form.tsx'
+import { LoginRequest } from '@/types/Auth.ts'
+import { API_ENDPOINTS } from '@/helpers/Constant.ts'
+import useAuth from '@/hooks/UseAuth.tsx'
+import { toast } from 'react-hot-toast'
 
 const formSchema = z.object({
     email: z.string().email(),
     password: z.string(),
-    api: z.any()
+    api: z.any(),
 })
 
 export default function Login() {
-    const { login } = useAuth();
-    const navigate = useNavigate();
-    
+    const { login } = useAuth()
+    const navigate = useNavigate()
+
     const mutation = useMutation<unknown, DefaultError, LoginRequest>({
         mutationFn: (formData) => {
             return fetch(API_ENDPOINTS.LOGIN, {
-                method: "POST",
-                body: JSON.stringify(formData)
+                method: 'POST',
+                body: JSON.stringify(formData),
             })
         },
-        onSuccess: async data => {
+        onSuccess: async (data) => {
             if (data.status === 401) {
-                form.setError("password", { type: "custom", message: "Invalid credentials" })
+                form.setError('password', {
+                    type: 'custom',
+                    message: 'Invalid credentials',
+                })
                 return
             }
-            
+
             if (data.status === 201) {
                 try {
                     const jsonData = await data.json()
@@ -50,27 +53,33 @@ export default function Login() {
                     navigate('/boards')
                 } catch (err) {
                     console.error(err)
-                    toast.error('sorry but we couldn\'t log you in. try again later')
+                    toast.error(
+                        "sorry but we couldn't log you in. try again later",
+                    )
                 }
             }
         },
         onError: () => {
-            form.setError("api", { type: "custom", message: "could not login: unknown error. please try again later." })
-        }
+            form.setError('api', {
+                type: 'custom',
+                message:
+                    'could not login: unknown error. please try again later.',
+            })
+        },
     })
-    
+
     const form = useForm<z.infer<typeof formSchema>>({
         resolver: zodResolver(formSchema),
         defaultValues: {
-            email: "",
-            password: ""
-        }
+            email: '',
+            password: '',
+        },
     })
 
     function onSubmit(values: z.infer<typeof formSchema>) {
         mutation.mutate({ email: values.email, password: values.password })
     }
-    
+
     return (
         <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
             <div className="flex flex-col space-y-2">
@@ -79,7 +88,10 @@ export default function Login() {
                 </h1>
                 <div>
                     <Form {...form}>
-                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+                        <form
+                            onSubmit={form.handleSubmit(onSubmit)}
+                            className="space-y-8"
+                        >
                             <FormField
                                 control={form.control}
                                 name="email"
@@ -87,7 +99,11 @@ export default function Login() {
                                     <FormItem>
                                         <FormLabel>Email</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="john_doe@icloud.com" {...field} disabled={mutation.isPending} />
+                                            <Input
+                                                placeholder="john_doe@icloud.com"
+                                                {...field}
+                                                disabled={mutation.isPending}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
@@ -100,28 +116,44 @@ export default function Login() {
                                     <FormItem>
                                         <FormLabel>Password</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="password" {...field} disabled={mutation.isPending} />
+                                            <Input
+                                                placeholder="password"
+                                                {...field}
+                                                disabled={mutation.isPending}
+                                            />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>
                                 )}
                             />
-                            
-                            {form.formState.errors.api ? <p className="text-[0.8rem] font-medium text-destructive">
-                                {form.formState.errors.api.message}
-                            </p> : null}
-                            
-                            <Button disabled={mutation.isPending} type="submit" className="w-full flex">
-                                {
-                                    mutation.isPending && <LoaderCircle className="animate-spin" />
-                                }
+
+                            {form.formState.errors.api ? (
+                                <p className="text-[0.8rem] font-medium text-destructive">
+                                    {form.formState.errors.api.message}
+                                </p>
+                            ) : null}
+
+                            <Button
+                                disabled={mutation.isPending}
+                                type="submit"
+                                className="w-full flex"
+                            >
+                                {mutation.isPending && (
+                                    <LoaderCircle className="animate-spin" />
+                                )}
                                 Login
                             </Button>
                         </form>
-                    </Form> 
+                    </Form>
                 </div>
                 <span className="text-right py-8">
-                    Don't you have an account?  <Link to="/register" className={buttonVariants({ variant: "outline" })}>Register</Link>
+                    Don't you have an account?{' '}
+                    <Link
+                        to="/register"
+                        className={buttonVariants({ variant: 'outline' })}
+                    >
+                        Register
+                    </Link>
                 </span>
             </div>
         </div>
