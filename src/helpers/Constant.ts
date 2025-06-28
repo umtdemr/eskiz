@@ -109,3 +109,9 @@ export const DRAWING_MODES = {
 export const SUB_ACTION_MODES = {
     ...DRAWING_MODES,
 } as const
+
+export const CURSOR_OWNERS = {
+    SELECT_TOOL: 'select-tool',
+    PAN_TOOL: 'pan-tool',
+    SHAPE_DRAWER_TOOL: 'shape-drawer-tool',
+}
