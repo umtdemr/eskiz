@@ -3,6 +3,9 @@ import { CanvasMouseEvent, Engine } from '@/core/engine/Engine.ts'
 import { SelectionService } from '@/core/services/SelectionService.ts'
 import { Widget } from '@/core/shapes/Widget.ts'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas.ts'
+import { ResizeCursors } from '@/core/services/CursorService.ts'
+import { CURSOR_OWNERS } from '@/helpers/Constant.ts'
+import { CursorService, CursorPriority } from '@/core/services/CursorService.ts'
 
 export enum EdgePosition {
     LEFT,
@@ -34,6 +37,9 @@ export class EdgeControl extends Control {
         width: 0,
         height: 0,
     }
+    private cursorToolName = CURSOR_OWNERS.EDGE_CONTROL
+    private cursorService: CursorService
+
     constructor(
         props: EdgeControlProps,
         engine: Engine,
@@ -52,6 +58,8 @@ export class EdgeControl extends Control {
         this.shape = this.selectionService.selected[0]
         this.shape.boundsChanged.add(this.onShapeBoundsChanged, this)
         this.updateTransform()
+
+        this.cursorService = engine.getService<CursorService>('cursor')
     }
 
     protected renderContent(renderContext: RenderContext) {
@@ -113,6 +121,13 @@ export class EdgeControl extends Control {
 
     private onShapeBoundsChanged() {
         this.updateTransform()
+    }
+
+    private getCursor(): ResizeCursors {
+        if (this.direction === 'vertical') {
+            return 'horizontal-resize'
+        }
+        return 'vertical-resize'
     }
 
     onMouseDown(data: CanvasMouseEvent): void {
@@ -182,6 +197,17 @@ export class EdgeControl extends Control {
 
     onMouseUp(data: CanvasMouseEvent): void {
         console.log('up')
+    }
+
+    onMouseEnter() {
+        this.cursorService.setCursor(
+            this.cursorToolName,
+            this.getCursor(),
+            CursorPriority.Hover,
+        )
+    }
+    onMouseLeave() {
+        this.cursorService.unsetCursor(this.cursorToolName)
     }
 
     contains(pointX: number, pointY: number, scale: number): boolean {

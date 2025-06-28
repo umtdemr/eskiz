@@ -114,4 +114,5 @@ export const CURSOR_OWNERS = {
     SELECT_TOOL: 'select-tool',
     PAN_TOOL: 'pan-tool',
     SHAPE_DRAWER_TOOL: 'shape-drawer-tool',
+    EDGE_CONTROL: 'edge-control',
 }
