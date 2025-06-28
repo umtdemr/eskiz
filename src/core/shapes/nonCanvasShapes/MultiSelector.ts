@@ -1,8 +1,8 @@
-import { Paint } from "canvaskit-wasm";
-import { Widget } from "../Widget";
-import { Layer } from "@/core/stage/Layer";
-import { canvasKit, Point, RenderContext } from "@/core/canvas/Canvas";
-import { CanvasMouseEvent } from "@/core/engine/Engine";
+import { Paint } from 'canvaskit-wasm'
+import { Widget } from '../Widget'
+import { Layer } from '@/core/stage/Layer'
+import { canvasKit, Point, RenderContext } from '@/core/canvas/Canvas'
+import { CanvasMouseEvent } from '@/core/engine/Engine'
 
 export interface MultiSelectorProps {
     x: number
@@ -12,24 +12,26 @@ export interface MultiSelectorProps {
 
 export class MultiSelector extends Widget {
     private paint: Paint
-    private initialPosition: Point = {x: 0, y: 0}
+    private initialPosition: Point = { x: 0, y: 0 }
 
     constructor(props: MultiSelectorProps) {
-        super('multiSelector', { x: props.x, y: props.y, width: 0, height: 0, parentLayer: props.parent, visible: false });
+        super('multiSelector', {
+            x: props.x,
+            y: props.y,
+            width: 0,
+            height: 0,
+            parentLayer: props.parent,
+            visible: false,
+        })
         this.paint = new canvasKit.Paint()
         this.paint.setAntiAlias(true)
         this.paint.setStyle(canvasKit.PaintStyle.Fill)
-        this.paint.setColor(canvasKit.Color(29, 78, 216, .3))
+        this.paint.setColor(canvasKit.Color(29, 78, 216, 0.3))
     }
 
     protected renderContent(renderContext: RenderContext): void {
-        const ctx = renderContext.ctx;
-        const rect = canvasKit.LTRBRect(
-            0,
-            0,
-            this._width,
-            this._height
-        )
+        const ctx = renderContext.ctx
+        const rect = canvasKit.LTRBRect(0, 0, this._width, this._height)
         ctx.drawRect(rect, this.paint)
     }
 
@@ -39,11 +41,11 @@ export class MultiSelector extends Widget {
             y: data.pointer.y,
         }
 
-        this.width = 0;
-        this.height = 0;
+        this.width = 0
+        this.height = 0
         this.left = data.pointer.x
         this.top = data.pointer.y
-        this.visible = true;
+        this.visible = true
     }
 
     onMouseMove(data: CanvasMouseEvent) {
@@ -55,7 +57,7 @@ export class MultiSelector extends Widget {
         } else {
             this.right = this.initialPosition.x
         }
-        
+
         if (data.pointer.y > this.initialPosition.y) {
             this.top = this.initialPosition.y
         } else {
@@ -64,6 +66,6 @@ export class MultiSelector extends Widget {
     }
 
     onMouseUp(data: CanvasMouseEvent) {
-        this.visible = false;
+        this.visible = false
     }
 }

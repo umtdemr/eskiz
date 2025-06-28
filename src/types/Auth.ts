@@ -1,17 +1,16 @@
 export type LoginRequest = {
-    email: string,
+    email: string
     password: string
 }
 
 export type RegisterRequest = {
-    full_name: string,
-    email: string,
+    full_name: string
+    email: string
     password: string
 }
 
-
 export type AuthTokenSuccessResponse = {
-    expiry: string,
+    expiry: string
     token: string
 }
 
@@ -20,12 +19,12 @@ export type EnvelopeAuthTokenSuccessResponse = {
 }
 
 export type UserPublicData = {
-    id: number,
-    full_name: string,
-    email: string,
-    version?: number,
-    authProvider: "email",
-    created_at: Date,
+    id: number
+    full_name: string
+    email: string
+    version?: number
+    authProvider: 'email'
+    created_at: Date
 }
 
 // user get me response data

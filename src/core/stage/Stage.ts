@@ -1,12 +1,12 @@
-import { Canvas as SkiaCanvas } from "canvaskit-wasm";
-import {STAGE_LAYERS} from "@/helpers/Constant.ts";
-import {Layer} from "./Layer.ts";
-import { Widget } from "../shapes/Widget.ts";
-import { Indexer } from "../indexer/Indexer.ts";
-import { NonCanvasDynamicContainer } from "./NonCanvasDynamicContainer.ts";
-import { RenderContext } from "../canvas/Canvas.ts";
-import { Engine } from "../engine/Engine.ts";
-import { SelectionService } from "../services/SelectionService.ts";
+import { Canvas as SkiaCanvas } from 'canvaskit-wasm'
+import { STAGE_LAYERS } from '@/helpers/Constant.ts'
+import { Layer } from './Layer.ts'
+import { Widget } from '../shapes/Widget.ts'
+import { Indexer } from '../indexer/Indexer.ts'
+import { NonCanvasDynamicContainer } from './NonCanvasDynamicContainer.ts'
+import { RenderContext } from '../canvas/Canvas.ts'
+import { Engine } from '../engine/Engine.ts'
+import { SelectionService } from '../services/SelectionService.ts'
 
 /**
  * Stage handles scene graph structure in canvas.
@@ -26,55 +26,70 @@ export class Stage {
 
     constructor(engine: Engine) {
         // setup layers
-        this._indexer = new Indexer();
+        this._indexer = new Indexer()
         this._root = new Layer({
-            name: STAGE_LAYERS.ROOT
+            name: STAGE_LAYERS.ROOT,
         })
         this._root.zIndex = this._indexer.generateRootIndex()
-        this._engine = engine;
+        this._engine = engine
 
-        this.initializeLayers();
+        this.initializeLayers()
     }
 
     initializeLayers() {
         this._canvasContainer = new Layer({
-            name: STAGE_LAYERS.CANVAS_CONTAINER
+            name: STAGE_LAYERS.CANVAS_CONTAINER,
         })
         this._canvasStaticContainer = new Layer({
-            name: STAGE_LAYERS.CANVAS_CONTAINER_STATIC
+            name: STAGE_LAYERS.CANVAS_CONTAINER_STATIC,
         })
         this._widgetsDefaultLayer = new Layer({
-            name: STAGE_LAYERS.WIDGETS_DEFAULT_LAYER
+            name: STAGE_LAYERS.WIDGETS_DEFAULT_LAYER,
         })
         this._canvasDynamicContainer = new Layer({
-            name: STAGE_LAYERS.CANVAS_CONTAINER_DYNAMIC
+            name: STAGE_LAYERS.CANVAS_CONTAINER_DYNAMIC,
         })
         this._nonCanvasContainer = new Layer({
-            name: STAGE_LAYERS.NON_CANVAS_CONTAINER
+            name: STAGE_LAYERS.NON_CANVAS_CONTAINER,
         })
         this._nonCanvasStaticContainer = new Layer({
-            name: STAGE_LAYERS.NON_CANVAS_CONTAINER_STATIC
+            name: STAGE_LAYERS.NON_CANVAS_CONTAINER_STATIC,
         })
 
         this._nonCanvasDynamicContainer = new NonCanvasDynamicContainer(
             this._engine,
-            this._engine.getService<SelectionService>('selection')
-        );
+            this._engine.getService<SelectionService>('selection'),
+        )
 
         // add canvas and non canvas containers
         this.addChildToParent(this._root, this._canvasContainer)
         this.addChildToParent(this._root, this._nonCanvasContainer)
 
         // add static and dynamic containers to canvas container
-        this.addChildToParent(this._canvasContainer, this._canvasStaticContainer)
-        this.addChildToParent(this._canvasContainer, this._canvasDynamicContainer)
+        this.addChildToParent(
+            this._canvasContainer,
+            this._canvasStaticContainer,
+        )
+        this.addChildToParent(
+            this._canvasContainer,
+            this._canvasDynamicContainer,
+        )
 
         // add default widget layer to static canvas container
-        this.addChildToParent(this._canvasStaticContainer, this.widgetsDefaultLayer)
+        this.addChildToParent(
+            this._canvasStaticContainer,
+            this.widgetsDefaultLayer,
+        )
 
         // add static and dynamic containers to non canvas container
-        this.addChildToParent(this._nonCanvasContainer, this._nonCanvasStaticContainer)
-        this.addChildToParent(this._nonCanvasContainer, this._nonCanvasDynamicContainer)
+        this.addChildToParent(
+            this._nonCanvasContainer,
+            this._nonCanvasStaticContainer,
+        )
+        this.addChildToParent(
+            this._nonCanvasContainer,
+            this._nonCanvasDynamicContainer,
+        )
     }
 
     /**
@@ -84,7 +99,7 @@ export class Stage {
     addWidget(widget: Widget) {
         widget.zIndex = this._indexer.generateIndexForWidget(
             this._widgetsDefaultLayer,
-            null
+            null,
         )
         this._widgetsDefaultLayer.addChildren(widget)
     }
@@ -92,19 +107,19 @@ export class Stage {
     addDynamicNonCanvasWidget(widget: Widget) {
         widget.zIndex = this._indexer.generateIndexForWidget(
             this._nonCanvasDynamicContainer,
-            null
+            null,
         )
         this._nonCanvasDynamicContainer.addChildren(widget)
     }
 
     /**
-     * Starts rendering from root. 
+     * Starts rendering from root.
      * @param ctx Context to call canvas rendering API's.
      */
     render(renderContext: RenderContext) {
         this._root.render(renderContext)
     }
-    
+
     /**
      * Generates and adds zIndex for child of the parent layer.
      * @param parent Parent layer.

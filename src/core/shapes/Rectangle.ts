@@ -1,14 +1,14 @@
-import {Shape, ShapeProperties, ShapeProps} from "@/core/shapes/Shape.ts";
-import {SHAPES} from "@/helpers/Constant.ts";
-import { canvasKit, RenderContext } from '@/core/canvas/Canvas';
-import {WidgetJson} from "@/core/shapes/Widget.ts";
+import { Shape, ShapeProperties, ShapeProps } from '@/core/shapes/Shape.ts'
+import { SHAPES } from '@/helpers/Constant.ts'
+import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
+import { WidgetJson } from '@/core/shapes/Widget.ts'
 
 export interface RectangleProps extends ShapeProps {
     properties: RectangleShapeProperties
 }
 
 export interface RectangleShapeProperties extends ShapeProperties {
-    radius?: number;
+    radius?: number
 }
 
 export class Rectangle extends Shape {
@@ -16,7 +16,10 @@ export class Rectangle extends Shape {
     constructor(props: RectangleProps) {
         super(SHAPES.RECTANGLE, props)
         if (props.properties?.radius) {
-            this._radius = props.properties.radius >= 0 && props.properties.radius <= 20 ? props.properties.radius! : 0
+            this._radius =
+                props.properties.radius >= 0 && props.properties.radius <= 20
+                    ? props.properties.radius!
+                    : 0
         }
     }
 
@@ -27,15 +30,10 @@ export class Rectangle extends Shape {
             return
         }
 
-        const paint = new canvasKit.Paint();
-        paint.setAntiAlias(true);
-        let rect = canvasKit.LTRBRect(
-            0,
-            0,
-            this._width,
-            this._height
-        )
-        
+        const paint = new canvasKit.Paint()
+        paint.setAntiAlias(true)
+        let rect = canvasKit.LTRBRect(0, 0, this._width, this._height)
+
         // since border width grows to inward and outward, we don't want it to look like outside the bounding box,
         // so here, we just adjust te position of rectangle for drawing border
         const strokeHalf = 1
@@ -43,23 +41,28 @@ export class Rectangle extends Shape {
             0 + strokeHalf,
             0 + strokeHalf,
             this._width - strokeHalf,
-            this._height - strokeHalf
+            this._height - strokeHalf,
         )
-        
+
         // method to call draw rect in canvas kit
         const drawFn = this._radius > 0 ? 'drawRRect' : 'drawRect'
-        
+
         // if this has radius, create radius rect
         if (this._radius > 0) {
             rect = canvasKit.RRectXY(rect, this._radius, this._radius)
             strokeRect = canvasKit.RRectXY(rect, this._radius, this._radius)
         }
-        
+
         // draw fill
         paint.setStrokeWidth(0)
-        const fillColor = canvasKit.Color(this._fillColor.r, this._fillColor.g, this._fillColor.b, this._fillColor.a)
-        paint.setColor(fillColor);
-        paint.setStyle(canvasKit.PaintStyle.Fill);
+        const fillColor = canvasKit.Color(
+            this._fillColor.r,
+            this._fillColor.g,
+            this._fillColor.b,
+            this._fillColor.a,
+        )
+        paint.setColor(fillColor)
+        paint.setStyle(canvasKit.PaintStyle.Fill)
 
         if (drawFn === 'drawRRect') {
             ctx.drawRRect(rect, paint)
@@ -68,11 +71,16 @@ export class Rectangle extends Shape {
         }
 
         // draw stroke
-        const strokeColor = canvasKit.Color(this._strokeColor.r, this._strokeColor.g, this._strokeColor.b, this._strokeColor.a)
-        paint.setColor(strokeColor);
-        paint.setStyle(canvasKit.PaintStyle.Stroke);
+        const strokeColor = canvasKit.Color(
+            this._strokeColor.r,
+            this._strokeColor.g,
+            this._strokeColor.b,
+            this._strokeColor.a,
+        )
+        paint.setColor(strokeColor)
+        paint.setStyle(canvasKit.PaintStyle.Stroke)
         paint.setStrokeWidth(2)
-        
+
         if (drawFn === 'drawRRect') {
             ctx.drawRRect(strokeRect, paint)
         } else {
@@ -86,7 +94,7 @@ export class Rectangle extends Shape {
             jsonData.properties.radius = this._radius
         }
 
-        return jsonData;
+        return jsonData
     }
 
     static loadFromJson(json: RectangleProps): Rectangle {
