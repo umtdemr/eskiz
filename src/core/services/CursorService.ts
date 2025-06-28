@@ -41,7 +41,6 @@ export class CursorService extends Service {
     }
 
     private onToolChanged() {
-        console.log('on tool changed')
         this._clearRequests()
     }
 
