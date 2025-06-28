@@ -1,13 +1,20 @@
 import { Engine } from "../engine/Engine";
 import { SelectionService } from "../services/SelectionService";
+import { SelectToolService } from "@/core/services/SelectToolService";
 import { Border } from "../shapes/nonCanvasShapes/Border";
 import { Widget } from "../shapes/Widget";
 import { Layer } from "./Layer";
+import {Control} from "@/core/shapes/nonCanvasShapes/Control.ts";
+import {CornerControl, CornerPosition} from "@/core/shapes/nonCanvasShapes/CornerControl.ts";
+import {EdgeControl, EdgePosition} from "@/core/shapes/nonCanvasShapes/EdgeControl.ts";
 
 export class SelectionLayer extends Layer {
     private engine: Engine
     private selectionService: SelectionService
     private _selected: Widget[]
+    private selectionBorder: Border | null = null;
+    private controls: Control[] = [];
+    private selectToolService: SelectToolService;
 
     constructor(engine: Engine, selectionService: SelectionService) {
         super({ name: 'selection_layer' })
@@ -16,6 +23,12 @@ export class SelectionLayer extends Layer {
 
         this.selectionService.selectionChanged.add(this.onSelectionChanged, this)
         this.selectionService.drawingSelectionUpdated.add(this.onDrawingSelectionUpdated, this)
+
+        this.selectToolService = this.engine.getService<SelectToolService>('selectTool');
+        this.selectToolService.moveStarted.add(this.onMoveStarted, this);
+        this.selectToolService.moveFinished.add(this.onMoveFinished, this);
+        this.selectToolService.tempMoveStarted.add(this.onTempMoveStarted, this);
+        this.selectToolService.tempMoveFinished.add(this.onTempMoveFinished, this);
     }
 
     /**
@@ -23,7 +36,7 @@ export class SelectionLayer extends Layer {
      */
     onSelectionChanged() {
         this._selected = this.selectionService.selected
-        this.handleBordersOnSelectionChange(this._selected)
+        this.createSelectionUI(this._selected);
     }
 
     /**
@@ -34,12 +47,25 @@ export class SelectionLayer extends Layer {
         this.handleBordersOnSelectionChange(selectedWidgets)
     }
 
-    startInstantMoving(widget: Widget) {
+    finishMoving() {
+        this.clearSelection()
+    }
+
+    onMoveStarted() {
+        this.hideControls()
+    }
+
+    onMoveFinished() {
+        this.showControls()
+        this.engine.canvas.requestRender()
+    }
+
+    onTempMoveStarted({ widget }: { widget: Widget }) {
         this.addBorders([widget])
     }
 
-    finishMoving() {
-        this.clearSelection()
+    onTempMoveFinished() {
+        this.clearSelection();
     }
 
     /**
@@ -53,6 +79,65 @@ export class SelectionLayer extends Layer {
         this.addBorders(widgets)
         if (widgets.length > 1) {
             this.drawBoundinBoxOfSelection(widgets)
+        }
+    }
+
+    private createSelectionUI(widgets: Widget[]) {
+        this.clearSelection()
+        if (!widgets.length) return;
+
+        this.addBorders(widgets)
+        // todo: listens selection border bounds change
+        if (widgets.length > 1) {
+            this.selectionBorder = this.drawBoundinBoxOfSelection(widgets)
+        } else {
+            this.selectionBorder = this.children.first! as Border
+        }
+
+        const edgeControls = [
+            EdgePosition.LEFT,
+            EdgePosition.RIGHT,
+            EdgePosition.TOP,
+            EdgePosition.BOTTOM,
+        ]
+        const cornerControls = [
+            CornerPosition.TOP_LEFT,
+            CornerPosition.TOP_RIGHT,
+            CornerPosition.BOTTOM_LEFT,
+            CornerPosition.BOTTOM_RIGHT,
+        ]
+
+        // TODO: fix order of controls when I fix the widget searching algo
+        for (const position of cornerControls) {
+            const handle = new CornerControl(
+                {
+                    position,
+                    x: 0,
+                    y: 0,
+                    selectionLayer: this
+                },
+                this.engine,
+                this.selectionService,
+            )
+
+            this.controls.push(handle);
+            this.addChildren(handle);
+        }
+
+        for (const position of edgeControls) {
+            const handle = new EdgeControl(
+                {
+                    position,
+                    x: 0,
+                    y: 0,
+                    selectionLayer: this
+                },
+                this.engine,
+                this.selectionService,
+            )
+
+            this.controls.push(handle);
+            this.addChildren(handle);
         }
     }
 
@@ -78,19 +163,33 @@ export class SelectionLayer extends Layer {
      * @param widgets Widgets to draw bounding box.
      */
     private drawBoundinBoxOfSelection(widgets: Widget[]) {
-        this.addChildren(
-            new Border({
-                widgets,
-                parentLayer: this,
-                engine: this.engine
-            })
-        )
+        const border = new Border({
+            widgets,
+            parentLayer: this,
+            engine: this.engine
+        })
+        this.addChildren(border)
+        return border;
     }
 
     private clearSelection() {
-        for (const border of this.children) {
-            border.destroy()
+        for (const widget of this.children) {
+            widget.destroy()
         }
         this._children.clear()
+        this.controls.length = 0;
+    }
+
+    private changeControlsVisibility(visible: boolean) {
+        this.controls.forEach(control => {
+            control.visible = visible;
+        })
+    }
+
+    private hideControls() {
+        this.changeControlsVisibility(false);
+    }
+    private showControls() {
+        this.changeControlsVisibility(true);
     }
 }

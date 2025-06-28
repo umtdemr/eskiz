@@ -1,6 +1,6 @@
 import {RGBA} from "@/core/shapes/Color.ts";
 import {CANVAS_COLORS} from "@/helpers/Constant.ts";
-import {Widget, WidgetProps} from "@/core/shapes/Widget.ts";
+import {Widget, WidgetJson, WidgetProps} from "@/core/shapes/Widget.ts";
 import {WsWidget} from "@/types/Websocket.ts";
 
 
@@ -26,6 +26,29 @@ export abstract class Shape extends Widget {
         this._strokeColor = props.properties?.strokeColor ? props.properties.strokeColor : CANVAS_COLORS.BLACK
         this._fillColor = props.properties?.fillColor ? props.properties.fillColor : CANVAS_COLORS.TRANSPARENT
         this._interactive = true
+    }
+
+    protected generateJson(): WidgetJson {
+        const data: WidgetJson = {
+            x: this._x,
+            y: this._y,
+            width: this._width,
+            height: this._height,
+            z_index: this._zIndex,
+            uuid: this._uuid!, // todo: force uuid be to there,
+            widget_type: 'shape',
+            sub_type: this._shapeType,
+            properties: {
+                fillColor: this._fillColor,
+                strokeColor: this._strokeColor
+            }
+        }
+
+        if (this._parent_widget_id) {
+            data.parent_widget_id = this._parent_widget_id
+        }
+
+        return data;
     }
 
     static loadFromJson(json: WsWidget): Shape {
