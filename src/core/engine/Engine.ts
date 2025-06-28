@@ -19,6 +19,7 @@ import { BoardNameService } from '@/core/services/BoardNameService.ts'
 import { CollaboratorsService } from '@/core/services/CollaboratorsService.ts'
 import { WidgetsService } from '@/core/services/WidgetsService.ts'
 import { PageService } from '@/core/services/PageService.ts'
+import { CursorService } from '@/core/services/CursorService.ts'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -115,9 +116,11 @@ export class Engine extends Emitter<EngineEventsMap> {
         const wsEventService = new WebsocketEventService(this)
         const toolService = new ToolService(this)
         const selectionService = new SelectionService(this, toolService)
+        // cursor service is responsible of handling cursor changes
 
         this.serviceManager.register('wsEventService', wsEventService)
         this.serviceManager.register('toolService', toolService)
+        this.serviceManager.register('cursor', new CursorService(this))
         this.serviceManager.register('selection', selectionService)
         this.serviceManager.register(
             'selectTool',
@@ -140,6 +143,7 @@ export class Engine extends Emitter<EngineEventsMap> {
                 selectionService,
             ),
         )
+        // cursorSender service sends user's cursor position to the server
         this.serviceManager.register(
             'cursorSender',
             new CursorSenderService(this, this.wsEngine, this._mouseController),
