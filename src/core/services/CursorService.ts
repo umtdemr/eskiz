@@ -3,15 +3,23 @@ import { Engine } from '@/core/engine/Engine.ts'
 import { ToolService } from '@/core/services/ToolService.ts'
 
 export enum CursorPriority {
-    Lowest = 0,
     Default = 10,
-    Pan = 20,
-    Hover = 30,
-    Action = 40,
-    Highest = 50,
+    Hover = 20,
 }
 
-export type Cursors = 'default' | 'pointer' | 'pan' | 'panning' | 'crosshair'
+export type ResizeCursors =
+    | 'horizontal-resize'
+    | 'vertical-resize'
+    | 'scale-resize-left'
+    | 'scale-resize-right'
+
+export type Cursors =
+    | 'default'
+    | 'pointer'
+    | 'pan'
+    | 'panning'
+    | 'crosshair'
+    | ResizeCursors
 
 export interface CursorRequest {
     cursor: Cursors
@@ -37,6 +45,10 @@ export class CursorService extends Service {
             ['pan', 'grab'],
             ['panning', 'grabbing'],
             ['crosshair', 'crosshair'],
+            ['horizontal-resize', 'ew-resize'],
+            ['vertical-resize', 'ns-resize'],
+            ['scale-resize-left', 'nwse-resize'],
+            ['scale-resize-right', 'nesw-resize'],
         ])
     }
 
