@@ -6,7 +6,7 @@ import { Signal } from "../signal/Signal";
 import { ShapeType } from "@/core/shapes/Shape.ts";
 import {WsWidget} from "@/types/Websocket.ts";
 
-export type WidgetType = 'shape' | 'text' | 'multiSelector' | 'border'
+export type WidgetType = 'shape' | 'text' | 'multiSelector' | 'border' | 'control'
 
 export type DbWidgetType = 'shape'
 
@@ -21,6 +21,22 @@ export interface WidgetProps {
     height?: number
     parentLayer?: Layer
     visible?: boolean
+    uuid?: string
+    z_index?: string
+    parent_widget_id?: string
+}
+
+export type WidgetJson = {
+    x: number
+    y: number
+    width: number
+    height: number
+    z_index: string
+    uuid: string
+    properties: Record<string, unknown>
+    widget_type: DbWidgetType
+    sub_type?: SubType
+    parent_widget_id?: string
 }
 
 export abstract class Widget extends Layer {
@@ -29,10 +45,13 @@ export abstract class Widget extends Layer {
     protected _y: number
     protected _width: number
     protected _height: number
+    protected _uuid?: string
+    protected _parent_widget_id?: string
     protected _layer?: Layer
     protected _bounds: BoundingBox       // Global bounds (including parent transforms)
     protected _localBounds: BoundingBox  // Local bounds (object's own space)
     protected _selected: boolean = false;
+    protected _isDynamic: boolean = false;
 
     boundsChanged = new Signal()
     
@@ -56,7 +75,16 @@ export abstract class Widget extends Layer {
         if (props.visible !== undefined) {
             this.visible = props.visible
         }
-        
+        if (props.z_index) {
+            this._zIndex = props.z_index
+        }
+        if (props.uuid) {
+            this._uuid = props.uuid
+        }
+        if (props.parent_widget_id) {
+            this._parent_widget_id = props.parent_widget_id
+        }
+
         this.updateBounds()
     }
 
@@ -126,6 +154,17 @@ export abstract class Widget extends Layer {
             height: this.height,
         }
     }
+
+    toJson(): WidgetJson {
+        throw new Error("must be implemented");
+    }
+    
+    contains(x: number, y: number, scale: number): boolean {
+        return this.bounds.contains(x * scale, y * scale);
+    }
+
+    onMouseEnter() {}
+    onMouseLeave() {}
 
     static loadFromJson(json: WsWidget): Widget {
         throw new Error(`loadFromJson is not implemented for ${json.widget_type}_${json.sub_type}`)
@@ -217,5 +256,20 @@ export abstract class Widget extends Layer {
 
     set selected(val: boolean) {
         this._selected = val
+    }
+
+    get uuid(): string | undefined {
+        return this._uuid;
+    }
+
+    set uuid(uuid: string) {
+        if (this._uuid) {
+            return
+        }
+        this._uuid = uuid
+    }
+
+    get isDynamic(): boolean {
+        return this._isDynamic;
     }
 }

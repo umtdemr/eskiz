@@ -2,20 +2,21 @@ import { Point } from "../canvas/Canvas";
 import { CanvasMouseEvent, Engine } from "../engine/Engine";
 import { MouseController } from "../engine/MouseController";
 import { Widget } from "../shapes/Widget";
+import { Signal } from "@/core/signal/Signal";
 import { Layer } from "../stage/Layer";
-import { SelectionLayer } from "../stage/SelectionLayer";
 import { SelectionService } from "./SelectionService";
 import { Service } from "./Service";
 import { MainModeChangedState, ToolService } from "./ToolService";
 import { ACTION_MODES } from "@/helpers/Constant";
+import {Control} from "@/core/shapes/nonCanvasShapes/Control.ts";
 
 export class SelectToolService extends Service {
     private mouseController: MouseController
     private toolService: ToolService
     private isDrawing: boolean = false
     private shapesLayer: Layer
-    private selectionLayer: SelectionLayer
     private selectionService: SelectionService
+    private controlOwned: Control | null = null;
     private movingObjectState: { 
         movingShape: Widget[]
         isObjectMoved: boolean
@@ -31,6 +32,15 @@ export class SelectToolService extends Service {
     }
     private isStageInitated: boolean = false;
     private mainMode: keyof typeof ACTION_MODES | null;
+    private _oldHoveredWidget: Widget | null = null;
+    
+    // signals for move
+    moveStarted = new Signal<{ widgets: Widget[] }>()
+    moveFinished = new Signal<{ widgets: Widget[] }>()
+
+    // signals for temp move. means when the shape is moved without selecting it
+    tempMoveStarted = new Signal<{ widget: Widget }>()
+    tempMoveFinished = new Signal<{ widget: Widget }>()
 
     constructor(engine: Engine, mouseController: MouseController, toolService: ToolService) {
         super(engine)
@@ -68,7 +78,6 @@ export class SelectToolService extends Service {
         this.engine.upperCanvasEl.style.cursor = 'default';
         this.shapesLayer = this.engine.stage.widgetsDefaultLayer;
         this.selectionService = this.engine.getService('selection')
-        this.selectionLayer = this.engine.stage.nonCanvasDynamicContainer.selectionLayer;
 
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
@@ -80,9 +89,14 @@ export class SelectToolService extends Service {
         this.clearMovingObjectState()
 
         const selectionBound = this.selectionService.bounds
-        const movingWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
+        const mouseDownWidget = this.checksObjectsInLayer(data)
 
-        if (selectionBound.isFinite() && selectionBound.contains(data.pointer.x, data.pointer.y)) {
+        // if there is control, control instance should own the mouse down, move and up events
+        if (mouseDownWidget && mouseDownWidget instanceof Control) {
+            this.isDrawing = false
+            this.controlOwned = mouseDownWidget;
+            this.controlOwned.onMouseDown(data);
+        } else if (selectionBound.isFinite() && selectionBound.contains(data.pointer.x, data.pointer.y)) {
             this.isDrawing = false
             this.movingObjectState.movingShape = this.selectionService.selected
             this.movingObjectState.isObjectAlreadySelected = true
@@ -95,10 +109,10 @@ export class SelectToolService extends Service {
                 left: widget.left,
                 top: widget.top,
             }))
-        } else if (movingWidget) {
+        } else if (mouseDownWidget) {
                 this.isDrawing = false
-                this.movingObjectState.movingShape = [movingWidget]
-                this.movingObjectState.isObjectAlreadySelected = !!movingWidget.selected
+                this.movingObjectState.movingShape = [mouseDownWidget]
+                this.movingObjectState.isObjectAlreadySelected = !!mouseDownWidget.selected
     
                 if (!this.movingObjectState.isObjectAlreadySelected) {
                     this.selectionService.clearSelection()
@@ -108,7 +122,7 @@ export class SelectToolService extends Service {
                     x: data.pointer.x,
                     y: data.pointer.y,
                 }
-                this.movingObjectState.initialWidgetPositions = [{ left: movingWidget.left, top: movingWidget.top }]
+                this.movingObjectState.initialWidgetPositions = [{ left: mouseDownWidget.left, top: mouseDownWidget.top }]
         } else {
             this.selectionService.clearSelection()
             this.isDrawing = true
@@ -119,6 +133,29 @@ export class SelectToolService extends Service {
     }
 
     onMouseMove(data: CanvasMouseEvent): void {
+        // if no object is moving and we are not drawing a selection rectangle
+        if (this.controlOwned) {
+            this.controlOwned.onMouseMove(data);
+            return;
+        }
+
+        if (!this.movingObjectState.movingShape.length && !this.isDrawing) {
+            const widget = this.checksObjectsInLayer(data)
+
+            // fire mouse enter and mouse leave events
+            if (this._oldHoveredWidget && (!widget || this._oldHoveredWidget !== widget)) {
+                this._oldHoveredWidget.onMouseLeave();
+                this._oldHoveredWidget = null;
+            } 
+
+            if (widget && (!this._oldHoveredWidget || this._oldHoveredWidget !== widget))  {
+                widget.onMouseEnter()
+                this._oldHoveredWidget = widget;
+            }
+
+            return
+        }
+
         if (this.movingObjectState.movingShape.length > 0) {
             const deltaX = data.pointer.x - this.movingObjectState.initialPointer.x
             const deltaY = data.pointer.y - this.movingObjectState.initialPointer.y
@@ -132,7 +169,12 @@ export class SelectToolService extends Service {
             this.engine.canvas.requestRender();
 
             if (this.movingObjectState.movingShape.length === 1 && !this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
-                this.selectionLayer.startInstantMoving(this.movingObjectState.movingShape[0])
+                this.tempMoveStarted.dispatch({ widget :this.movingObjectState.movingShape[0] })
+            }
+            
+            // if selected object is moved, dispatch moveStarted
+            if (this.movingObjectState.movingShape.length > 0 && !this.movingObjectState.isObjectMoved && this.movingObjectState.isObjectAlreadySelected){
+                this.moveStarted.dispatch({ widgets: this.movingObjectState.movingShape });
             }
 
             this.movingObjectState.isObjectMoved = true;
@@ -148,12 +190,21 @@ export class SelectToolService extends Service {
     }
 
     onMouseUp(data: CanvasMouseEvent): void {
-        this.movingObjectState.movingShape = [];
-        if (this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
-            this.selectionLayer.finishMoving()
-            this.engine.canvas.requestRender()
+        if (this.controlOwned) {
+            this.controlOwned.onMouseUp(data);
+            this.controlOwned = null;
             return
         }
+        if (this.movingObjectState.isObjectMoved && !this.movingObjectState.isObjectAlreadySelected) {
+            this.tempMoveFinished.dispatch({ widget: this.movingObjectState.movingShape[0] })
+            this.engine.canvas.requestRender()
+            this.movingObjectState.movingShape = [];
+            return
+        } else if (this.movingObjectState.isObjectMoved) {
+            // if selected object is moved, dispatch moveFinished
+            this.moveFinished.dispatch({ widgets: this.movingObjectState.movingShape })
+        }
+        this.movingObjectState.movingShape = [];
 
         if (this.isDrawing) {
             this.isDrawing = false;
@@ -167,22 +218,36 @@ export class SelectToolService extends Service {
         }
 
         if (!this.movingObjectState.isObjectAlreadySelected) {
-            const clickedWidget = this.checksObjectsInLayer(this.shapesLayer, data.pointer)
+            const clickedWidget = this.checksObjectsInLayer(data)
             if (clickedWidget) {
                 this.selectionService.selectWidget(clickedWidget)
             }
         }
     }
 
-    checksObjectsInLayer(layer: Layer, pointer: Point): Widget | null {
-        for (const widget of layer.children) {
-            if (!(widget instanceof Widget)) continue
+    checksObjectsInLayer(mouseData: CanvasMouseEvent): Widget | null {
+        const searchLayers = [this.engine.stage.nonCanvasDynamicContainer.children.first!, this.engine.stage.widgetsDefaultLayer]
+        const pointer = mouseData.pointer;
+        for (const layer of searchLayers) {
+            if (layer.children.length === 0) continue
+            for (const widget of layer.children) {
+                if (!(widget instanceof Widget)) continue
 
-            if (widget.bounds.contains(pointer.x, pointer.y)) {
-                return widget
+                if (!widget.interactive) {
+                    continue
+                }
+
+                if (widget.isDynamic) {
+                    if (widget.contains(pointer.x, pointer.y, mouseData.canvas.zoom)) {
+                        return widget
+                    }
+                } else {
+                    if (widget.bounds.contains(pointer.x, pointer.y)) {
+                        return widget
+                    }
+                }
             }
         }
-
         return null
     }
 
