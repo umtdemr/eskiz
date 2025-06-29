@@ -7,8 +7,9 @@ import { Layer } from '../stage/Layer'
 import { SelectionService } from './SelectionService'
 import { Service } from './Service'
 import { MainModeChangedState, ToolService } from './ToolService'
-import { ACTION_MODES } from '@/helpers/Constant'
+import { ACTION_MODES, CURSOR_OWNERS } from '@/helpers/Constant'
 import { Control } from '@/core/shapes/nonCanvasShapes/Control.ts'
+import { CursorService } from '@/core/services/CursorService.ts'
 
 export class SelectToolService extends Service {
     private mouseController: MouseController
@@ -17,6 +18,7 @@ export class SelectToolService extends Service {
     private shapesLayer: Layer
     private selectionService: SelectionService
     private controlOwned: Control | null = null
+    private cursorService: CursorService
     private movingObjectState: {
         movingShape: Widget[]
         isObjectMoved: boolean
@@ -33,6 +35,7 @@ export class SelectToolService extends Service {
     private isStageInitated: boolean = false
     private mainMode: keyof typeof ACTION_MODES | null
     private _oldHoveredWidget: Widget | null = null
+    private cursorToolName = CURSOR_OWNERS.SELECT_TOOL // to send request for changing cursor
 
     // signals for move
     moveStarted = new Signal<{ widgets: Widget[] }>()
@@ -53,6 +56,7 @@ export class SelectToolService extends Service {
         engine.stagesInitiated.addOnce(this.onStagesInitiated, this)
 
         this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
+        this.cursorService = this.engine.getService<CursorService>('cursor')
     }
 
     /**
@@ -79,7 +83,7 @@ export class SelectToolService extends Service {
     }
 
     init() {
-        this.engine.upperCanvasEl.style.cursor = 'default'
+        this.cursorService.setCursor(this.cursorToolName, 'default')
         this.shapesLayer = this.engine.stage.widgetsDefaultLayer
         this.selectionService = this.engine.getService('selection')
 

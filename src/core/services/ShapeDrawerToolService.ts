@@ -1,3 +1,4 @@
+import { nanoid } from 'nanoid'
 import { CanvasMouseEvent, Engine } from '../engine/Engine'
 import { MouseController } from '../engine/MouseController'
 import { Rectangle } from '../shapes/Rectangle'
@@ -10,11 +11,12 @@ import {
     ACTION_MODES,
     SUB_ACTION_MODES,
     DRAWING_MODES,
+    CURSOR_OWNERS,
 } from '@/helpers/Constant'
 import { SelectionService } from './SelectionService'
 import { WidgetsService } from '@/core/services/WidgetsService.ts'
 import { AddWidgetPayload } from '@/types/Websocket.ts'
-import { nanoid } from 'nanoid'
+import { CursorService } from '@/core/services/CursorService.ts'
 
 export class ShapeDrawerToolService extends Service {
     private mouseController: MouseController
@@ -24,6 +26,8 @@ export class ShapeDrawerToolService extends Service {
     private drawingStarted: boolean = false
     private initialPosition: { x: number; y: number } = { x: 0, y: 0 }
     private drawingMode: keyof typeof DRAWING_MODES | null
+    private cursorService: CursorService
+    private cursorToolName = CURSOR_OWNERS.SHAPE_DRAWER_TOOL
 
     constructor(
         engine: Engine,
@@ -37,11 +41,11 @@ export class ShapeDrawerToolService extends Service {
         this.selectionService = selectionService
 
         this.toolService.subModeChanged.add(this.onSubModeChanged, this)
+        this.cursorService = this.engine.getService<CursorService>('cursor')
     }
 
     private init() {
-        this.engine.upperCanvasEl.style.cursor = 'crosshair'
-
+        this.cursorService.setCursor(this.cursorToolName, 'crosshair')
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
         this.mouseController.on('mouseUp', this.onMouseUp, this)

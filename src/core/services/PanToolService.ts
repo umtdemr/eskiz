@@ -2,7 +2,8 @@ import { Engine, CanvasMouseEvent } from '@/core/engine/Engine.ts'
 import { Service } from './Service'
 import { MouseController } from '../engine/MouseController'
 import { MainModeChangedState, ToolService } from './ToolService'
-import { ACTION_MODES } from '@/helpers/Constant'
+import { ACTION_MODES, CURSOR_OWNERS } from '@/helpers/Constant'
+import { CursorService } from '@/core/services/CursorService.ts'
 
 export class PanToolService extends Service {
     private mouseController: MouseController
@@ -11,6 +12,8 @@ export class PanToolService extends Service {
     private startPanY = 0
     private _isPanning = false
     private isActive: boolean = false
+    private cursorService: CursorService
+    private cursorToolName = CURSOR_OWNERS.PAN_TOOL // to send request for changing cursor
 
     constructor(
         engine: Engine,
@@ -22,6 +25,7 @@ export class PanToolService extends Service {
         this.toolService = toolService
 
         this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
+        this.cursorService = this.engine.getService<CursorService>('cursor')
     }
 
     private onMainModeChanged(state: MainModeChangedState) {
@@ -34,7 +38,7 @@ export class PanToolService extends Service {
     }
 
     init() {
-        this.engine.upperCanvasEl.style.cursor = 'grab'
+        this.cursorService.setCursor(this.cursorToolName, 'pan')
 
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
@@ -54,7 +58,7 @@ export class PanToolService extends Service {
         }
 
         const { e, canvas } = data
-        this.engine.upperCanvasEl.style.cursor = 'grabbing'
+        this.cursorService.setCursor(this.cursorToolName, 'panning')
 
         canvas.translateX = (e.clientX - this.startPanX) / canvas.zoom
         canvas.translateY = (e.clientY - this.startPanY) / canvas.zoom
@@ -65,7 +69,7 @@ export class PanToolService extends Service {
     onMouseUp() {
         if (this._isPanning) {
             this._isPanning = false
-            this.engine.upperCanvasEl.style.cursor = 'grab'
+            this.cursorService.setCursor(this.cursorToolName, 'pan')
         }
     }
 
