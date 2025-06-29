@@ -2,7 +2,13 @@ import { ControlProps, Control } from '@/core/shapes/nonCanvasShapes/Control'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas.ts'
 import { CanvasMouseEvent, Engine } from '@/core/engine/Engine.ts'
 import { SelectionService } from '@/core/services/SelectionService.ts'
+import {
+    CursorService,
+    ResizeCursors,
+    CursorPriority,
+} from '@/core/services/CursorService'
 import { Widget } from '@/core/shapes/Widget.ts'
+import { CURSOR_OWNERS } from '@/helpers/Constant.ts'
 
 export enum CornerPosition {
     TOP_LEFT,
@@ -32,6 +38,8 @@ export class CornerControl extends Control {
         aspectRatio: 1,
     }
     private strokeWidth = 1.5
+    private cursorToolName = CURSOR_OWNERS.CORNER_CONTROL
+    private cursorService: CursorService
 
     constructor(
         props: CornerControlProps,
@@ -44,6 +52,8 @@ export class CornerControl extends Control {
 
         this.shape.boundsChanged.add(this.onShapeBoundsChanged, this)
         this.updatePosition()
+
+        this.cursorService = engine.getService<CursorService>('cursor')
     }
 
     private onShapeBoundsChanged() {
@@ -81,9 +91,27 @@ export class CornerControl extends Control {
         renderContext.ctx.drawOval(strokeRect, paint)
     }
 
-    onMouseEnter(): void {}
+    private getCursor(): ResizeCursors {
+        if (
+            this.position === CornerPosition.TOP_LEFT ||
+            this.position === CornerPosition.BOTTOM_RIGHT
+        ) {
+            return 'scale-resize-left'
+        }
+        return 'scale-resize-right'
+    }
 
-    onMouseLeave(): void {}
+    onMouseEnter(): void {
+        this.cursorService.setCursor(
+            this.cursorToolName,
+            this.getCursor(),
+            CursorPriority.Hover,
+        )
+    }
+
+    onMouseLeave(): void {
+        this.cursorService.unsetCursor(this.cursorToolName)
+    }
 
     onMouseDown(data: CanvasMouseEvent): void {
         this.initialBounds = {
