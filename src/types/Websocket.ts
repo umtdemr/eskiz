@@ -53,6 +53,7 @@ export type WsJoinResponse = {
 
 export type WsJoinPayload = {
     board_id: number
+    page_id: number
     board_slug_id: string
     user_auth_token: string
 }
