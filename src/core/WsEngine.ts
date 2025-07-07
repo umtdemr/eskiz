@@ -31,6 +31,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private _status: WsEngineStatus = 'idle'
     private _wsConnectTimeout = 5000
     private _boardSlugId: string
+    private _boardId: number
     private messageCallbacks = new Map<
         string,
         (data: MsgCallback<WsCommand>) => void
@@ -57,10 +58,11 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     disconnected = new Signal()
     gaveUp = new Signal() // tried all our best, giving up signal
 
-    constructor(url: string, slugId: string) {
+    constructor(url: string, slugId: string, boardId: number) {
         super()
         this.url = url
         this._boardSlugId = slugId
+        this._boardId = boardId
         this.status = 'idle'
         this.setupNetworkStatusListeners()
     }
@@ -142,6 +144,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         const data = JSON.parse(
             Pako.inflate(message.data, { to: 'string', encoding: 'utf8' }),
         )
+        console.log({ data })
         if (data.reply_to) {
             if (this.messageCallbacks.has(data.reply_to)) {
                 this.messageCallbacks.get(data.reply_to)!(data)
@@ -317,6 +320,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
             data: {
                 board_slug_id: this._boardSlugId,
                 user_auth_token: userAuthToken,
+                board_id: this._boardId,
             },
         })
 

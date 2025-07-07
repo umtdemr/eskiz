@@ -32,7 +32,10 @@ export type EngineEventsMap = {
 }
 
 export class Engine extends Emitter<EngineEventsMap> {
+    // TODO: remove slug and board id here for SST
     private _slugId: string
+    private _boardId: number
+    private: string
     private _mouseController: MouseController
     private _upperCanvasEl: HTMLCanvasElement
     private _stage: Stage
@@ -47,10 +50,15 @@ export class Engine extends Emitter<EngineEventsMap> {
     canvasInitiated = new Signal<Canvas>()
     initialized = new Signal()
 
-    constructor(slugId: string) {
+    constructor(slugId: string, boardId: number) {
         super()
         this._slugId = slugId
-        this.wsEngine = new WsEngine(import.meta.env.VITE_WS_URL, this._slugId)
+        this._boardId = boardId
+        this.wsEngine = new WsEngine(
+            import.meta.env.VITE_WS_URL,
+            this._slugId,
+            this._boardId,
+        )
 
         this._mouseController = new MouseController()
         this.serviceManager = new ServiceManager()
