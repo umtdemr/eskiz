@@ -32,6 +32,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private _wsConnectTimeout = 5000
     private _boardSlugId: string
     private _boardId: number
+    private _pageId: number
     private messageCallbacks = new Map<
         string,
         (data: MsgCallback<WsCommand>) => void
@@ -58,11 +59,12 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     disconnected = new Signal()
     gaveUp = new Signal() // tried all our best, giving up signal
 
-    constructor(url: string, slugId: string, boardId: number) {
+    constructor(url: string, slugId: string, boardId: number, pageId: number) {
         super()
         this.url = url
         this._boardSlugId = slugId
         this._boardId = boardId
+        this._pageId = pageId
         this.status = 'idle'
         this.setupNetworkStatusListeners()
     }
@@ -291,6 +293,8 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         const sendingData = {
             ...data,
             id: nanoid(),
+            board_id: this._boardId,
+            page_id: this._pageId,
         }
         if (cb) {
             this.messageCallbacks.set(sendingData.id, cb!)
@@ -321,6 +325,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
                 board_slug_id: this._boardSlugId,
                 user_auth_token: userAuthToken,
                 board_id: this._boardId,
+                page_id: this._pageId,
             },
         })
 
