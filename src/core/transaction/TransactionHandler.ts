@@ -72,7 +72,7 @@ export class TransactionHandler {
      * Sends updates for the given continuous transaction
      * @param id - Continuous transaction id
      */
-    upate(id: TransactionId) {
+    update(id: TransactionId) {
         const transaction = this.transactions.get(id)
         if (!transaction) {
             return
