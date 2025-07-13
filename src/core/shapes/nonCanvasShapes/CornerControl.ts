@@ -9,6 +9,11 @@ import {
 } from '@/core/services/CursorService'
 import { Widget } from '@/core/shapes/Widget.ts'
 import { CURSOR_OWNERS } from '@/helpers/Constant.ts'
+import {
+    TransactionHandler,
+    TransactionId,
+} from '@/core/transaction/TransactionHandler'
+import { EditingMethods } from '@/core/transaction/State'
 
 export enum CornerPosition {
     TOP_LEFT,
@@ -40,6 +45,8 @@ export class CornerControl extends Control {
     private strokeWidth = 1.5
     private cursorToolName = CURSOR_OWNERS.CORNER_CONTROL
     private cursorService: CursorService
+    private transactionHandler: TransactionHandler
+    private transactionId: TransactionId | null
 
     constructor(
         props: CornerControlProps,
@@ -54,6 +61,7 @@ export class CornerControl extends Control {
         this.updatePosition()
 
         this.cursorService = engine.getService<CursorService>('cursor')
+        this.transactionHandler = new TransactionHandler(engine.wsEngine)
     }
 
     private onShapeBoundsChanged() {
@@ -123,6 +131,13 @@ export class CornerControl extends Control {
             height: this.shape.height,
             aspectRatio: this.shape.width / this.shape.height,
         }
+
+        const editTable = new Map<Widget, EditingMethods[]>()
+        editTable.set(this.shape, ['resize'])
+        const { transactionId } = this.transactionHandler.begin('continuous', {
+            editTable,
+        })
+        this.transactionId = transactionId
     }
 
     onMouseMove(data: CanvasMouseEvent): void {
@@ -193,11 +208,17 @@ export class CornerControl extends Control {
                 break
         }
 
+        if (this.transactionId) {
+            this.transactionHandler.update(this.transactionId)
+        }
         this.engine.canvas.requestRender()
     }
 
     onMouseUp(data: CanvasMouseEvent): void {
         console.log('up')
+        if (this.transactionId) {
+            this.transactionHandler.commit(this.transactionId)
+        }
     }
 
     updatePosition() {
