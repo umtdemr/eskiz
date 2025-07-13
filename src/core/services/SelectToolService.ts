@@ -1,4 +1,3 @@
-import { Point } from '../canvas/Canvas'
 import { CanvasMouseEvent, Engine } from '../engine/Engine'
 import { MouseController } from '../engine/MouseController'
 import { Widget } from '../shapes/Widget'
@@ -10,40 +9,24 @@ import { MainModeChangedState, ToolService } from './ToolService'
 import { ACTION_MODES, CURSOR_OWNERS } from '@/helpers/Constant'
 import { Control } from '@/core/shapes/nonCanvasShapes/Control.ts'
 import { CursorService } from '@/core/services/CursorService.ts'
+import { DragHandler } from '@/core/controls/DragHandler'
 
 export class SelectToolService extends Service {
     private mouseController: MouseController
     private toolService: ToolService
+    dragHandler: DragHandler
     private isDrawing: boolean = false
     private shapesLayer: Layer
     private selectionService: SelectionService
     private controlOwned: Control | null = null
     private cursorService: CursorService
-    private movingObjectState: {
-        movingShape: Widget[]
-        isObjectMoved: boolean
-        isObjectAlreadySelected: boolean
-        initialPointer: Point
-        initialWidgetPositions: { left: number; top: number }[]
-    } = {
-        movingShape: [],
-        isObjectMoved: false,
-        isObjectAlreadySelected: false,
-        initialPointer: { x: 0, y: 0 },
-        initialWidgetPositions: [],
-    }
     private isStageInitated: boolean = false
     private mainMode: keyof typeof ACTION_MODES | null
     private _oldHoveredWidget: Widget | null = null
     private cursorToolName = CURSOR_OWNERS.SELECT_TOOL // to send request for changing cursor
-
-    // signals for move
-    moveStarted = new Signal<{ widgets: Widget[] }>()
-    moveFinished = new Signal<{ widgets: Widget[] }>()
-
-    // signals for temp move. means when the shape is moved without selecting it
-    tempMoveStarted = new Signal<{ widget: Widget }>()
-    tempMoveFinished = new Signal<{ widget: Widget }>()
+    private isDragHandlerOwned: boolean = false
+    private isObjectAlreadySelected: boolean = false
+    private mouseDownWidget: Widget | null = null
 
     constructor(
         engine: Engine,
@@ -57,6 +40,7 @@ export class SelectToolService extends Service {
 
         this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
         this.cursorService = this.engine.getService<CursorService>('cursor')
+        this.dragHandler = engine.dragHandler
     }
 
     /**
@@ -93,50 +77,34 @@ export class SelectToolService extends Service {
     }
 
     onMouseDown(data: CanvasMouseEvent): void {
-        this.clearMovingObjectState()
+        this.isObjectAlreadySelected = false
 
         const selectionBound = this.selectionService.bounds
-        const mouseDownWidget = this.checksObjectsInLayer(data)
+        this.mouseDownWidget = this.checksObjectsInLayer(data)
 
         // if there is control, control instance should own the mouse down, move and up events
-        if (mouseDownWidget && mouseDownWidget instanceof Control) {
+        if (this.mouseDownWidget && this.mouseDownWidget instanceof Control) {
             this.isDrawing = false
-            this.controlOwned = mouseDownWidget
+            this.controlOwned = this.mouseDownWidget
             this.controlOwned.onMouseDown(data)
         } else if (
             selectionBound.isFinite() &&
             selectionBound.contains(data.pointer.x, data.pointer.y)
         ) {
+            this.isObjectAlreadySelected = true
             this.isDrawing = false
-            this.movingObjectState.movingShape = this.selectionService.selected
-            this.movingObjectState.isObjectAlreadySelected = true
-
-            this.movingObjectState.initialPointer = {
-                x: data.pointer.x,
-                y: data.pointer.y,
-            }
-            this.movingObjectState.initialWidgetPositions =
-                this.movingObjectState.movingShape.map((widget) => ({
-                    left: widget.left,
-                    top: widget.top,
-                }))
-        } else if (mouseDownWidget) {
+            this.dragHandler.start(data, this.selectionService.selected)
+            this.isDragHandlerOwned = true
+        } else if (this.mouseDownWidget) {
             this.isDrawing = false
-            this.movingObjectState.movingShape = [mouseDownWidget]
-            this.movingObjectState.isObjectAlreadySelected =
-                !!mouseDownWidget.selected
+            this.dragHandler.start(data, [this.mouseDownWidget])
+            this.isDragHandlerOwned = true
 
-            if (!this.movingObjectState.isObjectAlreadySelected) {
+            // if there is a selection which is not this widget, clear selection
+            this.isObjectAlreadySelected = !!this.mouseDownWidget.selected
+            if (!this.isObjectAlreadySelected) {
                 this.selectionService.clearSelection()
             }
-
-            this.movingObjectState.initialPointer = {
-                x: data.pointer.x,
-                y: data.pointer.y,
-            }
-            this.movingObjectState.initialWidgetPositions = [
-                { left: mouseDownWidget.left, top: mouseDownWidget.top },
-            ]
         } else {
             this.selectionService.clearSelection()
             this.isDrawing = true
@@ -154,7 +122,7 @@ export class SelectToolService extends Service {
             return
         }
 
-        if (!this.movingObjectState.movingShape.length && !this.isDrawing) {
+        if (!this.isDragHandlerOwned && !this.isDrawing) {
             const widget = this.checksObjectsInLayer(data)
 
             // fire mouse enter and mouse leave events
@@ -177,43 +145,8 @@ export class SelectToolService extends Service {
             return
         }
 
-        if (this.movingObjectState.movingShape.length > 0) {
-            const deltaX =
-                data.pointer.x - this.movingObjectState.initialPointer.x
-            const deltaY =
-                data.pointer.y - this.movingObjectState.initialPointer.y
-
-            this.movingObjectState.movingShape.forEach((widget, index) => {
-                const initialPos =
-                    this.movingObjectState.initialWidgetPositions[index]
-                widget.left = initialPos.left + deltaX
-                widget.top = initialPos.top + deltaY
-            })
-
-            this.engine.canvas.requestRender()
-
-            if (
-                this.movingObjectState.movingShape.length === 1 &&
-                !this.movingObjectState.isObjectMoved &&
-                !this.movingObjectState.isObjectAlreadySelected
-            ) {
-                this.tempMoveStarted.dispatch({
-                    widget: this.movingObjectState.movingShape[0],
-                })
-            }
-
-            // if selected object is moved, dispatch moveStarted
-            if (
-                this.movingObjectState.movingShape.length > 0 &&
-                !this.movingObjectState.isObjectMoved &&
-                this.movingObjectState.isObjectAlreadySelected
-            ) {
-                this.moveStarted.dispatch({
-                    widgets: this.movingObjectState.movingShape,
-                })
-            }
-
-            this.movingObjectState.isObjectMoved = true
+        if (this.isDragHandlerOwned) {
+            this.dragHandler.handle(data)
             return
         }
         const multiSelector =
@@ -232,23 +165,12 @@ export class SelectToolService extends Service {
             this.controlOwned = null
             return
         }
-        if (
-            this.movingObjectState.isObjectMoved &&
-            !this.movingObjectState.isObjectAlreadySelected
-        ) {
-            this.tempMoveFinished.dispatch({
-                widget: this.movingObjectState.movingShape[0],
-            })
-            this.engine.canvas.requestRender()
-            this.movingObjectState.movingShape = []
-            return
-        } else if (this.movingObjectState.isObjectMoved) {
-            // if selected object is moved, dispatch moveFinished
-            this.moveFinished.dispatch({
-                widgets: this.movingObjectState.movingShape,
-            })
+
+        let isObjectMoved = false
+        if (this.isDragHandlerOwned) {
+            isObjectMoved = this.dragHandler.end(data)
+            this.isDragHandlerOwned = false
         }
-        this.movingObjectState.movingShape = []
 
         if (this.isDrawing) {
             this.isDrawing = false
@@ -262,11 +184,12 @@ export class SelectToolService extends Service {
             return
         }
 
-        if (!this.movingObjectState.isObjectAlreadySelected) {
-            const clickedWidget = this.checksObjectsInLayer(data)
-            if (clickedWidget) {
-                this.selectionService.selectWidget(clickedWidget)
-            }
+        if (
+            !this.isObjectAlreadySelected &&
+            this.mouseDownWidget &&
+            !isObjectMoved
+        ) {
+            this.selectionService.selectWidget(this.mouseDownWidget)
         }
     }
 
@@ -303,16 +226,6 @@ export class SelectToolService extends Service {
             }
         }
         return null
-    }
-
-    private clearMovingObjectState() {
-        this.movingObjectState = {
-            movingShape: [],
-            isObjectMoved: false,
-            isObjectAlreadySelected: false,
-            initialPointer: { x: 0, y: 0 },
-            initialWidgetPositions: [],
-        }
     }
 
     reset() {

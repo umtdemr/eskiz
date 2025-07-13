@@ -2,6 +2,11 @@ import { CanvasMouseEvent, Engine } from '@/core/engine/Engine'
 import { Widget } from '@/core/shapes/Widget'
 import { Point } from '@/core/canvas/Canvas'
 import { Signal } from '@/core/signal/Signal'
+import {
+    TransactionHandler,
+    TransactionId,
+} from '@/core/transaction/TransactionHandler'
+import { EditingMethods } from '@/core/transaction/State'
 
 export class DragHandler {
     private engine: Engine
@@ -28,9 +33,12 @@ export class DragHandler {
     tempMoveFinished = new Signal<{ widget: Widget }>()
 
     private _handled: boolean = false
+    private transactionHandler: TransactionHandler
+    private _transactionId: TransactionId | null = null
 
     constructor(engine: Engine) {
         this.engine = engine
+        this.transactionHandler = this.engine.transactionHandler
     }
 
     start(data: CanvasMouseEvent, widgets: Widget[]) {
@@ -57,6 +65,13 @@ export class DragHandler {
             // if there are multiple widgets, they should be already selected
             this.movingObjectState.isObjectAlreadySelected = true
         }
+
+        const editTable = new Map<Widget, EditingMethods[]>()
+        widgets.forEach((widget) => editTable.set(widget, ['move']))
+        const { transactionId } = this.transactionHandler.begin('continuous', {
+            editTable,
+        })
+        this._transactionId = transactionId
     }
 
     handle(data: CanvasMouseEvent) {
@@ -100,6 +115,10 @@ export class DragHandler {
 
         this.movingObjectState.isObjectMoved = true
         this._handled = true
+
+        if (this._transactionId) {
+            this.transactionHandler.update(this._transactionId)
+        }
     }
 
     end(data: CanvasMouseEvent): boolean {
@@ -116,6 +135,10 @@ export class DragHandler {
             this.moveFinished.dispatch({
                 widgets: this.movingObjectState.movingShape,
             })
+        }
+        if (this._transactionId) {
+            this.transactionHandler.commit(this._transactionId)
+            this._transactionId = null
         }
         return this._handled
     }
