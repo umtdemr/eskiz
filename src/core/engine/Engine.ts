@@ -21,6 +21,7 @@ import { WidgetsService } from '@/core/services/WidgetsService.ts'
 import { PageService } from '@/core/services/PageService.ts'
 import { CursorService } from '@/core/services/CursorService.ts'
 import { DragHandler } from '../controls/DragHandler'
+import { TransactionHandler } from '../transaction/TransactionHandler'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -45,7 +46,8 @@ export class Engine extends Emitter<EngineEventsMap> {
     wsEngine: WsEngine
     private serviceManager: ServiceManager
     private _isRunning = false
-    dragHandler: DragHandler
+    private _dragHandler: DragHandler
+    private _transactionHandler: TransactionHandler
 
     upperCanvasRenderer: UpperCanvasRenderer
 
@@ -65,7 +67,8 @@ export class Engine extends Emitter<EngineEventsMap> {
             this._pageId,
         )
 
-        this.dragHandler = new DragHandler(this)
+        this._transactionHandler = new TransactionHandler(this.wsEngine)
+        this._dragHandler = new DragHandler(this)
         this._mouseController = new MouseController()
         this.serviceManager = new ServiceManager()
         this.initializeServices()
@@ -187,5 +190,13 @@ export class Engine extends Emitter<EngineEventsMap> {
      */
     get stage() {
         return this._stage
+    }
+
+    get dragHandler(): DragHandler {
+        return this._dragHandler
+    }
+
+    get transactionHandler(): TransactionHandler {
+        return this._transactionHandler
     }
 }
