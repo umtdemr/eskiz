@@ -20,6 +20,7 @@ import { CollaboratorsService } from '@/core/services/CollaboratorsService.ts'
 import { WidgetsService } from '@/core/services/WidgetsService.ts'
 import { PageService } from '@/core/services/PageService.ts'
 import { CursorService } from '@/core/services/CursorService.ts'
+import { DragHandler } from '../controls/DragHandler'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -44,6 +45,7 @@ export class Engine extends Emitter<EngineEventsMap> {
     wsEngine: WsEngine
     private serviceManager: ServiceManager
     private _isRunning = false
+    dragHandler: DragHandler
 
     upperCanvasRenderer: UpperCanvasRenderer
 
@@ -63,6 +65,7 @@ export class Engine extends Emitter<EngineEventsMap> {
             this._pageId,
         )
 
+        this.dragHandler = new DragHandler(this)
         this._mouseController = new MouseController()
         this.serviceManager = new ServiceManager()
         this.initializeServices()

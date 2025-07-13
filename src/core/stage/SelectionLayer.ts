@@ -13,6 +13,7 @@ import {
     EdgeControl,
     EdgePosition,
 } from '@/core/shapes/nonCanvasShapes/EdgeControl.ts'
+import { DragHandler } from '../controls/DragHandler'
 
 export class SelectionLayer extends Layer {
     private engine: Engine
@@ -21,10 +22,12 @@ export class SelectionLayer extends Layer {
     private selectionBorder: Border | null = null
     private controls: Control[] = []
     private selectToolService: SelectToolService
+    private dragHandler: DragHandler
 
     constructor(engine: Engine, selectionService: SelectionService) {
         super({ name: 'selection_layer' })
         this.engine = engine
+        this.dragHandler = engine.dragHandler
         this.selectionService = selectionService
 
         this.selectionService.selectionChanged.add(
@@ -38,13 +41,10 @@ export class SelectionLayer extends Layer {
 
         this.selectToolService =
             this.engine.getService<SelectToolService>('selectTool')
-        this.selectToolService.moveStarted.add(this.onMoveStarted, this)
-        this.selectToolService.moveFinished.add(this.onMoveFinished, this)
-        this.selectToolService.tempMoveStarted.add(this.onTempMoveStarted, this)
-        this.selectToolService.tempMoveFinished.add(
-            this.onTempMoveFinished,
-            this,
-        )
+        this.dragHandler.moveStarted.add(this.onMoveStarted, this)
+        this.dragHandler.moveFinished.add(this.onMoveFinished, this)
+        this.dragHandler.tempMoveStarted.add(this.onTempMoveStarted, this)
+        this.dragHandler.tempMoveFinished.add(this.onTempMoveFinished, this)
     }
 
     /**
