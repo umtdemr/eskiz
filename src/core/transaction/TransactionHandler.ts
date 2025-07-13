@@ -16,6 +16,7 @@ export interface Transaction {
     editTable: EditTable
     initialState: Map<Widget, State>
     lastUpdate: number
+    isCommitted: boolean
     id: TransactionId
 }
 
@@ -36,8 +37,8 @@ export class TransactionHandler {
         ReturnType<typeof setTimeout>
     >()
 
-    constructor() {
-        // this.wsEngine = wsEngine
+    constructor(wsEngine: WsEngine) {
+        this.wsEngine = wsEngine
     }
 
     private clear(id: TransactionId) {
@@ -63,6 +64,7 @@ export class TransactionHandler {
             initialState,
             id: transactionId,
             lastUpdate: 0,
+            isCommitted: false,
         })
 
         return { transactionId }
@@ -96,7 +98,7 @@ export class TransactionHandler {
         if (!(diffTime >= CONTINUOUS_THROTTLE_DELAY)) {
             const timeout = setTimeout(
                 () => {
-                    this.upate(id)
+                    this.update(id)
                 },
                 Math.min(diffTime, CONTINUOUS_THROTTLE_DELAY),
             )
@@ -115,13 +117,19 @@ export class TransactionHandler {
         for (const [widget, editMethods] of transaction.editTable.entries()) {
             widgetStates.push({
                 uuid: widget.uuid,
-                ...getPartialState(widget, editMethods),
+                data: getPartialState(widget, editMethods),
             })
         }
         const sendingData = {
-            transactionId: transaction.id,
-            data: widgetStates,
+            transaction_id: transaction.id,
+            is_committed: transaction.isCommitted,
+            shapes: widgetStates,
         }
+
+        this.wsEngine.sendAsyncMessage<'updateWidget'>({
+            type: 'updateWidget',
+            data: sendingData,
+        })
 
         console.log(sendingData)
     }
@@ -139,9 +147,11 @@ export class TransactionHandler {
         // if there is a pending auto update, avoid it
         this.autoUpdateTimeout.delete(id)
 
+        // mark as committed
+        transaction.isCommitted = true
+
         // send latest changes
         this.sendChanges(transaction)
-        console.log('finished')
 
         // clear state for the transaction
         this.clear(id)
