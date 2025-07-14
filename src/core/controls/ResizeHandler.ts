@@ -1,5 +1,10 @@
 import { CanvasMouseEvent, Engine } from '@/core/engine/Engine'
 import { Widget } from '@/core/shapes/Widget'
+import {
+    TransactionHandler,
+    TransactionId,
+} from '@/core/transaction/TransactionHandler'
+import { EditingMethods } from '../transaction/State'
 
 export enum ResizePosition {
     EDGE_LEFT,
@@ -26,6 +31,8 @@ export class ResizeHandler {
         height: 0,
         aspectRatio: 1,
     }
+    private transactionHandler: TransactionHandler
+    private _transactionId: TransactionId
     private position: ResizePosition
     private shape: Widget
     private resizer: 'edge' | 'corner'
@@ -33,6 +40,7 @@ export class ResizeHandler {
 
     constructor(engine: Engine) {
         this.engine = engine
+        this.transactionHandler = engine.transactionHandler
     }
 
     start(data: CanvasMouseEvent, shape: Widget, position: ResizePosition) {
@@ -59,18 +67,35 @@ export class ResizeHandler {
         } else {
             this.resizer = 'corner'
         }
+
+        const editTable = new Map<Widget, EditingMethods[]>()
+        editTable.set(this.shape, ['resize'])
+        const { transactionId } = this.transactionHandler.begin('continuous', {
+            editTable,
+        })
+        this._transactionId = transactionId
     }
 
     handle(data: CanvasMouseEvent): boolean {
-        if (this.resizer === 'edge') {
-            return this.resizeFromEdge(data)
-        } else if (this.resizer === 'corner') {
-            return this.resizeFromCorner(data)
+        if (this.resizer === 'edge' && this.resizeFromEdge(data)) {
+            if (this._transactionId) {
+                this.transactionHandler.update(this._transactionId)
+            }
+            return true
+        } else if (this.resizer === 'corner' && this.resizeFromCorner(data)) {
+            if (this._transactionId) {
+                this.transactionHandler.update(this._transactionId)
+            }
+            return true
         }
         return false
     }
 
-    end(data: CanvasMouseEvent) {}
+    end(data: CanvasMouseEvent) {
+        if (this._transactionId) {
+            this.transactionHandler.commit(this._transactionId)
+        }
+    }
 
     private resizeFromEdge(data: CanvasMouseEvent): boolean {
         const deltaX = data.pointer.x - this.initialBounds.pointerX
