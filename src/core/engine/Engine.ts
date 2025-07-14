@@ -20,8 +20,9 @@ import { CollaboratorsService } from '@/core/services/CollaboratorsService.ts'
 import { WidgetsService } from '@/core/services/WidgetsService.ts'
 import { PageService } from '@/core/services/PageService.ts'
 import { CursorService } from '@/core/services/CursorService.ts'
-import { DragHandler } from '../controls/DragHandler'
-import { TransactionHandler } from '../transaction/TransactionHandler'
+import { DragHandler } from '@/core/controls/DragHandler'
+import { ResizeHandler } from '@/core/controls/ResizeHandler'
+import { TransactionHandler } from '@/core/transaction/TransactionHandler'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -47,6 +48,7 @@ export class Engine extends Emitter<EngineEventsMap> {
     private serviceManager: ServiceManager
     private _isRunning = false
     private _dragHandler: DragHandler
+    private _resizeHandler: ResizeHandler
     private _transactionHandler: TransactionHandler
 
     upperCanvasRenderer: UpperCanvasRenderer
@@ -69,6 +71,7 @@ export class Engine extends Emitter<EngineEventsMap> {
 
         this._transactionHandler = new TransactionHandler(this.wsEngine)
         this._dragHandler = new DragHandler(this)
+        this._resizeHandler = new ResizeHandler(this)
         this._mouseController = new MouseController()
         this.serviceManager = new ServiceManager()
         this.initializeServices()
@@ -194,6 +197,10 @@ export class Engine extends Emitter<EngineEventsMap> {
 
     get dragHandler(): DragHandler {
         return this._dragHandler
+    }
+
+    get resizeHandler(): ResizeHandler {
+        return this._resizeHandler
     }
 
     get transactionHandler(): TransactionHandler {
