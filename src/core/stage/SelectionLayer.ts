@@ -32,11 +32,11 @@ export class SelectionLayer extends Layer {
 
         this.selectionService.selectionChanged.add(
             this.onSelectionChanged,
-            this,
+            this
         )
         this.selectionService.drawingSelectionUpdated.add(
             this.onDrawingSelectionUpdated,
-            this,
+            this
         )
 
         this.selectToolService =
@@ -123,6 +123,13 @@ export class SelectionLayer extends Layer {
             CornerPosition.BOTTOM_RIGHT,
         ]
 
+        // don't add controls for multiple selection as of now
+        if (widgets.length > 1) {
+            return
+        }
+
+        // add controls
+
         // TODO: fix order of controls when I fix the widget searching algo
         for (const position of cornerControls) {
             const handle = new CornerControl(
@@ -133,7 +140,7 @@ export class SelectionLayer extends Layer {
                     selectionLayer: this,
                 },
                 this.engine,
-                this.selectionService,
+                this.selectionService
             )
 
             this.controls.push(handle)
@@ -149,7 +156,7 @@ export class SelectionLayer extends Layer {
                     selectionLayer: this,
                 },
                 this.engine,
-                this.selectionService,
+                this.selectionService
             )
 
             this.controls.push(handle)
@@ -168,7 +175,7 @@ export class SelectionLayer extends Layer {
                     widgets: [widget],
                     parentLayer: this,
                     engine: this.engine,
-                }),
+                })
             )
         }
     }
