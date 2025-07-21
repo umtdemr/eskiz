@@ -164,6 +164,13 @@ export abstract class Widget extends Layer {
         throw new Error('must be implemented')
     }
 
+    updateWithPartialState(json: Partial<WsWidget>) {
+        // TODO: check every key -- THIS IS FOR TESTING ONLY
+        for (const key of Object.keys(json)) {
+            this[key] = json[key]
+        }
+    }
+
     contains(x: number, y: number, scale: number): boolean {
         return this.bounds.contains(x * scale, y * scale)
     }
@@ -219,6 +226,16 @@ export abstract class Widget extends Layer {
 
     set left(left: number) {
         this._x = left
+        this.updateBounds()
+    }
+
+    set x(x: number) {
+        this._x = x
+        this.updateBounds()
+    }
+
+    set y(y: number) {
+        this._y = y
         this.updateBounds()
     }
 

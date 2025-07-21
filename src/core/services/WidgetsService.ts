@@ -1,10 +1,23 @@
 import { Service } from '@/core/services/Service.ts'
 import { Engine } from '@/core/engine/Engine.ts'
-import { AddWidgetPayload } from '@/types/Websocket.ts'
+import { AddWidgetPayload, WsEvents } from '@/types/Websocket.ts'
+import { WebsocketEventService } from '@/core/services/WebsocketEventService'
+import { WS_EVENTS } from '@/helpers/Constant'
+import { WidgetFactory } from '../engine/WidgetFactory'
+import { Widget } from '../shapes/Widget'
 
 export class WidgetsService extends Service {
-    constructor(engine: Engine) {
+    private wsEventService: WebsocketEventService
+
+    constructor(engine: Engine, wsEventService: WebsocketEventService) {
         super(engine)
+        this.wsEventService = wsEventService
+        this.wsEventService.eventDispatchers
+            .get(WS_EVENTS.WIDGET_ADDED)
+            ?.add(this.onWidgetAdded, this)
+        this.wsEventService.eventDispatchers
+            .get(WS_EVENTS.WIDGET_UPDATED)
+            ?.add(this.onWidgetUpdated, this)
     }
 
     async addWidget(params: AddWidgetPayload) {
@@ -12,5 +25,39 @@ export class WidgetsService extends Service {
             type: 'addWidget',
             data: params,
         })
+    }
+
+    private onWidgetAdded(event: WsEvents) {
+        if (event.event !== WS_EVENTS.WIDGET_ADDED) {
+            return
+        }
+
+        const widgetLayer = this.engine.stage.widgetsDefaultLayer
+
+        const widgetClass = WidgetFactory.loadFromJson(event.data.widget)
+        if (!widgetClass) {
+            return
+        }
+        widgetLayer.addChildren(widgetClass)
+        this.engine.canvas.requestRender()
+    }
+
+    private onWidgetUpdated(event: WsEvents) {
+        if (event.event !== WS_EVENTS.WIDGET_UPDATED) {
+            return
+        }
+        const widgetLayer = this.engine.stage.widgetsDefaultLayer
+
+        for (const shape of event.data.transaction.shapes) {
+            for (const widget of widgetLayer.children) {
+                if (!(widget instanceof Widget) || widget.uuid !== shape.uuid) {
+                    continue
+                }
+
+                widget.updateWithPartialState(shape.data)
+            }
+        }
+
+        this.engine.canvas.requestRender()
     }
 }

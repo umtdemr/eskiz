@@ -146,7 +146,6 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
         const data = JSON.parse(
             Pako.inflate(message.data, { to: 'string', encoding: 'utf8' }),
         )
-        console.log({ data })
         if (data.reply_to) {
             if (this.messageCallbacks.has(data.reply_to)) {
                 this.messageCallbacks.get(data.reply_to)!(data)
