@@ -143,11 +143,35 @@ export type EventBoardNameChanged = {
     }
 }
 
+export type EventWidgetAdded = {
+    event: typeof WS_EVENTS.WIDGET_ADDED
+    data: {
+        widget: WsWidget
+    }
+}
+
+export type EventWidgetUpdated = {
+    event: typeof WS_EVENTS.WIDGET_UPDATED
+    data: {
+        transaction: {
+            transaction_id: string
+            is_committed: boolean
+            shapes: {
+                uuid: string
+                is_deleted: boolean
+                data: Partial<WsWidget>
+            }[]
+        }
+    }
+}
+
 export type WsEvents =
     | EventUserLeft
     | EventUserJoined
     | EventCursor
     | EventBoardNameChanged
+    | EventWidgetAdded
+    | EventWidgetUpdated
 
 export type UpdateWidgetPayload = {
     transaction_id: string

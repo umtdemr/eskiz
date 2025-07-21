@@ -177,7 +177,10 @@ export class Engine extends Emitter<EngineEventsMap> {
             new CollaboratorsService(this, wsEventService),
         )
         this.serviceManager.register('page', new PageService(this))
-        this.serviceManager.register('widgets', new WidgetsService(this))
+        this.serviceManager.register(
+            'widgets',
+            new WidgetsService(this, wsEventService),
+        )
     }
 
     getService<T>(name: string): T {
