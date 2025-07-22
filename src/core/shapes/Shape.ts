@@ -15,17 +15,16 @@ export interface ShapeProperties {
 export type ShapeType = 'rectangle' | 'triangle' | 'ellipse'
 
 export abstract class Shape extends Widget {
-    protected _strokeColor: RGBA
-    protected _fillColor: RGBA
     private _shapeType: ShapeType
 
     protected constructor(type: ShapeType, props: ShapeProps) {
         super('shape', props)
         this._shapeType = type
-        this._strokeColor = props.properties?.strokeColor
+        this._properties = { ...props.properties }
+        this._properties.strokeColor = this._properties?.strokeColor
             ? props.properties.strokeColor
             : CANVAS_COLORS.BLACK
-        this._fillColor = props.properties?.fillColor
+        this._properties.fillColor = this._properties?.fillColor
             ? props.properties.fillColor
             : CANVAS_COLORS.TRANSPARENT
         this._interactive = true
@@ -42,8 +41,7 @@ export abstract class Shape extends Widget {
             widget_type: 'shape',
             sub_type: this._shapeType,
             properties: {
-                fillColor: this._fillColor,
-                strokeColor: this._strokeColor,
+                ...this._properties,
             },
         }
 
