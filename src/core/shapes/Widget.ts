@@ -57,6 +57,7 @@ export abstract class Widget extends Layer {
     protected _localBounds: BoundingBox // Local bounds (object's own space)
     protected _selected: boolean = false
     protected _isDynamic: boolean = false
+    protected _properties: Record<string, unknown>
 
     boundsChanged = new Signal()
 
@@ -165,9 +166,24 @@ export abstract class Widget extends Layer {
     }
 
     updateWithPartialState(json: Partial<WsWidget>) {
-        // TODO: check every key -- THIS IS FOR TESTING ONLY
         for (const key of Object.keys(json)) {
-            this[key] = json[key]
+            switch (key) {
+                case 'x':
+                    this.left = json.x!
+                    break
+                case 'y':
+                    this.top = json.y!
+                    break
+                case 'width':
+                    this.width = json.width!
+                    break
+                case 'height':
+                    this.height = json.height!
+                    break
+                case 'z_index':
+                    this.zIndex = json.z_index!
+                    break
+            }
         }
     }
 

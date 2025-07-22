@@ -2,6 +2,7 @@ import { Shape, ShapeProps } from '@/core/shapes/Shape.ts'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WsWidget } from '@/types/Websocket.ts'
 import { WidgetJson } from '@/core/shapes/Widget.ts'
+import { RGBA } from '@/core/shapes/Color'
 
 export class Ellipse extends Shape {
     constructor(props: ShapeProps) {
@@ -31,10 +32,10 @@ export class Ellipse extends Shape {
         // draw fill
         paint.setStrokeWidth(0)
         const fillColor = canvasKit.Color(
-            this._fillColor.r,
-            this._fillColor.g,
-            this._fillColor.b,
-            this._fillColor.a,
+            (this._properties.fillColor as RGBA).r,
+            (this._properties.fillColor as RGBA).g,
+            (this._properties.fillColor as RGBA).b,
+            (this._properties.fillColor as RGBA).a,
         )
         paint.setColor(fillColor)
         paint.setStyle(canvasKit.PaintStyle.Fill)
@@ -43,10 +44,10 @@ export class Ellipse extends Shape {
 
         // draw stroke
         const strokeColor = canvasKit.Color(
-            this._strokeColor.r,
-            this._strokeColor.g,
-            this._strokeColor.b,
-            this._strokeColor.a,
+            (this._properties.strokeColor as RGBA).r,
+            (this._properties.strokeColor as RGBA).g,
+            (this._properties.strokeColor as RGBA).b,
+            (this._properties.strokeColor as RGBA).a,
         )
         paint.setColor(strokeColor)
         paint.setStyle(canvasKit.PaintStyle.Stroke)
