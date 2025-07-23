@@ -1,6 +1,7 @@
 import { StateCreator } from 'zustand/vanilla'
 import { persist } from 'zustand/middleware'
 import { ACTION_MODES, SUB_ACTION_MODES } from '@/helpers/Constant'
+import { RGBA } from '@/core/shapes/Color'
 
 export interface ToolSlice {
     mainMode: keyof typeof ACTION_MODES
@@ -11,23 +12,23 @@ export interface ToolSlice {
     ) => void
     pen: {
         thickness: number
-        color: string
+        color: RGBA
     }
     changePenThickness: (val: number) => void
-    changePenColor: (val: string) => void
+    changePenColor: (val: RGBA) => void
 }
 
 export const createToolSlice: StateCreator<
     ToolSlice,
     [],
-    [['zustand/persist', { pen: { thickness: number; color: string } }]],
+    [['zustand/persist', { pen: { thickness: number; color: RGBA } }]],
     ToolSlice
 > = persist(
     (set) => ({
         mainMode: ACTION_MODES.SELECT,
         pen: {
             thickness: 2,
-            color: 'rgba(0, 0, 0, 1)',
+            color: { r: 0, g: 0, b: 0, a: 1 },
         },
         changeActiveMode: (
             mainMode: keyof typeof ACTION_MODES,
@@ -44,7 +45,7 @@ export const createToolSlice: StateCreator<
                     thickness: val,
                 },
             })),
-        changePenColor: (val: string) =>
+        changePenColor: (val: RGBA) =>
             set((state) => ({
                 pen: {
                     ...state.pen,

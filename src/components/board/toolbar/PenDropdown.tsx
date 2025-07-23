@@ -132,7 +132,7 @@ export function PenDropdown({
                         <Tooltip>
                             <TooltipTrigger>
                                 <ColorButton
-                                    color={selectedColor}
+                                    color={`rgba(${selectedColor.r}, ${selectedColor.g}, ${selectedColor.b}, ${selectedColor.a})`}
                                     ariaLabel="Color and thickness"
                                     fillPercentage={thickness * 10}
                                     onClick={colorBtnClickHandler}
