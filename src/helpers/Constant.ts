@@ -106,6 +106,7 @@ export const DRAWING_MODES = {
     CREATE_RECTANGLE: 'CREATE_RECTANGLE',
     CREATE_TRIANGLE: 'CREATE_TRIANGLE',
     CREATE_ELLIPSE: 'CREATE_ELLIPSE',
+    DRAW_PEN: 'DRAW_PEN',
 } as const
 
 export const SUB_ACTION_MODES = {
@@ -116,6 +117,7 @@ export const CURSOR_OWNERS = {
     SELECT_TOOL: 'select-tool',
     PAN_TOOL: 'pan-tool',
     SHAPE_DRAWER_TOOL: 'shape-drawer-tool',
+    PATH_TOOL: 'path-tool', // pen
     EDGE_CONTROL: 'edge-control',
     CORNER_CONTROL: 'corner-control',
 }
