@@ -9,6 +9,7 @@ import { WsWidget } from '@/types/Websocket.ts'
 export type WidgetType =
     | 'shape'
     | 'text'
+    | 'path'
     | 'multiSelector'
     | 'border'
     | 'control'

@@ -1,7 +1,6 @@
 import { Canvas, Point, setCanvasStyles } from '@/core/canvas/Canvas.ts'
 import { WsEngine } from '@/core/WsEngine.ts'
 import { UpperCanvasRenderer } from '@/core/renderers/UpperCanvasRenderer.ts'
-
 import { Emitter } from '@/core/emitter/Emitter.ts'
 import { Stage } from '../stage/Stage'
 import { ServiceManager } from '../services/ServiceManager'
@@ -23,6 +22,7 @@ import { CursorService } from '@/core/services/CursorService.ts'
 import { DragHandler } from '@/core/controls/DragHandler'
 import { ResizeHandler } from '@/core/controls/ResizeHandler'
 import { TransactionHandler } from '@/core/transaction/TransactionHandler'
+import { PathToolService } from '@/core/services/PathToolService'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -157,6 +157,15 @@ export class Engine extends Emitter<EngineEventsMap> {
         this.serviceManager.register(
             'shapeDrawer',
             new ShapeDrawerToolService(
+                this,
+                this._mouseController,
+                toolService,
+                selectionService,
+            ),
+        )
+        this.serviceManager.register(
+            'pathTool',
+            new PathToolService(
                 this,
                 this._mouseController,
                 toolService,
