@@ -1,0 +1,161 @@
+import {
+    useState,
+    useRef,
+    ComponentType,
+    SVGAttributes,
+    useEffect,
+} from 'react'
+import { clsx } from 'clsx'
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from '@/components/ui/tooltip.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { Brush } from 'lucide-react'
+import { ACTION_MODES, SUB_ACTION_MODES } from '@/helpers/Constant'
+import useOnClickOutside from '@/hooks/UseOutsideClick'
+import { ColorButton } from '@/components/colorButton/ColorButton'
+import { PenColorDropdown } from './PenColorDropdown'
+import { useBoundStore } from '@/store/store'
+import { useShallow } from 'zustand/react/shallow'
+
+const tools: {
+    tooltip: string
+    mode: keyof typeof SUB_ACTION_MODES
+    icon?: ComponentType<SVGAttributes<SVGElement>>
+}[] = [
+    {
+        tooltip: 'Pen',
+        mode: SUB_ACTION_MODES.DRAW_PEN,
+        icon: Brush,
+    },
+]
+
+export function PenDropdown({
+    activeMode,
+    handleShapeModeChange,
+}: {
+    activeMode: {
+        mainMode: keyof typeof ACTION_MODES
+        subMode?: keyof typeof SUB_ACTION_MODES
+    }
+    handleShapeModeChange: (newMode: keyof typeof SUB_ACTION_MODES) => void
+}) {
+    const [isOpen, setIsOpen] = useState(false)
+    const [showColorDropdown, setShowColorDropdown] = useState(false)
+    const menuRef = useRef(null)
+    const buttonRef = useRef<HTMLButtonElement>(null)
+    const thickness = useBoundStore(useShallow((state) => state.pen.thickness))
+    const selectedColor = useBoundStore(useShallow((state) => state.pen.color))
+
+    const onClickOutsideHandler = (event: MouseEvent) => {
+        if (buttonRef.current!.contains(event.target as Node)) {
+            return
+        }
+        setIsOpen(false)
+    }
+    useOnClickOutside(menuRef, onClickOutsideHandler)
+
+    const handleClick = () => {
+        setIsOpen((old) => !old)
+        handleShapeModeChange(SUB_ACTION_MODES.DRAW_PEN)
+    }
+
+    const colorBtnClickHandler = () => {
+        setShowColorDropdown((old) => !old)
+    }
+
+    useEffect(() => {
+        if (!isOpen) {
+            setShowColorDropdown(false)
+        }
+    }, [isOpen])
+
+    return (
+        <div className="relative" ref={menuRef}>
+            <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className={clsx('px-2', {
+                                'bg-amber-500':
+                                    activeMode?.subMode ===
+                                    SUB_ACTION_MODES.DRAW_PEN,
+                                'hover:bg-amber-500': activeMode?.subMode,
+                            })}
+                            onClick={handleClick}
+                            ref={buttonRef}
+                        >
+                            <Brush />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side={'right'}>
+                        <p>Pen</p>
+                    </TooltipContent>
+                </Tooltip>
+                {isOpen ? (
+                    <div
+                        className="absolute flex flex-col items-center gap-2 left-14 top-[50%] bg-white shadow-2xl p-1 rounded-lg z-50"
+                        style={{
+                            transform: 'translateY(-50%)',
+                        }}
+                    >
+                        {tools.map((tool) => (
+                            <Tooltip key={tool.mode}>
+                                <TooltipTrigger asChild>
+                                    <Button
+                                        variant="ghost"
+                                        className={clsx('px-2', {
+                                            'bg-amber-500':
+                                                activeMode?.subMode ===
+                                                tool.mode,
+                                            'hover:bg-amber-500':
+                                                activeMode?.subMode ===
+                                                tool.mode,
+                                        })}
+                                        onClick={() =>
+                                            handleShapeModeChange(tool.mode)
+                                        }
+                                    >
+                                        {tool.icon && <tool.icon />}
+                                    </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                    <p>{tool.tooltip}</p>
+                                </TooltipContent>
+                            </Tooltip>
+                        ))}
+                        <div className="w-3/5 h-[0.2px] bg-zinc-300 my-2" />
+                        <Tooltip>
+                            <TooltipTrigger>
+                                <ColorButton
+                                    color={selectedColor}
+                                    ariaLabel="Color and thickness"
+                                    fillPercentage={thickness * 10}
+                                    onClick={colorBtnClickHandler}
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Color and thickness</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    </div>
+                ) : null}
+
+                {showColorDropdown ? (
+                    <div
+                        className="absolute left-28 top-[50%]"
+                        style={{
+                            transform: 'translateY(-50%)',
+                        }}
+                    >
+                        <PenColorDropdown />
+                    </div>
+                ) : null}
+            </TooltipProvider>
+        </div>
+    )
+}
