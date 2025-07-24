@@ -1,3 +1,4 @@
+import { getStroke } from 'perfect-freehand'
 import { Service } from '@/core/services/Service'
 import { SubModeChangedState, ToolService } from '@/core/services/ToolService'
 import { SelectionService } from '@/core/services/SelectionService'
@@ -11,6 +12,36 @@ import {
 } from '@/helpers/Constant'
 import { CursorService } from '@/core/services/CursorService'
 import { useBoundStore } from '@/store/store'
+import { canvasKit } from '../canvas/Canvas'
+
+function med(A: number[], B: number[]) {
+    return [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2]
+}
+
+const TO_FIXED_PRECISION = /(\s?[A-Z]?,?-?[0-9]*\.[0-9]{0,2})(([0-9]|e|-)*)/g
+
+function getSvgPathFromStroke(points: number[][]): string {
+    if (!points.length) {
+        return ''
+    }
+
+    const max = points.length - 1
+
+    return points
+        .reduce(
+            (acc, point, i, arr) => {
+                if (i === max) {
+                    acc.push(point, med(point, arr[0]), 'L', arr[0], 'Z')
+                } else {
+                    acc.push(point, med(point, arr[i + 1]))
+                }
+                return acc
+            },
+            ['M', points[0], 'Q'],
+        )
+        .join(' ')
+        .replace(TO_FIXED_PRECISION, '$1')
+}
 
 export class PathToolService extends Service {
     private mouseController: MouseController
@@ -21,6 +52,7 @@ export class PathToolService extends Service {
     private initialPosition: { x: number; y: number } = { x: 0, y: 0 }
     private cursorService: CursorService
     private cursorToolName = CURSOR_OWNERS.PATH_TOOL
+    private points: number[][] = []
 
     constructor(
         engine: Engine,
@@ -77,7 +109,7 @@ export class PathToolService extends Service {
                 strokeColor: color,
             },
         })
-        this.path.path.moveTo(0, 0)
+        this.points[0] = [data.pointer.x, data.pointer.y]
         this.engine.stage.addWidget(this.path!)
     }
 
@@ -85,11 +117,27 @@ export class PathToolService extends Service {
         if (!this.path) {
             return
         }
-
-        this.path.path.lineTo(
-            data.pointer.x - this.path.left,
-            data.pointer.y - this.path.top,
+        // TODO: get size from state
+        this.points.push([data.pointer.x, data.pointer.y])
+        const stroke = getStroke(this.points, {
+            size: 8,
+        })
+        const svg = getSvgPathFromStroke(stroke)
+        const pathFromSvg = canvasKit.Path.MakeFromSVGString(svg)!
+        const newBounds = pathFromSvg.getBounds()
+        // TODO: check this matrix!!!
+        const transformMatrix = canvasKit.Matrix.translated(
+            -newBounds[0],
+            -newBounds[1],
         )
+        pathFromSvg.transform(transformMatrix)
+
+        this.path.left = newBounds[0]
+        this.path.top = newBounds[1]
+        this.path.width = newBounds[2] - newBounds[0]
+        this.path.height = newBounds[3] - newBounds[1]
+
+        this.path.path = pathFromSvg!
         this.engine.canvas.requestRender()
     }
     private onMouseUp() {
@@ -97,14 +145,12 @@ export class PathToolService extends Service {
             return
         }
 
-        const bounds = this.path.path.getBounds()
-        this.path.width = bounds[2]
-        this.path.height = bounds[3]
         this.reset()
     }
 
     private reset() {
         this.path = null
+        this.points = []
         this.drawingStarted = false
     }
 

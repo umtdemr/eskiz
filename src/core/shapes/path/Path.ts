@@ -26,13 +26,13 @@ export class Path extends Widget {
             ? props.properties.strokeWidth
             : 2
         this.path = new canvasKit.Path()
+        this._interactive = true
     }
 
     renderContent(renderContext: RenderContext): void {
         const paint = new canvasKit.Paint()
         paint.setAntiAlias(true)
-        paint.setStrokeWidth(this._properties.strokeWidth as number)
-        paint.setStyle(canvasKit.PaintStyle.Stroke)
+        paint.setStyle(canvasKit.PaintStyle.Fill)
         const color = canvasKit.Color(
             (this._properties.strokeColor as RGBA).r,
             (this._properties.strokeColor as RGBA).g,
@@ -42,5 +42,6 @@ export class Path extends Widget {
         paint.setColor(color)
 
         renderContext.ctx.drawPath(this.path, paint)
+        paint.delete()
     }
 }
