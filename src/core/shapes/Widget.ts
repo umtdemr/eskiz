@@ -313,4 +313,8 @@ export abstract class Widget extends Layer {
     get isDynamic(): boolean {
         return this._isDynamic
     }
+
+    get widgetType(): WidgetType {
+        return this._widgetType
+    }
 }
