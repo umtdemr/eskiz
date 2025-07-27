@@ -136,7 +136,7 @@ export class PathToolService extends Service {
         this.path.width = newBounds[2] - newBounds[0]
         this.path.height = newBounds[3] - newBounds[1]
 
-        this.path.path = pathFromSvg!
+        this.path.replacePath(pathFromSvg!)
         this.engine.canvas.requestRender()
     }
     private onMouseUp() {

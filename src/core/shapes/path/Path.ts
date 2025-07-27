@@ -16,7 +16,7 @@ export type PathType = 'pen'
 
 export abstract class Path extends Widget {
     private _pathType: PathType
-    path: CkPath
+    protected _path: CkPath
 
     constructor(type: PathType, props: PathProps) {
         super('path', props)
@@ -25,11 +25,15 @@ export abstract class Path extends Widget {
         this._properties.color = this._properties?.color
             ? props.properties.color
             : CANVAS_COLORS.BLACK
-        this.path = new canvasKit.Path()
+        this._path = new canvasKit.Path()
         this._interactive = true
     }
 
     get pathType(): PathType {
         return this._pathType
+    }
+
+    replacePath(newPath: CkPath) {
+        this._path = newPath
     }
 }
