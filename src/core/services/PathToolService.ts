@@ -117,10 +117,14 @@ export class PathToolService extends Service {
         const stroke = getStroke(this.points, {
             size: this.penState.thickness,
         })
+
+        // generate path from svg
         const svg = getSvgPathFromStroke(stroke)
         const pathFromSvg = canvasKit.Path.MakeFromSVGString(svg)!
+
+        // paths bound should always start from 0, 0
+        // that's I implemented this invert transform
         const newBounds = pathFromSvg.getBounds()
-        // TODO: check this matrix!!!
         const transformMatrix = canvasKit.Matrix.translated(
             -newBounds[0],
             -newBounds[1],
