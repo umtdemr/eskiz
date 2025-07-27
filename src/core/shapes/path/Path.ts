@@ -1,5 +1,5 @@
 import { Widget, WidgetProps } from '@/core/shapes/Widget'
-import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
+import { canvasKit } from '@/core/canvas/Canvas'
 import { RGBA } from '@/core/shapes/Color'
 import { CANVAS_COLORS } from '@/helpers/Constant'
 import { Path as CkPath } from 'canvaskit-wasm'
@@ -9,39 +9,27 @@ export interface PathProps extends WidgetProps {
 }
 
 export interface PathProperties {
-    strokeColor?: RGBA
-    strokeWidth?: number
+    color?: RGBA
 }
 
-export class Path extends Widget {
+export type PathType = 'pen'
+
+export abstract class Path extends Widget {
+    private _pathType: PathType
     path: CkPath
 
-    constructor(props: PathProps) {
+    constructor(type: PathType, props: PathProps) {
         super('path', props)
+        this._pathType = type
         this._properties = { ...props.properties }
-        this._properties.strokeColor = this._properties?.strokeColor
-            ? props.properties.strokeColor
+        this._properties.color = this._properties?.color
+            ? props.properties.color
             : CANVAS_COLORS.BLACK
-        this._properties.strokeWidth = this._properties?.strokeWidth
-            ? props.properties.strokeWidth
-            : 2
         this.path = new canvasKit.Path()
         this._interactive = true
     }
 
-    renderContent(renderContext: RenderContext): void {
-        const paint = new canvasKit.Paint()
-        paint.setAntiAlias(true)
-        paint.setStyle(canvasKit.PaintStyle.Fill)
-        const color = canvasKit.Color(
-            (this._properties.strokeColor as RGBA).r,
-            (this._properties.strokeColor as RGBA).g,
-            (this._properties.strokeColor as RGBA).b,
-            (this._properties.strokeColor as RGBA).a,
-        )
-        paint.setColor(color)
-
-        renderContext.ctx.drawPath(this.path, paint)
-        paint.delete()
+    get pathType(): PathType {
+        return this._pathType
     }
 }

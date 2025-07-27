@@ -1,7 +1,6 @@
 import { getStroke } from 'perfect-freehand'
 import { Service } from '@/core/services/Service'
 import { SubModeChangedState, ToolService } from '@/core/services/ToolService'
-import { SelectionService } from '@/core/services/SelectionService'
 import { CanvasMouseEvent, Engine } from '@/core/engine/Engine'
 import { MouseController } from '@/core/engine/MouseController'
 import { Path } from '@/core/shapes/path/Path'
@@ -13,6 +12,8 @@ import {
 import { CursorService } from '@/core/services/CursorService'
 import { useBoundStore } from '@/store/store'
 import { canvasKit } from '../canvas/Canvas'
+import { Pen } from '../shapes/path/Pen'
+import { RGBA } from '../shapes/Color'
 
 function med(A: number[], B: number[]) {
     return [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2]
@@ -46,24 +47,23 @@ function getSvgPathFromStroke(points: number[][]): string {
 export class PathToolService extends Service {
     private mouseController: MouseController
     private toolService: ToolService
-    private selectionService: SelectionService
     private path: Path | null = null
-    private drawingStarted: boolean = false
-    private initialPosition: { x: number; y: number } = { x: 0, y: 0 }
     private cursorService: CursorService
     private cursorToolName = CURSOR_OWNERS.PATH_TOOL
     private points: number[][] = []
+    private penState: {
+        color?: RGBA
+        thickness?: number
+    } = {}
 
     constructor(
         engine: Engine,
         mouseController: MouseController,
         toolService: ToolService,
-        selectionService: SelectionService,
     ) {
         super(engine)
         this.mouseController = mouseController
         this.toolService = toolService
-        this.selectionService = selectionService
 
         this.toolService.subModeChanged.add(this.onSubModeChanged, this)
         this.cursorService = this.engine.getService<CursorService>('cursor')
@@ -90,23 +90,18 @@ export class PathToolService extends Service {
     }
 
     private onMouseDown(data: CanvasMouseEvent) {
-        this.initialPosition = {
-            x: data.pointer.x,
-            y: data.pointer.y,
-        }
-
-        // TODO: need to use a package for drawing
         const { thickness, color } = useBoundStore.getState().pen
+        this.penState.thickness = thickness
+        this.penState.color = color
 
-        this.path = new Path({
+        this.path = new Pen({
             x: data.pointer.x,
             y: data.pointer.y,
             width: 1,
             height: 1,
             parentLayer: this.engine.stage.widgetsDefaultLayer,
             properties: {
-                strokeWidth: thickness,
-                strokeColor: color,
+                color: color!,
             },
         })
         this.points[0] = [data.pointer.x, data.pointer.y]
@@ -117,10 +112,10 @@ export class PathToolService extends Service {
         if (!this.path) {
             return
         }
-        // TODO: get size from state
         this.points.push([data.pointer.x, data.pointer.y])
+
         const stroke = getStroke(this.points, {
-            size: 8,
+            size: this.penState.thickness,
         })
         const svg = getSvgPathFromStroke(stroke)
         const pathFromSvg = canvasKit.Path.MakeFromSVGString(svg)!
@@ -151,7 +146,6 @@ export class PathToolService extends Service {
     private reset() {
         this.path = null
         this.points = []
-        this.drawingStarted = false
     }
 
     dispose(): void {

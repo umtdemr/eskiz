@@ -165,12 +165,7 @@ export class Engine extends Emitter<EngineEventsMap> {
         )
         this.serviceManager.register(
             'pathTool',
-            new PathToolService(
-                this,
-                this._mouseController,
-                toolService,
-                selectionService,
-            ),
+            new PathToolService(this, this._mouseController, toolService),
         )
         // cursorSender service sends user's cursor position to the server
         this.serviceManager.register(
