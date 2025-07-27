@@ -19,7 +19,7 @@ export class Pen extends Path {
         )
         paint.setColor(color)
 
-        renderContext.ctx.drawPath(this.path, paint)
+        renderContext.ctx.drawPath(this._path, paint)
         paint.delete()
     }
 }
