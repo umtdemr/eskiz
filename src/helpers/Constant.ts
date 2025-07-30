@@ -18,6 +18,8 @@ export const WS_EVENTS = {
     USER_LEFT: 'USER_LEFT',
     CURSOR: 'CURSOR',
     CHANGE_BOARD_NAME: 'CHANGE_BOARD_NAME',
+    WIDGET_ADDED: 'WIDGET_ADDED',
+    WIDGET_UPDATED: 'WIDGET_UPDATED',
 } as const
 
 export const COLLAB_CURSOR_THROTTLING_TIME = 300 as const
@@ -104,6 +106,7 @@ export const DRAWING_MODES = {
     CREATE_RECTANGLE: 'CREATE_RECTANGLE',
     CREATE_TRIANGLE: 'CREATE_TRIANGLE',
     CREATE_ELLIPSE: 'CREATE_ELLIPSE',
+    DRAW_PEN: 'DRAW_PEN',
 } as const
 
 export const SUB_ACTION_MODES = {
@@ -114,6 +117,13 @@ export const CURSOR_OWNERS = {
     SELECT_TOOL: 'select-tool',
     PAN_TOOL: 'pan-tool',
     SHAPE_DRAWER_TOOL: 'shape-drawer-tool',
+    PATH_TOOL: 'path-tool', // pen
     EDGE_CONTROL: 'edge-control',
     CORNER_CONTROL: 'corner-control',
+}
+
+export const PEN_CONSTANTS = {
+    THICKNESS_MAX: 50,
+    THICKNESS_STEP: 5,
+    THICKNESS_MIN: 5,
 }

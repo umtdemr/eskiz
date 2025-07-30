@@ -158,7 +158,11 @@ export default function SingleBoard() {
 
         const initializeApp = async () => {
             try {
-                engineRef.current = new Engine(slugId!)
+                engineRef.current = new Engine(
+                    slugId!,
+                    boardQuery.data?.id!,
+                    boardQuery.data?.pages[0].id!,
+                )
                 await engineRef.current?.initialize()
                 canvasRef.current = engineRef.current?.canvas
                 const connectResp =
