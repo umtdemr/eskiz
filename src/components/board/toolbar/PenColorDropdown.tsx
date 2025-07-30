@@ -10,6 +10,7 @@ import { Slider } from '@/components/ui/slider'
 import { useBoundStore } from '@/store/store'
 import { useShallow } from 'zustand/react/shallow'
 import { RGBA } from '@/core/shapes/Color'
+import { PEN_CONSTANTS } from '@/helpers/Constant'
 
 const colors: {
     ariaLabel: string
@@ -111,9 +112,9 @@ export function PenColorDropdown() {
                 <span className="text-xs mb-1 block">Thickness</span>
                 <Slider
                     defaultValue={[thickness]}
-                    max={10}
-                    step={1}
-                    min={2}
+                    max={PEN_CONSTANTS.THICKNESS_MAX}
+                    step={PEN_CONSTANTS.THICKNESS_STEP}
+                    min={PEN_CONSTANTS.THICKNESS_MIN}
                     onValueChange={onThicknessValueChange}
                 />
             </div>

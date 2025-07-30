@@ -14,7 +14,11 @@ import {
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { Brush } from 'lucide-react'
-import { ACTION_MODES, SUB_ACTION_MODES } from '@/helpers/Constant'
+import {
+    ACTION_MODES,
+    PEN_CONSTANTS,
+    SUB_ACTION_MODES,
+} from '@/helpers/Constant'
 import useOnClickOutside from '@/hooks/UseOutsideClick'
 import { ColorButton } from '@/components/colorButton/ColorButton'
 import { PenColorDropdown } from './PenColorDropdown'
@@ -134,7 +138,10 @@ export function PenDropdown({
                                 <ColorButton
                                     color={`rgba(${selectedColor.r}, ${selectedColor.g}, ${selectedColor.b}, ${selectedColor.a})`}
                                     ariaLabel="Color and thickness"
-                                    fillPercentage={thickness * 10}
+                                    fillPercentage={
+                                        (thickness * 100) /
+                                        PEN_CONSTANTS.THICKNESS_MAX
+                                    }
                                     onClick={colorBtnClickHandler}
                                 />
                             </TooltipTrigger>
