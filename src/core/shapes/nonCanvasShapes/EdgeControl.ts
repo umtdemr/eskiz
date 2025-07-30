@@ -6,6 +6,7 @@ import { canvasKit, RenderContext } from '@/core/canvas/Canvas.ts'
 import { ResizeCursors } from '@/core/services/CursorService.ts'
 import { CURSOR_OWNERS } from '@/helpers/Constant.ts'
 import { CursorService, CursorPriority } from '@/core/services/CursorService.ts'
+import { ResizeHandler, ResizePosition } from '@/core/controls/ResizeHandler'
 
 export enum EdgePosition {
     LEFT,
@@ -29,16 +30,9 @@ export class EdgeControl extends Control {
     private _strokeThickness = 2
     private _hitTestThreshold = 5
     private _maxThreshold = 30
-    private initialBounds = {
-        pointerX: 0,
-        pointerY: 0,
-        widgetX: 0,
-        widgetY: 0,
-        width: 0,
-        height: 0,
-    }
     private cursorToolName = CURSOR_OWNERS.EDGE_CONTROL
     private cursorService: CursorService
+    private resizeHandler: ResizeHandler
 
     constructor(
         props: EdgeControlProps,
@@ -60,6 +54,7 @@ export class EdgeControl extends Control {
         this.updateTransform()
 
         this.cursorService = engine.getService<CursorService>('cursor')
+        this.resizeHandler = engine.resizeHandler
     }
 
     protected renderContent(renderContext: RenderContext) {
@@ -131,72 +126,30 @@ export class EdgeControl extends Control {
     }
 
     onMouseDown(data: CanvasMouseEvent): void {
-        this.initialBounds = {
-            pointerX: data.pointer.x,
-            pointerY: data.pointer.y,
-            widgetX: this.shape.left,
-            widgetY: this.shape.top,
-            width: this.shape.width,
-            height: this.shape.height,
+        let position: ResizePosition = ResizePosition.EDGE_LEFT
+        switch (this.position) {
+            case EdgePosition.TOP:
+                position = ResizePosition.EDGE_TOP
+                break
+            case EdgePosition.RIGHT:
+                position = ResizePosition.EDGE_RIGHT
+                break
+            case EdgePosition.BOTTOM:
+                position = ResizePosition.EDGE_BOTTOM
+                break
         }
+        this.resizeHandler.start(data, this.shape, position)
     }
 
     onMouseMove(data: CanvasMouseEvent): void {
-        const deltaX = data.pointer.x - this.initialBounds.pointerX
-        const deltaY = data.pointer.y - this.initialBounds.pointerY
-
-        switch (this.position) {
-            case EdgePosition.LEFT:
-                // with shift
-                if (data.e.shiftKey) {
-                    this.shape.width = this.initialBounds.width - deltaX * 2
-                    this.shape.left = this.initialBounds.widgetX + deltaX
-                } else {
-                    // standard
-                    this.shape.width = this.initialBounds.width - deltaX
-                    this.shape.left = this.initialBounds.widgetX + deltaX
-                }
-                break
-            case EdgePosition.RIGHT:
-                // with shift
-                if (data.e.shiftKey) {
-                    this.shape.width = this.initialBounds.width + deltaX * 2
-                    this.shape.left = this.initialBounds.widgetX - deltaX
-                } else {
-                    // standard
-                    this.shape.width = this.initialBounds.width + deltaX
-                }
-                break
-            case EdgePosition.TOP:
-                // with shift
-                if (data.e.shiftKey) {
-                    this.shape.height = this.initialBounds.height - deltaY * 2
-                    this.shape.top = this.initialBounds.widgetY + deltaY
-                } else {
-                    // standard
-                    this.shape.height = this.initialBounds.height - deltaY
-                    this.shape.top = this.initialBounds.widgetY + deltaY
-                }
-                break
-            case EdgePosition.BOTTOM:
-                // with shift
-                if (data.e.shiftKey) {
-                    this.shape.height = this.initialBounds.height + deltaY * 2
-                    this.shape.top = this.initialBounds.widgetY - deltaY
-                } else {
-                    // standard
-                    this.shape.height = this.initialBounds.height + deltaY
-                }
-                break
-            default:
-                break
+        if (this.resizeHandler.handle(data)) {
+            this.updateTransform()
+            this.engine.canvas.requestRender()
         }
-        this.updateTransform()
-        this.engine.canvas.requestRender()
     }
 
     onMouseUp(data: CanvasMouseEvent): void {
-        console.log('up')
+        this.resizeHandler.end(data)
     }
 
     onMouseEnter() {

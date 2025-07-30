@@ -24,7 +24,8 @@ type CommandBasePayload = {
     cursor: WsCursorPayload
     changeBoardName: WsChangeBoardNamePayload
     fetchPageDetails: FetchPageDetailsPayload
-    addWidget: AddWidgetPayload // todo: implement
+    addWidget: AddWidgetPayload
+    updateWidget: UpdateWidgetPayload // TODO: Implement fully
 }
 
 // defines typical error message for the request
@@ -52,6 +53,8 @@ export type WsJoinResponse = {
 }
 
 export type WsJoinPayload = {
+    board_id: number
+    page_id: number
     board_slug_id: string
     user_auth_token: string
 }
@@ -140,8 +143,42 @@ export type EventBoardNameChanged = {
     }
 }
 
+export type EventWidgetAdded = {
+    event: typeof WS_EVENTS.WIDGET_ADDED
+    data: {
+        widget: WsWidget
+    }
+}
+
+export type EventWidgetUpdated = {
+    event: typeof WS_EVENTS.WIDGET_UPDATED
+    data: {
+        transaction: {
+            transaction_id: string
+            is_committed: boolean
+            shapes: {
+                uuid: string
+                is_deleted: boolean
+                data: Partial<WsWidget>
+            }[]
+        }
+    }
+}
+
 export type WsEvents =
     | EventUserLeft
     | EventUserJoined
     | EventCursor
     | EventBoardNameChanged
+    | EventWidgetAdded
+    | EventWidgetUpdated
+
+export type UpdateWidgetPayload = {
+    transaction_id: string
+    is_committed: boolean
+    shapes: {
+        uuid: string
+        is_deleted?: boolean
+        data: Record<string, unknown>
+    }[]
+}

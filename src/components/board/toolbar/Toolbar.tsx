@@ -12,6 +12,7 @@ import { ShapesDropdown } from '@/components/board/toolbar/ShapesDropdown.tsx'
 import { useBoundStore } from '@/store/store'
 import { useShallow } from 'zustand/react/shallow'
 import { ACTION_MODES, SUB_ACTION_MODES } from '@/helpers/Constant'
+import { PenDropdown } from '@/components/board/toolbar/PenDropdown'
 
 export default function Toolbar() {
     const activeMode = {
@@ -98,6 +99,10 @@ export default function Toolbar() {
                 </Tooltip>
             </TooltipProvider>
             <ShapesDropdown
+                activeMode={activeMode}
+                handleShapeModeChange={handleShapeModeChange}
+            />
+            <PenDropdown
                 activeMode={activeMode}
                 handleShapeModeChange={handleShapeModeChange}
             />

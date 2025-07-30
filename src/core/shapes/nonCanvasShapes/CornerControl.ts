@@ -9,6 +9,7 @@ import {
 } from '@/core/services/CursorService'
 import { Widget } from '@/core/shapes/Widget.ts'
 import { CURSOR_OWNERS } from '@/helpers/Constant.ts'
+import { ResizeHandler, ResizePosition } from '@/core/controls/ResizeHandler'
 
 export enum CornerPosition {
     TOP_LEFT,
@@ -27,19 +28,10 @@ export interface CornerControlProps extends ControlProps {
 export class CornerControl extends Control {
     position: CornerPosition
     private shape: Widget
-    private _shiftDominantAxis: 'x' | 'y' | undefined
-    private initialBounds = {
-        pointerX: 0,
-        pointerY: 0,
-        widgetX: 0,
-        widgetY: 0,
-        width: 0,
-        height: 0,
-        aspectRatio: 1,
-    }
     private strokeWidth = 1.5
     private cursorToolName = CURSOR_OWNERS.CORNER_CONTROL
     private cursorService: CursorService
+    private resizeHandler: ResizeHandler
 
     constructor(
         props: CornerControlProps,
@@ -54,6 +46,8 @@ export class CornerControl extends Control {
         this.updatePosition()
 
         this.cursorService = engine.getService<CursorService>('cursor')
+
+        this.resizeHandler = engine.resizeHandler
     }
 
     private onShapeBoundsChanged() {
@@ -114,90 +108,30 @@ export class CornerControl extends Control {
     }
 
     onMouseDown(data: CanvasMouseEvent): void {
-        this.initialBounds = {
-            pointerX: data.pointer.x,
-            pointerY: data.pointer.y,
-            widgetX: this.shape.left,
-            widgetY: this.shape.top,
-            width: this.shape.width,
-            height: this.shape.height,
-            aspectRatio: this.shape.width / this.shape.height,
+        let resizePosition = ResizePosition.CORNER_TOP_LEFT
+        switch (this.position) {
+            case CornerPosition.TOP_RIGHT:
+                resizePosition = ResizePosition.CORNER_TOP_RIGHT
+                break
+            case CornerPosition.BOTTOM_LEFT:
+                resizePosition = ResizePosition.CORNER_BOTTOM_LEFT
+                break
+            case CornerPosition.BOTTOM_RIGHT:
+                resizePosition = ResizePosition.CORNER_BOTTOM_RIGHT
+                break
         }
+
+        this.resizeHandler.start(data, this.shape, resizePosition)
     }
 
     onMouseMove(data: CanvasMouseEvent): void {
-        this.shape.width =
-            this.initialBounds.width +
-            data.pointer.x -
-            this.initialBounds.pointerX
-        this.shape.height =
-            this.initialBounds.height +
-            data.pointer.y -
-            this.initialBounds.pointerY
-        this.engine.canvas.requestRender()
-
-        let deltaX = data.pointer.x - this.initialBounds.pointerX
-        let deltaY = data.pointer.y - this.initialBounds.pointerY
-        const initial = this.initialBounds
-
-        // if shift is pressed, need to scale equally
-        if (data.e.shiftKey && initial.aspectRatio) {
-            // determine the dominant axis
-            if (!this._shiftDominantAxis) {
-                if (
-                    Math.abs(deltaX) / initial.width >
-                    Math.abs(deltaY) / initial.height
-                ) {
-                    this._shiftDominantAxis = 'x'
-                } else {
-                    this._shiftDominantAxis = 'y'
-                }
-            }
-
-            const isDiagonalFlip =
-                this.position === CornerPosition.TOP_RIGHT ||
-                this.position === CornerPosition.BOTTOM_LEFT
-
-            if (this._shiftDominantAxis === 'x') {
-                const lockedY = deltaX / initial.aspectRatio
-                deltaY = isDiagonalFlip ? -lockedY : lockedY
-            } else {
-                const lockedX = deltaY * initial.aspectRatio
-                deltaX = isDiagonalFlip ? -lockedX : lockedX
-            }
+        if (this.resizeHandler.handle(data)) {
+            this.engine.canvas.requestRender()
         }
-
-        switch (this.position) {
-            case CornerPosition.BOTTOM_RIGHT:
-                this.shape.width = initial.width + deltaX
-                this.shape.height = initial.height + deltaY
-                break
-
-            case CornerPosition.BOTTOM_LEFT: // Bottom-Left: Anchor is Top-Right
-                this.shape.width = initial.width - deltaX
-                this.shape.height = initial.height + deltaY
-                this.shape.left = initial.widgetX + deltaX
-                break
-
-            case CornerPosition.TOP_RIGHT:
-                this.shape.width = initial.width + deltaX
-                this.shape.height = initial.height - deltaY
-                this.shape.top = initial.widgetY + deltaY
-                break
-
-            case CornerPosition.TOP_LEFT: // Top-Left: Anchor is Bottom-Right
-                this.shape.width = initial.width - deltaX
-                this.shape.height = initial.height - deltaY
-                this.shape.left = initial.widgetX + deltaX
-                this.shape.top = initial.widgetY + deltaY
-                break
-        }
-
-        this.engine.canvas.requestRender()
     }
 
     onMouseUp(data: CanvasMouseEvent): void {
-        console.log('up')
+        this.resizeHandler.end(data)
     }
 
     updatePosition() {

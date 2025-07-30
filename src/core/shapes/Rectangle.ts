@@ -2,6 +2,7 @@ import { Shape, ShapeProperties, ShapeProps } from '@/core/shapes/Shape.ts'
 import { SHAPES } from '@/helpers/Constant.ts'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WidgetJson } from '@/core/shapes/Widget.ts'
+import { RGBA } from '@/core/shapes/Color'
 
 export interface RectangleProps extends ShapeProps {
     properties: RectangleShapeProperties
@@ -12,11 +13,10 @@ export interface RectangleShapeProperties extends ShapeProperties {
 }
 
 export class Rectangle extends Shape {
-    private _radius: number
     constructor(props: RectangleProps) {
         super(SHAPES.RECTANGLE, props)
         if (props.properties?.radius) {
-            this._radius =
+            this._properties.radius =
                 props.properties.radius >= 0 && props.properties.radius <= 20
                     ? props.properties.radius!
                     : 0
@@ -44,22 +44,24 @@ export class Rectangle extends Shape {
             this._height - strokeHalf,
         )
 
+        const radius = this._properties.radius as number
+
         // method to call draw rect in canvas kit
-        const drawFn = this._radius > 0 ? 'drawRRect' : 'drawRect'
+        const drawFn = radius > 0 ? 'drawRRect' : 'drawRect'
 
         // if this has radius, create radius rect
-        if (this._radius > 0) {
-            rect = canvasKit.RRectXY(rect, this._radius, this._radius)
-            strokeRect = canvasKit.RRectXY(rect, this._radius, this._radius)
+        if (radius > 0) {
+            rect = canvasKit.RRectXY(rect, radius, radius)
+            strokeRect = canvasKit.RRectXY(rect, radius, radius)
         }
 
         // draw fill
         paint.setStrokeWidth(0)
         const fillColor = canvasKit.Color(
-            this._fillColor.r,
-            this._fillColor.g,
-            this._fillColor.b,
-            this._fillColor.a,
+            (this._properties.fillColor as RGBA).r,
+            (this._properties.fillColor as RGBA).g,
+            (this._properties.fillColor as RGBA).b,
+            (this._properties.fillColor as RGBA).a,
         )
         paint.setColor(fillColor)
         paint.setStyle(canvasKit.PaintStyle.Fill)
@@ -72,10 +74,10 @@ export class Rectangle extends Shape {
 
         // draw stroke
         const strokeColor = canvasKit.Color(
-            this._strokeColor.r,
-            this._strokeColor.g,
-            this._strokeColor.b,
-            this._strokeColor.a,
+            (this._properties.strokeColor as RGBA).r,
+            (this._properties.strokeColor as RGBA).g,
+            (this._properties.strokeColor as RGBA).b,
+            (this._properties.strokeColor as RGBA).a,
         )
         paint.setColor(strokeColor)
         paint.setStyle(canvasKit.PaintStyle.Stroke)
@@ -89,12 +91,7 @@ export class Rectangle extends Shape {
     }
 
     toJson(): WidgetJson {
-        const jsonData = this.generateJson()
-        if (this._radius) {
-            jsonData.properties.radius = this._radius
-        }
-
-        return jsonData
+        return this.generateJson()
     }
 
     static loadFromJson(json: RectangleProps): Rectangle {

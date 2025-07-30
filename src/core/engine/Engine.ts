@@ -1,7 +1,6 @@
 import { Canvas, Point, setCanvasStyles } from '@/core/canvas/Canvas.ts'
 import { WsEngine } from '@/core/WsEngine.ts'
 import { UpperCanvasRenderer } from '@/core/renderers/UpperCanvasRenderer.ts'
-
 import { Emitter } from '@/core/emitter/Emitter.ts'
 import { Stage } from '../stage/Stage'
 import { ServiceManager } from '../services/ServiceManager'
@@ -20,6 +19,10 @@ import { CollaboratorsService } from '@/core/services/CollaboratorsService.ts'
 import { WidgetsService } from '@/core/services/WidgetsService.ts'
 import { PageService } from '@/core/services/PageService.ts'
 import { CursorService } from '@/core/services/CursorService.ts'
+import { DragHandler } from '@/core/controls/DragHandler'
+import { ResizeHandler } from '@/core/controls/ResizeHandler'
+import { TransactionHandler } from '@/core/transaction/TransactionHandler'
+import { PathToolService } from '@/core/services/PathToolService'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -32,7 +35,11 @@ export type EngineEventsMap = {
 }
 
 export class Engine extends Emitter<EngineEventsMap> {
+    // TODO: remove slug and board id here for SST
     private _slugId: string
+    private _boardId: number
+    private _pageId: number
+    private: string
     private _mouseController: MouseController
     private _upperCanvasEl: HTMLCanvasElement
     private _stage: Stage
@@ -40,6 +47,9 @@ export class Engine extends Emitter<EngineEventsMap> {
     wsEngine: WsEngine
     private serviceManager: ServiceManager
     private _isRunning = false
+    private _dragHandler: DragHandler
+    private _resizeHandler: ResizeHandler
+    private _transactionHandler: TransactionHandler
 
     upperCanvasRenderer: UpperCanvasRenderer
 
@@ -47,11 +57,21 @@ export class Engine extends Emitter<EngineEventsMap> {
     canvasInitiated = new Signal<Canvas>()
     initialized = new Signal()
 
-    constructor(slugId: string) {
+    constructor(slugId: string, boardId: number, pageId: number) {
         super()
         this._slugId = slugId
-        this.wsEngine = new WsEngine(import.meta.env.VITE_WS_URL, this._slugId)
+        this._boardId = boardId
+        this._pageId = pageId
+        this.wsEngine = new WsEngine(
+            import.meta.env.VITE_WS_URL,
+            this._slugId,
+            this._boardId,
+            this._pageId,
+        )
 
+        this._transactionHandler = new TransactionHandler(this.wsEngine)
+        this._dragHandler = new DragHandler(this)
+        this._resizeHandler = new ResizeHandler(this)
         this._mouseController = new MouseController()
         this.serviceManager = new ServiceManager()
         this.initializeServices()
@@ -143,6 +163,10 @@ export class Engine extends Emitter<EngineEventsMap> {
                 selectionService,
             ),
         )
+        this.serviceManager.register(
+            'pathTool',
+            new PathToolService(this, this._mouseController, toolService),
+        )
         // cursorSender service sends user's cursor position to the server
         this.serviceManager.register(
             'cursorSender',
@@ -157,7 +181,10 @@ export class Engine extends Emitter<EngineEventsMap> {
             new CollaboratorsService(this, wsEventService),
         )
         this.serviceManager.register('page', new PageService(this))
-        this.serviceManager.register('widgets', new WidgetsService(this))
+        this.serviceManager.register(
+            'widgets',
+            new WidgetsService(this, wsEventService),
+        )
     }
 
     getService<T>(name: string): T {
@@ -173,5 +200,17 @@ export class Engine extends Emitter<EngineEventsMap> {
      */
     get stage() {
         return this._stage
+    }
+
+    get dragHandler(): DragHandler {
+        return this._dragHandler
+    }
+
+    get resizeHandler(): ResizeHandler {
+        return this._resizeHandler
+    }
+
+    get transactionHandler(): TransactionHandler {
+        return this._transactionHandler
     }
 }

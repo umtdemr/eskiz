@@ -9,6 +9,7 @@ import { WsWidget } from '@/types/Websocket.ts'
 export type WidgetType =
     | 'shape'
     | 'text'
+    | 'path'
     | 'multiSelector'
     | 'border'
     | 'control'
@@ -57,6 +58,7 @@ export abstract class Widget extends Layer {
     protected _localBounds: BoundingBox // Local bounds (object's own space)
     protected _selected: boolean = false
     protected _isDynamic: boolean = false
+    protected _properties: Record<string, unknown>
 
     boundsChanged = new Signal()
 
@@ -164,6 +166,28 @@ export abstract class Widget extends Layer {
         throw new Error('must be implemented')
     }
 
+    updateWithPartialState(json: Partial<WsWidget>) {
+        for (const key of Object.keys(json)) {
+            switch (key) {
+                case 'x':
+                    this.left = json.x!
+                    break
+                case 'y':
+                    this.top = json.y!
+                    break
+                case 'width':
+                    this.width = json.width!
+                    break
+                case 'height':
+                    this.height = json.height!
+                    break
+                case 'z_index':
+                    this.zIndex = json.z_index!
+                    break
+            }
+        }
+    }
+
     contains(x: number, y: number, scale: number): boolean {
         return this.bounds.contains(x * scale, y * scale)
     }
@@ -219,6 +243,16 @@ export abstract class Widget extends Layer {
 
     set left(left: number) {
         this._x = left
+        this.updateBounds()
+    }
+
+    set x(x: number) {
+        this._x = x
+        this.updateBounds()
+    }
+
+    set y(y: number) {
+        this._y = y
         this.updateBounds()
     }
 
@@ -278,5 +312,9 @@ export abstract class Widget extends Layer {
 
     get isDynamic(): boolean {
         return this._isDynamic
+    }
+
+    get widgetType(): WidgetType {
+        return this._widgetType
     }
 }
