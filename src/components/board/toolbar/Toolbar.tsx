@@ -31,6 +31,13 @@ export default function Toolbar() {
         [changeActiveMode],
     )
 
+    const handlePathModeChange = useCallback(
+        (newMode: keyof typeof SUB_ACTION_MODES) => {
+            changeActiveMode(ACTION_MODES.PATH, newMode)
+        },
+        [changeActiveMode],
+    )
+
     return (
         <div
             className="fixed flex gap-2 flex-col rounded p-2 top-[50%] left-5 bg-white"
@@ -104,7 +111,7 @@ export default function Toolbar() {
             />
             <PenDropdown
                 activeMode={activeMode}
-                handleShapeModeChange={handleShapeModeChange}
+                handlePathModeChange={handlePathModeChange}
             />
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
