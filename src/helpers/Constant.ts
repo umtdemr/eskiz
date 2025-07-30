@@ -100,6 +100,7 @@ export const ACTION_MODES = {
     SELECT: 'SELECT',
     PAN: 'PAN',
     CREATE: 'CREATE',
+    PATH: 'PATH',
 } as const
 
 export const DRAWING_MODES = {

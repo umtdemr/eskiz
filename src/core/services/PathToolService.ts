@@ -81,7 +81,7 @@ export class PathToolService extends Service {
 
         if (
             state.subTool === SUB_ACTION_MODES.DRAW_PEN &&
-            state.tool === ACTION_MODES.CREATE
+            state.tool === ACTION_MODES.PATH
         ) {
             this.init()
         } else {
