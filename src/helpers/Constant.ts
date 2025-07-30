@@ -121,3 +121,9 @@ export const CURSOR_OWNERS = {
     EDGE_CONTROL: 'edge-control',
     CORNER_CONTROL: 'corner-control',
 }
+
+export const PEN_CONSTANTS = {
+    THICKNESS_MAX: 50,
+    THICKNESS_STEP: 5,
+    THICKNESS_MIN: 5,
+}
