@@ -13,7 +13,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
-import { Brush } from 'lucide-react'
+import { Brush, Eraser } from 'lucide-react'
 import {
     ACTION_MODES,
     PEN_CONSTANTS,
@@ -34,6 +34,11 @@ const tools: {
         tooltip: 'Pen',
         mode: SUB_ACTION_MODES.DRAW_PEN,
         icon: Brush,
+    },
+    {
+        tooltip: 'Eraser',
+        mode: SUB_ACTION_MODES.ERASER,
+        icon: Eraser,
     },
 ]
 

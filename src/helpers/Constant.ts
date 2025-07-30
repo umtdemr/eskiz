@@ -107,6 +107,7 @@ export const DRAWING_MODES = {
     CREATE_TRIANGLE: 'CREATE_TRIANGLE',
     CREATE_ELLIPSE: 'CREATE_ELLIPSE',
     DRAW_PEN: 'DRAW_PEN',
+    ERASER: 'ERASER',
 } as const
 
 export const SUB_ACTION_MODES = {
