@@ -57,7 +57,9 @@
         - [x] Wheel service
     - [ ] Pagination and search
     - [x] Create better signal system
-    - [ ] Adding pen tool
+    - [x] Adding pen tool
+    - [x] Adding ERASER
+        - [ ] Make it work when removing is there. Note: add a seperate class to search widgets
     - [ ] Adding text
     - [ ] Sticky note
     - [ ] Undo redo
