@@ -10,6 +10,7 @@ export interface PathProps extends WidgetProps {
 
 export interface PathProperties {
     color?: RGBA
+    strokeWidth?: number
 }
 
 export type PathType = 'pen' | 'trail'
