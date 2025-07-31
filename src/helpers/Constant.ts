@@ -129,3 +129,9 @@ export const PEN_CONSTANTS = {
     THICKNESS_STEP: 5,
     THICKNESS_MIN: 5,
 }
+
+export const ERASER_TRAIL = {
+    NUM_POINTS: 12,
+    INTERPOLATION_FACTOR: 0.6,
+    DEFAULT_SIZE: 7,
+}

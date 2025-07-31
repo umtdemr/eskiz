@@ -4,16 +4,13 @@ import { SubModeChangedState, ToolService } from '@/core/services/ToolService'
 import { CanvasMouseEvent, Engine } from '@/core/engine/Engine'
 import { MouseController } from '@/core/engine/MouseController'
 import { Path } from '@/core/shapes/path/Path'
-import {
-    ACTION_MODES,
-    CURSOR_OWNERS,
-    SUB_ACTION_MODES,
-} from '@/helpers/Constant'
+import { ACTION_MODES, CURSOR_OWNERS } from '@/helpers/Constant'
 import { CursorService } from '@/core/services/CursorService'
 import { useBoundStore } from '@/store/store'
 import { canvasKit } from '../canvas/Canvas'
 import { Pen } from '../shapes/path/Pen'
 import { RGBA } from '../shapes/Color'
+import { TrailLayer } from '@/core/stage/TrailLayer'
 
 function med(A: number[], B: number[]) {
     return [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2]
@@ -55,6 +52,8 @@ export class PathToolService extends Service {
         color?: RGBA
         thickness?: number
     } = {}
+    private activePathTool: 'pen' | 'eraser'
+    private trailLayer: TrailLayer
 
     constructor(
         engine: Engine,
@@ -66,6 +65,7 @@ export class PathToolService extends Service {
         this.toolService = toolService
 
         this.toolService.subModeChanged.add(this.onSubModeChanged, this)
+        this.engine.stagesInitiated.add(this.onStagesInitiated, this)
         this.cursorService = this.engine.getService<CursorService>('cursor')
     }
 
@@ -76,13 +76,20 @@ export class PathToolService extends Service {
         this.mouseController.on('mouseUp', this.onMouseUp, this)
     }
 
+    private onStagesInitiated() {
+        this.trailLayer = this.engine.stage.nonCanvasDynamicContainer.trailLayer
+    }
+
     private onSubModeChanged(state: SubModeChangedState) {
         this.reset()
+        this.removeListeners()
 
-        if (
-            state.subTool === SUB_ACTION_MODES.DRAW_PEN &&
-            state.tool === ACTION_MODES.PATH
-        ) {
+        if (state.tool === ACTION_MODES.PATH) {
+            if (state.subTool === 'DRAW_PEN') {
+                this.activePathTool = 'pen'
+            } else if (state.subTool === 'ERASER') {
+                this.activePathTool = 'eraser'
+            }
             this.init()
         } else {
             this.dispose()
@@ -90,6 +97,11 @@ export class PathToolService extends Service {
     }
 
     private onMouseDown(data: CanvasMouseEvent) {
+        if (this.activePathTool === 'eraser') {
+            this.trailLayer.start(data.pointer.x, data.pointer.y)
+            return
+        }
+
         const { thickness, color } = useBoundStore.getState().pen
         this.penState.thickness = thickness
         this.penState.color = color
@@ -109,6 +121,11 @@ export class PathToolService extends Service {
     }
 
     private onMouseMove(data: CanvasMouseEvent) {
+        if (this.activePathTool === 'eraser') {
+            this.trailLayer.update(data.pointer.x, data.pointer.y)
+            return
+        }
+
         if (!this.path) {
             return
         }
@@ -140,6 +157,11 @@ export class PathToolService extends Service {
         this.engine.canvas.requestRender()
     }
     private onMouseUp() {
+        console.log('uppp')
+        if (this.activePathTool === 'eraser') {
+            this.trailLayer.finish()
+            return
+        }
         if (!this.path) {
             return
         }
@@ -152,10 +174,14 @@ export class PathToolService extends Service {
         this.points = []
     }
 
-    dispose(): void {
+    private removeListeners() {
         this.mouseController.off('mouseDown', this.onMouseDown, this)
         this.mouseController.off('mouseMove', this.onMouseMove, this)
         this.mouseController.off('mouseUp', this.onMouseUp, this)
+    }
+
+    dispose(): void {
+        this.removeListeners()
         this.reset()
     }
 }
