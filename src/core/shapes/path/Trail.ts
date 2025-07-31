@@ -2,10 +2,9 @@ import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { Path, PathProps } from '@/core/shapes/path/Path'
 import { RGBA } from '@/core/shapes/Color'
 
-export class Pen extends Path {
+export class Trail extends Path {
     constructor(props: PathProps) {
-        super('pen', props)
-        this._interactive = true
+        super('trail', props)
     }
 
     protected renderContent(renderContext: RenderContext): void {

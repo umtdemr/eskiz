@@ -12,7 +12,7 @@ export interface PathProperties {
     color?: RGBA
 }
 
-export type PathType = 'pen'
+export type PathType = 'pen' | 'trail'
 
 export abstract class Path extends Widget {
     private _pathType: PathType
@@ -26,7 +26,6 @@ export abstract class Path extends Widget {
             ? props.properties.color
             : CANVAS_COLORS.BLACK
         this._path = new canvasKit.Path()
-        this._interactive = true
     }
 
     get pathType(): PathType {
