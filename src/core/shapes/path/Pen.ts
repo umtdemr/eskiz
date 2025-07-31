@@ -5,6 +5,7 @@ import { RGBA } from '@/core/shapes/Color'
 export class Pen extends Path {
     constructor(props: PathProps) {
         super('pen', props)
+        this._interactive = true
     }
 
     protected renderContent(renderContext: RenderContext): void {

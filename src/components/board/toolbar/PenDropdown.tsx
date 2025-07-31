@@ -13,7 +13,7 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
-import { Brush } from 'lucide-react'
+import { Brush, Eraser } from 'lucide-react'
 import {
     ACTION_MODES,
     PEN_CONSTANTS,
@@ -35,17 +35,22 @@ const tools: {
         mode: SUB_ACTION_MODES.DRAW_PEN,
         icon: Brush,
     },
+    {
+        tooltip: 'Eraser',
+        mode: SUB_ACTION_MODES.ERASER,
+        icon: Eraser,
+    },
 ]
 
 export function PenDropdown({
     activeMode,
-    handleShapeModeChange,
+    handlePathModeChange,
 }: {
     activeMode: {
         mainMode: keyof typeof ACTION_MODES
         subMode?: keyof typeof SUB_ACTION_MODES
     }
-    handleShapeModeChange: (newMode: keyof typeof SUB_ACTION_MODES) => void
+    handlePathModeChange: (newMode: keyof typeof SUB_ACTION_MODES) => void
 }) {
     const [isOpen, setIsOpen] = useState(false)
     const [showColorDropdown, setShowColorDropdown] = useState(false)
@@ -64,7 +69,10 @@ export function PenDropdown({
 
     const handleClick = () => {
         setIsOpen((old) => !old)
-        handleShapeModeChange(SUB_ACTION_MODES.DRAW_PEN)
+        if (activeMode.mainMode === ACTION_MODES.PATH) {
+            return
+        }
+        handlePathModeChange(SUB_ACTION_MODES.DRAW_PEN)
     }
 
     const colorBtnClickHandler = () => {
@@ -86,9 +94,9 @@ export function PenDropdown({
                             variant="ghost"
                             className={clsx('px-2', {
                                 'bg-amber-500':
-                                    activeMode?.subMode ===
-                                    SUB_ACTION_MODES.DRAW_PEN,
-                                'hover:bg-amber-500': activeMode?.subMode,
+                                    activeMode?.mainMode === ACTION_MODES.PATH,
+                                'hover:bg-amber-500':
+                                    activeMode?.mainMode === ACTION_MODES.PATH,
                             })}
                             onClick={handleClick}
                             ref={buttonRef}
@@ -121,7 +129,7 @@ export function PenDropdown({
                                                 tool.mode,
                                         })}
                                         onClick={() =>
-                                            handleShapeModeChange(tool.mode)
+                                            handlePathModeChange(tool.mode)
                                         }
                                     >
                                         {tool.icon && <tool.icon />}
@@ -132,27 +140,32 @@ export function PenDropdown({
                                 </TooltipContent>
                             </Tooltip>
                         ))}
-                        <div className="w-3/5 h-[0.2px] bg-zinc-300 my-2" />
-                        <Tooltip>
-                            <TooltipTrigger>
-                                <ColorButton
-                                    color={`rgba(${selectedColor.r}, ${selectedColor.g}, ${selectedColor.b}, ${selectedColor.a})`}
-                                    ariaLabel="Color and thickness"
-                                    fillPercentage={
-                                        (thickness * 100) /
-                                        PEN_CONSTANTS.THICKNESS_MAX
-                                    }
-                                    onClick={colorBtnClickHandler}
-                                />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                                <p>Color and thickness</p>
-                            </TooltipContent>
-                        </Tooltip>
+                        {activeMode.subMode === SUB_ACTION_MODES.DRAW_PEN ? (
+                            <>
+                                <div className="w-3/5 h-[0.2px] bg-zinc-300 my-2" />
+                                <Tooltip>
+                                    <TooltipTrigger>
+                                        <ColorButton
+                                            color={`rgba(${selectedColor.r}, ${selectedColor.g}, ${selectedColor.b}, ${selectedColor.a})`}
+                                            ariaLabel="Color and thickness"
+                                            fillPercentage={
+                                                (thickness * 100) /
+                                                PEN_CONSTANTS.THICKNESS_MAX
+                                            }
+                                            onClick={colorBtnClickHandler}
+                                        />
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                        <p>Color and thickness</p>
+                                    </TooltipContent>
+                                </Tooltip>
+                            </>
+                        ) : null}
                     </div>
                 ) : null}
 
-                {showColorDropdown ? (
+                {showColorDropdown &&
+                activeMode.subMode === SUB_ACTION_MODES.DRAW_PEN ? (
                     <div
                         className="absolute left-28 top-[50%]"
                         style={{

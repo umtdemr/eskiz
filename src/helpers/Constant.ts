@@ -100,6 +100,7 @@ export const ACTION_MODES = {
     SELECT: 'SELECT',
     PAN: 'PAN',
     CREATE: 'CREATE',
+    PATH: 'PATH',
 } as const
 
 export const DRAWING_MODES = {
@@ -107,6 +108,7 @@ export const DRAWING_MODES = {
     CREATE_TRIANGLE: 'CREATE_TRIANGLE',
     CREATE_ELLIPSE: 'CREATE_ELLIPSE',
     DRAW_PEN: 'DRAW_PEN',
+    ERASER: 'ERASER',
 } as const
 
 export const SUB_ACTION_MODES = {
@@ -126,4 +128,10 @@ export const PEN_CONSTANTS = {
     THICKNESS_MAX: 50,
     THICKNESS_STEP: 5,
     THICKNESS_MIN: 5,
+}
+
+export const ERASER_TRAIL = {
+    NUM_POINTS: 12,
+    INTERPOLATION_FACTOR: 0.6,
+    DEFAULT_SIZE: 7,
 }
