@@ -28,6 +28,7 @@ import { BoardRetrieveResponse } from '@/types/Board.ts'
 import { getAvatar } from '@/helpers/AuthHelper.ts'
 import { CollaboratorUser } from '@/store/collaborators.ts'
 import { PageService } from '@/core/services/PageService.ts'
+import { EditorContainer } from '@/components/board/textEditor/Editor.container'
 
 export default function SingleBoard() {
     const [isInitialized, setIsInitialized] = useState(false)
@@ -260,6 +261,8 @@ export default function SingleBoard() {
                     ) : null}
                 </>
             ) : null}
+
+            <EditorContainer />
 
             {connectionError && !isDisconnected ? (
                 <Dialog open={true}>
