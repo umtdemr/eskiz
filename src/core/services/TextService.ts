@@ -70,7 +70,7 @@ export class TextService extends Service {
         })
 
         this.engine.stage.widgetsDefaultLayer.addChildren(textbox)
-        this.selectionService.selectWidget(textbox)
+        this.selectionService.tempSelectWidget(textbox)
         this.toolService.changeTool(ACTION_MODES.SELECT)
     }
 
