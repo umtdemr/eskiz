@@ -100,6 +100,7 @@ export const ACTION_MODES = {
     SELECT: 'SELECT',
     PAN: 'PAN',
     CREATE: 'CREATE',
+    TEXT: 'TEXT',
     PATH: 'PATH',
 } as const
 
@@ -122,6 +123,7 @@ export const CURSOR_OWNERS = {
     PATH_TOOL: 'path-tool', // pen
     EDGE_CONTROL: 'edge-control',
     CORNER_CONTROL: 'corner-control',
+    TEXT_SERVICE: 'text-service',
 }
 
 export const PEN_CONSTANTS = {
