@@ -12,6 +12,7 @@ export interface TextBoxProperties {
     text: string
     color?: RGBA
     fontSize: number
+    isPlaceholder?: boolean
 }
 
 export class TextBox extends Widget {
@@ -19,6 +20,7 @@ export class TextBox extends Widget {
     private _color: RGBA
     private _fontSize: number
     private _paragraph: Paragraph
+    private _isPlaceholder: boolean
 
     constructor(props: TextBoxProps) {
         super('text', props)
@@ -27,6 +29,10 @@ export class TextBox extends Widget {
             ? props.properties.color
             : CANVAS_COLORS.BLACK
         this._fontSize = props.properties.fontSize
+        this._isPlaceholder =
+            props.properties.isPlaceholder !== undefined
+                ? props.properties.isPlaceholder
+                : false
 
         this.createOrUpdateParagraph()
         this._interactive = true
@@ -45,20 +51,23 @@ export class TextBox extends Widget {
     }
 
     private getParagraphStyle() {
+        const color = this.getColor()
         return new canvasKit.ParagraphStyle({
             textStyle: {
-                color: canvasKit.Color(
-                    this._color.r,
-                    this._color.g,
-                    this._color.b,
-                    this._color.a,
-                ),
+                color: canvasKit.Color(color.r, color.g, color.b, color.a),
                 fontFamilies: ['Open-Sans'],
                 fontSize: this._fontSize,
                 textBaseline: canvasKit.TextBaseline.Ideographic,
             },
-            textAlign: canvasKit.TextAlign.Center,
+            textAlign: canvasKit.TextAlign.Left,
         })
+    }
+
+    private getColor(): RGBA {
+        if (this._isPlaceholder) {
+            return CANVAS_COLORS.PURPLE
+        }
+        return this._color
     }
 
     renderContent(renderContext: RenderContext) {
