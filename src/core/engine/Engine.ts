@@ -23,8 +23,6 @@ import { DragHandler } from '@/core/controls/DragHandler'
 import { ResizeHandler } from '@/core/controls/ResizeHandler'
 import { TransactionHandler } from '@/core/transaction/TransactionHandler'
 import { PathToolService } from '@/core/services/PathToolService'
-import { TextBox } from '../shapes/TextBox'
-import { Rectangle } from '../shapes/Rectangle'
 import { TextService } from '../services/TextService'
 
 export type CanvasMouseEvent = {
@@ -84,17 +82,6 @@ export class Engine extends Emitter<EngineEventsMap> {
 
         this.upperCanvasRenderer = new UpperCanvasRenderer()
 
-        this.stage.widgetsDefaultLayer.addChildren(
-            new TextBox({
-                x: 200,
-                y: 200,
-                width: 800,
-                properties: {
-                    text: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin venenatis quam sit amet velit condimentum mattis. Etiam quis pellentesque massa. Duis sagittis volutpat ultricies. Proin aliquet enim placerat justo facilisis, ac ornare nunc molestie. Nunc elit eros, fermentum in dignissim eu, condimentum nec tortor. Maecenas quis eleifend massa, quis fringilla sem. Integer vitae nulla quis lectus semper iaculis id eget ipsum. Proin ullamcorper posuere nunc sit amet facilisis. Quisque et posuere lorem. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Pellentesque vitae tortor ac mauris consectetur tincidunt vitae vel augue. Etiam hendrerit massa sed accumsan accumsan. Suspendisse id convallis dolor.',
-                    fontSize: 18,
-                },
-            }),
-        )
         this.stagesInitiated.dispatch()
     }
 
