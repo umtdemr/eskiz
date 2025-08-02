@@ -13,6 +13,7 @@ export interface TextBoxProperties {
     color?: RGBA
     fontSize: number
     isPlaceholder?: boolean
+    lineHeight?: number
 }
 
 export class TextBox extends Widget {
@@ -21,6 +22,8 @@ export class TextBox extends Widget {
     private _fontSize: number
     private _paragraph: Paragraph
     private _isPlaceholder: boolean
+    private _shouldRender = true
+    private _lineHeight: number
 
     constructor(props: TextBoxProps) {
         super('text', props)
@@ -33,6 +36,7 @@ export class TextBox extends Widget {
             props.properties.isPlaceholder !== undefined
                 ? props.properties.isPlaceholder
                 : false
+        this._lineHeight = props.properties.lineHeight || 1.4
 
         this.createOrUpdateParagraph()
         this._interactive = true
@@ -43,6 +47,9 @@ export class TextBox extends Widget {
             this.getParagraphStyle(),
             fontManager,
         )
+        if (this._paragraph) {
+            this._paragraph.delete()
+        }
         builder.addText(this._text)
         this._paragraph = builder.build()
         this._paragraph.layout(this.width)
@@ -57,21 +64,42 @@ export class TextBox extends Widget {
                 color: canvasKit.Color(color.r, color.g, color.b, color.a),
                 fontFamilies: ['Open-Sans'],
                 fontSize: this._fontSize,
-                textBaseline: canvasKit.TextBaseline.Ideographic,
+                heightMultiplier: this._lineHeight,
             },
             textAlign: canvasKit.TextAlign.Left,
         })
     }
 
     private getColor(): RGBA {
-        if (this._isPlaceholder) {
-            return CANVAS_COLORS.PURPLE
-        }
         return this._color
     }
 
     renderContent(renderContext: RenderContext) {
+        if (!this._shouldRender) {
+            return
+        }
         const ctx = renderContext.ctx
         ctx.drawParagraph(this._paragraph, 0, 0)
+    }
+
+    setText(text: string) {
+        this._text = text
+        this.createOrUpdateParagraph()
+    }
+
+    hideText() {
+        this._shouldRender = false
+    }
+
+    showText() {
+        this._shouldRender = true
+    }
+
+    get fontSize(): number {
+        return this._fontSize
+    }
+
+    get lineHeight(): number {
+        return this._lineHeight
     }
 }

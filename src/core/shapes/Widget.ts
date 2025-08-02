@@ -61,6 +61,7 @@ export abstract class Widget extends Layer {
     protected _properties: Record<string, unknown>
 
     boundsChanged = new Signal()
+    deselected = new Signal()
 
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })

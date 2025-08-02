@@ -39,6 +39,7 @@ export class Canvas {
 
     tickBefore = new Signal()
     tick = new Signal()
+    transform = new Signal()
 
     constructor(stage: Stage) {
         this._stage = stage
@@ -235,6 +236,7 @@ export class Canvas {
 
     set translateX(x: number) {
         this.offsetX = x
+        this.transform.dispatch()
     }
 
     get translateY() {
@@ -243,11 +245,13 @@ export class Canvas {
 
     set translateY(y: number) {
         this.offsetY = y
+        this.transform.dispatch()
     }
 
     set zoom(newZoom: number) {
         newZoom = Math.min(Math.max(ZOOM_LEVELS.MIN, newZoom), ZOOM_LEVELS.MAX)
         this.scale = newZoom
+        this.transform.dispatch()
         this.needsRender = true
     }
 

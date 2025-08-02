@@ -7,6 +7,7 @@ import { CURSOR_OWNERS, ACTION_MODES } from '@/helpers/Constant'
 import { Signal } from '@/core/signal/Signal'
 import { TextBox } from '@/core/shapes/TextBox'
 import { SelectionService } from '@/core/services/SelectionService'
+import { TextChangedSignal, TextEditor } from '@/core/textEditor/TextEditor'
 
 export class TextService extends Service {
     private mouseController: MouseController
@@ -14,6 +15,8 @@ export class TextService extends Service {
     private cursorService: CursorService
     private selectionService: SelectionService
     private cursorToolName = CURSOR_OWNERS.TEXT_SERVICE
+    private textEditor: TextEditor
+    private textBox: TextBox
 
     // TODO: do I need?
     createText = new Signal<{ x: number; y: number }>()
@@ -32,6 +35,7 @@ export class TextService extends Service {
         this.selectionService = selectionService
 
         this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
+        this.textEditor = this.engine.textEditor
     }
 
     private init() {
@@ -70,8 +74,46 @@ export class TextService extends Service {
         })
 
         this.engine.stage.widgetsDefaultLayer.addChildren(textbox)
+
+        // arrange center
+        textbox.top = textbox.top - textbox.height / 2
+
+        this.textEditor.showEditor({
+            x: textbox.centerX,
+            y: textbox.centerY,
+            width: textbox.width,
+            height: textbox.height,
+            fontSize: textbox.fontSize,
+            lineHeight: textbox.lineHeight,
+        })
+
+        this.textBox = textbox
+        this.textBox.hideText() // hide text when text editor is active
+        this.textBox.deselected.addOnce(this.onDeselected, this)
+        this.textEditor.textChanged.add(this.onTextChanged, this)
+
         this.selectionService.tempSelectWidget(textbox)
         this.toolService.changeTool(ACTION_MODES.SELECT)
+    }
+
+    private onTextChanged(props: TextChangedSignal) {
+        // replace one \n to avoid +1 line issue
+        const trimmedText = props.text.replace(/\n$/, '')
+
+        this.textBox.setText(trimmedText)
+
+        // sync text editor dimensions with text box
+        // TODO: fix this
+        /*this.textEditor.updateSize({
+            width: this.textBox.width,
+            height: this.textBox.height,
+        })*/
+        this.engine.canvas.requestRender()
+    }
+
+    private onDeselected() {
+        this.textEditor.hideEditor()
+        this.textBox.showText()
     }
 
     dispose(): void {
