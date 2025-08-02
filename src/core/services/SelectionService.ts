@@ -45,7 +45,6 @@ export class SelectionService extends Service {
         this.engine.canvas.requestRender()
     }
 
-
     tempSelectWidget(widget: Widget) {
         this.clearSelection(false)
         this._selected = [widget]
@@ -105,7 +104,10 @@ export class SelectionService extends Service {
             return
         }
         this._selected = allObjects
-        this.selectionChanged.dispatch()
+        this.selectionChanged.dispatch({
+            type: 'selected',
+            widgets: allObjects,
+        })
     }
 
     get selected() {
