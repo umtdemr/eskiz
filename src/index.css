@@ -85,3 +85,18 @@
         font-family: 'Open-Sans', sans-serif;
     }
 }
+
+.ql-editor {
+        outline: none;
+}
+
+.ql-blank::before {
+    content: attr(data-placeholder);
+    pointer-events: none;
+    position: absolute;
+    left: 0;
+    white-space: nowrap;
+    font-family: "Open-Sans", sans-serif !important;
+    color: "#000";
+    opacity: 0.3;
+}

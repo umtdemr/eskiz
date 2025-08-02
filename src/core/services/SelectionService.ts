@@ -56,7 +56,11 @@ export class SelectionService extends Service {
     }
 
     clearSelection(emit = true) {
-        this._selected.forEach((widget) => (widget.selected = false))
+        this._selected.forEach((widget) => {
+            widget.selected = false
+            widget.deselected.dispatch()
+        })
+
         this._selected = []
 
         if (!emit) {
