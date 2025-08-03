@@ -20,6 +20,7 @@ export type Cursors =
     | 'panning'
     | 'crosshair'
     | ResizeCursors
+    | 'text'
 
 export interface CursorRequest {
     cursor: Cursors
@@ -49,6 +50,7 @@ export class CursorService extends Service {
             ['vertical-resize', 'ns-resize'],
             ['scale-resize-left', 'nwse-resize'],
             ['scale-resize-right', 'nesw-resize'],
+            ['text', 'text'],
         ])
     }
 

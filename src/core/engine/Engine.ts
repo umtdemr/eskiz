@@ -23,6 +23,8 @@ import { DragHandler } from '@/core/controls/DragHandler'
 import { ResizeHandler } from '@/core/controls/ResizeHandler'
 import { TransactionHandler } from '@/core/transaction/TransactionHandler'
 import { PathToolService } from '@/core/services/PathToolService'
+import { TextService } from '../services/TextService'
+import { TextEditor } from '../textEditor/TextEditor'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -50,6 +52,7 @@ export class Engine extends Emitter<EngineEventsMap> {
     private _dragHandler: DragHandler
     private _resizeHandler: ResizeHandler
     private _transactionHandler: TransactionHandler
+    private _textEditor: TextEditor
 
     upperCanvasRenderer: UpperCanvasRenderer
 
@@ -73,6 +76,7 @@ export class Engine extends Emitter<EngineEventsMap> {
         this._dragHandler = new DragHandler(this)
         this._resizeHandler = new ResizeHandler(this)
         this._mouseController = new MouseController()
+        this._textEditor = new TextEditor(this)
         this.serviceManager = new ServiceManager()
         this.initializeServices()
 
@@ -167,6 +171,15 @@ export class Engine extends Emitter<EngineEventsMap> {
             'pathTool',
             new PathToolService(this, this._mouseController, toolService),
         )
+        this.serviceManager.register(
+            'text',
+            new TextService(
+                this,
+                this._mouseController,
+                toolService,
+                selectionService,
+            ),
+        )
         // cursorSender service sends user's cursor position to the server
         this.serviceManager.register(
             'cursorSender',
@@ -212,5 +225,9 @@ export class Engine extends Emitter<EngineEventsMap> {
 
     get transactionHandler(): TransactionHandler {
         return this._transactionHandler
+    }
+
+    get textEditor(): TextEditor {
+        return this._textEditor
     }
 }
