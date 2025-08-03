@@ -6,12 +6,18 @@ import { Signal } from '../signal/Signal'
 import { Service } from './Service'
 import { MainModeChangedState, ToolService } from './ToolService'
 
+export interface SelectionChangedProps {
+    type: 'selected' | 'tempSelected' | 'selectionCleared'
+    widgets?: Widget[]
+}
+
 export class SelectionService extends Service {
     private _selected: Widget[] = []
     private _selectedDuringDrawing: Widget[] = []
     private toolService: ToolService
 
-    selectionChanged = new Signal()
+    selectionChanged = new Signal<SelectionChangedProps>()
+    tempSelected = new Signal<Widget>()
     drawingSelectionUpdated = new Signal()
 
     constructor(engine: Engine, toolService: ToolService) {
@@ -32,14 +38,38 @@ export class SelectionService extends Service {
     selectWidget(widget: Widget) {
         widget.selected = true
         this._selected = [widget]
-        this.selectionChanged.dispatch()
+        this.selectionChanged.dispatch({
+            type: 'selected',
+            widgets: this._selected,
+        })
         this.engine.canvas.requestRender()
     }
 
-    clearSelection() {
-        this._selected.forEach((widget) => (widget.selected = false))
+    tempSelectWidget(widget: Widget) {
+        this.clearSelection(false)
+        this._selected = [widget]
+        this.selectionChanged.dispatch({
+            type: 'tempSelected',
+            widgets: this._selected,
+        })
+        this.engine.canvas.requestRender()
+    }
+
+    clearSelection(emit = true) {
+        this._selected.forEach((widget) => {
+            widget.selected = false
+            widget.deselected.dispatch()
+        })
+
         this._selected = []
-        this.selectionChanged.dispatch()
+
+        if (!emit) {
+            return
+        }
+
+        this.selectionChanged.dispatch({
+            type: 'selectionCleared',
+        })
     }
 
     checkObjectsInRect(rect: BoundingBox): Widget[] {
@@ -78,7 +108,10 @@ export class SelectionService extends Service {
             return
         }
         this._selected = allObjects
-        this.selectionChanged.dispatch()
+        this.selectionChanged.dispatch({
+            type: 'selected',
+            widgets: allObjects,
+        })
     }
 
     get selected() {

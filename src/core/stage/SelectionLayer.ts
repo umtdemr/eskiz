@@ -1,5 +1,8 @@
 import { Engine } from '../engine/Engine'
-import { SelectionService } from '../services/SelectionService'
+import {
+    SelectionChangedProps,
+    SelectionService,
+} from '@/core/services/SelectionService'
 import { SelectToolService } from '@/core/services/SelectToolService'
 import { Border } from '../shapes/nonCanvasShapes/Border'
 import { Widget } from '../shapes/Widget'
@@ -50,9 +53,20 @@ export class SelectionLayer extends Layer {
     /**
      * Handles selection changes. It is called after mouse up events - when the selection is certain.
      */
-    onSelectionChanged() {
-        this._selected = this.selectionService.selected
-        this.createSelectionUI(this._selected)
+    onSelectionChanged(props: SelectionChangedProps) {
+        switch (props.type) {
+            case 'selected':
+                this._selected = props.widgets || []
+                this.createSelectionUI(this._selected)
+                break
+            case 'tempSelected':
+                this._selected = []
+                this.addBorders(props.widgets!)
+                break
+            case 'selectionCleared':
+                this._selected = []
+                this.clearSelection()
+        }
     }
 
     /**
@@ -82,6 +96,13 @@ export class SelectionLayer extends Layer {
 
     onTempMoveFinished() {
         this.clearSelection()
+    }
+
+    tempAddBorder(widget: Widget) {
+        // if there is any selection,,
+        this.clearSelection()
+
+        this.addBorders([widget])
     }
 
     /**

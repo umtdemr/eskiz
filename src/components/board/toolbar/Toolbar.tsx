@@ -96,7 +96,16 @@ export default function Toolbar() {
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button disabled variant="ghost" className="px-2">
+                        <Button
+                            variant="ghost"
+                            className={clsx('px-2', {
+                                'bg-amber-500':
+                                    activeMode?.mainMode === ACTION_MODES.TEXT,
+                                'hover:bg-amber-500':
+                                    activeMode?.mainMode === ACTION_MODES.TEXT,
+                            })}
+                            onClick={() => changeActiveMode(ACTION_MODES.TEXT)}
+                        >
                             <Type />
                         </Button>
                     </TooltipTrigger>
