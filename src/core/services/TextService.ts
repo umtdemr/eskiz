@@ -103,11 +103,12 @@ export class TextService extends Service {
         this.textBox.setText(trimmedText)
 
         // sync text editor dimensions with text box
-        // TODO: fix this
-        /*this.textEditor.updateSize({
+        this.textEditor.updateSize({
             width: this.textBox.width,
             height: this.textBox.height,
-        })*/
+            x: this.textBox.centerX,
+            y: this.textBox.centerY,
+        })
         this.engine.canvas.requestRender()
     }
 
