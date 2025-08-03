@@ -61,9 +61,10 @@
     - [x] Adding ERASER
         - [ ] Make it work when removing is there. Note: add a seperate class to search widgets
     - [ ] Adding text
-      - [ ] UpdateSize
+      - [x] UpdateSize
       - [ ] Double click to edit texts
-      - [ ] Save them
+      - [ ] Save them in db
+    - [ ] Adding text to shapes
     - [ ] Sticky note
     - [ ] Undo redo
 - Refactor & bug fixes
