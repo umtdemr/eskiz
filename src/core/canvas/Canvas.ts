@@ -73,6 +73,7 @@ export class Canvas {
             ctx.scale(this.scale, this.scale)
             ctx.translate(this.offsetX, this.offsetY)
 
+            // TODO perf:
             this.drawGrid(ctx)
 
             // render all elements
