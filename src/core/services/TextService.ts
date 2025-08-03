@@ -4,7 +4,6 @@ import { Service } from '@/core/services/Service'
 import { MainModeChangedState, ToolService } from '@/core/services/ToolService'
 import { CursorService } from '@/core/services/CursorService.ts'
 import { CURSOR_OWNERS, ACTION_MODES } from '@/helpers/Constant'
-import { Signal } from '@/core/signal/Signal'
 import { TextBox } from '@/core/shapes/TextBox'
 import { SelectionService } from '@/core/services/SelectionService'
 import { TextChangedSignal, TextEditor } from '@/core/textEditor/TextEditor'
@@ -17,9 +16,6 @@ export class TextService extends Service {
     private cursorToolName = CURSOR_OWNERS.TEXT_SERVICE
     private textEditor: TextEditor
     private textBox: TextBox
-
-    // TODO: do I need?
-    createText = new Signal<{ x: number; y: number }>()
 
     constructor(
         engine: Engine,
