@@ -21,7 +21,7 @@ export class TextEditor {
     private _editorContainer: HTMLDivElement
     private _quill: Quill
     private _isShowing = false
-    private _initialEditProps: EditProps
+    private _editProps: EditProps
 
     textChanged = new Signal<TextChangedSignal>()
 
@@ -34,7 +34,7 @@ export class TextEditor {
         wrapper.style.position = 'fixed'
         wrapper.style.left = '-9999px'
         wrapper.style.top = '-9999px'
-        wrapper.style.transformOrigin = 'center center'
+        wrapper.style.transformOrigin = 'left top'
 
         this._wrapperEl = wrapper
         document.body.appendChild(this._wrapperEl)
@@ -56,17 +56,22 @@ export class TextEditor {
     private setPosition() {
         const transform = this.engine.canvas.viewportTransform
 
-        const neww = this.engine.canvas.transformPoint(
+        const transformedPosition = this.engine.canvas.transformPoint(
             {
-                x: this._initialEditProps.x,
-                y: this._initialEditProps.y,
+                x: this._editProps.x,
+                y: this._editProps.y,
             },
             transform,
         )
-        this._wrapperEl.style.left = `${neww.x - this._initialEditProps.width / 2}px`
-        this._wrapperEl.style.top = `${neww.y - this._initialEditProps.height / 2}px`
+        console.log(transformedPosition)
         const scale = this.engine.canvas.zoom
         this._wrapperEl.style.transform = `scale(${scale})`
+        this._editorContainer.style.height = `${this._editProps.height}px`
+        this._wrapperEl.style.width = `${this._editProps.width}px`
+        this._wrapperEl.style.height = `${this._editProps.height}px`
+        this._wrapperEl.style.left = `${transformedPosition.x - (this._editProps.width * scale) / 2}px`
+        this._wrapperEl.style.top = `${transformedPosition.y - (this._editProps.height * scale) / 2}px`
+        this._quill.root.style.height = `${this._editProps.height}px`
     }
 
     private onCanvasTransform() {
@@ -84,22 +89,20 @@ export class TextEditor {
         this.textChanged.dispatch({ text: this._quill.getText() })
     }
 
-    updateSize(props: Pick<EditProps, 'width' | 'height'>) {
-        this._wrapperEl.style.width = `${props.width}px`
-        this._wrapperEl.style.height = `${props.height}px`
-        this._quill.root.style.height = `${props.height}px`
+    updateSize(props: Pick<EditProps, 'width' | 'height' | 'x' | 'y'>) {
+        this._editProps.x = props.x
+        this._editProps.y = props.y
+        this._editProps.width = props.width
+        this._editProps.height = props.height
         this.setPosition()
     }
 
     showEditor(props: EditProps) {
-        this._initialEditProps = props
+        this._editProps = props
         this.engine.canvas.transform.add(this.onCanvasTransform, this)
 
         this._wrapperEl.style.display = 'block'
-        this._wrapperEl.style.width = `${props.width}px`
-        this._wrapperEl.style.height = `${props.height}px`
 
-        this._editorContainer.style.height = `${props.height}px`
         this._editorContainer.style.fontSize = `${props.fontSize}px`
         this._editorContainer.style.lineHeight = `${props.lineHeight * props.fontSize}px`
         this._quill.root.style.height = `${props.height}px`
