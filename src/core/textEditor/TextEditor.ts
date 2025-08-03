@@ -63,7 +63,6 @@ export class TextEditor {
             },
             transform,
         )
-        console.log(transformedPosition)
         const scale = this.engine.canvas.zoom
         this._wrapperEl.style.transform = `scale(${scale})`
         this._editorContainer.style.height = `${this._editProps.height}px`
