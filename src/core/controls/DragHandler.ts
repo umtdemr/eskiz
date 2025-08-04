@@ -35,6 +35,7 @@ export class DragHandler {
     private _handled: boolean = false
     private transactionHandler: TransactionHandler
     private _transactionId: TransactionId | null = null
+    private editTable: Map<Widget, EditingMethods[]>
 
     constructor(engine: Engine) {
         this.engine = engine
@@ -68,10 +69,7 @@ export class DragHandler {
 
         const editTable = new Map<Widget, EditingMethods[]>()
         widgets.forEach((widget) => editTable.set(widget, ['move']))
-        const { transactionId } = this.transactionHandler.begin('continuous', {
-            editTable,
-        })
-        this._transactionId = transactionId
+        this.editTable = editTable
     }
 
     handle(data: CanvasMouseEvent) {
@@ -116,7 +114,16 @@ export class DragHandler {
         this.movingObjectState.isObjectMoved = true
         this._handled = true
 
-        if (this._transactionId) {
+        if (!this._transactionId && this.editTable.size > 0) {
+            const { transactionId } = this.transactionHandler.begin(
+                'continuous',
+                {
+                    editTable: this.editTable,
+                },
+            )
+            this._transactionId = transactionId
+            this.transactionHandler.update(this._transactionId)
+        } else if (this._transactionId) {
             this.transactionHandler.update(this._transactionId)
         }
     }
