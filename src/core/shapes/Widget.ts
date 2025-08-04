@@ -63,6 +63,7 @@ export abstract class Widget extends Layer {
 
     boundsChanged = new Signal()
     deselected = new Signal()
+    clicked = new Signal()
 
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
