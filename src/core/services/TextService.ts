@@ -4,7 +4,7 @@ import { Service } from '@/core/services/Service'
 import { MainModeChangedState, ToolService } from '@/core/services/ToolService'
 import { CursorService } from '@/core/services/CursorService.ts'
 import { CURSOR_OWNERS, ACTION_MODES } from '@/helpers/Constant'
-import { TextBox } from '@/core/shapes/TextBox'
+import { TextBox } from '@/core/shapes/text/TextBox'
 import { SelectionService } from '@/core/services/SelectionService'
 import { TextChangedSignal, TextEditor } from '@/core/textEditor/TextEditor'
 
