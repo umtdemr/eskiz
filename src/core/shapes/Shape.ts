@@ -59,4 +59,15 @@ export abstract class Shape extends Widget {
     get shapeType(): ShapeType {
         return this._shapeType
     }
+
+    /**
+     * Returns bbox of where the text can be rendered?
+     * TODO: implement it for ellipse and triangle too
+     */
+    abstract calcTextBounds(): {
+        x: number
+        y: number
+        width: number
+        height: number
+    }
 }
