@@ -15,7 +15,6 @@ import {
     TextEditor,
 } from '@/core/textEditor/TextEditor'
 import { Shape } from '@/core/shapes/Shape'
-import { ShapeText } from '../shapes/text/ShapeText'
 
 // TODO: remove event listeners
 export class TextService extends Service {
@@ -131,8 +130,7 @@ export class TextService extends Service {
             })
             this.engine.canvas.requestRender()
         } else if (this.activeSession === 'shapeText' && this.shape) {
-            // TODO: check this
-            this.shape.text?.setText(trimmedText)
+            this.shape.updateText(trimmedText)
         }
     }
 
@@ -141,7 +139,7 @@ export class TextService extends Service {
         if (this.activeSession === 'textBox' && this.textBox) {
             this.textBox.showText()
         } else if (this.activeSession === 'shapeText' && this.shape) {
-            this.shape.text?.showText()
+            this.shape.finishEditingText()
         }
     }
 
@@ -181,19 +179,7 @@ export class TextService extends Service {
             showPlaceholder: false,
         })
 
-        if (!this.shape.text) {
-            this.shape.text = new ShapeText({
-                ...bounds,
-                properties: {
-                    text: '',
-                    fontSize: 14,
-                    lineHeight: 1.4,
-                    textAlign: 'center',
-                },
-            })
-            this.shape.addChildren(this.shape.text)
-            this.shape.text?.hideText()
-        }
+        this.shape.startEditingText()
 
         this.shape.deselected.addOnce(this.onDeselected, this)
         this.textEditor.textChanged.add(this.onTextChanged, this)
