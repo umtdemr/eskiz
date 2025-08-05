@@ -172,7 +172,6 @@ export class ShapeText extends Widget {
     }
 
     hideText() {
-        console.log('hiding text')
         this._shouldRender = false
     }
 
