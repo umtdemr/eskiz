@@ -177,6 +177,7 @@ export class TextService extends Service {
             textAlign: 'center',
             for: 'shapeText',
             showPlaceholder: false,
+            initialText: this.shape.textStr,
         })
 
         this.shape.startEditingText()
@@ -184,6 +185,7 @@ export class TextService extends Service {
         this.shape.deselected.addOnce(this.onDeselected, this)
         this.textEditor.textChanged.add(this.onTextChanged, this)
         this.activeSession = 'shapeText'
+        this.engine.canvas.requestRender()
     }
 
     dispose(): void {
