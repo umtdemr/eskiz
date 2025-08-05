@@ -64,7 +64,8 @@
       - [x] UpdateSize
       - [ ] Double click to edit texts
       - [ ] Save them in db
-    - [ ] Adding text to shapes
+    - [x] Adding text to shapes
+        - [ ] Add text as soon as shape is created
     - [ ] Sticky note
     - [ ] Undo redo
 - Refactor & bug fixes
