@@ -111,11 +111,18 @@ export abstract class Shape extends Widget {
 
     finishEditingText() {
         if (!this._text) return
-        this._text!.hideText()
+        this._text!.showText()
     }
 
     updateText(text: string) {
         if (!this._text) return
         this._text.setText(text)
+    }
+
+    get textStr(): string {
+        if (this._text) {
+            return this._text?.text
+        }
+        return ''
     }
 }

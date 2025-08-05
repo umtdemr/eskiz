@@ -141,7 +141,7 @@ export class ShapeText extends Widget {
     }
 
     renderContent(renderContext: RenderContext) {
-        if (!this._shouldRender && !this._renderingText.length) {
+        if (!this._shouldRender || !this._renderingText.length) {
             return
         }
 
@@ -172,6 +172,7 @@ export class ShapeText extends Widget {
     }
 
     hideText() {
+        console.log('hiding text')
         this._shouldRender = false
     }
 
@@ -189,5 +190,9 @@ export class ShapeText extends Widget {
 
     get isTextClipped(): boolean {
         return this._isTextClipped
+    }
+
+    get text(): string {
+        return this._text
     }
 }

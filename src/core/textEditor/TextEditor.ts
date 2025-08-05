@@ -15,6 +15,7 @@ interface EditProps {
     for: TextEditingSession
     textAlign: TEXT_ALIGN
     showPlaceholder?: boolean
+    initialText?: string
 }
 
 export interface TextChangedSignal {
@@ -152,7 +153,6 @@ export class TextEditor {
     }
 
     private clearPrevStyles() {
-        this._quill.setText('')
         this._initialStylesHTML.forEach((item) =>
             item[0].style.setProperty(item[1], item[2]),
         )
@@ -175,6 +175,7 @@ export class TextEditor {
         this.addStyles()
 
         this.setPosition()
+        this._quill.setText(props.initialText || '')
 
         this._quill.focus()
         this._isShowing = true
