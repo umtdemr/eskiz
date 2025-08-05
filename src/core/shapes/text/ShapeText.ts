@@ -6,19 +6,18 @@ import {
 import { Widget, WidgetProps } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color.ts'
 import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
-import { CANVAS_COLORS } from '@/helpers/Constant.ts'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
 
 export interface ShapeTextProps extends WidgetProps {
-    properties: ShapeTextProperties
+    properties: ShapeTextConstructProps
 }
 
-export interface ShapeTextProperties {
+export interface ShapeTextConstructProps {
     text: string
-    color?: RGBA
+    color: RGBA
     fontSize: number
-    textAlign?: TEXT_ALIGN
-    lineHeight?: number
+    textAlign: TEXT_ALIGN
+    lineHeight: number
 }
 
 /**
@@ -43,13 +42,9 @@ export class ShapeText extends Widget {
         super('shapeText', props)
         this._text = props.properties.text
         this._color = props.properties.color
-            ? props.properties.color
-            : CANVAS_COLORS.BLACK
         this._fontSize = props.properties.fontSize
-        this._lineHeight = props.properties.lineHeight || 1.4
+        this._lineHeight = props.properties.lineHeight
         this._textAlign = props.properties.textAlign
-            ? props.properties.textAlign
-            : 'center'
 
         this.createOrUpdateParagraph()
     }

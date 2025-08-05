@@ -2,7 +2,10 @@ import { RGBA } from '@/core/shapes/Color.ts'
 import { CANVAS_COLORS } from '@/helpers/Constant.ts'
 import { Widget, WidgetJson, WidgetProps } from '@/core/shapes/Widget.ts'
 import { WsWidget } from '@/types/Websocket.ts'
-import { ShapeText } from '@/core/shapes/text/ShapeText'
+import {
+    ShapeText,
+    ShapeTextConstructProps,
+} from '@/core/shapes/text/ShapeText'
 
 export interface ShapeProps extends WidgetProps {
     properties: ShapeProperties
@@ -11,6 +14,7 @@ export interface ShapeProps extends WidgetProps {
 export interface ShapeProperties {
     strokeColor?: RGBA
     fillColor?: RGBA
+    textProperties?: ShapeTextConstructProps
 }
 
 export type ShapeType = 'rectangle' | 'triangle' | 'ellipse'
@@ -18,8 +22,10 @@ export type ShapeType = 'rectangle' | 'triangle' | 'ellipse'
 export abstract class Shape extends Widget {
     private _shapeType: ShapeType
     protected _text: ShapeText | null
+    protected _textProperties: ShapeTextConstructProps
 
     protected constructor(type: ShapeType, props: ShapeProps) {
+        // TODO: construct shape text in here
         super('shape', props)
         this._shapeType = type
         this._properties = { ...props.properties }
@@ -33,6 +39,7 @@ export abstract class Shape extends Widget {
     }
 
     protected generateJson(): WidgetJson {
+        // TODO: generate text json (add a method in ShapeText)
         const data: WidgetJson = {
             x: this._x,
             y: this._y,
@@ -73,11 +80,42 @@ export abstract class Shape extends Widget {
         height: number
     }
 
-    get text(): ShapeText | null {
-        return this._text
+    protected createTextObject() {
+        const textProps: ShapeTextConstructProps = {
+            text: '',
+            color: CANVAS_COLORS.BLACK,
+            fontSize: 14,
+            lineHeight: 1.4,
+            textAlign: 'center',
+        }
+
+        this._text = new ShapeText({
+            ...this.calcTextBounds(),
+            properties: {
+                ...textProps,
+            },
+        })
+
+        this.addChildren(this._text)
     }
 
-    set text(txt: ShapeText) {
-        this._text = txt
+    startEditingText() {
+        if (!this._text) {
+            this.createTextObject()
+            this._text!.hideText()
+            return
+        }
+
+        this._text.hideText()
+    }
+
+    finishEditingText() {
+        if (!this._text) return
+        this._text!.hideText()
+    }
+
+    updateText(text: string) {
+        if (!this._text) return
+        this._text.setText(text)
     }
 }
