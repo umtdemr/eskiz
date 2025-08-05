@@ -2,6 +2,7 @@ import { RGBA } from '@/core/shapes/Color.ts'
 import { CANVAS_COLORS } from '@/helpers/Constant.ts'
 import { Widget, WidgetJson, WidgetProps } from '@/core/shapes/Widget.ts'
 import { WsWidget } from '@/types/Websocket.ts'
+import { ShapeText } from '@/core/shapes/text/ShapeText'
 
 export interface ShapeProps extends WidgetProps {
     properties: ShapeProperties
@@ -16,6 +17,7 @@ export type ShapeType = 'rectangle' | 'triangle' | 'ellipse'
 
 export abstract class Shape extends Widget {
     private _shapeType: ShapeType
+    protected _text: ShapeText | null
 
     protected constructor(type: ShapeType, props: ShapeProps) {
         super('shape', props)
@@ -69,5 +71,13 @@ export abstract class Shape extends Widget {
         y: number
         width: number
         height: number
+    }
+
+    get text(): ShapeText | null {
+        return this._text
+    }
+
+    set text(txt: ShapeText) {
+        this._text = txt
     }
 }

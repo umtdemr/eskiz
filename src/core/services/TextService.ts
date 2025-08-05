@@ -5,9 +5,19 @@ import { MainModeChangedState, ToolService } from '@/core/services/ToolService'
 import { CursorService } from '@/core/services/CursorService.ts'
 import { CURSOR_OWNERS, ACTION_MODES } from '@/helpers/Constant'
 import { TextBox } from '@/core/shapes/text/TextBox'
-import { SelectionService } from '@/core/services/SelectionService'
-import { TextChangedSignal, TextEditor } from '@/core/textEditor/TextEditor'
+import {
+    SelectionChangedProps,
+    SelectionService,
+} from '@/core/services/SelectionService'
+import {
+    TextChangedSignal,
+    TextEditingSession,
+    TextEditor,
+} from '@/core/textEditor/TextEditor'
+import { Shape } from '@/core/shapes/Shape'
+import { ShapeText } from '../shapes/text/ShapeText'
 
+// TODO: remove event listeners
 export class TextService extends Service {
     private mouseController: MouseController
     private toolService: ToolService
@@ -16,6 +26,8 @@ export class TextService extends Service {
     private cursorToolName = CURSOR_OWNERS.TEXT_SERVICE
     private textEditor: TextEditor
     private textBox: TextBox
+    private shape: Shape
+    private activeSession: TextEditingSession
 
     constructor(
         engine: Engine,
@@ -32,8 +44,16 @@ export class TextService extends Service {
 
         this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
         this.textEditor = this.engine.textEditor
+
+        this.selectionService.selectionChanged.add(
+            this.onSelectionChanged,
+            this,
+        )
     }
 
+    /**
+     * Initialize events for creating individual textbox
+     */
     private init() {
         this.cursorService.setCursor(this.cursorToolName, 'text')
         this.mouseController.on('mouseDown', this.onMouseDown, this)
@@ -81,6 +101,8 @@ export class TextService extends Service {
             height: textbox.height,
             fontSize: textbox.fontSize,
             lineHeight: textbox.lineHeight,
+            for: 'textBox',
+            textAlign: 'left',
         })
 
         this.textBox = textbox
@@ -89,6 +111,7 @@ export class TextService extends Service {
         this.textEditor.textChanged.add(this.onTextChanged, this)
 
         this.selectionService.tempSelectWidget(textbox)
+        this.activeSession = 'textBox'
         this.toolService.changeTool(ACTION_MODES.SELECT)
     }
 
@@ -96,21 +119,85 @@ export class TextService extends Service {
         // replace one \n to avoid +1 line issue
         const trimmedText = props.text.replace(/\n$/, '')
 
-        this.textBox.setText(trimmedText)
+        if (this.activeSession === 'textBox' && this.textBox) {
+            this.textBox.setText(trimmedText)
 
-        // sync text editor dimensions with text box
-        this.textEditor.updateSize({
-            width: this.textBox.width,
-            height: this.textBox.height,
-            x: this.textBox.centerX,
-            y: this.textBox.centerY,
-        })
-        this.engine.canvas.requestRender()
+            // sync text editor dimensions with text box
+            this.textEditor.updateSize({
+                width: this.textBox.width,
+                height: this.textBox.height,
+                x: this.textBox.centerX,
+                y: this.textBox.centerY,
+            })
+            this.engine.canvas.requestRender()
+        } else if (this.activeSession === 'shapeText' && this.shape) {
+            // TODO: check this
+            this.shape.text?.setText(trimmedText)
+        }
     }
 
     private onDeselected() {
         this.textEditor.hideEditor()
-        this.textBox.showText()
+        if (this.activeSession === 'textBox' && this.textBox) {
+            this.textBox.showText()
+        } else if (this.activeSession === 'shapeText' && this.shape) {
+            this.shape.text?.showText()
+        }
+    }
+
+    private onSelectionChanged(props: SelectionChangedProps) {
+        if (props.type === 'tempSelected') {
+            return
+        }
+
+        if (props.type === 'selected') {
+            if (!props.widgets || props.widgets.length > 1) {
+                return
+            }
+
+            const widget = props.widgets[0]
+            if (!(widget instanceof Shape)) {
+                return
+            }
+
+            this.shape = widget
+
+            this.shape.clicked.add(this.onShapeClicked, this)
+        }
+    }
+
+    private onShapeClicked() {
+        const bounds = this.shape.calcTextBounds()
+
+        this.textEditor.showEditor({
+            x: bounds.x + this.shape.left,
+            y: bounds.y + this.shape.top,
+            width: bounds.width,
+            height: bounds.height,
+            fontSize: 14,
+            lineHeight: 1.4,
+            textAlign: 'center',
+            for: 'shapeText',
+            showPlaceholder: false,
+        })
+
+        if (!this.shape.text) {
+            this.shape.text = new ShapeText({
+                ...bounds,
+                properties: {
+                    text: '',
+                    fontSize: 14,
+                    lineHeight: 1.4,
+                    textAlign: 'center',
+                },
+            })
+            this.shape.addChildren(this.shape.text)
+            this.shape.text?.hideText()
+        }
+
+        this.shape.deselected.addOnce(this.onDeselected, this)
+        this.textEditor.textChanged.add(this.onTextChanged, this)
+        this.activeSession = 'shapeText'
     }
 
     dispose(): void {
