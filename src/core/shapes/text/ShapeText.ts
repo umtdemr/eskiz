@@ -37,6 +37,7 @@ export class ShapeText extends Widget {
     private _isTextClipped: boolean
     private _clipPath: CkPath | null = null
     private _textAlign: TEXT_ALIGN
+    private _debug: boolean = false
 
     constructor(props: ShapeTextProps) {
         super('shapeText', props)
@@ -146,6 +147,17 @@ export class ShapeText extends Widget {
         }
 
         const ctx = renderContext.ctx
+
+        // if debug is active, render background color
+        if (this._debug) {
+            const rect = canvasKit.LTRBRect(0, 0, this._width, this._height)
+            const rectPaint = new canvasKit.Paint()
+            rectPaint.setAntiAlias(true)
+            rectPaint.setStyle(canvasKit.PaintStyle.Fill)
+            rectPaint.setColor(canvasKit.Color(0, 255, 0, 0.3))
+            ctx.drawRect(rect, rectPaint)
+            rectPaint.delete()
+        }
 
         const textHeight = this._paragraph.getHeight()
         const consideringHeight =
