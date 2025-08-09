@@ -4,6 +4,8 @@ import { WsWidget } from '@/types/Websocket.ts'
 import { WidgetJson } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color'
 
+const TEXT_PADDING = 5
+
 export class Ellipse extends Shape {
     constructor(props: ShapeProps) {
         super('ellipse', props)
@@ -53,6 +55,21 @@ export class Ellipse extends Shape {
         paint.setStyle(canvasKit.PaintStyle.Stroke)
         paint.setStrokeWidth(2)
         ctx.drawOval(strokeEllipse, paint)
+    }
+
+    calcTextBounds(): { x: number; y: number; width: number; height: number } {
+        const maxWidth = this._width / Math.sqrt(2)
+        const maxHeight = this._height / Math.sqrt(2)
+
+        const boxWidth = Math.max(0, maxWidth - TEXT_PADDING * 2)
+        const boxHeight = Math.max(0, maxHeight - TEXT_PADDING * 2)
+
+        return {
+            x: (this._width - boxWidth) / 2,
+            y: (this._height - boxHeight) / 2,
+            width: boxWidth,
+            height: boxHeight,
+        }
     }
 
     toJson(): WidgetJson {
