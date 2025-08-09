@@ -26,7 +26,7 @@ export class TextService extends Service {
     private textEditor: TextEditor
     private textBox: TextBox
     private shape: Shape
-    private activeSession: TextEditingSession
+    private activeSession: TextEditingSession | null
 
     constructor(
         engine: Engine,
@@ -48,6 +48,7 @@ export class TextService extends Service {
             this.onSelectionChanged,
             this,
         )
+        this.textEditor.editorBlurred.add(this.onEditorBlurred, this)
     }
 
     /**
@@ -134,13 +135,29 @@ export class TextService extends Service {
         }
     }
 
-    private onDeselected() {
+    private handleEditorSessionFinish() {
+        if (!this.activeSession) {
+            return
+        }
+
         this.textEditor.hideEditor()
         if (this.activeSession === 'textBox' && this.textBox) {
             this.textBox.showText()
         } else if (this.activeSession === 'shapeText' && this.shape) {
             this.shape.finishEditingText()
         }
+
+        this.engine.canvas.requestRender()
+
+        this.activeSession = null
+    }
+
+    private onDeselected() {
+        this.handleEditorSessionFinish()
+    }
+
+    private onEditorBlurred() {
+        this.handleEditorSessionFinish()
     }
 
     private onSelectionChanged(props: SelectionChangedProps) {

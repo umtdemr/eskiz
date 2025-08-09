@@ -32,6 +32,7 @@ export class TextEditor {
     private _initialStylesHTML: [HTMLElement, string, string][] = []
 
     textChanged = new Signal<TextChangedSignal>()
+    editorBlurred = new Signal()
 
     constructor(engine: Engine) {
         this.engine = engine
@@ -59,6 +60,18 @@ export class TextEditor {
 
         // bind listener
         this.onTextChange = this.onTextChange.bind(this)
+        this.onEscape = this.onEscape.bind(this)
+
+        this.addQuillBindings()
+    }
+
+    private addQuillBindings() {
+        this._quill.keyboard.addBinding(
+            {
+                key: 'Escape',
+            },
+            this.onEscape,
+        )
     }
 
     private setPosition() {
@@ -95,6 +108,7 @@ export class TextEditor {
         this._quill.on('text-change', this.onTextChange)
         this.engine.canvas.transform.add(this.onCanvasTransform, this)
     }
+
     private removeListeners() {
         this._quill.off('text-change', this.onTextChange)
         this.engine.canvas.transform.remove(this.onCanvasTransform, this)
@@ -102,6 +116,12 @@ export class TextEditor {
 
     private onTextChange() {
         this.textChanged.dispatch({ text: this._quill.getText() })
+    }
+
+    private onEscape() {
+        // on escape, blur the focus
+        this._quill.blur()
+        this.editorBlurred.dispatch()
     }
 
     private addStyle(el: HTMLElement, prop: string, value: string) {
