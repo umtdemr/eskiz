@@ -1,6 +1,7 @@
 import { Widget } from '../shapes/Widget'
+import { Shape } from '@/core/shapes/Shape'
 
-export type EditingMethods = 'move' | 'resize'
+export type EditingMethods = 'move' | 'resize' | 'text'
 
 export type State = Record<string, unknown>
 
@@ -32,6 +33,15 @@ export function getPartialState(
                     width: widget.width,
                     height: widget.height,
                 })
+                break
+            case 'text':
+                if (widget instanceof Shape) {
+                    updateState({
+                        properties: {
+                            textProperties: widget.textProperties,
+                        },
+                    })
+                }
                 break
         }
     }
