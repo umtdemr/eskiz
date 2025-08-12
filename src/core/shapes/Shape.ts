@@ -19,13 +19,20 @@ export interface ShapeProperties {
 
 export type ShapeType = 'rectangle' | 'triangle' | 'ellipse'
 
+const initialTextProps: ShapeTextConstructProps = {
+    text: '',
+    color: CANVAS_COLORS.BLACK,
+    fontSize: 14,
+    lineHeight: 1.4,
+    textAlign: 'center',
+}
+
 export abstract class Shape extends Widget {
     private _shapeType: ShapeType
     protected _text: ShapeText | null
     protected _textProperties: ShapeTextConstructProps
 
     protected constructor(type: ShapeType, props: ShapeProps) {
-        // TODO: construct shape text in here
         super('shape', props)
         this._shapeType = type
         this._properties = { ...props.properties }
@@ -36,6 +43,11 @@ export abstract class Shape extends Widget {
             ? props.properties.fillColor
             : CANVAS_COLORS.TRANSPARENT
         this._interactive = true
+
+        if (props.properties.textProperties?.text) {
+            this._textProperties = props.properties.textProperties
+            this.createTextObject()
+        }
     }
 
     protected generateJson(): WidgetJson {
@@ -51,6 +63,7 @@ export abstract class Shape extends Widget {
             sub_type: this._shapeType,
             properties: {
                 ...this._properties,
+                textProperties: this._textProperties,
             },
         }
 
@@ -81,18 +94,10 @@ export abstract class Shape extends Widget {
     }
 
     protected createTextObject() {
-        const textProps: ShapeTextConstructProps = {
-            text: '',
-            color: CANVAS_COLORS.BLACK,
-            fontSize: 14,
-            lineHeight: 1.4,
-            textAlign: 'center',
-        }
-
         this._text = new ShapeText({
             ...this.calcTextBounds(),
             properties: {
-                ...textProps,
+                ...this._textProperties,
             },
         })
 
@@ -101,6 +106,7 @@ export abstract class Shape extends Widget {
 
     startEditingText() {
         if (!this._text) {
+            this._textProperties = initialTextProps
             this.createTextObject()
             this._text!.hideText()
             return
@@ -117,6 +123,7 @@ export abstract class Shape extends Widget {
     updateText(text: string) {
         if (!this._text) return
         this._text.setText(text)
+        this._textProperties.text = text
     }
 
     get textStr(): string {
@@ -124,5 +131,9 @@ export abstract class Shape extends Widget {
             return this._text?.text
         }
         return ''
+    }
+
+    get textProperties(): ShapeTextConstructProps {
+        return this._textProperties
     }
 }
