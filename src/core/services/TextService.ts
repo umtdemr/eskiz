@@ -19,7 +19,6 @@ import { Widget, WidgetClickedSignal } from '@/core/shapes/Widget'
 import { EditingMethods } from '@/core/transaction/State'
 import { nanoid } from 'nanoid'
 
-// TODO: remove event listeners
 export class TextService extends Service {
     private mouseController: MouseController
     private toolService: ToolService
@@ -96,7 +95,7 @@ export class TextService extends Service {
 
         this.engine.stage.widgetsDefaultLayer.addChildren(textbox)
 
-        // TODO: first add textbox to DB
+        // TODO (transaction): first add textbox to DB
 
         // arrange center
         textbox.top = textbox.top - textbox.height / 2

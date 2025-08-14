@@ -51,14 +51,13 @@ export abstract class Shape extends Widget {
     }
 
     protected generateJson(): WidgetJson {
-        // TODO: generate text json (add a method in ShapeText)
         const data: WidgetJson = {
             x: this._x,
             y: this._y,
             width: this._width,
             height: this._height,
             z_index: this._zIndex,
-            uuid: this._uuid!, // todo: force uuid be to there,
+            uuid: this._uuid!,
             widget_type: 'shape',
             sub_type: this._shapeType,
             properties: {
@@ -84,7 +83,6 @@ export abstract class Shape extends Widget {
 
     /**
      * Returns bbox of where the text can be rendered?
-     * TODO: implement it for ellipse and triangle too
      */
     abstract calcTextBounds(): {
         x: number
