@@ -60,10 +60,10 @@
     - [x] Adding pen tool
     - [x] Adding ERASER
         - [ ] Make it work when removing is there. Note: add a seperate class to search widgets
-    - [ ] Adding text
+    - [x] Adding text
       - [x] UpdateSize
-      - [ ] Double click to edit texts
-      - [ ] Save them in db
+      - [x] Double click to edit texts
+      - [x] Save them in db
     - [x] Adding text to shapes
         - [ ] Add text as soon as shape is created
     - [ ] Sticky note
