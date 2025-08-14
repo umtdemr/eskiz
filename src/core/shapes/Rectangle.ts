@@ -12,6 +12,8 @@ export interface RectangleShapeProperties extends ShapeProperties {
     radius?: number
 }
 
+const TEXT_PADDING = 5
+
 export class Rectangle extends Shape {
     constructor(props: RectangleProps) {
         super(SHAPES.RECTANGLE, props)
@@ -87,6 +89,15 @@ export class Rectangle extends Shape {
             ctx.drawRRect(strokeRect, paint)
         } else {
             ctx.drawRect(strokeRect, paint)
+        }
+    }
+
+    calcTextBounds(): { x: number; y: number; width: number; height: number } {
+        return {
+            x: TEXT_PADDING,
+            y: TEXT_PADDING,
+            width: this._width - TEXT_PADDING * 2,
+            height: this._height - TEXT_PADDING * 2,
         }
     }
 

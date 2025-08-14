@@ -153,7 +153,7 @@ export class ShapeDrawerToolService extends Service {
         shape.uuid = uuid
         const json = { ...shape?.toJson(), page_id: 53 }
 
-        // todo: check error, if necessary delete from canvas
+        // todo (transaction): check error, if necessary delete from canvas
         widgetsService.addWidget(json as AddWidgetPayload)
         this.reset()
     }
