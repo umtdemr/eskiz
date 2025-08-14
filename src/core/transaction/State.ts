@@ -1,5 +1,6 @@
 import { Widget } from '../shapes/Widget'
 import { Shape } from '@/core/shapes/Shape'
+import { TextBox } from '@/core/shapes/text/TextBox'
 
 export type EditingMethods = 'move' | 'resize' | 'text'
 
@@ -39,6 +40,13 @@ export function getPartialState(
                     updateState({
                         properties: {
                             textProperties: widget.textProperties,
+                        },
+                    })
+                }
+                if (widget instanceof TextBox) {
+                    updateState({
+                        properties: {
+                            ...widget.textPropsJson,
                         },
                     })
                 }
