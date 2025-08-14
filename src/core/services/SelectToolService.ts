@@ -199,7 +199,9 @@ export class SelectToolService extends Service {
             this.isObjectAlreadySelected &&
             !isObjectMoved
         ) {
-            this.mouseDownWidget.clicked.dispatch()
+            this.mouseDownWidget.clicked.dispatch({
+                widget: this.mouseDownWidget,
+            })
         }
     }
 

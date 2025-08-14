@@ -15,6 +15,9 @@ import {
     TextEditor,
 } from '@/core/textEditor/TextEditor'
 import { Shape } from '@/core/shapes/Shape'
+import { Widget, WidgetClickedSignal } from '@/core/shapes/Widget'
+import { EditingMethods } from '@/core/transaction/State'
+import { nanoid } from 'nanoid'
 
 // TODO: remove event listeners
 export class TextService extends Service {
@@ -27,6 +30,7 @@ export class TextService extends Service {
     private textBox: TextBox
     private shape: Shape
     private activeSession: TextEditingSession | null
+    private transactionId: string | null
 
     constructor(
         engine: Engine,
@@ -82,6 +86,7 @@ export class TextService extends Service {
             x: data.pointer.x,
             y: data.pointer.y,
             width: 200,
+            uuid: nanoid(),
             properties: {
                 text: 'Type to something',
                 fontSize: 14,
@@ -90,6 +95,8 @@ export class TextService extends Service {
         })
 
         this.engine.stage.widgetsDefaultLayer.addChildren(textbox)
+
+        // TODO: first add textbox to DB
 
         // arrange center
         textbox.top = textbox.top - textbox.height / 2
@@ -113,6 +120,27 @@ export class TextService extends Service {
         this.selectionService.tempSelectWidget(textbox)
         this.activeSession = 'textBox'
         this.toolService.changeTool(ACTION_MODES.SELECT)
+
+        this.initializeTransaction()
+    }
+
+    private initializeTransaction() {
+        const editTable = new Map<Widget, EditingMethods[]>()
+        if (this.activeSession === 'shapeText') {
+            editTable.set(this.shape, ['text'])
+        }
+        if (this.activeSession === 'textBox') {
+            editTable.set(this.textBox, ['text'])
+        }
+
+        if (!editTable.size) return
+
+        const { transactionId } = this.engine.transactionHandler.begin(
+            'continuous',
+            { editTable },
+        )
+
+        this.transactionId = transactionId
     }
 
     private onTextChanged(props: TextChangedSignal) {
@@ -133,6 +161,10 @@ export class TextService extends Service {
         } else if (this.activeSession === 'shapeText' && this.shape) {
             this.shape.updateText(trimmedText)
         }
+
+        if (this.transactionId) {
+            this.engine.transactionHandler.update(this.transactionId)
+        }
     }
 
     private handleEditorSessionFinish() {
@@ -150,6 +182,10 @@ export class TextService extends Service {
         this.engine.canvas.requestRender()
 
         this.activeSession = null
+        if (this.transactionId) {
+            this.engine.transactionHandler.commit(this.transactionId)
+        }
+        this.transactionId = null
     }
 
     private onDeselected() {
@@ -161,23 +197,23 @@ export class TextService extends Service {
     }
 
     private onSelectionChanged(props: SelectionChangedProps) {
-        if (props.type === 'tempSelected') {
+        if (props.type !== 'selected') {
             return
         }
 
-        if (props.type === 'selected') {
-            if (!props.widgets || props.widgets.length > 1) {
-                return
-            }
+        if (!props.widgets || props.widgets.length > 1) {
+            return
+        }
 
-            const widget = props.widgets[0]
-            if (!(widget instanceof Shape)) {
-                return
-            }
-
+        const widget = props.widgets[0]
+        if (widget instanceof Shape) {
             this.shape = widget
 
-            this.shape.clicked.add(this.onShapeClicked, this)
+            this.shape.clicked.add(this.onWidgetClicked, this)
+        } else if (widget instanceof TextBox) {
+            this.textBox = widget
+
+            this.textBox.clicked.add(this.onWidgetClicked, this)
         }
     }
 
@@ -189,9 +225,9 @@ export class TextService extends Service {
             y: bounds.y + this.shape.top,
             width: bounds.width,
             height: bounds.height,
-            fontSize: 14,
-            lineHeight: 1.4,
-            textAlign: 'center',
+            fontSize: this.shape.textProperties?.fontSize ?? 14,
+            lineHeight: this.shape.textProperties?.lineHeight ?? 1.4,
+            textAlign: this.shape.textProperties?.textAlign ?? 'center',
             for: 'shapeText',
             showPlaceholder: false,
             initialText: this.shape.textStr,
@@ -203,6 +239,35 @@ export class TextService extends Service {
         this.textEditor.textChanged.add(this.onTextChanged, this)
         this.activeSession = 'shapeText'
         this.engine.canvas.requestRender()
+    }
+
+    private onTextboxClicked() {
+        this.textEditor.showEditor({
+            initialText: this.textBox.textStr,
+            x: this.textBox.centerX,
+            y: this.textBox.centerY,
+            width: this.textBox.width,
+            height: this.textBox.height,
+            fontSize: this.textBox.fontSize,
+            lineHeight: this.textBox.lineHeight,
+            for: 'textBox',
+            textAlign: 'left',
+        })
+
+        this.activeSession = 'textBox'
+        this.textBox.hideText()
+        this.textBox.deselected.addOnce(this.onDeselected, this)
+        this.textEditor.textChanged.add(this.onTextChanged, this)
+        this.engine.canvas.requestRender()
+    }
+
+    private onWidgetClicked(data: WidgetClickedSignal) {
+        if (data.widget instanceof Shape) {
+            this.onShapeClicked()
+        } else if (data.widget instanceof TextBox) {
+            this.onTextboxClicked()
+        }
+        this.initializeTransaction()
     }
 
     dispose(): void {

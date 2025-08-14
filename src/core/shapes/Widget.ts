@@ -46,6 +46,10 @@ export type WidgetJson = {
     parent_widget_id?: string
 }
 
+export interface WidgetClickedSignal {
+    widget: Widget
+}
+
 export abstract class Widget extends Layer {
     protected _widgetType: WidgetType
     protected _x: number
@@ -63,7 +67,7 @@ export abstract class Widget extends Layer {
 
     boundsChanged = new Signal()
     deselected = new Signal()
-    clicked = new Signal()
+    clicked = new Signal<WidgetClickedSignal>()
 
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
