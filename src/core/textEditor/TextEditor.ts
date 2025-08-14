@@ -1,6 +1,9 @@
 import Quill from 'quill'
 import { Engine } from '@/core/engine/Engine'
 import { Signal } from '@/core/signal/Signal'
+import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
+
+export type TextEditingSession = 'textBox' | 'shapeText'
 
 interface EditProps {
     x: number
@@ -9,6 +12,10 @@ interface EditProps {
     height: number
     fontSize: number
     lineHeight: number
+    for: TextEditingSession
+    textAlign: TEXT_ALIGN
+    showPlaceholder?: boolean
+    initialText?: string
 }
 
 export interface TextChangedSignal {
@@ -22,8 +29,10 @@ export class TextEditor {
     private _quill: Quill
     private _isShowing = false
     private _editProps: EditProps
+    private _initialStylesHTML: [HTMLElement, string, string][] = []
 
     textChanged = new Signal<TextChangedSignal>()
+    editorBlurred = new Signal()
 
     constructor(engine: Engine) {
         this.engine = engine
@@ -51,6 +60,18 @@ export class TextEditor {
 
         // bind listener
         this.onTextChange = this.onTextChange.bind(this)
+        this.onEscape = this.onEscape.bind(this)
+
+        this.addQuillBindings()
+    }
+
+    private addQuillBindings() {
+        this._quill.keyboard.addBinding(
+            {
+                key: 'Escape',
+            },
+            this.onEscape,
+        )
     }
 
     private setPosition() {
@@ -68,9 +89,15 @@ export class TextEditor {
         this._editorContainer.style.height = `${this._editProps.height}px`
         this._wrapperEl.style.width = `${this._editProps.width}px`
         this._wrapperEl.style.height = `${this._editProps.height}px`
-        this._wrapperEl.style.left = `${transformedPosition.x - (this._editProps.width * scale) / 2}px`
-        this._wrapperEl.style.top = `${transformedPosition.y - (this._editProps.height * scale) / 2}px`
-        this._quill.root.style.height = `${this._editProps.height}px`
+
+        if (this._editProps.for === 'textBox') {
+            this._wrapperEl.style.left = `${transformedPosition.x - (this._editProps.width * scale) / 2}px`
+            this._wrapperEl.style.top = `${transformedPosition.y - (this._editProps.height * scale) / 2}px`
+            this._quill.root.style.height = `${this._editProps.height}px`
+        } else {
+            this._wrapperEl.style.left = `${transformedPosition.x}px`
+            this._wrapperEl.style.top = `${transformedPosition.y}px`
+        }
     }
 
     private onCanvasTransform() {
@@ -79,16 +106,81 @@ export class TextEditor {
 
     private initalizeListeners() {
         this._quill.on('text-change', this.onTextChange)
+        this.engine.canvas.transform.add(this.onCanvasTransform, this)
     }
+
     private removeListeners() {
         this._quill.off('text-change', this.onTextChange)
+        this.engine.canvas.transform.remove(this.onCanvasTransform, this)
     }
 
     private onTextChange() {
         this.textChanged.dispatch({ text: this._quill.getText() })
     }
 
+    private onEscape() {
+        // on escape, blur the focus
+        this._quill.blur()
+        this.editorBlurred.dispatch()
+    }
+
+    private addStyle(el: HTMLElement, prop: string, value: string) {
+        this._initialStylesHTML.push([
+            el,
+            prop,
+            el.style.getPropertyValue(prop),
+        ])
+
+        el.style.setProperty(prop, value)
+    }
+
+    private addStyles() {
+        this._wrapperEl.style.display = 'block'
+        this._editorContainer.style.fontSize = `${this._editProps.fontSize}px`
+        this._quill.root.style.lineHeight = `${this._editProps.lineHeight * this._editProps.fontSize}px`
+        this._quill.root.style.textAlign = `${this._editProps.textAlign}`
+        this._editorContainer.style.width = `${this._editProps.width}px`
+
+        if (this._editProps.for === 'shapeText') {
+            this.addStyle(this._editorContainer, 'overflow', 'hidden')
+            this.addStyle(this._editorContainer, 'width', 'hidden')
+            this.addStyle(
+                this._editorContainer,
+                'line-height',
+                `${this._editProps.height}px`,
+            )
+            this.addStyle(this._quill.root, 'display', 'inline-block')
+            this.addStyle(
+                this._quill.root,
+                'width',
+                `${this._editProps.width}px`,
+            )
+            this.addStyle(this._quill.root, 'vertical-align', 'middle')
+            this.addStyle(this._quill.root, 'overflow', 'hidden')
+            this.addStyle(this._quill.root, 'overflow-wrap', 'break-word')
+            this.addStyle(this._quill.root, 'white-space', 'pre-wrap')
+            this.addStyle(
+                this._quill.root,
+                'line-height',
+                `${this._editProps.lineHeight * this._editProps.fontSize}px`,
+            )
+            this.addStyle(this._quill.root, 'height', 'auto')
+        }
+
+        if (!this._editProps.showPlaceholder) {
+            this._quill.root.classList.add('disable-placeholder')
+        }
+    }
+
+    private clearPrevStyles() {
+        this._initialStylesHTML.forEach((item) =>
+            item[0].style.setProperty(item[1], item[2]),
+        )
+        this._initialStylesHTML = []
+    }
+
     updateSize(props: Pick<EditProps, 'width' | 'height' | 'x' | 'y'>) {
+        if (this._editProps.for === 'shapeText') return
         this._editProps.x = props.x
         this._editProps.y = props.y
         this._editProps.width = props.width
@@ -98,15 +190,12 @@ export class TextEditor {
 
     showEditor(props: EditProps) {
         this._editProps = props
-        this.engine.canvas.transform.add(this.onCanvasTransform, this)
+        this._editProps.showPlaceholder = !!props.showPlaceholder
 
-        this._wrapperEl.style.display = 'block'
-
-        this._editorContainer.style.fontSize = `${props.fontSize}px`
-        this._editorContainer.style.lineHeight = `${props.lineHeight * props.fontSize}px`
-        this._quill.root.style.height = `${props.height}px`
+        this.addStyles()
 
         this.setPosition()
+        this._quill.setText(props.initialText || '')
 
         this._quill.focus()
         this._isShowing = true
@@ -115,8 +204,11 @@ export class TextEditor {
     }
 
     hideEditor() {
+        // first remove listeners so that TextService can not
+        // listen to events occurring during cleaning
+        this.removeListeners()
         this._wrapperEl.style.display = 'none'
         this._isShowing = false
-        this.removeListeners()
+        this.clearPrevStyles()
     }
 }

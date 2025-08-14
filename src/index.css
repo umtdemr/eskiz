@@ -100,3 +100,7 @@
     color: "#000";
     opacity: 0.3;
 }
+
+.disable-placeholder::before {
+        content: '' !important;
+}

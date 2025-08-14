@@ -16,6 +16,8 @@ export interface TextBoxProperties {
     lineHeight?: number
 }
 
+export type TEXT_ALIGN = 'left' | 'center' | 'right'
+
 export class TextBox extends Widget {
     private _text: string
     private _color: RGBA
@@ -101,5 +103,18 @@ export class TextBox extends Widget {
 
     get lineHeight(): number {
         return this._lineHeight
+    }
+
+    get textStr(): string {
+        return this._text
+    }
+
+    get textPropsJson(): TextBoxProperties {
+        return {
+            text: this._text,
+            color: this._color,
+            fontSize: this._fontSize,
+            lineHeight: this._lineHeight,
+        }
     }
 }

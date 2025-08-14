@@ -25,7 +25,7 @@ type CommandBasePayload = {
     changeBoardName: WsChangeBoardNamePayload
     fetchPageDetails: FetchPageDetailsPayload
     addWidget: AddWidgetPayload
-    updateWidget: UpdateWidgetPayload // TODO: Implement fully
+    updateWidget: UpdateWidgetPayload // TODO (transaction): Implement fully
 }
 
 // defines typical error message for the request

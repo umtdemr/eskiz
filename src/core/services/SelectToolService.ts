@@ -191,6 +191,18 @@ export class SelectToolService extends Service {
         ) {
             this.selectionService.selectWidget(this.mouseDownWidget)
         }
+
+        // if clicked to selected single object
+        if (
+            this.mouseDownWidget &&
+            this.selectionService.selected.length === 1 &&
+            this.isObjectAlreadySelected &&
+            !isObjectMoved
+        ) {
+            this.mouseDownWidget.clicked.dispatch({
+                widget: this.mouseDownWidget,
+            })
+        }
     }
 
     checksObjectsInLayer(mouseData: CanvasMouseEvent): Widget | null {
