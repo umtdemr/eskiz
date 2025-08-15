@@ -13,6 +13,7 @@ import {
     TooltipContent,
     TooltipProvider,
 } from '@/components/ui/tooltip'
+import { Button } from '@/components/ui/button'
 
 export interface SubtoolbarProps {
     engine: Engine
@@ -24,9 +25,9 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="duplicate">
-                            <button className="iconBox">
+                            <Button className="iconBox">
                                 <Copy />
-                            </button>
+                            </Button>
                         </div>
                     </TooltipTrigger>
                     <TooltipContent>Copy</TooltipContent>
@@ -34,9 +35,9 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="remove">
-                            <button className="iconBox">
+                            <Button className="iconBox">
                                 <Trash2 />
-                            </button>
+                            </Button>
                         </div>
                     </TooltipTrigger>
                     <TooltipContent>Remove</TooltipContent>
@@ -44,9 +45,9 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="lock">
-                            <button className="iconBox">
+                            <Button className="iconBox">
                                 <LockKeyholeOpen />
-                            </button>
+                            </Button>
                         </div>
                     </TooltipTrigger>
                     <TooltipContent>Lock</TooltipContent>
@@ -55,9 +56,9 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="fontStyle">
-                            <button className="iconBox">
+                            <Button className="iconBox">
                                 <WholeWord />
-                            </button>
+                            </Button>
                         </div>
                     </TooltipTrigger>
                     <TooltipContent>Font style</TooltipContent>
@@ -65,9 +66,9 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="textColor">
-                            <button className="iconBox">
+                            <Button className="iconBox">
                                 <Baseline />
-                            </button>
+                            </Button>
                         </div>
                     </TooltipTrigger>
                     <TooltipContent>Text color</TooltipContent>
@@ -76,7 +77,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="borderStyleColor">
-                            <button className="iconBox">
+                            <Button className="iconBox">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
@@ -91,7 +92,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                                 >
                                     <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9" />
                                 </svg>
-                            </button>
+                            </Button>
                         </div>
                     </TooltipTrigger>
                     <TooltipContent>Border style and color</TooltipContent>
@@ -99,7 +100,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="backgroundColor">
-                            <button className="iconBox">
+                            <Button className="iconBox">
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
@@ -114,7 +115,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                                 >
                                     <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9" />
                                 </svg>
-                            </button>
+                            </Button>
                         </div>
                     </TooltipTrigger>
                     <TooltipContent>Background color</TooltipContent>

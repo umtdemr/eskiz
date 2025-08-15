@@ -28,8 +28,17 @@
         align-items: center;
         justify-content: center;
         border-radius: 5px;
+        background-color: #fff;
+        color: #000;
+        box-shadow: unset;
+
         &:hover {
             background-color: oklch(96.7% 0.001 286.375);
+        }
+
+        svg {
+            width: 1.2rem;
+            height: 1.2rem;
         }
     }
 
