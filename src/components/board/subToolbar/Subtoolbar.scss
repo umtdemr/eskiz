@@ -14,7 +14,7 @@
         display: block;
     }
 
-    & > div {
+    & > div:not(.seperator) {
         padding: 2px;
         display: flex;
         align-items: center;
@@ -31,5 +31,12 @@
         &:hover {
             background-color: oklch(96.7% 0.001 286.375);
         }
+    }
+
+    .seperator {
+        width: 1px;
+        height: 45px;
+        align-self: center;
+        background-color: oklch(90% 0 0);
     }
 }
