@@ -5,13 +5,13 @@
     height: auto;
     left: 50%;
     top: 50%;
-    display: flex;
+    display: none;
     height: 50px;
     box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
     border-radius: 5px;
 
-    .show {
-        display: block;
+    &.show {
+        display: flex;
     }
 
     & > div:not(.seperator) {
