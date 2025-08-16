@@ -34,6 +34,7 @@ export interface SubtoolbarProps {
 export default function Subtoolbar({ engine }: SubtoolbarProps) {
     const [state, dispatch] = useReducer(reducer, initialSubtoolbarState)
     const selectionLayerRef = useRef<SelectionLayer | null>(null)
+    const transformTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
 
     useEffect(() => {
         const selectionService =
@@ -56,6 +57,30 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             selectionService.selectionChanged.remove(onSelectionChanged)
         }
     }, [])
+
+    useEffect(() => {
+        const onTransform = () => {
+            // clear timeout - debouncing
+            clearTimeout(transformTimeoutRef.current)
+
+            // hide on zoom, translate
+            dispatch({ type: ActionKind.HIDE })
+
+            transformTimeoutRef.current = setTimeout(() => {
+                dispatch({ type: ActionKind.SHOW })
+            }, 500)
+        }
+
+        if (state.show) {
+            engine.canvas.transform.add(onTransform)
+        } else {
+            engine.canvas.transform.remove(onTransform)
+        }
+
+        return () => {
+            engine.canvas.transform.remove(onTransform)
+        }
+    }, [state.show])
 
     if (!selectionLayerRef.current?.selectionBorder) return null
 
