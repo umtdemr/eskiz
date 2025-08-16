@@ -1,0 +1,51 @@
+.sub_toolbar {
+    position: fixed;
+    background-color: #fff;
+    width: auto;
+    height: auto;
+    left: 50%;
+    top: 50%;
+    display: none;
+    height: 50px;
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    border-radius: 5px;
+
+    &.show {
+        display: flex;
+    }
+
+    & > div:not(.seperator) {
+        padding: 2px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .iconBox {
+        width: 38px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 5px;
+        background-color: #fff;
+        color: #000;
+        box-shadow: unset;
+
+        &:hover {
+            background-color: oklch(96.7% 0.001 286.375);
+        }
+
+        svg {
+            width: 1.2rem;
+            height: 1.2rem;
+        }
+    }
+
+    .seperator {
+        width: 1px;
+        height: 45px;
+        align-self: center;
+        background-color: oklch(90% 0 0);
+    }
+}

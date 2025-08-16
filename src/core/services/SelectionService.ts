@@ -55,7 +55,6 @@ export class SelectionService extends Service {
         this.engine.canvas.requestRender()
     }
 
-    // TODO: fix clear selection dispatch without a selection
     clearSelection(emit = true) {
         this._selected.forEach((widget) => {
             widget.selected = false

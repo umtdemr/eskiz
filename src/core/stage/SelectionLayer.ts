@@ -22,7 +22,7 @@ export class SelectionLayer extends Layer {
     private engine: Engine
     private selectionService: SelectionService
     private _selected: Widget[]
-    private selectionBorder: Border | null = null
+    private _selectionBorder: Border | null = null
     private controls: Control[] = []
     private selectToolService: SelectToolService
     private dragHandler: DragHandler
@@ -126,9 +126,9 @@ export class SelectionLayer extends Layer {
         this.addBorders(widgets)
         // todo: listens selection border bounds change
         if (widgets.length > 1) {
-            this.selectionBorder = this.drawBoundinBoxOfSelection(widgets)
+            this._selectionBorder = this.drawBoundinBoxOfSelection(widgets)
         } else {
-            this.selectionBorder = this.children.first! as Border
+            this._selectionBorder = this.children.first! as Border
         }
 
         // don't add controls for multiple selection as of now
@@ -239,5 +239,9 @@ export class SelectionLayer extends Layer {
     }
     private showControls() {
         this.changeControlsVisibility(true)
+    }
+
+    get selectionBorder(): Border | null {
+        return this._selectionBorder
     }
 }

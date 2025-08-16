@@ -68,6 +68,9 @@
         - [ ] Add text as soon as shape is created
     - [ ] Sticky note
     - [ ] Undo redo
+    - [ ] Sub toolbar
+        - [x] Add sub toolbar component
+        - [ ] Generate toolbar actions based on selected widget(s)
 - Refactor & bug fixes
     - [ ] Fix: ShapesDropdown top position
     - [ ] Fix: sidebar menu in mobile
