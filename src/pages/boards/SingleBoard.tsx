@@ -7,6 +7,7 @@ import { useBoundStore } from '@/store/store.ts'
 import { useShallow } from 'zustand/react/shallow'
 import SkeletonHeader from '@/components/board/header/SkeletonHeader.tsx'
 import Toolbar from '@/components/board/toolbar/Toolbar.tsx'
+import Subtoolbar from '@/components/board/subToolbar/Subtoolbar'
 import SkeletonToolbar from '@/components/board/toolbar/SkeletonToolbar.tsx'
 import Footer from '@/components/board/footer/Footer.tsx'
 import SkeletonFooter from '@/components/board/footer/SkeletonFooter.tsx'
@@ -255,6 +256,9 @@ export default function SingleBoard() {
                 <>
                     <Header engine={engineRef.current!} />
                     {!isDisconnected ? <Toolbar /> : null}
+                    {!isDisconnected ? (
+                        <Subtoolbar engine={engineRef.current!} />
+                    ) : null}
                     {!isDisconnected ? (
                         <Footer engine={engineRef.current!} />
                     ) : null}

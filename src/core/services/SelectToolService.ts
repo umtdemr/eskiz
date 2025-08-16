@@ -102,11 +102,16 @@ export class SelectToolService extends Service {
 
             // if there is a selection which is not this widget, clear selection
             this.isObjectAlreadySelected = !!this.mouseDownWidget.selected
-            if (!this.isObjectAlreadySelected) {
+            if (
+                !this.isObjectAlreadySelected &&
+                this.selectionService.selected?.length
+            ) {
                 this.selectionService.clearSelection()
             }
         } else {
-            this.selectionService.clearSelection()
+            if (this.selectionService.selected?.length) {
+                this.selectionService.clearSelection()
+            }
             this.isDrawing = true
             const multiSelector =
                 this.engine.stage.nonCanvasDynamicContainer.multiSelector
