@@ -1,3 +1,5 @@
+import { useEffect, useReducer } from 'react'
+import clsx from 'clsx'
 import {
     Copy,
     Trash2,
@@ -14,13 +16,48 @@ import {
     TooltipProvider,
 } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
+import {
+    SelectionChangedProps,
+    SelectionService,
+} from '@/core/services/SelectionService'
+import {
+    reducer,
+    initialSubtoolbarState,
+    ActionKind,
+} from './SubtoolbarReducer'
 
 export interface SubtoolbarProps {
     engine: Engine
 }
+
 export default function Subtoolbar({ engine }: SubtoolbarProps) {
+    const [state, dispatch] = useReducer(reducer, initialSubtoolbarState)
+
+    useEffect(() => {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+
+        const onSelectionChanged = (data: SelectionChangedProps) => {
+            if (data.type === 'selected') {
+                dispatch({ type: ActionKind.SHOW })
+            } else if (data.type === 'selectionCleared') {
+                dispatch({ type: ActionKind.HIDE })
+            }
+        }
+
+        selectionService.selectionChanged.add(onSelectionChanged)
+
+        return () => {
+            selectionService.selectionChanged.remove(onSelectionChanged)
+        }
+    }, [])
+
     return (
-        <div className="sub_toolbar">
+        <div
+            className={clsx('sub_toolbar', {
+                show: state.show,
+            })}
+        >
             <TooltipProvider>
                 <Tooltip>
                     <TooltipTrigger asChild>
