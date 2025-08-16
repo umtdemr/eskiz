@@ -120,7 +120,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="duplicate">
-                            <Button className="iconBox">
+                            <Button className="iconBox" disabled>
                                 <Copy />
                             </Button>
                         </div>
@@ -130,7 +130,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="remove">
-                            <Button className="iconBox">
+                            <Button className="iconBox" disabled>
                                 <Trash2 />
                             </Button>
                         </div>
@@ -140,7 +140,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="lock">
-                            <Button className="iconBox">
+                            <Button className="iconBox" disabled>
                                 <LockKeyholeOpen />
                             </Button>
                         </div>
@@ -151,7 +151,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="fontStyle">
-                            <Button className="iconBox">
+                            <Button className="iconBox" disabled>
                                 <WholeWord />
                             </Button>
                         </div>
@@ -161,7 +161,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="textColor">
-                            <Button className="iconBox">
+                            <Button className="iconBox" disabled>
                                 <Baseline />
                             </Button>
                         </div>
@@ -172,7 +172,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="borderStyleColor">
-                            <Button className="iconBox">
+                            <Button className="iconBox" disabled>
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
@@ -180,9 +180,9 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
                                     className="lucide lucide-squircle-icon lucide-squircle"
                                 >
                                     <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9" />
@@ -195,7 +195,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <div id="backgroundColor">
-                            <Button className="iconBox">
+                            <Button className="iconBox" disabled>
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     width="24"
@@ -203,9 +203,9 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                                     viewBox="0 0 24 24"
                                     fill="none"
                                     stroke="currentColor"
-                                    stroke-width="2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
                                     className="lucide lucide-squircle-icon lucide-squircle"
                                 >
                                     <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9" />
