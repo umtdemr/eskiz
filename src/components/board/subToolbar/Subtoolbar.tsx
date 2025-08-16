@@ -26,6 +26,7 @@ import {
 } from './SubtoolbarReducer'
 import clsx from 'clsx'
 import { SelectionLayer } from '@/core/stage/SelectionLayer'
+import { SelectToolService } from '@/core/services/SelectToolService'
 
 export interface SubtoolbarProps {
     engine: Engine
@@ -64,21 +65,30 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             clearTimeout(transformTimeoutRef.current)
 
             // hide on zoom, translate
-            dispatch({ type: ActionKind.HIDE })
+            dispatch({ type: ActionKind.TEMP_HIDE })
 
             transformTimeoutRef.current = setTimeout(() => {
-                dispatch({ type: ActionKind.SHOW })
+                dispatch({ type: ActionKind.TEMP_SHOW })
             }, 500)
         }
 
+        const onMoveStarted = () => dispatch({ type: ActionKind.TEMP_HIDE })
+        const onMoveFinished = () => dispatch({ type: ActionKind.TEMP_SHOW })
+
         if (state.show) {
             engine.canvas.transform.add(onTransform)
+            engine.dragHandler.moveStarted.add(onMoveStarted)
+            engine.dragHandler.moveFinished.add(onMoveFinished)
         } else {
             engine.canvas.transform.remove(onTransform)
+            engine.dragHandler.moveStarted.remove(onMoveStarted)
+            engine.dragHandler.moveFinished.remove(onMoveFinished)
         }
 
         return () => {
             engine.canvas.transform.remove(onTransform)
+            engine.dragHandler.moveStarted.remove(onMoveStarted)
+            engine.dragHandler.moveFinished.remove(onMoveFinished)
         }
     }, [state.show])
 
@@ -93,6 +103,8 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
         position,
         engine.canvas.viewportTransform,
     )
+
+    if (!state.show || !state.visible) return null
 
     return (
         <div
