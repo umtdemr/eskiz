@@ -1,5 +1,4 @@
-import { useEffect, useReducer } from 'react'
-import clsx from 'clsx'
+import { useEffect, useReducer, useRef } from 'react'
 import {
     Copy,
     Trash2,
@@ -25,6 +24,8 @@ import {
     initialSubtoolbarState,
     ActionKind,
 } from './SubtoolbarReducer'
+import clsx from 'clsx'
+import { SelectionLayer } from '@/core/stage/SelectionLayer'
 
 export interface SubtoolbarProps {
     engine: Engine
@@ -32,10 +33,14 @@ export interface SubtoolbarProps {
 
 export default function Subtoolbar({ engine }: SubtoolbarProps) {
     const [state, dispatch] = useReducer(reducer, initialSubtoolbarState)
+    const selectionLayerRef = useRef<SelectionLayer | null>(null)
 
     useEffect(() => {
         const selectionService =
             engine.getService<SelectionService>('selection')
+
+        selectionLayerRef.current =
+            engine.stage.nonCanvasDynamicContainer.selectionLayer
 
         const onSelectionChanged = (data: SelectionChangedProps) => {
             if (data.type === 'selected') {
@@ -52,11 +57,27 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
         }
     }, [])
 
+    if (!selectionLayerRef.current?.selectionBorder) return null
+
+    const position = {
+        x: selectionLayerRef.current.selectionBorder.left,
+        y: selectionLayerRef.current.selectionBorder.top,
+    }
+
+    const transformedPos = engine.canvas.transformPoint(
+        position,
+        engine.canvas.viewportTransform,
+    )
+
     return (
         <div
             className={clsx('sub_toolbar', {
                 show: state.show,
             })}
+            style={{
+                left: `${transformedPos.x}px`,
+                top: `${transformedPos.y - 70}px`,
+            }}
         >
             <TooltipProvider>
                 <Tooltip>
