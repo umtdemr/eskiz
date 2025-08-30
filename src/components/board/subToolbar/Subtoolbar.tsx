@@ -23,10 +23,10 @@ import {
     reducer,
     initialSubtoolbarState,
     ActionKind,
-} from './SubtoolbarReducer'
+} from './SubtoolbarReducer.tsx'
 import clsx from 'clsx'
 import { SelectionLayer } from '@/core/stage/SelectionLayer'
-import { SelectToolService } from '@/core/services/SelectToolService'
+import { ButtonAction } from './actions/ButtonAction'
 
 export interface SubtoolbarProps {
     engine: Engine
@@ -46,7 +46,10 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
 
         const onSelectionChanged = (data: SelectionChangedProps) => {
             if (data.type === 'selected') {
-                dispatch({ type: ActionKind.SHOW })
+                dispatch({
+                    type: ActionKind.SHOW,
+                    engine,
+                })
             } else if (data.type === 'selectionCleared') {
                 dispatch({ type: ActionKind.HIDE })
             }
@@ -117,104 +120,27 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             }}
         >
             <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="duplicate">
-                            <Button className="iconBox" disabled>
-                                <Copy />
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Copy</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="remove">
-                            <Button className="iconBox" disabled>
-                                <Trash2 />
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Remove</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="lock">
-                            <Button className="iconBox" disabled>
-                                <LockKeyholeOpen />
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Lock</TooltipContent>
-                </Tooltip>
-                <div className="seperator" role="separator"></div>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="fontStyle">
-                            <Button className="iconBox" disabled>
-                                <WholeWord />
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Font style</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="textColor">
-                            <Button className="iconBox" disabled>
-                                <Baseline />
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Text color</TooltipContent>
-                </Tooltip>
-                <div className="seperator" role="separator"></div>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="borderStyleColor">
-                            <Button className="iconBox" disabled>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="lucide lucide-squircle-icon lucide-squircle"
-                                >
-                                    <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9" />
-                                </svg>
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Border style and color</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="backgroundColor">
-                            <Button className="iconBox" disabled>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="lucide lucide-squircle-icon lucide-squircle"
-                                >
-                                    <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9" />
-                                </svg>
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Background color</TooltipContent>
-                </Tooltip>
+                {state.actions.map((action) => {
+                    if (action.tooltip === 'seperator') {
+                        return (
+                            <div
+                                key={action.id}
+                                className="seperator"
+                                role="separator"
+                            ></div>
+                        )
+                    } else {
+                        return (
+                            <ButtonAction
+                                key={action.id}
+                                id={action.id}
+                                tooltip={action.tooltip!}
+                                onClick={() => console.log('handle action')}
+                                icon={action.icon!}
+                            />
+                        )
+                    }
+                })}
             </TooltipProvider>
         </div>
     )
