@@ -114,6 +114,10 @@ export class SelectionService extends Service {
         })
     }
 
+    isMultipleSelection(): boolean {
+        return this._selected.length > 1
+    }
+
     get selected() {
         return this._selected
     }
