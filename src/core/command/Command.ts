@@ -1,4 +1,10 @@
+import { SelectionService } from '../services/SelectionService'
+
 export type Commands = 'delete'
+
+export type CommandCtx = {
+    selectionService: SelectionService
+}
 
 export abstract class Command {
     protected _name: Commands
@@ -7,6 +13,6 @@ export abstract class Command {
         this._name = name
     }
 
-    abstract canExecute(): boolean
-    abstract execute(): void
+    abstract canExecute(ctx: CommandCtx): boolean
+    abstract execute(ctx: CommandCtx): void
 }

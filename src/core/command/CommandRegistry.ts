@@ -1,4 +1,5 @@
 import { Command, Commands } from './Command'
+import { DeleteCommand } from './Delete'
 
 export class CommandRegistry {
     private _commands = new Map<Commands, Command>()
@@ -6,7 +7,9 @@ export class CommandRegistry {
         this.registerAllCommands()
     }
 
-    registerAllCommands() {}
+    registerAllCommands() {
+        this.registerCommand('delete', new DeleteCommand('delete'))
+    }
 
     get(name: Commands): Command {
         return this._commands.get(name)!
