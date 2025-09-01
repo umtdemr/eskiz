@@ -29,12 +29,15 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
         if (!action.btnActionProps?.command) {
             return
         }
+
         const command = engine.getCommand(action.btnActionProps.command)
-        if (!command.canExecute()) {
-            return
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        const ctx = {
+            selectionService,
         }
 
-        command.execute()
+        command.execute(ctx)
     }
 
     useEffect(() => {
