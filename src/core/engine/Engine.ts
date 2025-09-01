@@ -25,6 +25,8 @@ import { TransactionHandler } from '@/core/transaction/TransactionHandler'
 import { PathToolService } from '@/core/services/PathToolService'
 import { TextService } from '../services/TextService'
 import { TextEditor } from '../textEditor/TextEditor'
+import { CommandRegistry } from '../command/CommandRegistry'
+import { Command, Commands } from '../command/Command'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -53,6 +55,7 @@ export class Engine extends Emitter<EngineEventsMap> {
     private _resizeHandler: ResizeHandler
     private _transactionHandler: TransactionHandler
     private _textEditor: TextEditor
+    private _commands: CommandRegistry
 
     upperCanvasRenderer: UpperCanvasRenderer
 
@@ -78,6 +81,7 @@ export class Engine extends Emitter<EngineEventsMap> {
         this._mouseController = new MouseController()
         this._textEditor = new TextEditor(this)
         this.serviceManager = new ServiceManager()
+        this._commands = new CommandRegistry()
         this.initializeServices()
 
         this._stage = new Stage(this)
@@ -202,6 +206,10 @@ export class Engine extends Emitter<EngineEventsMap> {
 
     getService<T>(name: string): T {
         return this.serviceManager.get<T>(name)
+    }
+
+    getCommand(cmd: Commands): Command {
+        return this._commands.get(cmd)
     }
 
     get upperCanvasEl() {

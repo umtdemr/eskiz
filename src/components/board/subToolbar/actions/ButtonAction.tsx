@@ -21,7 +21,9 @@ export function ButtonAction(props: ButtonActionProps) {
         <Tooltip>
             <TooltipTrigger asChild>
                 <div id={props.id}>
-                    <Button className="iconBox">{props.icon}</Button>
+                    <Button className="iconBox" onClick={props.onClick}>
+                        {props.icon}
+                    </Button>
                 </div>
             </TooltipTrigger>
             <TooltipContent>{props.tooltip}</TooltipContent>

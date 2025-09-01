@@ -1,3 +1,4 @@
+import { Commands } from '@/core/command/Command'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import {
@@ -8,10 +9,13 @@ import {
     WholeWord,
 } from 'lucide-react'
 
-interface Action {
+export interface Action {
     id: string
     tooltip?: string
     icon?: React.ReactNode
+    btnActionProps?: {
+        command: Commands
+    }
 }
 
 interface SubtoolbarState {
@@ -54,6 +58,9 @@ export function generateActions(engine: Engine): Action[] {
             id: 'remove',
             tooltip: 'Remove',
             icon: <Trash2 />,
+            btnActionProps: {
+                command: 'delete',
+            },
         },
         {
             id: 'lock',

@@ -1,20 +1,7 @@
 import { useEffect, useReducer, useRef } from 'react'
-import {
-    Copy,
-    Trash2,
-    LockKeyholeOpen,
-    Baseline,
-    WholeWord,
-} from 'lucide-react'
 import { Engine } from '@/core/engine/Engine'
 import './Subtoolbar.scss'
-import {
-    Tooltip,
-    TooltipTrigger,
-    TooltipContent,
-    TooltipProvider,
-} from '@/components/ui/tooltip'
-import { Button } from '@/components/ui/button'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import {
     SelectionChangedProps,
     SelectionService,
@@ -23,6 +10,7 @@ import {
     reducer,
     initialSubtoolbarState,
     ActionKind,
+    Action as SubtoolbarAction,
 } from './SubtoolbarReducer.tsx'
 import clsx from 'clsx'
 import { SelectionLayer } from '@/core/stage/SelectionLayer'
@@ -36,6 +24,18 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
     const [state, dispatch] = useReducer(reducer, initialSubtoolbarState)
     const selectionLayerRef = useRef<SelectionLayer | null>(null)
     const transformTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+
+    const handleAction = (action: SubtoolbarAction) => {
+        if (!action.btnActionProps?.command) {
+            return
+        }
+        const command = engine.getCommand(action.btnActionProps.command)
+        if (!command.canExecute()) {
+            return
+        }
+
+        command.execute()
+    }
 
     useEffect(() => {
         const selectionService =
@@ -135,7 +135,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                                 key={action.id}
                                 id={action.id}
                                 tooltip={action.tooltip!}
-                                onClick={() => console.log('handle action')}
+                                onClick={() => handleAction(action)}
                                 icon={action.icon!}
                             />
                         )
