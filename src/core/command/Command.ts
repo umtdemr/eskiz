@@ -1,9 +1,11 @@
+import { Engine } from '../engine/Engine'
 import { SelectionService } from '../services/SelectionService'
 
 export type Commands = 'delete'
 
 export type CommandCtx = {
     selectionService: SelectionService
+    engine: Engine
 }
 
 export abstract class Command {

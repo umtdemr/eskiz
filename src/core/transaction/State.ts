@@ -2,7 +2,7 @@ import { Widget } from '../shapes/Widget'
 import { Shape } from '@/core/shapes/Shape'
 import { TextBox } from '@/core/shapes/text/TextBox'
 
-export type EditingMethods = 'move' | 'resize' | 'text'
+export type EditingMethods = 'move' | 'resize' | 'text' | 'delete'
 
 export type State = Record<string, unknown>
 
@@ -24,6 +24,9 @@ export function getPartialState(
 
     for (const method of methods) {
         switch (method) {
+            case 'delete':
+                updateState({ is_deleted: widget.isDeleted })
+                break
             case 'move':
                 updateState({ x: widget.left, y: widget.top })
                 break

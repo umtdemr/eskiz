@@ -63,6 +63,7 @@ export abstract class Widget extends Layer {
     protected _localBounds: BoundingBox // Local bounds (object's own space)
     protected _selected: boolean = false
     protected _isDynamic: boolean = false
+    protected _isDeleted: boolean = false
     protected _properties: Record<string, unknown>
 
     boundsChanged = new Signal()
@@ -112,7 +113,7 @@ export abstract class Widget extends Layer {
 
     // Override render to handle child widgets properly
     render(renderContext: RenderContext) {
-        if (!this.visible) return
+        if (!this.visible || this._isDeleted) return
         const ctx = renderContext.ctx
 
         ctx.save()
@@ -323,5 +324,13 @@ export abstract class Widget extends Layer {
 
     get widgetType(): WidgetType {
         return this._widgetType
+    }
+
+    get isDeleted(): boolean {
+        return this._isDeleted
+    }
+
+    set isDeleted(val: boolean) {
+        this._isDeleted = val
     }
 }
