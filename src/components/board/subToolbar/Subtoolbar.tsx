@@ -35,6 +35,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             engine.getService<SelectionService>('selection')
         const ctx = {
             selectionService,
+            engine,
         }
 
         command.execute(ctx)

@@ -19,6 +19,7 @@ export class PageService extends Service {
     addWidgetsToCanvas(widgets: WsWidget[]) {
         const widgetLayer = this.engine.stage.widgetsDefaultLayer
         for (const widget of widgets) {
+            if (widget.is_deleted) continue
             const widgetClass = WidgetFactory.loadFromJson(widget)
             if (!widgetClass) {
                 continue
