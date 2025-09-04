@@ -147,8 +147,8 @@ export class LinkedList<T> {
      * @param searchVal Searching value
      * @returns
      */
-    find(searchVal: unknown): unknown {
-        return this.findCb((val: unknown) => val === searchVal)
+    find(cb: (val: T) => boolean): number {
+        return this.findCb(cb)
     }
 
     /**
@@ -156,17 +156,19 @@ export class LinkedList<T> {
      * @param cb Callback method to search item
      * @returns If found, returns value of element
      */
-    findCb(cb: (value: unknown) => boolean): unknown {
+    findCb(cb: (value: T) => boolean): number {
         let current = this._root
 
+        let idx = 0
         while (current !== null) {
             if (cb(current.value)) {
-                return current.value
+                return idx
             }
             current = current.next
+            idx++
         }
 
-        return undefined
+        return -1
     }
 
     /**

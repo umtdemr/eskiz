@@ -30,6 +30,18 @@ export class Layer {
         }
     }
 
+    removeChild(child: Layer): boolean {
+        const idx = this._children.find(
+            (layer: Layer | Widget) => layer === child,
+        )
+        if (idx !== -1) {
+            this._children.removeAt(idx)
+            return true
+        }
+
+        return false
+    }
+
     render(renderContext: RenderContext) {
         for (const child of this._children) {
             if (!child.visible) {

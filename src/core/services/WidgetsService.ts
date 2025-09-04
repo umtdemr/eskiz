@@ -5,9 +5,16 @@ import { WebsocketEventService } from '@/core/services/WebsocketEventService'
 import { WS_EVENTS } from '@/helpers/Constant'
 import { WidgetFactory } from '../engine/WidgetFactory'
 import { Widget } from '../shapes/Widget'
+import { Signal } from '../signal/Signal'
+
+export interface WidgetDeletedSignal {
+    widget: Widget
+}
 
 export class WidgetsService extends Service {
     private wsEventService: WebsocketEventService
+
+    widgetDeleted = new Signal<WidgetDeletedSignal>()
 
     constructor(engine: Engine, wsEventService: WebsocketEventService) {
         super(engine)
@@ -59,5 +66,13 @@ export class WidgetsService extends Service {
         }
 
         this.engine.canvas.requestRender()
+    }
+
+    deleteWidget(widget: Widget) {
+        widget.isDeleted = true
+        widget.deleted.dispatch()
+        widget.parent?.removeChild(widget)
+
+        this.widgetDeleted.dispatch({ widget })
     }
 }

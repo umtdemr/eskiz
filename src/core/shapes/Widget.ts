@@ -69,6 +69,7 @@ export abstract class Widget extends Layer {
     boundsChanged = new Signal()
     deselected = new Signal()
     clicked = new Signal<WidgetClickedSignal>()
+    deleted = new Signal()
 
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
@@ -332,5 +333,9 @@ export abstract class Widget extends Layer {
 
     set isDeleted(val: boolean) {
         this._isDeleted = val
+    }
+
+    get parent(): Layer | Widget | null {
+        return this._parent
     }
 }
