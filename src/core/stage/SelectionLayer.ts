@@ -63,6 +63,11 @@ export class SelectionLayer extends Layer {
                 this._selected = []
                 this.addBorders(props.widgets!)
                 break
+            case 'updated':
+                this.clearSelection()
+                this._selected = props.widgets || []
+                this.createSelectionUI(this._selected)
+                break
             case 'selectionCleared':
                 this._selected = []
                 this.clearSelection()
