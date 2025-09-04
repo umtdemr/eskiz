@@ -71,6 +71,11 @@
     - [ ] Sub toolbar
         - [x] Add sub toolbar component
         - [ ] Generate toolbar actions based on selected widget(s)
+    - [ ] Delete
+        - [x] Remove selection
+            - [x] Add update selection method
+            - [x] Remove border
+        - [ ] Destroy widgets
 - Refactor & bug fixes
     - [ ] Fix: ShapesDropdown top position
     - [ ] Fix: sidebar menu in mobile
