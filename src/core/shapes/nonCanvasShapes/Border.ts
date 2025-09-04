@@ -4,6 +4,7 @@ import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { Layer } from '@/core/stage/Layer'
 import { BoundingBox } from '@/core/geometry/BoundingBox'
 import { Engine } from '@/core/engine/Engine'
+import { WidgetsService } from '@/core/services/WidgetsService'
 
 export interface BorderProps {
     parentLayer: Layer
