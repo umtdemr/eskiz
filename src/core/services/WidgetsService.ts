@@ -8,7 +8,7 @@ import { Widget } from '../shapes/Widget'
 import { Signal } from '../signal/Signal'
 
 export interface WidgetDeletedSignal {
-    widget: Widget
+    widgets: Widget[]
 }
 
 export class WidgetsService extends Service {
@@ -73,6 +73,6 @@ export class WidgetsService extends Service {
         widget.deleted.dispatch()
         widget.parent?.removeChild(widget)
 
-        this.widgetDeleted.dispatch({ widget })
+        this.widgetDeleted.dispatch({ widgets: [widget] })
     }
 }

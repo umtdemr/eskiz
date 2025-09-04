@@ -143,13 +143,19 @@ export class Engine extends Emitter<EngineEventsMap> {
     private initializeServices() {
         const wsEventService = new WebsocketEventService(this)
         const toolService = new ToolService(this)
-        const selectionService = new SelectionService(this, toolService)
+        const widgetsService = new WidgetsService(this, wsEventService)
+        const selectionService = new SelectionService(
+            this,
+            toolService,
+            widgetsService,
+        )
         // cursor service is responsible of handling cursor changes
 
         this.serviceManager.register('wsEventService', wsEventService)
         this.serviceManager.register('toolService', toolService)
         this.serviceManager.register('cursor', new CursorService(this))
         this.serviceManager.register('selection', selectionService)
+        this.serviceManager.register('widgets', widgetsService)
         this.serviceManager.register(
             'selectTool',
             new SelectToolService(this, this._mouseController, toolService),
@@ -198,10 +204,6 @@ export class Engine extends Emitter<EngineEventsMap> {
             new CollaboratorsService(this, wsEventService),
         )
         this.serviceManager.register('page', new PageService(this))
-        this.serviceManager.register(
-            'widgets',
-            new WidgetsService(this, wsEventService),
-        )
     }
 
     getService<T>(name: string): T {

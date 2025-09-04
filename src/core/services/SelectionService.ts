@@ -5,26 +5,38 @@ import { Widget } from '../shapes/Widget'
 import { Signal } from '../signal/Signal'
 import { Service } from './Service'
 import { MainModeChangedState, ToolService } from './ToolService'
+import { WidgetsDeletedSignal, WidgetsService } from './WidgetsService'
 
 export interface SelectionChangedProps {
-    type: 'selected' | 'tempSelected' | 'selectionCleared'
+    type: 'selected' | 'tempSelected' | 'selectionCleared' | 'updated'
     widgets?: Widget[]
+    updateData?: {
+        removedWidgets: Widget[]
+        addedWidgets: Widget[]
+    }
 }
 
 export class SelectionService extends Service {
     private _selected: Widget[] = []
     private _selectedDuringDrawing: Widget[] = []
     private toolService: ToolService
+    private widgetsService: WidgetsService
 
     selectionChanged = new Signal<SelectionChangedProps>()
     tempSelected = new Signal<Widget>()
     drawingSelectionUpdated = new Signal()
 
-    constructor(engine: Engine, toolService: ToolService) {
+    constructor(
+        engine: Engine,
+        toolService: ToolService,
+        widgetsService: WidgetsService,
+    ) {
         super(engine)
         this.toolService = toolService
 
         this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
+        this.widgetsService = widgetsService
+        this.widgetsService.widgetDeleted.add(this.onWidgetsDeleted, this)
     }
 
     private onMainModeChanged(state: MainModeChangedState) {
@@ -33,6 +45,57 @@ export class SelectionService extends Service {
             this.clearSelection()
             this.engine.canvas.requestRender()
         }
+    }
+
+    private onWidgetsDeleted(props: WidgetsDeletedSignal) {
+        // find if there is any deleted widget is in the selection
+        const deletedInSelection: Widget[] = []
+        props.widgets.forEach((widget) => {
+            if (this.isWidgetInSelection(widget))
+                [deletedInSelection.push(widget)]
+        })
+
+        if (!deletedInSelection.length) {
+            return
+        }
+
+        this.removeWidgetsFromSelection(deletedInSelection)
+    }
+
+    private isWidgetInSelection(widget: Widget): boolean {
+        if (
+            this._selected.findIndex(
+                (selectionWidget) => selectionWidget === widget,
+            ) !== -1
+        ) {
+            return true
+        }
+        return false
+    }
+
+    private removeWidgetsFromSelection(widgets: Widget[]) {
+        const removedWidgets: Widget[] = []
+        for (const widget of widgets) {
+            const idx = this._selected.findIndex(
+                (selectionWidget) => selectionWidget === widget,
+            )
+            if (idx === -1) continue
+            widget.selected = false
+            this._selected.splice(idx, 1)
+            removedWidgets.push(widget)
+        }
+
+        if (!removedWidgets.length) {
+            return
+        }
+        this.selectionChanged.dispatch({
+            type: 'updated',
+            widgets: this._selected,
+            updateData: {
+                removedWidgets,
+                addedWidgets: [],
+            },
+        })
     }
 
     selectWidget(widget: Widget) {
