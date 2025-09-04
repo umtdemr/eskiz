@@ -231,6 +231,7 @@ export class SelectionLayer extends Layer {
         }
         this._children.clear()
         this.controls.length = 0
+        this._selectionBorder = null
     }
 
     private changeControlsVisibility(visible: boolean) {

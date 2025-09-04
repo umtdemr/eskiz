@@ -56,6 +56,18 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 })
             } else if (data.type === 'selectionCleared') {
                 dispatch({ type: ActionKind.HIDE })
+            } else if (data.type === 'updated') {
+                // if there is no widgets left in selection
+                if (!data.widgets?.length) {
+                    dispatch({
+                        type: ActionKind.HIDE,
+                    })
+                } else {
+                    // else rerender the subtoolbar
+                    dispatch({
+                        type: ActionKind.FORCE_UPDATE,
+                    })
+                }
             }
         }
 

@@ -22,6 +22,7 @@ interface SubtoolbarState {
     show: boolean
     visible: boolean // for temproray hiding - showing, eg: hide on move
     actions: Action[]
+    forceUpdateState: number
 }
 
 export enum ActionKind {
@@ -29,6 +30,7 @@ export enum ActionKind {
     SHOW = 'show',
     TEMP_HIDE = 'temp_hide',
     TEMP_SHOW = 'temp_show',
+    FORCE_UPDATE = 'force_update',
 }
 
 type Actions =
@@ -36,11 +38,13 @@ type Actions =
     | { type: ActionKind.SHOW; engine: Engine }
     | { type: ActionKind.TEMP_HIDE }
     | { type: ActionKind.TEMP_SHOW }
+    | { type: ActionKind.FORCE_UPDATE }
 
-export const initialSubtoolbarState = {
+export const initialSubtoolbarState: SubtoolbarState = {
     show: false,
     visible: false,
     actions: [],
+    forceUpdateState: 0,
 }
 
 export function generateActions(engine: Engine): Action[] {
@@ -157,6 +161,12 @@ export function reducer(state: SubtoolbarState, action: Actions) {
                 ...state,
                 visible: true,
             }
+        case ActionKind.FORCE_UPDATE:
+            return {
+                ...state,
+                forceUpdateState: state.forceUpdateState + 1,
+            }
+
         default:
             return state
     }
