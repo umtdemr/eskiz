@@ -75,7 +75,7 @@
         - [x] Remove selection
             - [x] Add update selection method
             - [x] Remove border
-        - [ ] Destroy widgets
+        - [x] Destroy widgets
 - Refactor & bug fixes
     - [ ] Fix: ShapesDropdown top position
     - [ ] Fix: sidebar menu in mobile

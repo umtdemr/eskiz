@@ -204,6 +204,18 @@ export abstract class Widget extends Layer {
     onMouseEnter() {}
     onMouseLeave() {}
 
+    destroy() {
+        this.boundsChanged.removeAll()
+        this.deselected.removeAll()
+        this.clicked.removeAll()
+    }
+
+    delete() {
+        this.isDeleted = true
+        this.deleted.dispatch()
+        this.destroy()
+    }
+
     static loadFromJson(json: WsWidget): Widget {
         throw new Error(
             `loadFromJson is not implemented for ${json.widget_type}_${json.sub_type}`,
