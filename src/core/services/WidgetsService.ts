@@ -69,6 +69,7 @@ export class WidgetsService extends Service {
     }
 
     deleteWidget(widget: Widget) {
+        widget.delete()
         widget.isDeleted = true
         widget.deleted.dispatch()
         widget.parent?.removeChild(widget)
