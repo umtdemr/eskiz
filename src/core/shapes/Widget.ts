@@ -44,6 +44,7 @@ export type WidgetJson = {
     widget_type: DbWidgetType
     sub_type?: SubType
     parent_widget_id?: string
+    is_deleted: boolean
 }
 
 export interface WidgetClickedSignal {
