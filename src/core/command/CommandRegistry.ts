@@ -1,3 +1,4 @@
+import { CloneCommand } from './Clone'
 import { Command, Commands } from './Command'
 import { DeleteCommand } from './Delete'
 
@@ -9,6 +10,7 @@ export class CommandRegistry {
 
     registerAllCommands() {
         this.registerCommand('delete', new DeleteCommand('delete'))
+        this.registerCommand('clone', new CloneCommand('clone'))
     }
 
     get(name: Commands): Command {

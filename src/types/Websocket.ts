@@ -87,7 +87,7 @@ export type WsWidget = {
     properties: Record<string, unknown>
     is_deleted: boolean
     widget_type: string
-    sub_type: string
+    sub_type?: string | undefined
 }
 
 export type AddWidgetResponse = {
