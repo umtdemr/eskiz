@@ -64,6 +64,7 @@ export abstract class Shape extends Widget {
                 ...this._properties,
                 textProperties: this._textProperties,
             },
+            is_deleted: this._isDeleted,
         }
 
         if (this._parent_widget_id) {
