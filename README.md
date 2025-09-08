@@ -63,7 +63,8 @@
     - [x] Adding text
       - [x] UpdateSize
       - [x] Double click to edit texts
-      - [x] Save them in db
+      - [x] Save shapeText in db
+      - [ ] Save textboxes in db
     - [x] Adding text to shapes
         - [ ] Add text as soon as shape is created
     - [ ] Sticky note
@@ -71,6 +72,10 @@
     - [ ] Sub toolbar
         - [x] Add sub toolbar component
         - [ ] Generate toolbar actions based on selected widget(s)
+        - [ ] Subtoolbar multi actions
+            - [ ] Remove
+            - [ ] Clone
+            - [ ] Lock
     - [ ] Delete
         - [x] Remove selection
             - [x] Add update selection method
