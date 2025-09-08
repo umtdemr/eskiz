@@ -240,4 +240,8 @@ export class Engine extends Emitter<EngineEventsMap> {
     get textEditor(): TextEditor {
         return this._textEditor
     }
+
+    get pageId(): number {
+        return this._pageId
+    }
 }

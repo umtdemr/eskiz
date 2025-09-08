@@ -108,6 +108,20 @@ export class SelectionService extends Service {
         this.engine.canvas.requestRender()
     }
 
+    selectWidgets(widgets: Widget[]) {
+        if (!widgets.length) return
+
+        widgets.forEach((widget: Widget) => {
+            widget.selected = true
+        })
+        this._selected = widgets
+        this.selectionChanged.dispatch({
+            type: 'selected',
+            widgets: this._selected,
+        })
+        this.engine.canvas.requestRender()
+    }
+
     tempSelectWidget(widget: Widget) {
         this.clearSelection(false)
         this._selected = [widget]

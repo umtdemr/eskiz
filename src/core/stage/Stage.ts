@@ -141,4 +141,8 @@ export class Stage {
     get nonCanvasDynamicContainer() {
         return this._nonCanvasDynamicContainer
     }
+
+    get indexer(): Indexer {
+        return this._indexer
+    }
 }

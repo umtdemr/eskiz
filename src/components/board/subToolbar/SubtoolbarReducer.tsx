@@ -57,6 +57,9 @@ export function generateActions(engine: Engine): Action[] {
             id: 'duplicate',
             tooltip: 'Copy',
             icon: <Copy />,
+            btnActionProps: {
+                command: 'clone',
+            },
         },
         {
             id: 'remove',

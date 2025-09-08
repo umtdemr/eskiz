@@ -1,7 +1,7 @@
 import { Engine } from '../engine/Engine'
 import { SelectionService } from '../services/SelectionService'
 
-export type Commands = 'delete'
+export type Commands = 'delete' | 'clone'
 
 export type CommandCtx = {
     selectionService: SelectionService
