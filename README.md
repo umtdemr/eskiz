@@ -82,3 +82,23 @@
     - [ ] useShallows...
     - [ ] A component to handle boards list
         - [ ] Change error messages on boards list (user) or make it dynamic. Change colors.
+
+## Road map
+
+### Phase 1 -- Make it work! 
+
+* Finalize subtoolbar.
+* Add shortcuts
+* Add history
+* Add sticky note shape
+* Add lines
+
+#### Phase 2 -- Saving!
+
+* Add versions to prevent race conditions.
+* Save storage???
+
+
+#### Phase 3 -- Enhanced collaboration
+
+* CRDT
