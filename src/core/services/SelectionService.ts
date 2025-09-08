@@ -99,6 +99,8 @@ export class SelectionService extends Service {
     }
 
     selectWidget(widget: Widget) {
+        this.clearSelection()
+
         widget.selected = true
         this._selected = [widget]
         this.selectionChanged.dispatch({
@@ -110,6 +112,7 @@ export class SelectionService extends Service {
 
     selectWidgets(widgets: Widget[]) {
         if (!widgets.length) return
+        this.clearSelection()
 
         widgets.forEach((widget: Widget) => {
             widget.selected = true
@@ -133,6 +136,8 @@ export class SelectionService extends Service {
     }
 
     clearSelection(emit = true) {
+        if (!this._selected.length) return
+
         this._selected.forEach((widget) => {
             widget.selected = false
             widget.deselected.dispatch()
