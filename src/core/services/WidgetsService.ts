@@ -10,11 +10,15 @@ import { Signal } from '../signal/Signal'
 export interface WidgetDeletedSignal {
     widgets: Widget[]
 }
+export interface WidgetLockStateChangedSignal {
+    widgets: Widget[]
+}
 
 export class WidgetsService extends Service {
     private wsEventService: WebsocketEventService
 
     widgetDeleted = new Signal<WidgetDeletedSignal>()
+    widgetLockStateChanged = new Signal<WidgetLockStateChangedSignal>()
 
     constructor(engine: Engine, wsEventService: WebsocketEventService) {
         super(engine)
@@ -79,5 +83,6 @@ export class WidgetsService extends Service {
 
     toggleLockState(widget: Widget) {
         widget.isLocked = !widget.isLocked
+        this.widgetLockStateChanged.dispatch({ widgets: [widget] })
     }
 }
