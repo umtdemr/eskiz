@@ -81,6 +81,19 @@
             - [x] Add update selection method
             - [x] Remove border
         - [x] Destroy widgets
+        - [ ] Multiplayer
+            - [ ] Delete when a shape is deleted by other user
+                - [ ] Delete from canvas
+                - [ ] Delete from selection
+                - [ ] Destroy
+    - [ ] Lock
+        - [x] Add isLocked prop
+        - [x] Subtoolbar actions restriction if widget is locked
+        - [x] Prevent drag
+        - [ ] Prevent resize handler
+        - [x] Prevent commands
+        - [x] Change border color
+        - [ ] Disallow selecting multiple widgets if widgets are locked
 - Refactor & bug fixes
     - [ ] Fix: ShapesDropdown top position
     - [ ] Fix: sidebar menu in mobile
