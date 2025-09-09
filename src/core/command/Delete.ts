@@ -13,6 +13,10 @@ export class DeleteCommand extends Command {
             return false
         }
 
+        if (ctx.selectionService.isThereLockedWidget()) {
+            return false
+        }
+
         return true
     }
 

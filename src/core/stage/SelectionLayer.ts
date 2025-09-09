@@ -146,6 +146,9 @@ export class SelectionLayer extends Layer {
         if (widgets[0].widgetType === 'path') {
             return
         }
+        if (widgets[0].isLocked) {
+            return
+        }
 
         // add controls
         const edgeControls = [

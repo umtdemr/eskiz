@@ -12,6 +12,9 @@ export class CloneCommand extends Command {
         if (!ctx.selectionService.selected?.length) {
             return false
         }
+        if (ctx.selectionService.isThereLockedWidget()) {
+            return false
+        }
 
         return true
     }
