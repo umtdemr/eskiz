@@ -7,6 +7,7 @@ import {
     LockKeyholeOpen,
     Trash2,
     WholeWord,
+    LockKeyhole,
 } from 'lucide-react'
 
 export interface Action {
@@ -51,6 +52,20 @@ export function generateActions(engine: Engine): Action[] {
     const selectionService = engine.getService<SelectionService>('selection')
     if (!selectionService.selected) return []
     if (selectionService.isMultipleSelection()) return []
+
+    const widget = selectionService.selected[0]
+    if (widget.isLocked) {
+        return [
+            {
+                id: 'unlock',
+                tooltip: 'Unlock',
+                icon: <LockKeyhole />,
+                btnActionProps: {
+                    command: 'toggleLock',
+                },
+            },
+        ]
+    }
 
     const actions: Action[] = [
         {
