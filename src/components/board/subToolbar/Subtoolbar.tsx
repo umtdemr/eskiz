@@ -66,6 +66,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                     // else rerender the subtoolbar
                     dispatch({
                         type: ActionKind.FORCE_UPDATE,
+                        engine,
                     })
                 }
             }

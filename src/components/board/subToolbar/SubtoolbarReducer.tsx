@@ -39,7 +39,7 @@ type Actions =
     | { type: ActionKind.SHOW; engine: Engine }
     | { type: ActionKind.TEMP_HIDE }
     | { type: ActionKind.TEMP_SHOW }
-    | { type: ActionKind.FORCE_UPDATE }
+    | { type: ActionKind.FORCE_UPDATE; engine: Engine }
 
 export const initialSubtoolbarState: SubtoolbarState = {
     show: false,
@@ -185,6 +185,7 @@ export function reducer(state: SubtoolbarState, action: Actions) {
         case ActionKind.FORCE_UPDATE:
             return {
                 ...state,
+                actions: generateActions(action.engine),
                 forceUpdateState: state.forceUpdateState + 1,
             }
 

@@ -1,11 +1,15 @@
 import { ACTION_MODES } from '@/helpers/Constant'
-import { CanvasMouseEvent, Engine } from '../engine/Engine'
+import { Engine } from '../engine/Engine'
 import { BoundingBox } from '../geometry/BoundingBox'
 import { Widget } from '../shapes/Widget'
 import { Signal } from '../signal/Signal'
 import { Service } from './Service'
 import { MainModeChangedState, ToolService } from './ToolService'
-import { WidgetDeletedSignal, WidgetsService } from './WidgetsService'
+import {
+    WidgetDeletedSignal,
+    WidgetLockStateChangedSignal,
+    WidgetsService,
+} from './WidgetsService'
 
 export interface SelectionChangedProps {
     type: 'selected' | 'tempSelected' | 'selectionCleared' | 'updated'
@@ -37,6 +41,10 @@ export class SelectionService extends Service {
         this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
         this.widgetsService = widgetsService
         this.widgetsService.widgetDeleted.add(this.onWidgetsDeleted, this)
+        this.widgetsService.widgetLockStateChanged.add(
+            this.onWidgetsLockStateChanged,
+            this,
+        )
     }
 
     private onMainModeChanged(state: MainModeChangedState) {
@@ -60,6 +68,28 @@ export class SelectionService extends Service {
         }
 
         this.removeWidgetsFromSelection(deletedInSelection)
+    }
+
+    private onWidgetsLockStateChanged(props: WidgetLockStateChangedSignal) {
+        // find if there is any updated widget is in the selection
+        const lockStateChangedInSelection: Widget[] = []
+        props.widgets.forEach((widget) => {
+            if (this.isWidgetInSelection(widget))
+                [lockStateChangedInSelection.push(widget)]
+        })
+
+        if (!lockStateChangedInSelection.length) {
+            return
+        }
+
+        this.selectionChanged.dispatch({
+            type: 'updated',
+            widgets: this._selected,
+            updateData: {
+                removedWidgets: [],
+                addedWidgets: [],
+            },
+        })
     }
 
     private isWidgetInSelection(widget: Widget): boolean {
