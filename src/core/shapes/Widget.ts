@@ -31,6 +31,7 @@ export interface WidgetProps {
     uuid?: string
     z_index?: string
     parent_widget_id?: string
+    is_locked?: boolean
 }
 
 export type WidgetJson = {
@@ -45,6 +46,7 @@ export type WidgetJson = {
     sub_type?: SubType
     parent_widget_id?: string
     is_deleted: boolean
+    is_locked: boolean
 }
 
 export interface WidgetClickedSignal {
@@ -65,6 +67,7 @@ export abstract class Widget extends Layer {
     protected _selected: boolean = false
     protected _isDynamic: boolean = false
     protected _isDeleted: boolean = false
+    protected _isLocked: boolean = false
     protected _properties: Record<string, unknown>
 
     boundsChanged = new Signal()
@@ -91,6 +94,9 @@ export abstract class Widget extends Layer {
 
         if (props.visible !== undefined) {
             this.visible = props.visible
+        }
+        if (props.is_locked !== undefined) {
+            this._isLocked = props.is_locked
         }
         if (props.z_index) {
             this._zIndex = props.z_index
@@ -194,6 +200,8 @@ export abstract class Widget extends Layer {
                 case 'z_index':
                     this.zIndex = json.z_index!
                     break
+                case 'is_locked':
+                    this.isLocked = json.is_locked!
             }
         }
     }
@@ -346,6 +354,14 @@ export abstract class Widget extends Layer {
 
     set isDeleted(val: boolean) {
         this._isDeleted = val
+    }
+
+    get isLocked(): boolean {
+        return this._isLocked
+    }
+
+    set isLocked(val: boolean) {
+        this._isLocked = val
     }
 
     get parent(): Layer | Widget | null {
