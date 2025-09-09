@@ -230,6 +230,10 @@ export class SelectionService extends Service {
         return this._selected.length > 1
     }
 
+    isThereLockedWidget(): boolean {
+        return this._selected.some((widget) => widget.isLocked)
+    }
+
     get selected() {
         return this._selected
     }
