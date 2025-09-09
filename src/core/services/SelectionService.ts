@@ -5,7 +5,7 @@ import { Widget } from '../shapes/Widget'
 import { Signal } from '../signal/Signal'
 import { Service } from './Service'
 import { MainModeChangedState, ToolService } from './ToolService'
-import { WidgetsDeletedSignal, WidgetsService } from './WidgetsService'
+import { WidgetDeletedSignal, WidgetsService } from './WidgetsService'
 
 export interface SelectionChangedProps {
     type: 'selected' | 'tempSelected' | 'selectionCleared' | 'updated'
@@ -47,7 +47,7 @@ export class SelectionService extends Service {
         }
     }
 
-    private onWidgetsDeleted(props: WidgetsDeletedSignal) {
+    private onWidgetsDeleted(props: WidgetDeletedSignal) {
         // find if there is any deleted widget is in the selection
         const deletedInSelection: Widget[] = []
         props.widgets.forEach((widget) => {

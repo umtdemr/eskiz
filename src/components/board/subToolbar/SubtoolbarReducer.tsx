@@ -73,6 +73,9 @@ export function generateActions(engine: Engine): Action[] {
             id: 'lock',
             tooltip: 'Lock',
             icon: <LockKeyholeOpen />,
+            btnActionProps: {
+                command: 'toggleLock',
+            },
         },
         {
             id: 'seperator',

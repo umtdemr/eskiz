@@ -76,4 +76,8 @@ export class WidgetsService extends Service {
 
         this.widgetDeleted.dispatch({ widgets: [widget] })
     }
+
+    toggleLockState(widget: Widget) {
+        widget.isLocked = !widget.isLocked
+    }
 }

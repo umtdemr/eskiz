@@ -2,7 +2,12 @@ import { Widget } from '../shapes/Widget'
 import { Shape } from '@/core/shapes/Shape'
 import { TextBox } from '@/core/shapes/text/TextBox'
 
-export type EditingMethods = 'move' | 'resize' | 'text' | 'delete'
+export type EditingMethods =
+    | 'move'
+    | 'resize'
+    | 'text'
+    | 'delete'
+    | 'toggleLock'
 
 export type State = Record<string, unknown>
 
@@ -53,6 +58,11 @@ export function getPartialState(
                         },
                     })
                 }
+                break
+            case 'toggleLock':
+                updateState({
+                    is_locked: widget.isLocked,
+                })
                 break
         }
     }
