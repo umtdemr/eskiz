@@ -184,12 +184,20 @@ export class SelectionService extends Service {
         })
     }
 
-    checkObjectsInRect(rect: BoundingBox): Widget[] {
+    checkObjectsInRect(
+        rect: BoundingBox,
+        options: {
+            ignoreLocked: boolean
+        } = {
+            ignoreLocked: true,
+        },
+    ): Widget[] {
         const shapesLayer = this.engine.stage.widgetsDefaultLayer
         const allWidgets = new Set<Widget>()
 
         for (const child of shapesLayer.children) {
             if (!(child instanceof Widget) || !child.interactive) continue
+            if (child.isLocked && options.ignoreLocked) continue
 
             if (rect.containsRect(child.bounds)) {
                 allWidgets.add(child)
