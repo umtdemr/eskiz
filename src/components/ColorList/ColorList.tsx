@@ -178,6 +178,7 @@ export function ColorList({ onColorSelect }: ColorListProps) {
                                     onClick={() => onColorSelect(color.rgba)}
                                     size={28}
                                     showBorder={true}
+                                    enableHoverEffect
                                 />
                             </TooltipTrigger>
                             <TooltipContent>

@@ -7,6 +7,7 @@ export interface ColorButtonProps {
     fillPercentage?: number
     size?: number
     showBorder?: boolean
+    enableHoverEffect?: boolean
 }
 
 export function ColorButton({
@@ -16,6 +17,7 @@ export function ColorButton({
     fillPercentage,
     size = 25,
     showBorder = true,
+    enableHoverEffect = false,
 }: ColorButtonProps) {
     const appliedFillPercentage =
         fillPercentage !== null && fillPercentage !== undefined
@@ -24,7 +26,9 @@ export function ColorButton({
     const applySize = (size * appliedFillPercentage) / 100
     return (
         <button
-            className="flex items-center justify-center"
+            className={clsx('flex items-center justify-center', {
+                'hover:scale-125': enableHoverEffect,
+            })}
             aria-label={ariaLabel}
             onClick={onClick}
             style={{
