@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import useOnClickOutside from '@/hooks/UseOutsideClick'
 import clsx from 'clsx'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useRef, useState } from 'react'
@@ -17,6 +18,15 @@ export function FontSizeInput({
     const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false)
     const [inputVal, setInputVal] = useState(defaultValue.toString())
     const inputRef = useRef<HTMLInputElement>(null)
+    const fontSizeWrapperRef = useRef<HTMLDivElement>(null)
+
+    const onClickOutsideHandler = (event: MouseEvent) => {
+        if (fontSizeWrapperRef.current!.contains(event.target as Node)) {
+            return
+        }
+        setIsDropdownMenuOpen(false)
+    }
+    useOnClickOutside(fontSizeWrapperRef, onClickOutsideHandler)
 
     const handleInputFocus = () => {
         setIsDropdownMenuOpen(true)
@@ -58,7 +68,7 @@ export function FontSizeInput({
 
     return (
         <div className="flex gap-[1px]">
-            <div className="relative">
+            <div className="relative" ref={fontSizeWrapperRef}>
                 <input
                     id={inputId}
                     value={inputVal}
