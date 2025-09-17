@@ -1,3 +1,4 @@
+import toast from 'react-hot-toast'
 import {
     Tooltip,
     TooltipContent,
@@ -21,6 +22,7 @@ const rgbToHex = (r: number, g: number, b: number) => {
 export function ColorList({ onColorSelect }: ColorListProps) {
     const colors = useBoundStore(useShallow((state) => state.colors))
     const addNewColor = useBoundStore((state) => state.addNewColor)
+    const removeColor = useBoundStore((state) => state.removeColor)
 
     const onNewColorAdd = (color: RgbColor) => {
         const hexName = rgbToHex(color.r, color.g, color.b)
@@ -33,13 +35,27 @@ export function ColorList({ onColorSelect }: ColorListProps) {
         })
     }
 
+    const handleRightClick = (e: React.MouseEvent, color: string) => {
+        e.preventDefault()
+
+        // if color is a default color
+        if (!color.startsWith('#')) {
+            toast.error("sorry, you can't delete default color", {
+                id: 'color_palette_default_color_deletion',
+            })
+            return
+        }
+
+        removeColor(color)
+    }
+
     return (
         <>
             <span className="text-xs mb-1 block">Color</span>
             <div className="flex gap-2 flex-wrap">
                 <TooltipProvider>
                     {colors.map((color) => (
-                        <Tooltip>
+                        <Tooltip key={color.colorKey}>
                             <TooltipTrigger>
                                 <ColorButton
                                     key={color.colorKey}
@@ -49,6 +65,7 @@ export function ColorList({ onColorSelect }: ColorListProps) {
                                     size={28}
                                     showBorder={true}
                                     enableHoverEffect
+                                    onRightClick={handleRightClick}
                                 />
                             </TooltipTrigger>
                             <TooltipContent>

@@ -26,6 +26,7 @@ export interface ToolSlice {
     changePenThickness: (val: number) => void
     changePenColor: (val: RGBA) => void
     addNewColor: (val: ColorInStore) => void
+    removeColor: (color: string) => void
 }
 
 export const createToolSlice: StateCreator<
@@ -225,6 +226,25 @@ export const createToolSlice: StateCreator<
                 return {
                     ...state,
                     colors: [...state.colors, val],
+                }
+            }),
+        removeColor: (colorToRemove: string) =>
+            set((state) => {
+                const cIdx = state.colors.findIndex(
+                    (color) => color.color === colorToRemove,
+                )
+                if (cIdx === -1) {
+                    return state
+                }
+
+                // if color is not a custom color, do not remove it
+                if (!state.colors[cIdx].isCustom) {
+                    return state
+                }
+
+                return {
+                    ...state,
+                    colors: state.colors.filter((_, idx) => idx !== cIdx),
                 }
             }),
     }),
