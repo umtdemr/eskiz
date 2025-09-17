@@ -191,11 +191,11 @@ export function ColorList({ onColorSelect }: ColorListProps) {
                         </Tooltip>
                     ))}
                     <Tooltip>
-                        <TooltipTrigger asChild>
+                        <TooltipTrigger>
                             <ColorPalette size={28} onAdd={onNewColorAdd} />
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p>noli</p>
+                            <p>Add a new color</p>
                         </TooltipContent>
                     </Tooltip>
                 </TooltipProvider>
