@@ -6,6 +6,8 @@ import {
 } from '@/components/ui/tooltip.tsx'
 import { RGBA } from '@/core/shapes/Color'
 import { ColorButton } from '../colorButton/ColorButton'
+import { ColorPalette } from './ColorPalette'
+import { RgbColor } from 'react-colorful'
 const colors: {
     color: string
     colorKey: string
@@ -163,6 +165,8 @@ export interface ColorListProps {
 }
 
 export function ColorList({ onColorSelect }: ColorListProps) {
+    const onNewColorAdd = (color: RgbColor) => {}
+
     return (
         <>
             <span className="text-xs mb-1 block">Color</span>
@@ -186,6 +190,14 @@ export function ColorList({ onColorSelect }: ColorListProps) {
                             </TooltipContent>
                         </Tooltip>
                     ))}
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <ColorPalette size={28} onAdd={onNewColorAdd} />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>noli</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </TooltipProvider>
             </div>
         </>
