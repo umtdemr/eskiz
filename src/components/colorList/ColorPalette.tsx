@@ -14,6 +14,12 @@ export function ColorPalette({ size, onAdd }: ColorPaletteProps) {
     const btnRef = useRef<HTMLButtonElement>(null)
     const colorPaletteWrapperRef = useRef<HTMLDivElement>(null)
 
+    const handleColorAdd = () => {
+        if (!color) return
+
+        onAdd(color)
+        setColor(undefined)
+    }
     const onClickOutsideHandler = (event: MouseEvent) => {
         if (!showColorPalette) return
         if (btnRef.current!.contains(event.target as Node)) {
@@ -23,13 +29,15 @@ export function ColorPalette({ size, onAdd }: ColorPaletteProps) {
             return
         }
 
+        handleColorAdd()
         setShowColorPalette(false)
     }
+
     useOnClickOutside(colorPaletteWrapperRef, onClickOutsideHandler)
 
     const handleOnClick = () => {
         if (color && showColorPalette) {
-            onAdd(color)
+            handleColorAdd()
             setShowColorPalette(false)
             return
         } else if (showColorPalette) {
