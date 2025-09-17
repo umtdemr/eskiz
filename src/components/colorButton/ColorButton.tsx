@@ -37,8 +37,8 @@ export function ColorButton({
             }}
         >
             <div
-                className={clsx('w-full relative h-full rounded-full', {
-                    'border-zinc-500 border-solid border-[1px]': showBorder,
+                className={clsx('w-full relative h-full rounded-full p-2', {
+                    'outline outline-1 outline-zinc-500': showBorder,
                 })}
             >
                 <div
