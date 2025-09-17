@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { RgbColor, RgbColorPicker } from 'react-colorful'
 import './ColorPalette.scss'
 import useOnClickOutside from '@/hooks/UseOutsideClick'
+import { closeColorPalette, onColorPaletteVisibilityChange } from './colorList'
 
 export interface ColorPaletteProps {
     size: number
@@ -15,12 +16,13 @@ export function ColorPalette({ size, onAdd, onChange }: ColorPaletteProps) {
     const btnRef = useRef<HTMLButtonElement>(null)
     const colorPaletteWrapperRef = useRef<HTMLDivElement>(null)
 
-    const handleColorAdd = () => {
+    const handleColorAdd = useCallback(() => {
         if (!color) return
 
         onAdd(color)
         setColor(undefined)
-    }
+    }, [color, onAdd])
+
     const onClickOutsideHandler = (event: MouseEvent) => {
         if (!showColorPalette) return
         if (btnRef.current!.contains(event.target as Node)) {
@@ -52,6 +54,17 @@ export function ColorPalette({ size, onAdd, onChange }: ColorPaletteProps) {
         setColor(color)
         onChange(color)
     }
+
+    useEffect(() => {
+        const onCloseColorPalette = () => {
+            handleColorAdd()
+        }
+
+        closeColorPalette.add(onCloseColorPalette)
+        return () => {
+            closeColorPalette.remove(onCloseColorPalette)
+        }
+    }, [handleColorAdd])
 
     return (
         <div className="color_palette">
