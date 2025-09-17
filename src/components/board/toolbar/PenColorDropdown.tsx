@@ -4,7 +4,7 @@ import { useBoundStore } from '@/store/store'
 import { useShallow } from 'zustand/react/shallow'
 import { RGBA } from '@/core/shapes/Color'
 import { PEN_CONSTANTS } from '@/helpers/Constant'
-import { ColorList } from '@/components/ColorList/ColorList'
+import { ColorList } from '@/components/colorList/ColorList'
 
 export function PenColorDropdown() {
     const thicknessUpdateTimeout = useRef<ReturnType<typeof setTimeout> | null>(
