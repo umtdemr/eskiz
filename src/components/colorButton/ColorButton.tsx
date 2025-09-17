@@ -23,7 +23,7 @@ export function ColorButton({
         fillPercentage !== null && fillPercentage !== undefined
             ? fillPercentage
             : 100
-    const applySize = (size * appliedFillPercentage) / 100
+    const applySize = Math.round((size * appliedFillPercentage) / 100)
     return (
         <button
             className={clsx('flex items-center justify-center', {
@@ -42,12 +42,11 @@ export function ColorButton({
                 })}
             >
                 <div
-                    className="rounded-full absolute left-[50%] top-[50%]"
+                    className="rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
                     style={{
                         backgroundColor: color,
                         width: `${applySize}px`,
                         height: `${applySize}px`,
-                        transform: 'translate(-50%, -50%)',
                     }}
                 ></div>
             </div>
