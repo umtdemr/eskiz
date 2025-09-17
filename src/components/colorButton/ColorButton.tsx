@@ -7,6 +7,7 @@ export interface ColorButtonProps {
     fillPercentage?: number
     size?: number
     showBorder?: boolean
+    onRightClick?: (e: React.MouseEvent, color: string) => void
     enableHoverEffect?: boolean
 }
 
@@ -15,6 +16,7 @@ export function ColorButton({
     color,
     onClick,
     fillPercentage,
+    onRightClick,
     size = 25,
     showBorder = true,
     enableHoverEffect = false,
@@ -24,6 +26,13 @@ export function ColorButton({
             ? fillPercentage
             : 100
     const applySize = Math.round((size * appliedFillPercentage) / 100)
+
+    const handleContextMenu = (e: React.MouseEvent) => {
+        if (onRightClick) {
+            onRightClick(e, color)
+        }
+    }
+
     return (
         <button
             className={clsx('flex items-center justify-center', {
@@ -31,6 +40,7 @@ export function ColorButton({
             })}
             aria-label={ariaLabel}
             onClick={onClick}
+            onContextMenu={handleContextMenu}
             style={{
                 width: `${size}px`,
                 height: `${size}px`,
