@@ -54,7 +54,7 @@ export function ColorPalette({ size, onAdd }: ColorPaletteProps) {
                     height: `${size}px`,
                 }}
             >
-                <div className="w-full relative h-full rounded-full border-zinc-500 border-solid border-[1px] flex justify-center items-center">
+                <div className="w-full relative h-full rounded-full outline outline-1 outline-zinc-500 flex justify-center items-center">
                     {color ? (
                         <div
                             className="rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex justify-center items-center"
