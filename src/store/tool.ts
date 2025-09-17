@@ -213,7 +213,6 @@ export const createToolSlice: StateCreator<
             })),
         addNewColor: (val: ColorInStore) =>
             set((state) => {
-                console.log('val', val)
                 const cIdx = state.colors.findIndex(
                     (color) =>
                         color.rgba.r === val.rgba.r &&

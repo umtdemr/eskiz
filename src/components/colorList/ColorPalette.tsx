@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import { RgbColor, RgbColorPicker } from 'react-colorful'
 import './ColorPalette.scss'
@@ -7,8 +7,9 @@ import useOnClickOutside from '@/hooks/UseOutsideClick'
 export interface ColorPaletteProps {
     size: number
     onAdd: (color: RgbColor) => void
+    onChange: (color: RgbColor) => void
 }
-export function ColorPalette({ size, onAdd }: ColorPaletteProps) {
+export function ColorPalette({ size, onAdd, onChange }: ColorPaletteProps) {
     const [color, setColor] = useState<RgbColor | undefined>()
     const [showColorPalette, setShowColorPalette] = useState(false)
     const btnRef = useRef<HTMLButtonElement>(null)
@@ -49,6 +50,7 @@ export function ColorPalette({ size, onAdd }: ColorPaletteProps) {
 
     const handleOnChange = (color: RgbColor) => {
         setColor(color)
+        onChange(color)
     }
 
     return (
