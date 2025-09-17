@@ -58,7 +58,13 @@ export function ColorList({ onColorSelect }: ColorListProps) {
                     ))}
                     <Tooltip>
                         <TooltipTrigger>
-                            <ColorPalette size={28} onAdd={onNewColorAdd} />
+                            <ColorPalette
+                                size={28}
+                                onAdd={onNewColorAdd}
+                                onChange={(color: RgbColor) =>
+                                    onColorSelect({ ...color, a: 1 })
+                                }
+                            />
                         </TooltipTrigger>
                         <TooltipContent>
                             <p>Add a new color</p>
