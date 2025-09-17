@@ -153,6 +153,7 @@ export function PenDropdown({
                                                 PEN_CONSTANTS.THICKNESS_MAX
                                             }
                                             onClick={colorBtnClickHandler}
+                                            size={30}
                                         />
                                     </TooltipTrigger>
                                     <TooltipContent>
