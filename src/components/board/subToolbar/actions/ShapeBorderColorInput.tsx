@@ -25,14 +25,59 @@ export function ShapeBorderColorInput({
                             height="24"
                             viewBox="0 0 24 24"
                             fill="none"
-                            strokeWidth="5"
+                            strokeWidth="3"
                             strokeLinecap="round"
                             strokeLinejoin="round"
-                            className="lucide lucide-squircle-icon lucide-squircle"
+                            className="z-10"
                         >
                             <path
                                 d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9"
-                                stroke="rgba(0, 0, 0, .1)"
+                                stroke="rgba(0, 0, 0, 1)"
+                            />
+                        </svg>
+
+                        {/* Transparent bg effect */}
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="200"
+                            height="200"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="absolute"
+                        >
+                            <defs>
+                                <pattern
+                                    id="checkerboard"
+                                    width="8"
+                                    height="8"
+                                    patternUnits="userSpaceOnUse"
+                                >
+                                    <rect width="8" height="8" fill="#fff" />
+                                    <rect width="4" height="4" fill="#ccc" />
+                                    <rect
+                                        x="4"
+                                        y="4"
+                                        width="4"
+                                        height="4"
+                                        fill="#ccc"
+                                    />
+                                </pattern>
+                            </defs>
+
+                            <path
+                                d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9"
+                                stroke="black"
+                                stroke-width="6"
+                                fill="none"
+                            />
+
+                            <path
+                                d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9"
+                                stroke="url(#checkerboard)"
+                                stroke-width="3"
+                                fill="none"
                             />
                         </svg>
                     </Button>
