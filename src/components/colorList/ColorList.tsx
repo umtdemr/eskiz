@@ -14,12 +14,13 @@ import { useBoundStore } from '@/store/store'
 
 export interface ColorListProps {
     onColorSelect: (color: RGBA) => void
+    perColumn?: number
 }
 const rgbToHex = (r: number, g: number, b: number) => {
     return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)
 }
 
-export function ColorList({ onColorSelect }: ColorListProps) {
+export function ColorList({ onColorSelect, perColumn = 4 }: ColorListProps) {
     const colors = useBoundStore(useShallow((state) => state.colors))
     const addNewColor = useBoundStore((state) => state.addNewColor)
     const removeColor = useBoundStore((state) => state.removeColor)
@@ -52,11 +53,14 @@ export function ColorList({ onColorSelect }: ColorListProps) {
     return (
         <>
             <span className="text-xs mb-1 block">Color</span>
-            <div className="flex gap-2 flex-wrap">
+            <div
+                className="grid gap-2 flex-wrap"
+                style={{ gridTemplateColumns: `repeat(${perColumn}, 1fr)` }}
+            >
                 <TooltipProvider>
                     {colors.map((color) => (
                         <Tooltip key={color.colorKey}>
-                            <TooltipTrigger>
+                            <TooltipTrigger className="flex justify-center">
                                 <ColorButton
                                     key={color.colorKey}
                                     ariaLabel={`Color ${color.color}`}
@@ -74,7 +78,7 @@ export function ColorList({ onColorSelect }: ColorListProps) {
                         </Tooltip>
                     ))}
                     <Tooltip>
-                        <TooltipTrigger>
+                        <TooltipTrigger className="flex justify-center">
                             <ColorPalette
                                 size={28}
                                 onAdd={onNewColorAdd}
