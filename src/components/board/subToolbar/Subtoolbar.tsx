@@ -20,6 +20,8 @@ import { ShapeBorderColorInput } from './actions/ShapeBorderColorInput.tsx'
 import { ShapeBgColorInput } from './actions/ShapeBgColorInput.tsx'
 import { TextColorInput } from './actions/TextColorInput.tsx'
 import { HighlightColorInput } from './actions/HighlightColorInput.tsx'
+import { FontStyleInput } from './actions/FontStyleInput.tsx'
+import { TextAlignInput } from './actions/TextAlignInput.tsx'
 import { useBoundStore } from '@/store/store'
 import useOnClickOutside from '@/hooks/UseOutsideClick'
 
@@ -202,6 +204,22 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                     } else if (action.type === 'highlightColorInput') {
                         return (
                             <HighlightColorInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
+                            />
+                        )
+                    } else if (action.type === 'fontStyleInput') {
+                        return (
+                            <FontStyleInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
+                            />
+                        )
+                    } else if (action.type === 'textAlignInput') {
+                        return (
+                            <TextAlignInput
                                 key={action.id}
                                 tooltip={action.tooltip!}
                                 id={action.id}
