@@ -1,8 +1,8 @@
 import { Button } from '@/components/ui/button'
-import useOnClickOutside from '@/hooks/UseOutsideClick'
 import clsx from 'clsx'
 import { ChevronDown, ChevronUp } from 'lucide-react'
 import { useRef, useState } from 'react'
+import { useBoundStore } from '@/store/store'
 
 export interface FontSizeInputProps {
     inputId: string
@@ -15,21 +15,13 @@ export function FontSizeInput({
     inputId,
     defaultValue = 10,
 }: FontSizeInputProps) {
-    const [isDropdownMenuOpen, setIsDropdownMenuOpen] = useState(false)
     const [inputVal, setInputVal] = useState(defaultValue.toString())
     const inputRef = useRef<HTMLInputElement>(null)
-    const fontSizeWrapperRef = useRef<HTMLDivElement>(null)
-
-    const onClickOutsideHandler = (event: MouseEvent) => {
-        if (fontSizeWrapperRef.current!.contains(event.target as Node)) {
-            return
-        }
-        setIsDropdownMenuOpen(false)
-    }
-    useOnClickOutside(fontSizeWrapperRef, onClickOutsideHandler)
+    const { activeDropdown, setActiveDropdown, closeDropdown } = useBoundStore()
+    const isDropdownMenuOpen = activeDropdown === 'fontSize'
 
     const handleInputFocus = () => {
-        setIsDropdownMenuOpen(true)
+        setActiveDropdown('fontSize')
     }
 
     const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,7 +44,7 @@ export function FontSizeInput({
         if (!parsedInt || parsedInt < FONT_SIZE_OPTIONS[0]) return
 
         handleFontSizeChange(parsedInt)
-        setIsDropdownMenuOpen(false)
+        closeDropdown()
     }
 
     const handleIncrease = () => {
@@ -64,11 +56,13 @@ export function FontSizeInput({
 
     const handleFontSizeChange = (val: number) => {
         console.log('change', val)
+        setInputVal(val.toString())
+        closeDropdown()
     }
 
     return (
         <div className="flex gap-[1px]">
-            <div className="relative" ref={fontSizeWrapperRef}>
+            <div className="relative">
                 <input
                     id={inputId}
                     value={inputVal}
