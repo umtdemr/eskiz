@@ -2,20 +2,27 @@ import { Commands } from '@/core/command/Command'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import {
-    Baseline,
     Copy,
     LockKeyholeOpen,
     Trash2,
-    WholeWord,
     LockKeyhole,
 } from 'lucide-react'
 
 export interface Action {
     id: string
     tooltip?: string
-    icon?: React.ReactNode
+    type:
+        | 'seperator'
+        | 'btnAction'
+        | 'shapeBorderColorInput'
+        | 'shapeBgColorInput'
+        | 'textColorInput'
+        | 'highlightColorInput'
+        | 'fontStyleInput'
+        | 'textAlignInput'
     btnActionProps?: {
-        command: Commands
+        command: Commands | 'willDo'
+        icon?: React.ReactNode
     }
 }
 
@@ -59,9 +66,10 @@ export function generateActions(engine: Engine): Action[] {
             {
                 id: 'unlock',
                 tooltip: 'Unlock',
-                icon: <LockKeyhole />,
+                type: 'btnAction',
                 btnActionProps: {
                     command: 'toggleLock',
+                    icon: <LockKeyhole />,
                 },
             },
         ]
@@ -71,84 +79,71 @@ export function generateActions(engine: Engine): Action[] {
         {
             id: 'duplicate',
             tooltip: 'Copy',
-            icon: <Copy />,
+            type: 'btnAction',
             btnActionProps: {
                 command: 'clone',
+                icon: <Copy />,
             },
         },
         {
             id: 'remove',
             tooltip: 'Remove',
-            icon: <Trash2 />,
+            type: 'btnAction',
             btnActionProps: {
+                icon: <Trash2 />,
                 command: 'delete',
             },
         },
         {
             id: 'lock',
             tooltip: 'Lock',
-            icon: <LockKeyholeOpen />,
+            type: 'btnAction',
             btnActionProps: {
-                command: 'toggleLock',
+                icon: <LockKeyholeOpen />,
+                command: 'willDo',
             },
         },
         {
-            id: 'seperator',
-            tooltip: 'seperator',
+            id: 'seperator1',
+            type: 'seperator',
         },
         {
             id: 'fontStyle',
             tooltip: 'Font style',
-            icon: <WholeWord />,
+            type: 'fontStyleInput',
+        },
+        {
+            id: 'textAlign',
+            tooltip: 'Text alignment',
+            type: 'textAlignInput',
+        },
+        {
+            id: 'seperator2',
+            type: 'seperator',
         },
         {
             id: 'textColor',
             tooltip: 'Text color',
-            icon: <Baseline />,
+            type: 'textColorInput',
         },
         {
-            id: 'seperator1',
-            tooltip: 'seperator',
+            id: 'highlightColor',
+            tooltip: 'Highlight color',
+            type: 'highlightColorInput',
+        },
+        {
+            id: 'seperator3',
+            type: 'seperator',
         },
         {
             id: 'borderStyleColor',
             tooltip: 'Border style and color',
-            icon: (
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-squircle-icon lucide-squircle"
-                >
-                    <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9" />
-                </svg>
-            ),
+            type: 'shapeBorderColorInput',
         },
         {
             id: 'backgroundColor',
             tooltip: 'Background color',
-            icon: (
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="lucide lucide-squircle-icon lucide-squircle"
-                >
-                    <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9" />
-                </svg>
-            ),
+            type: 'shapeBgColorInput',
         },
     ]
 
