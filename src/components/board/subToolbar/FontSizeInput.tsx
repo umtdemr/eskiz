@@ -74,6 +74,7 @@ export function FontSizeInput({
                     onFocus={handleInputFocus}
                     onKeyUp={handleOnKeyUp}
                     ref={inputRef}
+                    autoComplete="off"
                 />
                 <div
                     className={clsx(
