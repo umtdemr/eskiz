@@ -5,6 +5,7 @@ import {
 } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 import { ShapeBgColorDropdown } from './ShapeBgColorDropdown'
+import { useBoundStore } from '@/store/store'
 
 export interface ShapeBgColorInputProps {
     id: string
@@ -12,12 +13,23 @@ export interface ShapeBgColorInputProps {
 }
 
 export function ShapeBgColorInput({ tooltip, id }: ShapeBgColorInputProps) {
+    const { activeDropdown, toggleDropdown } = useBoundStore()
+    const isActive = activeDropdown === 'shapeBgColor'
+
+    const handleClick = () => {
+        toggleDropdown('shapeBgColor')
+    }
+
     return (
         <div id={id} className="relative">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
-                        <Button className="iconBox">
+                        <Button 
+                            className="iconBox"
+                            onClick={handleClick}
+                            data-active={isActive}
+                        >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24"
@@ -37,7 +49,7 @@ export function ShapeBgColorInput({ tooltip, id }: ShapeBgColorInputProps) {
                 </TooltipTrigger>
                 <TooltipContent>{tooltip}</TooltipContent>
             </Tooltip>
-            <ShapeBgColorDropdown />
+            {isActive && <ShapeBgColorDropdown />}
         </div>
     )
 }

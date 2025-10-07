@@ -15,6 +15,11 @@ import {
 import clsx from 'clsx'
 import { SelectionLayer } from '@/core/stage/SelectionLayer'
 import { ButtonAction } from './actions/ButtonAction'
+import { FontSizeInput } from './FontSizeInput.tsx'
+import { ShapeBorderColorInput } from './actions/ShapeBorderColorInput.tsx'
+import { ShapeBgColorInput } from './actions/ShapeBgColorInput.tsx'
+import { useBoundStore } from '@/store/store'
+import useOnClickOutside from '@/hooks/UseOutsideClick'
 
 export interface SubtoolbarProps {
     engine: Engine
@@ -24,9 +29,18 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
     const [state, dispatch] = useReducer(reducer, initialSubtoolbarState)
     const selectionLayerRef = useRef<SelectionLayer | null>(null)
     const transformTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+    const subtoolbarRef = useRef<HTMLDivElement>(null)
+    const { closeDropdown } = useBoundStore()
+
+    useOnClickOutside(subtoolbarRef, () => {
+        closeDropdown()
+    })
 
     const handleAction = (action: SubtoolbarAction) => {
-        if (!action.btnActionProps?.command) {
+        if (
+            !action.btnActionProps?.command ||
+            action.btnActionProps.command === 'willDo'
+        ) {
             return
         }
 
@@ -56,12 +70,14 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 })
             } else if (data.type === 'selectionCleared') {
                 dispatch({ type: ActionKind.HIDE })
+                closeDropdown()
             } else if (data.type === 'updated') {
                 // if there is no widgets left in selection
                 if (!data.widgets?.length) {
                     dispatch({
                         type: ActionKind.HIDE,
                     })
+                    closeDropdown()
                 } else {
                     // else rerender the subtoolbar
                     dispatch({
@@ -128,6 +144,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
 
     return (
         <div
+            ref={subtoolbarRef}
             className={clsx('sub_toolbar', {
                 show: state.show,
             })}
@@ -138,7 +155,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
         >
             <TooltipProvider>
                 {state.actions.map((action) => {
-                    if (action.tooltip === 'seperator') {
+                    if (action.type === 'seperator') {
                         return (
                             <div
                                 key={action.id}
@@ -146,18 +163,35 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                                 role="separator"
                             ></div>
                         )
-                    } else {
+                    } else if (action.type === 'btnAction') {
                         return (
                             <ButtonAction
                                 key={action.id}
                                 id={action.id}
                                 tooltip={action.tooltip!}
                                 onClick={() => handleAction(action)}
-                                icon={action.icon!}
+                                icon={action.btnActionProps!.icon!}
+                            />
+                        )
+                    } else if (action.type === 'shapeBorderColorInput') {
+                        return (
+                            <ShapeBorderColorInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
+                            />
+                        )
+                    } else if (action.type === 'shapeBgColorInput') {
+                        return (
+                            <ShapeBgColorInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
                             />
                         )
                     }
                 })}
+                <FontSizeInput inputId="test" />
             </TooltipProvider>
         </div>
     )
