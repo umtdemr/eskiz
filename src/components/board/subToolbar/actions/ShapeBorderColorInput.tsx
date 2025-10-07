@@ -5,6 +5,7 @@ import {
 } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 import { ShapeBorderColorDropdown } from './ShapeBorderColorDropdown'
+import { useBoundStore } from '@/store/store'
 
 export interface ShapeBorderColorInputProps {
     id: string
@@ -15,12 +16,23 @@ export function ShapeBorderColorInput({
     tooltip,
     id,
 }: ShapeBorderColorInputProps) {
+    const { activeDropdown, toggleDropdown } = useBoundStore()
+    const isActive = activeDropdown === 'shapeBorderColor'
+
+    const handleClick = () => {
+        toggleDropdown('shapeBorderColor')
+    }
+
     return (
         <div id={id} className="relative">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
-                        <Button className="iconBox">
+                        <Button 
+                            className="iconBox"
+                            onClick={handleClick}
+                            data-active={isActive}
+                        >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="24"
@@ -95,7 +107,7 @@ export function ShapeBorderColorInput({
                 </TooltipTrigger>
                 <TooltipContent>{tooltip}</TooltipContent>
             </Tooltip>
-            <ShapeBorderColorDropdown />
+            {isActive && <ShapeBorderColorDropdown />}
         </div>
     )
 }
