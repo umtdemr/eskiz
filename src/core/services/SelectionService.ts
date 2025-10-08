@@ -242,6 +242,10 @@ export class SelectionService extends Service {
         return this._selected.some((widget) => widget.isLocked)
     }
 
+    canAllChangeBgColor(): boolean {
+        return this._selected.every((widget) => widget.canChangeBgColor())
+    }
+
     get selected() {
         return this._selected
     }

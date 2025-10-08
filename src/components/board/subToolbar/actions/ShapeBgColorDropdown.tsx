@@ -1,8 +1,17 @@
 import './ShapeBorderColorDropdown.scss'
 import { Slider } from '@/components/ui/slider'
-import { ColorList } from '@/components/colorList/ColorList'
+import {
+    ColorList,
+    ColorSelectSignature,
+} from '@/components/colorList/ColorList'
 
-export function ShapeBgColorDropdown() {
+export interface ShapeBgColorDropdownProps {
+    onColorSelect: (signature: ColorSelectSignature) => void
+}
+
+export function ShapeBgColorDropdown({
+    onColorSelect,
+}: ShapeBgColorDropdownProps) {
     return (
         <div className="shape_border_color_dd absolute bg-white py-2 px-1 top-[60px] left-[50%] shadow-l -translate-x-1/2 w-[200px] rounded-xl shadow-xs select-none">
             <div className="p-2">
@@ -17,10 +26,7 @@ export function ShapeBgColorDropdown() {
             </div>
 
             <div className="p-2">
-                <ColorList
-                    onColorSelect={(color) => console.log(color)}
-                    perColumn={4}
-                />
+                <ColorList onColorSelect={onColorSelect} perColumn={4} />
             </div>
         </div>
     )

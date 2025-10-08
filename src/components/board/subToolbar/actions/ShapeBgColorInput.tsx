@@ -6,13 +6,22 @@ import {
 import { Button } from '@/components/ui/button'
 import { ShapeBgColorDropdown } from './ShapeBgColorDropdown'
 import { useBoundStore } from '@/store/store'
+import { RGBA } from '@/core/shapes/Color'
+import { Engine } from '@/core/engine/Engine'
+import { SelectionService } from '@/core/services/SelectionService'
+import { CommandCtx } from '@/core/command/Command'
 
 export interface ShapeBgColorInputProps {
     id: string
     tooltip: string
+    engine: Engine
 }
 
-export function ShapeBgColorInput({ tooltip, id }: ShapeBgColorInputProps) {
+export function ShapeBgColorInput({
+    tooltip,
+    id,
+    engine,
+}: ShapeBgColorInputProps) {
     const { activeDropdown, toggleDropdown } = useBoundStore()
     const isActive = activeDropdown === 'shapeBgColor'
 
@@ -20,12 +29,28 @@ export function ShapeBgColorInput({ tooltip, id }: ShapeBgColorInputProps) {
         toggleDropdown('shapeBgColor')
     }
 
+    const onColorSelect = (action: { color: RGBA; isImmediate: boolean }) => {
+        const command = engine.getCommand('changeBgColor')
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+
+        const ctx: CommandCtx = {
+            selectionService,
+            engine,
+            isContinuous: !action.isImmediate,
+            params: {
+                color: action.color,
+            },
+        }
+        command.execute(ctx)
+    }
+
     return (
         <div id={id} className="relative">
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
-                        <Button 
+                        <Button
                             className="iconBox"
                             onClick={handleClick}
                             data-active={isActive}
@@ -49,7 +74,7 @@ export function ShapeBgColorInput({ tooltip, id }: ShapeBgColorInputProps) {
                 </TooltipTrigger>
                 <TooltipContent>{tooltip}</TooltipContent>
             </Tooltip>
-            {isActive && <ShapeBgColorDropdown />}
+            {isActive && <ShapeBgColorDropdown onColorSelect={onColorSelect} />}
         </div>
     )
 }
