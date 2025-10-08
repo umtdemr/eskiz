@@ -97,6 +97,10 @@ export class TextBox extends Widget {
         this._shouldRender = true
     }
 
+    canChangeBgColor(): boolean {
+        return true
+    }
+
     get fontSize(): number {
         return this._fontSize
     }
