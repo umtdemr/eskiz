@@ -2,7 +2,6 @@ import { useRef } from 'react'
 import { Slider } from '@/components/ui/slider'
 import { useBoundStore } from '@/store/store'
 import { useShallow } from 'zustand/react/shallow'
-import { RGBA } from '@/core/shapes/Color'
 import { PEN_CONSTANTS } from '@/helpers/Constant'
 import { ColorList } from '@/components/colorList/ColorList'
 
@@ -35,7 +34,7 @@ export function PenColorDropdown() {
             </div>
             <div>
                 <ColorList
-                    onColorSelect={(color: RGBA) => setPenColor(color)}
+                    onColorSelect={(action) => setPenColor(action.color)}
                 />
             </div>
         </div>
