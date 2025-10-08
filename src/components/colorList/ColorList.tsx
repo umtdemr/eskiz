@@ -13,7 +13,13 @@ import { useShallow } from 'zustand/react/shallow'
 import { useBoundStore } from '@/store/store'
 
 export interface ColorListProps {
-    onColorSelect: (color: RGBA) => void
+    onColorSelect: ({
+        color,
+        isImmediate,
+    }: {
+        color: RGBA
+        isImmediate: boolean
+    }) => void
     perColumn?: number
 }
 const rgbToHex = (r: number, g: number, b: number) => {
@@ -65,7 +71,12 @@ export function ColorList({ onColorSelect, perColumn = 4 }: ColorListProps) {
                                     key={color.colorKey}
                                     ariaLabel={`Color ${color.color}`}
                                     color={color.color}
-                                    onClick={() => onColorSelect(color.rgba)}
+                                    onClick={() =>
+                                        onColorSelect({
+                                            color: color.rgba,
+                                            isImmediate: true, // immediate action
+                                        })
+                                    }
                                     size={28}
                                     showBorder={true}
                                     enableHoverEffect
@@ -82,8 +93,12 @@ export function ColorList({ onColorSelect, perColumn = 4 }: ColorListProps) {
                             <ColorPalette
                                 size={28}
                                 onAdd={onNewColorAdd}
-                                onChange={(color: RgbColor) =>
-                                    onColorSelect({ ...color, a: 1 })
+                                onChange={
+                                    (color: RgbColor) =>
+                                        onColorSelect({
+                                            color: { ...color, a: 1 },
+                                            isImmediate: false,
+                                        }) // continuous action
                                 }
                             />
                         </TooltipTrigger>
