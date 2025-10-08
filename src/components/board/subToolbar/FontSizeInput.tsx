@@ -5,6 +5,7 @@ import { useRef, useState } from 'react'
 import { useBoundStore } from '@/store/store'
 
 export interface FontSizeInputProps {
+    id: string
     inputId: string
     defaultValue?: number
 }
@@ -12,6 +13,7 @@ export interface FontSizeInputProps {
 const FONT_SIZE_OPTIONS = [10, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96]
 
 export function FontSizeInput({
+    id,
     inputId,
     defaultValue = 10,
 }: FontSizeInputProps) {
@@ -61,7 +63,7 @@ export function FontSizeInput({
     }
 
     return (
-        <div className="flex gap-[1px]">
+        <div className="flex gap-[1px]" id={id}>
             <div className="relative">
                 <input
                     id={inputId}

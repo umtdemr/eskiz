@@ -1,12 +1,7 @@
 import { Commands } from '@/core/command/Command'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import {
-    Copy,
-    LockKeyholeOpen,
-    Trash2,
-    LockKeyhole,
-} from 'lucide-react'
+import { Copy, LockKeyholeOpen, Trash2, LockKeyhole } from 'lucide-react'
 
 export interface Action {
     id: string
@@ -19,6 +14,7 @@ export interface Action {
         | 'textColorInput'
         | 'highlightColorInput'
         | 'fontStyleInput'
+        | 'fontSizeInput'
         | 'textAlignInput'
     btnActionProps?: {
         command: Commands | 'willDo'
@@ -55,27 +51,9 @@ export const initialSubtoolbarState: SubtoolbarState = {
     forceUpdateState: 0,
 }
 
-export function generateActions(engine: Engine): Action[] {
-    const selectionService = engine.getService<SelectionService>('selection')
-    if (!selectionService.selected) return []
-    if (selectionService.isMultipleSelection()) return []
-
-    const widget = selectionService.selected[0]
-    if (widget.isLocked) {
-        return [
-            {
-                id: 'unlock',
-                tooltip: 'Unlock',
-                type: 'btnAction',
-                btnActionProps: {
-                    command: 'toggleLock',
-                    icon: <LockKeyhole />,
-                },
-            },
-        ]
-    }
-
-    const actions: Action[] = [
+// helper function to get common actions for all widget types
+function getCommonActions(): Action[] {
+    return [
         {
             id: 'duplicate',
             tooltip: 'Copy',
@@ -103,6 +81,13 @@ export function generateActions(engine: Engine): Action[] {
                 command: 'willDo',
             },
         },
+    ]
+}
+
+// actions for shapes
+function getShapeActions(): Action[] {
+    return [
+        ...getCommonActions(),
         {
             id: 'seperator1',
             type: 'seperator',
@@ -116,6 +101,11 @@ export function generateActions(engine: Engine): Action[] {
             id: 'textAlign',
             tooltip: 'Text alignment',
             type: 'textAlignInput',
+        },
+        {
+            id: 'fontSize',
+            tooltip: 'Font size',
+            type: 'fontSizeInput',
         },
         {
             id: 'seperator2',
@@ -146,8 +136,109 @@ export function generateActions(engine: Engine): Action[] {
             type: 'shapeBgColorInput',
         },
     ]
+}
 
-    return actions
+// actions for textboxes
+function getTextActions(): Action[] {
+    return [
+        ...getCommonActions(),
+        {
+            id: 'seperator1',
+            type: 'seperator',
+        },
+        {
+            id: 'fontSize',
+            tooltip: 'Font size',
+            type: 'fontSizeInput',
+        },
+        {
+            id: 'fontStyle',
+            tooltip: 'Font style',
+            type: 'fontStyleInput',
+        },
+        {
+            id: 'textAlign',
+            tooltip: 'Text alignment',
+            type: 'textAlignInput',
+        },
+        {
+            id: 'seperator2',
+            type: 'seperator',
+        },
+        {
+            id: 'textColor',
+            tooltip: 'Text color',
+            type: 'textColorInput',
+        },
+        {
+            id: 'highlightColor',
+            tooltip: 'Highlight color',
+            type: 'highlightColorInput',
+        },
+        {
+            id: 'seperator3',
+            type: 'seperator',
+        },
+        {
+            id: 'backgroundColor',
+            tooltip: 'Background color',
+            type: 'shapeBgColorInput',
+        },
+    ]
+}
+
+// actions for path widgets
+function getPathActions(): Action[] {
+    return [
+        ...getCommonActions(),
+        {
+            id: 'seperator1',
+            type: 'seperator',
+        },
+        {
+            id: 'borderStyleColor',
+            tooltip: 'Stroke style and color',
+            type: 'shapeBorderColorInput',
+        },
+    ]
+}
+
+// actions for locked widgets
+function getLockedActions(): Action[] {
+    return [
+        {
+            id: 'unlock',
+            tooltip: 'Unlock',
+            type: 'btnAction',
+            btnActionProps: {
+                command: 'toggleLock',
+                icon: <LockKeyhole />,
+            },
+        },
+    ]
+}
+
+export function generateActions(engine: Engine): Action[] {
+    const selectionService = engine.getService<SelectionService>('selection')
+    if (!selectionService.selected) return []
+    if (selectionService.isMultipleSelection()) return []
+
+    const widget = selectionService.selected[0]
+
+    if (widget.isLocked) {
+        return getLockedActions()
+    }
+
+    switch (widget.widgetType) {
+        case 'shape':
+            return getShapeActions()
+        case 'text':
+            return getTextActions()
+        case 'path':
+            return getPathActions()
+        default:
+            return getCommonActions()
+    }
 }
 
 export function reducer(state: SubtoolbarState, action: Actions) {
