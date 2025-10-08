@@ -217,6 +217,14 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                                 id={action.id}
                             />
                         )
+                    } else if (action.type === 'fontSizeInput') {
+                        return (
+                            <FontSizeInput
+                                key={action.id}
+                                id={action.id}
+                                inputId={'font_size_input'}
+                            />
+                        )
                     } else if (action.type === 'textAlignInput') {
                         return (
                             <TextAlignInput
@@ -227,7 +235,6 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                         )
                     }
                 })}
-                <FontSizeInput inputId="test" />
             </TooltipProvider>
         </div>
     )
