@@ -1,11 +1,13 @@
 import { Engine } from '../engine/Engine'
 import { SelectionService } from '../services/SelectionService'
 
-export type Commands = 'delete' | 'clone' | 'toggleLock'
+export type Commands = 'delete' | 'clone' | 'toggleLock' | 'changeBgColor'
 
 export type CommandCtx = {
     selectionService: SelectionService
     engine: Engine
+    isContinuous?: boolean
+    params?: Record<string, any>
 }
 
 export abstract class Command {

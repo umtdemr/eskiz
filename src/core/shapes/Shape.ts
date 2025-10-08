@@ -130,6 +130,11 @@ export abstract class Shape extends Widget {
         return true
     }
 
+    changeBgColor(newColor: RGBA): boolean {
+        this._properties.fillColor = newColor
+        return true
+    }
+
     get textStr(): string {
         if (this._text) {
             return this._text?.text

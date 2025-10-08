@@ -1,3 +1,4 @@
+import { ChangeBgColor } from './ChangeBgColor'
 import { CloneCommand } from './Clone'
 import { Command, Commands } from './Command'
 import { DeleteCommand } from './Delete'
@@ -13,6 +14,10 @@ export class CommandRegistry {
         this.registerCommand('delete', new DeleteCommand('delete'))
         this.registerCommand('clone', new CloneCommand('clone'))
         this.registerCommand('toggleLock', new ToggleLockCommand('toggleLock'))
+        this.registerCommand(
+            'changeBgColor',
+            new ChangeBgColor('changeBgColor'),
+        )
     }
 
     get(name: Commands): Command {

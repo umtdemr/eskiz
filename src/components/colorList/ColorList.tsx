@@ -12,14 +12,13 @@ import { RgbColor } from 'react-colorful'
 import { useShallow } from 'zustand/react/shallow'
 import { useBoundStore } from '@/store/store'
 
+export interface ColorSelectSignature {
+    color: RGBA
+    isImmediate: boolean
+}
+
 export interface ColorListProps {
-    onColorSelect: ({
-        color,
-        isImmediate,
-    }: {
-        color: RGBA
-        isImmediate: boolean
-    }) => void
+    onColorSelect: ({ color, isImmediate }: ColorSelectSignature) => void
     perColumn?: number
 }
 const rgbToHex = (r: number, g: number, b: number) => {
