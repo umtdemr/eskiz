@@ -126,6 +126,10 @@ export abstract class Shape extends Widget {
         this._textProperties.text = text
     }
 
+    canChangeBgColor(): boolean {
+        return true
+    }
+
     get textStr(): string {
         if (this._text) {
             return this._text?.text

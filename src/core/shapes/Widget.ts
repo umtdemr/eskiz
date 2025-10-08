@@ -231,6 +231,11 @@ export abstract class Widget extends Layer {
         )
     }
 
+    // return true when changing bg color is allowed
+    canChangeBgColor(): boolean {
+        return false
+    }
+
     get width() {
         return this._width
     }
