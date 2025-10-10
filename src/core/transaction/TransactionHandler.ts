@@ -24,7 +24,7 @@ type StarTransactionProps = {
     editTable: EditTable
 }
 
-const CONTINUOUS_THROTTLE_DELAY = 300 // 300 MS
+export const CONTINUOUS_THROTTLE_DELAY = 300 // 300 MS
 
 /*
  * TransactionHandler handles updating/deleting widgets

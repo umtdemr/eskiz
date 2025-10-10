@@ -10,6 +10,8 @@ import { RGBA } from '@/core/shapes/Color'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { CommandCtx } from '@/core/command/Command'
+import { useRef } from 'react'
+import { ChangeBgColor } from '@/core/command/ChangeBgColor'
 
 export interface ShapeBgColorInputProps {
     id: string
@@ -22,6 +24,7 @@ export function ShapeBgColorInput({
     id,
     engine,
 }: ShapeBgColorInputProps) {
+    const commandRef = useRef(new ChangeBgColor('changeBgColor'))
     const { activeDropdown, toggleDropdown } = useBoundStore()
     const isActive = activeDropdown === 'shapeBgColor'
 
@@ -30,7 +33,6 @@ export function ShapeBgColorInput({
     }
 
     const onColorSelect = (action: { color: RGBA; isImmediate: boolean }) => {
-        const command = engine.getCommand('changeBgColor')
         const selectionService =
             engine.getService<SelectionService>('selection')
 
@@ -42,7 +44,7 @@ export function ShapeBgColorInput({
                 color: action.color,
             },
         }
-        command.execute(ctx)
+        commandRef.current?.execute(ctx)
     }
 
     return (

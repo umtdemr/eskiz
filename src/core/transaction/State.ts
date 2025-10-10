@@ -8,6 +8,7 @@ export type EditingMethods =
     | 'text'
     | 'delete'
     | 'toggleLock'
+    | 'backgroundColor'
 
 export type State = Record<string, unknown>
 
@@ -63,6 +64,14 @@ export function getPartialState(
                 updateState({
                     is_locked: widget.isLocked,
                 })
+                break
+            case 'backgroundColor':
+                if (widget instanceof Shape) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        fillColor: widget.properties.fillColor,
+                    }
+                }
                 break
         }
     }
