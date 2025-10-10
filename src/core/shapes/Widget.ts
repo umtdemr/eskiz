@@ -237,10 +237,6 @@ export abstract class Widget extends Layer {
         return false
     }
 
-    changeBgColor(newColor: RGBA): boolean {
-        return false
-    }
-
     get width() {
         return this._width
     }
@@ -376,5 +372,9 @@ export abstract class Widget extends Layer {
 
     get parent(): Layer | Widget | null {
         return this._parent
+    }
+
+    get properties() {
+        return this._properties
     }
 }
