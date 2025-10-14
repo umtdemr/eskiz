@@ -11,6 +11,7 @@ import { ColorPalette } from './ColorPalette'
 import { RgbColor } from 'react-colorful'
 import { useShallow } from 'zustand/react/shallow'
 import { useBoundStore } from '@/store/store'
+import { TransparentColorButton } from '../colorButton/TransparentColorButton'
 
 export interface ColorSelectSignature {
     color: RGBA
@@ -63,6 +64,23 @@ export function ColorList({ onColorSelect, perColumn = 4 }: ColorListProps) {
                 style={{ gridTemplateColumns: `repeat(${perColumn}, 1fr)` }}
             >
                 <TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger className="flex justify-center">
+                            <TransparentColorButton
+                                ariaLabel="Transparent color"
+                                onClick={() =>
+                                    console.log('transparent color selected')
+                                }
+                                size={28}
+                                showBorder={true}
+                                enableHoverEffect
+                            />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                            <p>Transparent</p>
+                        </TooltipContent>
+                    </Tooltip>
+
                     {colors.map((color) => (
                         <Tooltip key={color.colorKey}>
                             <TooltipTrigger className="flex justify-center">
