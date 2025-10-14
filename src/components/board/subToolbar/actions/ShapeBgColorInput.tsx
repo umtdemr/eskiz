@@ -76,7 +76,12 @@ export function ShapeBgColorInput({
                 </TooltipTrigger>
                 <TooltipContent>{tooltip}</TooltipContent>
             </Tooltip>
-            {isActive && <ShapeBgColorDropdown onColorSelect={onColorSelect} />}
+            {isActive && (
+                <ShapeBgColorDropdown
+                    onColorSelect={onColorSelect}
+                    engine={engine}
+                />
+            )}
         </div>
     )
 }
