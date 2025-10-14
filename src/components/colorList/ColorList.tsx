@@ -69,7 +69,15 @@ export function ColorList({ onColorSelect, perColumn = 4 }: ColorListProps) {
                             <TransparentColorButton
                                 ariaLabel="Transparent color"
                                 onClick={() =>
-                                    console.log('transparent color selected')
+                                    onColorSelect({
+                                        color: {
+                                            r: 0,
+                                            g: 0,
+                                            b: 0,
+                                            a: 0,
+                                        },
+                                        isImmediate: true, // immediate action
+                                    })
                                 }
                                 size={28}
                                 showBorder={true}
