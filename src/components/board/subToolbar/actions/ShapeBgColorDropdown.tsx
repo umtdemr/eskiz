@@ -18,6 +18,7 @@ export function ShapeBgColorDropdown({
     onColorSelect,
     engine,
 }: ShapeBgColorDropdownProps) {
+    const [showOpacity, setShowOpacity] = useState(true)
     const [opacity, setOpacity] = useState(1)
 
     useEffect(() => {
@@ -31,8 +32,13 @@ export function ShapeBgColorDropdown({
         if (selectedWidget.widgetType !== 'shape') {
             return
         }
+        const color = selectedWidget.properties.fillColor as RGBA
 
-        setOpacity((selectedWidget.properties.fillColor as RGBA).a)
+        if (color.a === 0 && color.r === 0 && color.g === 0 && color.b === 0) {
+            setShowOpacity(false)
+        } else {
+            setOpacity(color.a)
+        }
     }, [])
 
     const handleOpacityChange = (newOpacityArr: number[]) => {
@@ -57,17 +63,18 @@ export function ShapeBgColorDropdown({
 
     return (
         <div className="shape_border_color_dd absolute bg-white py-2 px-1 top-[60px] left-[50%] shadow-l -translate-x-1/2 w-[200px] rounded-xl shadow-xs select-none">
-            <div className="p-2">
-                <span className="text-xs mb-1 block">Opacity</span>
-                <Slider
-                    value={[opacity]}
-                    max={1}
-                    step={0.1}
-                    min={0.1}
-                    onValueChange={handleOpacityChange}
-                />
-            </div>
-
+            {showOpacity && (
+                <div className="p-2">
+                    <span className="text-xs mb-1 block">Opacity</span>
+                    <Slider
+                        value={[opacity]}
+                        max={1}
+                        step={0.1}
+                        min={0.1}
+                        onValueChange={handleOpacityChange}
+                    />
+                </div>
+            )}
             <div className="p-2">
                 <ColorList onColorSelect={onColorSelect} perColumn={4} />
             </div>
