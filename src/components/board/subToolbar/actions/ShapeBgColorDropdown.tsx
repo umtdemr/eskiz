@@ -61,6 +61,22 @@ export function ShapeBgColorDropdown({
         })
     }
 
+    const onColorSelectWrapper = (signature: ColorSelectSignature) => {
+        const color = signature.color
+        if (color.a === 0 && color.r === 0 && color.g === 0 && color.b === 0) {
+            setShowOpacity(false)
+            onColorSelect(signature)
+            return
+        }
+
+        setShowOpacity(true)
+
+        onColorSelect({
+            color: { ...signature.color, a: opacity },
+            isImmediate: signature.isImmediate,
+        })
+    }
+
     return (
         <div className="shape_border_color_dd absolute bg-white py-2 px-1 top-[60px] left-[50%] shadow-l -translate-x-1/2 w-[200px] rounded-xl shadow-xs select-none">
             {showOpacity && (
@@ -76,7 +92,7 @@ export function ShapeBgColorDropdown({
                 </div>
             )}
             <div className="p-2">
-                <ColorList onColorSelect={onColorSelect} perColumn={4} />
+                <ColorList onColorSelect={onColorSelectWrapper} perColumn={4} />
             </div>
         </div>
     )
