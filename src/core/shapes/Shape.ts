@@ -1,5 +1,5 @@
 import { RGBA } from '@/core/shapes/Color.ts'
-import { CANVAS_COLORS } from '@/helpers/Constant.ts'
+import { BorderStyle, CANVAS_COLORS } from '@/helpers/Constant.ts'
 import { Widget, WidgetJson, WidgetProps } from '@/core/shapes/Widget.ts'
 import { WsWidget } from '@/types/Websocket.ts'
 import {
@@ -15,6 +15,7 @@ export interface ShapeProperties {
     strokeColor?: RGBA
     fillColor?: RGBA
     textProperties?: ShapeTextConstructProps
+    borderStyle?: BorderStyle
 }
 
 export type ShapeType = 'rectangle' | 'triangle' | 'ellipse'
@@ -42,6 +43,9 @@ export abstract class Shape extends Widget {
         this._properties.fillColor = this._properties?.fillColor
             ? props.properties.fillColor
             : CANVAS_COLORS.TRANSPARENT
+        this._properties.borderStyle = this._properties?.borderStyle
+            ? props.properties.borderStyle
+            : BorderStyle.SOLID
         this._interactive = true
 
         if (props.properties.textProperties?.text) {
