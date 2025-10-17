@@ -1,7 +1,12 @@
 import { Engine } from '../engine/Engine'
 import { SelectionService } from '../services/SelectionService'
 
-export type Commands = 'delete' | 'clone' | 'toggleLock' | 'changeBgColor'
+export type Commands =
+    | 'delete'
+    | 'clone'
+    | 'toggleLock'
+    | 'changeBgColor'
+    | 'changeBorderStyle'
 
 export type CommandCtx = {
     selectionService: SelectionService
