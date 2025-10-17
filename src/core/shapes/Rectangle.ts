@@ -1,5 +1,5 @@
 import { Shape, ShapeProperties, ShapeProps } from '@/core/shapes/Shape.ts'
-import { SHAPES } from '@/helpers/Constant.ts'
+import { BorderStyle, SHAPES } from '@/helpers/Constant.ts'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WidgetJson } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color'
@@ -84,6 +84,14 @@ export class Rectangle extends Shape {
         paint.setColor(strokeColor)
         paint.setStyle(canvasKit.PaintStyle.Stroke)
         paint.setStrokeWidth(2)
+
+        if (this._properties.borderStyle === BorderStyle.DOTTED) {
+            const pathEffect = canvasKit.PathEffect.MakeDash([2, 4], 0)
+            paint.setPathEffect(pathEffect)
+        } else if (this._properties.borderStyle === BorderStyle.DASHED) {
+            const pathEffect = canvasKit.PathEffect.MakeDash([10, 10], 0)
+            paint.setPathEffect(pathEffect)
+        }
 
         if (drawFn === 'drawRRect') {
             ctx.drawRRect(strokeRect, paint)

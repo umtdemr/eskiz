@@ -5,7 +5,6 @@ import { LinkedList } from '../dataStructures/LinkedList'
 import { Signal } from '../signal/Signal'
 import { ShapeType } from '@/core/shapes/Shape.ts'
 import { WsWidget } from '@/types/Websocket.ts'
-import { RGBA } from './Color'
 
 export type WidgetType =
     | 'shape'
@@ -234,6 +233,11 @@ export abstract class Widget extends Layer {
 
     // return true when changing bg color is allowed
     canChangeBgColor(): boolean {
+        return false
+    }
+
+    // return true when changing border style is allowed
+    canChangeBorderStyle(): boolean {
         return false
     }
 

@@ -9,6 +9,7 @@ export type EditingMethods =
     | 'delete'
     | 'toggleLock'
     | 'backgroundColor'
+    | 'borderStyle'
 
 export type State = Record<string, unknown>
 
@@ -70,6 +71,14 @@ export function getPartialState(
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         fillColor: widget.properties.fillColor,
+                    }
+                }
+                break
+            case 'borderStyle':
+                if (widget instanceof Shape) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        borderStyle: widget.properties.borderStyle,
                     }
                 }
                 break

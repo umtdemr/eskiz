@@ -134,8 +134,18 @@ export abstract class Shape extends Widget {
         return true
     }
 
+    canChangeBorderStyle(): boolean {
+        return true
+    }
+
     changeBgColor(newColor: RGBA): boolean {
         this._properties.fillColor = newColor
+        return true
+    }
+
+    changeBorderStyle(newStyle: BorderStyle): boolean {
+        if (this._properties.borderStyle === newStyle) return false
+        this._properties.borderStyle = newStyle
         return true
     }
 
