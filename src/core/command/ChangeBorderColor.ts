@@ -16,7 +16,7 @@ export class ChangeBorderColor extends Command {
     canExecute(ctx: CommandCtx): boolean {
         if (!ctx.selectionService.selected?.length) return false
         if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeBgColor()) return false
+        if (!ctx.selectionService.canAllChangeBorderColor()) return false
 
         return true
     }

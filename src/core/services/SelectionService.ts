@@ -246,6 +246,10 @@ export class SelectionService extends Service {
         return this._selected.every((widget) => widget.canChangeBgColor())
     }
 
+    canAllChangeBorderColor(): boolean {
+        return this._selected.every((widget) => widget.canChangeBorderColor())
+    }
+
     canAllChangeBorderStyle(): boolean {
         return this._selected.every((widget) => widget.canChangeBorderStyle())
     }
