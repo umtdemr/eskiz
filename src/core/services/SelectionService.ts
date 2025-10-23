@@ -254,6 +254,10 @@ export class SelectionService extends Service {
         return this._selected.every((widget) => widget.canChangeBorderStyle())
     }
 
+    canAllChangeThickness(): boolean {
+        return this._selected.every((widget) => widget.canChangeThickness())
+    }
+
     get selected() {
         return this._selected
     }
