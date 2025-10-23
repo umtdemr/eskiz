@@ -258,6 +258,10 @@ export class SelectionService extends Service {
         return this._selected.every((widget) => widget.canChangeThickness())
     }
 
+    canAllChangeRoundness(): boolean {
+        return this._selected.every((widget) => widget.canChangeRoundness())
+    }
+
     get selected() {
         return this._selected
     }

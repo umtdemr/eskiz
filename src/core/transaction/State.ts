@@ -1,6 +1,7 @@
 import { Widget } from '../shapes/Widget'
 import { Shape } from '@/core/shapes/Shape'
 import { TextBox } from '@/core/shapes/text/TextBox'
+import { Rectangle } from '@/core/shapes/Rectangle'
 
 export type EditingMethods =
     | 'move'
@@ -12,6 +13,7 @@ export type EditingMethods =
     | 'borderColor'
     | 'borderStyle'
     | 'thickness'
+    | 'roundness'
 
 export type State = Record<string, unknown>
 
@@ -97,6 +99,14 @@ export function getPartialState(
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         strokeWidth: widget.properties.strokeWidth,
+                    }
+                }
+                break
+            case 'roundness':
+                if (widget instanceof Rectangle) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        radius: widget.properties.radius,
                     }
                 }
                 break
