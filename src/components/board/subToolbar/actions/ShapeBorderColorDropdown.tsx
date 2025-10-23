@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import './ShapeBorderColorDropdown.scss'
 import {
@@ -6,22 +7,78 @@ import {
     TooltipContent,
 } from '@/components/ui/tooltip'
 import { Slider } from '@/components/ui/slider'
-import { ColorList } from '@/components/colorList/ColorList'
+import {
+    ColorList,
+    ColorSelectSignature,
+} from '@/components/colorList/ColorList'
 import { BorderStyle } from '@/helpers/Constant'
 import clsx from 'clsx'
+import { Engine } from '@/core/engine/Engine'
+import { SelectionService } from '@/core/services/SelectionService'
+import { RGBA } from '@/core/shapes/Color'
 
 export interface ShapeBorderColorDropdown {
+    engine: Engine
     borderStyle: { selected: BorderStyle; shouldShow: boolean }
     onBorderStyleSelect: (style: BorderStyle) => void
+    onColorSelect: (signature: ColorSelectSignature) => void
 }
 
 export function ShapeBorderColorDropdown({
+    engine,
     borderStyle,
     onBorderStyleSelect,
+    onColorSelect,
 }: ShapeBorderColorDropdown) {
+    const [opacity, setOpacity] = useState(1)
+
+    useEffect(() => {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+
+        if (selectionService.selected.length !== 1) {
+            return
+        }
+        const selectedWidget = selectionService.selected[0]
+        if (selectedWidget.widgetType !== 'shape') {
+            return
+        }
+
+        const color = selectedWidget.properties.strokeColor as RGBA
+        setOpacity(color.a)
+    }, [engine])
+
     const changeBorderStyle = (newStyle: BorderStyle) => {
         onBorderStyleSelect(newStyle)
     }
+
+    const handleOpacityChange = (newOpacityArr: number[]) => {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        if (selectionService.selected.length !== 1) return
+
+        const selected = selectionService.selected[0]
+        const newOpacity = newOpacityArr[0]
+        setOpacity(newOpacity)
+
+        const color = {
+            ...(selected.properties.strokeColor as RGBA),
+            a: newOpacity,
+        }
+
+        onColorSelect({
+            color,
+            isImmediate: false,
+        })
+    }
+
+    const onColorSelectWrapper = (signature: ColorSelectSignature) => {
+        onColorSelect({
+            color: { ...signature.color, a: opacity },
+            isImmediate: signature.isImmediate,
+        })
+    }
+
     return (
         <div className="shape_border_color_dd absolute bg-white py-2 px-1 top-[60px] left-[50%] shadow-l -translate-x-1/2 w-[200px] rounded-xl shadow-xs select-none">
             {/* Border style */}
@@ -143,11 +200,11 @@ export function ShapeBorderColorDropdown({
             <div className="p-2">
                 <span className="text-xs mb-1 block">Opacity</span>
                 <Slider
-                    defaultValue={[2]}
-                    max={12}
-                    step={1}
-                    min={2}
-                    onValueChange={(...val) => console.log(val)}
+                    value={[opacity]}
+                    max={1}
+                    step={0.1}
+                    min={0.1}
+                    onValueChange={handleOpacityChange}
                 />
             </div>
 
@@ -162,10 +219,7 @@ export function ShapeBorderColorDropdown({
                 />
             </div>
             <div className="p-2">
-                <ColorList
-                    onColorSelect={(color) => console.log(color)}
-                    perColumn={4}
-                />
+                <ColorList onColorSelect={onColorSelectWrapper} perColumn={4} />
             </div>
         </div>
     )
