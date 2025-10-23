@@ -21,12 +21,17 @@ export interface ColorSelectSignature {
 export interface ColorListProps {
     onColorSelect: ({ color, isImmediate }: ColorSelectSignature) => void
     perColumn?: number
+    shouldHideTransparentColor?: boolean
 }
 const rgbToHex = (r: number, g: number, b: number) => {
     return '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)
 }
 
-export function ColorList({ onColorSelect, perColumn = 4 }: ColorListProps) {
+export function ColorList({
+    onColorSelect,
+    perColumn = 4,
+    shouldHideTransparentColor = false,
+}: ColorListProps) {
     const colors = useBoundStore(useShallow((state) => state.colors))
     const addNewColor = useBoundStore((state) => state.addNewColor)
     const removeColor = useBoundStore((state) => state.removeColor)
@@ -64,30 +69,32 @@ export function ColorList({ onColorSelect, perColumn = 4 }: ColorListProps) {
                 style={{ gridTemplateColumns: `repeat(${perColumn}, 1fr)` }}
             >
                 <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger className="flex justify-center">
-                            <TransparentColorButton
-                                ariaLabel="Transparent color"
-                                onClick={() =>
-                                    onColorSelect({
-                                        color: {
-                                            r: 0,
-                                            g: 0,
-                                            b: 0,
-                                            a: 0,
-                                        },
-                                        isImmediate: true, // immediate action
-                                    })
-                                }
-                                size={28}
-                                showBorder={true}
-                                enableHoverEffect
-                            />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>Transparent</p>
-                        </TooltipContent>
-                    </Tooltip>
+                    {!shouldHideTransparentColor && (
+                        <Tooltip>
+                            <TooltipTrigger className="flex justify-center">
+                                <TransparentColorButton
+                                    ariaLabel="Transparent color"
+                                    onClick={() =>
+                                        onColorSelect({
+                                            color: {
+                                                r: 0,
+                                                g: 0,
+                                                b: 0,
+                                                a: 0,
+                                            },
+                                            isImmediate: true, // immediate action
+                                        })
+                                    }
+                                    size={28}
+                                    showBorder={true}
+                                    enableHoverEffect
+                                />
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                <p>Transparent</p>
+                            </TooltipContent>
+                        </Tooltip>
+                    )}
 
                     {colors.map((color) => (
                         <Tooltip key={color.colorKey}>

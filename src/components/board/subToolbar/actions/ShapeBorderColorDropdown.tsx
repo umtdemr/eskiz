@@ -359,7 +359,7 @@ export function ShapeBorderColorDropdown({
                 </div>
             )}
             <div className="p-2">
-                <ColorList onColorSelect={handleColorSelect} perColumn={4} />
+                <ColorList onColorSelect={handleColorSelect} perColumn={4} shouldHideTransparentColor />
             </div>
         </div>
     )
