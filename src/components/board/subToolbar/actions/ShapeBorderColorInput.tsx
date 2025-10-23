@@ -1,4 +1,3 @@
-import { useEffect, useState, useRef } from 'react'
 import {
     Tooltip,
     TooltipTrigger,
@@ -7,13 +6,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { ShapeBorderColorDropdown } from './ShapeBorderColorDropdown'
 import { useBoundStore } from '@/store/store'
-import { BorderStyle } from '@/helpers/Constant'
 import { Engine } from '@/core/engine/Engine'
-import { SelectionService } from '@/core/services/SelectionService'
-import { ChangeBorderStyle } from '@/core/command/ChangeBorderStyle'
-import { RGBA } from '@/core/shapes/Color'
-import { CommandCtx } from '@/core/command/Command'
-import { ChangeBorderColor } from '@/core/command/ChangeBorderColor'
 
 export interface ShapeBorderColorInputProps {
     id: string
@@ -26,93 +19,12 @@ export function ShapeBorderColorInput({
     id,
     engine,
 }: ShapeBorderColorInputProps) {
-    const [borderStyle, setBorderStyle] = useState<{
-        selected: BorderStyle
-        shouldShow: boolean
-    }>({
-        selected: BorderStyle.SOLID,
-        shouldShow: false,
-    })
-    const changeBorderColorCommandRef = useRef(
-        new ChangeBorderColor('changeBorderColor'),
-    )
-
     const { activeDropdown, toggleDropdown } = useBoundStore()
     const isActive = activeDropdown === 'shapeBorderColor'
 
     const handleClick = () => {
         toggleDropdown('shapeBorderColor')
     }
-
-    const onColorSelect = (action: { color: RGBA; isImmediate: boolean }) => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-        const widgets = selectionService.selected
-        if (!widgets.length) {
-            return
-        }
-        if (!selectionService.canAllChangeBorderStyle()) {
-            return
-        }
-
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            isContinuous: !action.isImmediate,
-            params: {
-                color: action.color,
-                widgets,
-            },
-        }
-        changeBorderColorCommandRef.current?.execute(ctx)
-    }
-
-    const handleBorderStyleChange = (style: BorderStyle) => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-        const widgets = selectionService.selected
-        if (!widgets.length) {
-            return
-        }
-        if (!selectionService.canAllChangeBorderStyle()) {
-            return
-        }
-
-        // if the style is not changed
-        if (widgets.every((widget) => widget.properties.borderStyle === style))
-            return
-
-        const command = new ChangeBorderStyle('changeBorderStyle')
-        const ctx = {
-            selectionService,
-            engine,
-            params: {
-                widgets,
-                border: style,
-            },
-        }
-
-        setBorderStyle((oldStyle) => ({
-            ...oldStyle,
-            selected: style,
-        }))
-        command.execute(ctx)
-    }
-
-    useEffect(() => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-
-        if (selectionService.selected.length !== 1) return
-        const widget = selectionService.selected[0]
-        if (widget.widgetType !== 'shape') return
-
-        setBorderStyle((style) => ({
-            ...style,
-            shouldShow: true,
-            selected: widget.properties.borderStyle as BorderStyle,
-        }))
-    }, [engine])
 
     return (
         <div id={id} className="relative">
@@ -198,14 +110,7 @@ export function ShapeBorderColorInput({
                 </TooltipTrigger>
                 <TooltipContent>{tooltip}</TooltipContent>
             </Tooltip>
-            {isActive && (
-                <ShapeBorderColorDropdown
-                    engine={engine}
-                    onBorderStyleSelect={handleBorderStyleChange}
-                    borderStyle={borderStyle}
-                    onColorSelect={onColorSelect}
-                />
-            )}
+            {isActive && <ShapeBorderColorDropdown engine={engine} />}
         </div>
     )
 }

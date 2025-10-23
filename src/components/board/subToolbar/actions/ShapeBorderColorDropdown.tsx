@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Button } from '@/components/ui/button'
 import './ShapeBorderColorDropdown.scss'
 import {
@@ -17,22 +17,27 @@ import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { RGBA } from '@/core/shapes/Color'
 import { ChangeThickness } from '@/core/command/ChangeThickness'
+import { ChangeBorderColor } from '@/core/command/ChangeBorderColor'
+import { ChangeBorderStyle } from '@/core/command/ChangeBorderStyle'
+import { CommandCtx } from '@/core/command/Command'
 
-export interface ShapeBorderColorDropdown {
+export interface ShapeBorderColorDropdownProps {
     engine: Engine
-    borderStyle: { selected: BorderStyle; shouldShow: boolean }
-    onBorderStyleSelect: (style: BorderStyle) => void
-    onColorSelect: (signature: ColorSelectSignature) => void
 }
 
 export function ShapeBorderColorDropdown({
     engine,
-    borderStyle,
-    onBorderStyleSelect,
-    onColorSelect,
-}: ShapeBorderColorDropdown) {
+}: ShapeBorderColorDropdownProps) {
     const [opacity, setOpacity] = useState(1)
     const [thickness, setThickness] = useState(DEFAULT_SHAPE_THICKNESS)
+    const [borderStyle, setBorderStyle] = useState<BorderStyle>(
+        BorderStyle.SOLID,
+    )
+    const [showBorderStyle, setShowBorderStyle] = useState(false)
+
+    const changeBorderColorCommandRef = useRef(
+        new ChangeBorderColor('changeBorderColor'),
+    )
 
     useEffect(() => {
         const selectionService =
@@ -48,12 +53,39 @@ export function ShapeBorderColorDropdown({
 
         const color = selectedWidget.properties.strokeColor as RGBA
         const thickness = selectedWidget.properties.strokeWidth as number
+        const style = selectedWidget.properties.borderStyle as BorderStyle
+        const shouldShowBorderStyle =
+            selectedWidget.properties.borderStyle !== undefined
+
         setOpacity(color.a)
         setThickness(thickness)
+        setBorderStyle(style || BorderStyle.SOLID)
+        setShowBorderStyle(shouldShowBorderStyle)
     }, [engine])
 
     const changeBorderStyle = (newStyle: BorderStyle) => {
-        onBorderStyleSelect(newStyle)
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        const widgets = selectionService.selected
+        if (!widgets.length) return
+        if (!selectionService.canAllChangeBorderStyle()) return
+
+        // if the style is not changed
+        if (widgets.every((widget) => widget.properties.borderStyle === newStyle))
+            return
+
+        const command = new ChangeBorderStyle('changeBorderStyle')
+        const ctx: CommandCtx = {
+            selectionService,
+            engine,
+            params: {
+                widgets,
+                border: newStyle,
+            },
+        }
+
+        setBorderStyle(newStyle)
+        command.execute(ctx)
     }
 
     const handleOpacityChange = (newOpacityArr: number[]) => {
@@ -70,17 +102,37 @@ export function ShapeBorderColorDropdown({
             a: newOpacity,
         }
 
-        onColorSelect({
-            color,
-            isImmediate: false,
-        })
+        const ctx: CommandCtx = {
+            selectionService,
+            engine,
+            isContinuous: true,
+            params: {
+                color,
+                widgets: [selected],
+            },
+        }
+        changeBorderColorCommandRef.current?.execute(ctx)
     }
 
-    const onColorSelectWrapper = (signature: ColorSelectSignature) => {
-        onColorSelect({
-            color: { ...signature.color, a: opacity },
-            isImmediate: signature.isImmediate,
-        })
+    const handleColorSelect = (signature: ColorSelectSignature) => {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        const widgets = selectionService.selected
+        if (!widgets.length) return
+        if (!selectionService.canAllChangeBorderStyle()) return
+
+        const color = { ...signature.color, a: opacity }
+
+        const ctx: CommandCtx = {
+            selectionService,
+            engine,
+            isContinuous: !signature.isImmediate,
+            params: {
+                color,
+                widgets,
+            },
+        }
+        changeBorderColorCommandRef.current?.execute(ctx)
     }
 
     const handleThicknessChange = (thicknesses: number[]) => {
@@ -120,7 +172,7 @@ export function ShapeBorderColorDropdown({
     return (
         <div className="shape_border_color_dd absolute bg-white py-2 px-1 top-[60px] left-[50%] shadow-l -translate-x-1/2 w-[200px] rounded-xl shadow-xs select-none">
             {/* Border style */}
-            {borderStyle.shouldShow && (
+            {showBorderStyle && (
                 <div className="flex justify-center">
                     <Tooltip>
                         <TooltipTrigger asChild>
@@ -128,7 +180,7 @@ export function ShapeBorderColorDropdown({
                                 variant="ghost"
                                 className={clsx('borderStyleBtn', {
                                     active:
-                                        borderStyle.selected ===
+                                        borderStyle ===
                                         BorderStyle.SOLID,
                                 })}
                                 onClick={() =>
@@ -161,7 +213,7 @@ export function ShapeBorderColorDropdown({
                                 variant="ghost"
                                 className={clsx('borderStyleBtn', {
                                     active:
-                                        borderStyle.selected ===
+                                        borderStyle ===
                                         BorderStyle.DASHED,
                                 })}
                                 onClick={() =>
@@ -194,7 +246,7 @@ export function ShapeBorderColorDropdown({
                                 variant="ghost"
                                 className={clsx('borderStyleBtn', {
                                     active:
-                                        borderStyle.selected ===
+                                        borderStyle ===
                                         BorderStyle.DOTTED,
                                 })}
                                 onClick={() =>
@@ -257,7 +309,7 @@ export function ShapeBorderColorDropdown({
                 />
             </div>
             <div className="p-2">
-                <ColorList onColorSelect={onColorSelectWrapper} perColumn={4} />
+                <ColorList onColorSelect={handleColorSelect} perColumn={4} />
             </div>
         </div>
     )
