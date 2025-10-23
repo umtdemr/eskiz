@@ -1,3 +1,4 @@
+import { useEffect, useState, useRef } from 'react'
 import {
     Tooltip,
     TooltipTrigger,
@@ -10,7 +11,9 @@ import { BorderStyle } from '@/helpers/Constant'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { ChangeBorderStyle } from '@/core/command/ChangeBorderStyle'
-import { useEffect, useState } from 'react'
+import { RGBA } from '@/core/shapes/Color'
+import { CommandCtx } from '@/core/command/Command'
+import { ChangeBorderColor } from '@/core/command/ChangeBorderColor'
 
 export interface ShapeBorderColorInputProps {
     id: string
@@ -30,6 +33,7 @@ export function ShapeBorderColorInput({
         selected: BorderStyle.SOLID,
         shouldShow: false,
     })
+    const commandRef = useRef(new ChangeBorderColor('changeBorderColor'))
 
     const { activeDropdown, toggleDropdown } = useBoundStore()
     const isActive = activeDropdown === 'shapeBorderColor'
@@ -38,12 +42,39 @@ export function ShapeBorderColorInput({
         toggleDropdown('shapeBorderColor')
     }
 
+    const onColorSelect = (action: { color: RGBA; isImmediate: boolean }) => {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        const widgets = selectionService.selected
+        if (!widgets.length) {
+            return
+        }
+        if (!selectionService.canAllChangeBorderStyle()) {
+            return
+        }
+
+        const ctx: CommandCtx = {
+            selectionService,
+            engine,
+            isContinuous: !action.isImmediate,
+            params: {
+                color: action.color,
+                widgets,
+            },
+        }
+        commandRef.current?.execute(ctx)
+    }
+
     const handleBorderStyleChange = (style: BorderStyle) => {
         const selectionService =
             engine.getService<SelectionService>('selection')
         const widgets = selectionService.selected
-        if (!widgets.length)
-            if (!selectionService.canAllChangeBorderStyle()) return
+        if (!widgets.length) {
+            return
+        }
+        if (!selectionService.canAllChangeBorderStyle()) {
+            return
+        }
 
         // if the style is not changed
         if (widgets.every((widget) => widget.properties.borderStyle === style))
@@ -167,8 +198,10 @@ export function ShapeBorderColorInput({
             </Tooltip>
             {isActive && (
                 <ShapeBorderColorDropdown
+                    engine={engine}
                     onBorderStyleSelect={handleBorderStyleChange}
                     borderStyle={borderStyle}
+                    onColorSelect={onColorSelect}
                 />
             )}
         </div>

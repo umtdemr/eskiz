@@ -6,6 +6,7 @@ export type Commands =
     | 'clone'
     | 'toggleLock'
     | 'changeBgColor'
+    | 'changeBorderColor'
     | 'changeBorderStyle'
 
 export type CommandCtx = {

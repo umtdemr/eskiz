@@ -236,6 +236,11 @@ export abstract class Widget extends Layer {
         return false
     }
 
+    // return true when changing border color is allowed
+    canChangeBorderColor(): boolean {
+        return false
+    }
+
     // return true when changing border style is allowed
     canChangeBorderStyle(): boolean {
         return false
