@@ -1,5 +1,9 @@
 import { RGBA } from '@/core/shapes/Color.ts'
-import { BorderStyle, CANVAS_COLORS } from '@/helpers/Constant.ts'
+import {
+    BorderStyle,
+    CANVAS_COLORS,
+    DEFAULT_SHAPE_THICKNESS,
+} from '@/helpers/Constant.ts'
 import { Widget, WidgetJson, WidgetProps } from '@/core/shapes/Widget.ts'
 import { WsWidget } from '@/types/Websocket.ts'
 import {
@@ -16,6 +20,7 @@ export interface ShapeProperties {
     fillColor?: RGBA
     textProperties?: ShapeTextConstructProps
     borderStyle?: BorderStyle
+    strokeWidth?: number
 }
 
 export type ShapeType = 'rectangle' | 'triangle' | 'ellipse'
@@ -46,6 +51,9 @@ export abstract class Shape extends Widget {
         this._properties.borderStyle = this._properties?.borderStyle
             ? props.properties.borderStyle
             : BorderStyle.SOLID
+        this._properties.strokeWidth = this._properties?.strokeWidth
+            ? props.properties.strokeWidth
+            : DEFAULT_SHAPE_THICKNESS
         this._interactive = true
 
         if (props.properties.textProperties?.text) {
@@ -155,6 +163,16 @@ export abstract class Shape extends Widget {
     changeBorderStyle(newStyle: BorderStyle): boolean {
         if (this._properties.borderStyle === newStyle) return false
         this._properties.borderStyle = newStyle
+        return true
+    }
+
+    canChangeThickness(): boolean {
+        return true
+    }
+
+    changeThickness(val: number): boolean {
+        if (this._properties.strokeWidth === val) return false
+        this._properties.strokeWidth = val
         return true
     }
 

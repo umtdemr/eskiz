@@ -33,7 +33,9 @@ export function ShapeBorderColorInput({
         selected: BorderStyle.SOLID,
         shouldShow: false,
     })
-    const commandRef = useRef(new ChangeBorderColor('changeBorderColor'))
+    const changeBorderColorCommandRef = useRef(
+        new ChangeBorderColor('changeBorderColor'),
+    )
 
     const { activeDropdown, toggleDropdown } = useBoundStore()
     const isActive = activeDropdown === 'shapeBorderColor'
@@ -62,7 +64,7 @@ export function ShapeBorderColorInput({
                 widgets,
             },
         }
-        commandRef.current?.execute(ctx)
+        changeBorderColorCommandRef.current?.execute(ctx)
     }
 
     const handleBorderStyleChange = (style: BorderStyle) => {

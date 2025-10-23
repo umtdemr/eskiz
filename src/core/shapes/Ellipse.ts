@@ -24,7 +24,8 @@ export class Ellipse extends Shape {
 
         const ellipse = canvasKit.LTRBRect(0, 0, this._width, this._height)
 
-        const strokeHalf = 1
+        const strokeWidth = this._properties.strokeWidth as number
+        const strokeHalf = strokeWidth / 2
         const strokeEllipse = canvasKit.LTRBRect(
             0 + strokeHalf,
             0 + strokeHalf,
@@ -54,13 +55,19 @@ export class Ellipse extends Shape {
         )
         paint.setColor(strokeColor)
         paint.setStyle(canvasKit.PaintStyle.Stroke)
-        paint.setStrokeWidth(2)
+        paint.setStrokeWidth(strokeWidth)
 
         if (this._properties.borderStyle === BorderStyle.DOTTED) {
-            const pathEffect = canvasKit.PathEffect.MakeDash([2, 4], 0)
+            const pathEffect = canvasKit.PathEffect.MakeDash(
+                [strokeWidth, strokeWidth * 2],
+                0,
+            )
             paint.setPathEffect(pathEffect)
         } else if (this._properties.borderStyle === BorderStyle.DASHED) {
-            const pathEffect = canvasKit.PathEffect.MakeDash([10, 10], 0)
+            const pathEffect = canvasKit.PathEffect.MakeDash(
+                [strokeWidth * 5, strokeWidth * 5],
+                0,
+            )
             paint.setPathEffect(pathEffect)
         }
 

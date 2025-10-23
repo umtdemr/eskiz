@@ -143,3 +143,5 @@ export enum BorderStyle {
     DOTTED = 'DOTTED',
     DASHED = 'DASHED',
 }
+
+export const DEFAULT_SHAPE_THICKNESS = 2

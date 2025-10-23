@@ -11,6 +11,7 @@ export type EditingMethods =
     | 'backgroundColor'
     | 'borderColor'
     | 'borderStyle'
+    | 'thickness'
 
 export type State = Record<string, unknown>
 
@@ -88,6 +89,14 @@ export function getPartialState(
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         borderStyle: widget.properties.borderStyle,
+                    }
+                }
+                break
+            case 'thickness':
+                if (widget instanceof Shape) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        strokeWidth: widget.properties.strokeWidth,
                     }
                 }
                 break

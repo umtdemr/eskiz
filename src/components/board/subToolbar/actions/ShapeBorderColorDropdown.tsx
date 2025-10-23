@@ -11,11 +11,12 @@ import {
     ColorList,
     ColorSelectSignature,
 } from '@/components/colorList/ColorList'
-import { BorderStyle } from '@/helpers/Constant'
+import { BorderStyle, DEFAULT_SHAPE_THICKNESS } from '@/helpers/Constant'
 import clsx from 'clsx'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { RGBA } from '@/core/shapes/Color'
+import { ChangeThickness } from '@/core/command/ChangeThickness'
 
 export interface ShapeBorderColorDropdown {
     engine: Engine
@@ -31,6 +32,7 @@ export function ShapeBorderColorDropdown({
     onColorSelect,
 }: ShapeBorderColorDropdown) {
     const [opacity, setOpacity] = useState(1)
+    const [thickness, setThickness] = useState(DEFAULT_SHAPE_THICKNESS)
 
     useEffect(() => {
         const selectionService =
@@ -45,7 +47,9 @@ export function ShapeBorderColorDropdown({
         }
 
         const color = selectedWidget.properties.strokeColor as RGBA
+        const thickness = selectedWidget.properties.strokeWidth as number
         setOpacity(color.a)
+        setThickness(thickness)
     }, [engine])
 
     const changeBorderStyle = (newStyle: BorderStyle) => {
@@ -77,6 +81,40 @@ export function ShapeBorderColorDropdown({
             color: { ...signature.color, a: opacity },
             isImmediate: signature.isImmediate,
         })
+    }
+
+    const handleThicknessChange = (thicknesses: number[]) => {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        const widgets = selectionService.selected
+        if (!widgets.length) {
+            return
+        }
+        if (!selectionService.canAllChangeThickness()) {
+            return
+        }
+        const thickness = thicknesses[0]
+
+        // if the width is not changed
+        if (
+            widgets.every(
+                (widget) => widget.properties.strokeWidth === thickness,
+            )
+        )
+            return
+
+        setThickness(thickness)
+        const command = new ChangeThickness('changeThickness')
+        const ctx = {
+            selectionService,
+            engine,
+            params: {
+                widgets,
+                thickness,
+            },
+        }
+
+        command.execute(ctx)
     }
 
     return (
@@ -189,11 +227,11 @@ export function ShapeBorderColorDropdown({
             <div className="p-2">
                 <span className="text-xs mb-1 block">Thickness</span>
                 <Slider
-                    defaultValue={[2]}
-                    max={12}
-                    step={1}
-                    min={2}
-                    onValueChange={(...val) => console.log(val)}
+                    value={[thickness]}
+                    max={20}
+                    step={2}
+                    min={DEFAULT_SHAPE_THICKNESS}
+                    onValueChange={handleThicknessChange}
                 />
             </div>
 

@@ -246,6 +246,11 @@ export abstract class Widget extends Layer {
         return false
     }
 
+    // return true when changing thickness is allowed
+    canChangeThickness(): boolean {
+        return false
+    }
+
     get width() {
         return this._width
     }
