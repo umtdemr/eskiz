@@ -55,7 +55,7 @@ export class Rectangle extends Shape {
         // if this has radius, create radius rect
         if (radius > 0) {
             rect = canvasKit.RRectXY(rect, radius, radius)
-            strokeRect = canvasKit.RRectXY(rect, radius, radius)
+            strokeRect = canvasKit.RRectXY(strokeRect, radius, radius)
         }
 
         // draw fill
@@ -114,6 +114,16 @@ export class Rectangle extends Shape {
             width: this._width - TEXT_PADDING * 2,
             height: this._height - TEXT_PADDING * 2,
         }
+    }
+
+    canChangeRoundness(): boolean {
+        return true
+    }
+
+    changeRoundness(newRadius: number): boolean {
+        if (this._properties.radius === newRadius) return false
+        this._properties.radius = newRadius
+        return true
     }
 
     toJson(): WidgetJson {

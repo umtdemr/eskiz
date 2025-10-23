@@ -19,7 +19,9 @@ import { RGBA } from '@/core/shapes/Color'
 import { ChangeThickness } from '@/core/command/ChangeThickness'
 import { ChangeBorderColor } from '@/core/command/ChangeBorderColor'
 import { ChangeBorderStyle } from '@/core/command/ChangeBorderStyle'
+import { ChangeRoundness } from '@/core/command/ChangeRoundness'
 import { CommandCtx } from '@/core/command/Command'
+import { Rectangle } from '@/core/shapes/Rectangle'
 
 export interface ShapeBorderColorDropdownProps {
     engine: Engine
@@ -30,6 +32,8 @@ export function ShapeBorderColorDropdown({
 }: ShapeBorderColorDropdownProps) {
     const [opacity, setOpacity] = useState(1)
     const [thickness, setThickness] = useState(DEFAULT_SHAPE_THICKNESS)
+    const [roundness, setRoundness] = useState(0)
+    const [showRoundness, setShowRoundness] = useState(false)
     const [borderStyle, setBorderStyle] = useState<BorderStyle>(
         BorderStyle.SOLID,
     )
@@ -61,6 +65,15 @@ export function ShapeBorderColorDropdown({
         setThickness(thickness)
         setBorderStyle(style || BorderStyle.SOLID)
         setShowBorderStyle(shouldShowBorderStyle)
+
+        // check if the widget is a rectangle and has roundness
+        if (selectedWidget instanceof Rectangle) {
+            const radius = selectedWidget.properties.radius as number
+            setRoundness(radius || 0)
+            setShowRoundness(true)
+        } else {
+            setShowRoundness(false)
+        }
     }, [engine])
 
     const changeBorderStyle = (newStyle: BorderStyle) => {
@@ -163,6 +176,41 @@ export function ShapeBorderColorDropdown({
             params: {
                 widgets,
                 thickness,
+            },
+        }
+
+        command.execute(ctx)
+    }
+
+    const handleRoundnessChange = (roundnessArr: number[]) => {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        const widgets = selectionService.selected
+        if (!widgets.length) {
+            return
+        }
+        if (!selectionService.canAllChangeRoundness()) {
+            return
+        }
+        const roundness = roundnessArr[0]
+
+        // if the roundness is not changed
+        if (
+            widgets.every(
+                (widget) => widget.properties.radius === roundness,
+            )
+        )
+            return
+
+        setRoundness(roundness)
+        const command = new ChangeRoundness('changeRoundness')
+        const ctx: CommandCtx = {
+            selectionService,
+            engine,
+            isContinuous: true,
+            params: {
+                widgets,
+                roundness,
             },
         }
 
@@ -298,16 +346,18 @@ export function ShapeBorderColorDropdown({
                 />
             </div>
 
-            <div className="p-2">
-                <span className="text-xs mb-1 block">Roundness</span>
-                <Slider
-                    defaultValue={[2]}
-                    max={12}
-                    step={1}
-                    min={2}
-                    onValueChange={(...val) => console.log(val)}
-                />
-            </div>
+            {showRoundness && (
+                <div className="p-2">
+                    <span className="text-xs mb-1 block">Roundness</span>
+                    <Slider
+                        value={[roundness]}
+                        max={100}
+                        step={10}
+                        min={0}
+                        onValueChange={handleRoundnessChange}
+                    />
+                </div>
+            )}
             <div className="p-2">
                 <ColorList onColorSelect={handleColorSelect} perColumn={4} />
             </div>
