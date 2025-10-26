@@ -256,6 +256,11 @@ export abstract class Widget extends Layer {
         return false
     }
 
+    // return true when changing text color is allowed
+    canChangeTextColor(): boolean {
+        return false
+    }
+
     get width() {
         return this._width
     }

@@ -183,6 +183,11 @@ export class ShapeText extends Widget {
         this.createOrUpdateParagraph()
     }
 
+    changeColor(color: RGBA) {
+        this._color = color
+        this.createOrUpdateParagraph()
+    }
+
     hideText() {
         this._shouldRender = false
     }

@@ -176,6 +176,17 @@ export abstract class Shape extends Widget {
         return true
     }
 
+    canChangeTextColor(): boolean {
+        return this._text !== null && this._text !== undefined
+    }
+
+    changeTextColor(newColor: RGBA): boolean {
+        if (!this._text) return false
+        this._textProperties.color = newColor
+        this._text.changeColor(newColor)
+        return true
+    }
+
     get textStr(): string {
         if (this._text) {
             return this._text?.text

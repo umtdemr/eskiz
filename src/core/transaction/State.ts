@@ -14,6 +14,7 @@ export type EditingMethods =
     | 'borderStyle'
     | 'thickness'
     | 'roundness'
+    | 'textColor'
 
 export type State = Record<string, unknown>
 
@@ -107,6 +108,20 @@ export function getPartialState(
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         radius: widget.properties.radius,
+                    }
+                }
+                break
+            case 'textColor':
+                if (widget instanceof Shape) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        textProperties: widget.textProperties, // TODO: fix this to only text color
+                    }
+                }
+                if (widget instanceof TextBox) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        color: widget.properties.color,
                     }
                 }
                 break
