@@ -101,6 +101,16 @@ export class TextBox extends Widget {
         return true
     }
 
+    canChangeTextColor(): boolean {
+        return true
+    }
+
+    changeTextColor(newColor: RGBA): boolean {
+        this._color = newColor
+        this.createOrUpdateParagraph()
+        return true
+    }
+
     get fontSize(): number {
         return this._fontSize
     }
@@ -119,6 +129,13 @@ export class TextBox extends Widget {
             color: this._color,
             fontSize: this._fontSize,
             lineHeight: this._lineHeight,
+        }
+    }
+
+    // TODO: implement fully when saving in db
+    get properties() {
+        return {
+            color: this._color,
         }
     }
 }
