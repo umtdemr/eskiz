@@ -7,15 +7,18 @@ import { Button } from '@/components/ui/button'
 import { HighlightColorDropdown } from './HighlightColorDropdown'
 import { useBoundStore } from '@/store/store'
 import { Highlighter } from 'lucide-react'
+import { Engine } from '@/core/engine/Engine'
 
 export interface HighlightColorInputProps {
     id: string
     tooltip: string
+    engine: Engine
 }
 
 export function HighlightColorInput({
     tooltip,
     id,
+    engine,
 }: HighlightColorInputProps) {
     const { activeDropdown, toggleDropdown } = useBoundStore()
     const isActive = activeDropdown === 'highlightColor'
@@ -40,7 +43,7 @@ export function HighlightColorInput({
                 </TooltipTrigger>
                 <TooltipContent>{tooltip}</TooltipContent>
             </Tooltip>
-            {isActive && <HighlightColorDropdown />}
+            {isActive && <HighlightColorDropdown engine={engine} />}
         </div>
     )
 }

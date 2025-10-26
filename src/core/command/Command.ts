@@ -11,6 +11,7 @@ export type Commands =
     | 'changeThickness'
     | 'changeRoundness'
     | 'changeTextColor'
+    | 'changeHighlightColor'
 
 export type CommandCtx = {
     selectionService: SelectionService

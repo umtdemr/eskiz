@@ -266,6 +266,10 @@ export class SelectionService extends Service {
         return this._selected.every((widget) => widget.canChangeTextColor())
     }
 
+    canAllChangeHighlightColor(): boolean {
+        return this._selected.every((widget) => widget.canChangeHighlightColor())
+    }
+
     get selected() {
         return this._selected
     }

@@ -15,6 +15,7 @@ export interface ShapeTextProps extends WidgetProps {
 export interface ShapeTextConstructProps {
     text: string
     color: RGBA
+    backgroundColor?: RGBA
     fontSize: number
     textAlign: TEXT_ALIGN
     lineHeight: number
@@ -30,6 +31,7 @@ export class ShapeText extends Widget {
     private _text: string
     private _renderingText: string
     private _color: RGBA
+    private _backgroundColor?: RGBA
     private _fontSize: number
     private _paragraph: CkParagraph
     private _shouldRender = true
@@ -43,6 +45,7 @@ export class ShapeText extends Widget {
         super('shapeText', props)
         this._text = props.properties.text
         this._color = props.properties.color
+        this._backgroundColor = props.properties.backgroundColor
         this._fontSize = props.properties.fontSize
         this._lineHeight = props.properties.lineHeight
         this._textAlign = props.properties.textAlign
@@ -52,7 +55,7 @@ export class ShapeText extends Widget {
 
     private getParagraphStyle() {
         const color = this.getColor()
-        return new canvasKit.ParagraphStyle({
+        const style: any = {
             textStyle: {
                 color: canvasKit.Color(color.r, color.g, color.b, color.a),
                 fontFamilies: ['Open-Sans'],
@@ -60,7 +63,19 @@ export class ShapeText extends Widget {
                 heightMultiplier: this._lineHeight,
             },
             textAlign: this.getTextAlign(),
-        })
+        }
+
+        // Add backgroundColor if it exists
+        if (this._backgroundColor && this._backgroundColor.a > 0) {
+            style.textStyle.backgroundColor = canvasKit.Color(
+                this._backgroundColor.r,
+                this._backgroundColor.g,
+                this._backgroundColor.b,
+                this._backgroundColor.a,
+            )
+        }
+
+        return new canvasKit.ParagraphStyle(style)
     }
 
     private getTextAlign(): CkTextAlign {
@@ -185,6 +200,11 @@ export class ShapeText extends Widget {
 
     changeColor(color: RGBA) {
         this._color = color
+        this.createOrUpdateParagraph()
+    }
+
+    changeBackgroundColor(color: RGBA) {
+        this._backgroundColor = color
         this.createOrUpdateParagraph()
     }
 

@@ -11,6 +11,7 @@ export interface TextBoxProps extends Omit<WidgetProps, 'height'> {
 export interface TextBoxProperties {
     text: string
     color?: RGBA
+    backgroundColor?: RGBA
     fontSize: number
     isPlaceholder?: boolean
     lineHeight?: number
@@ -21,6 +22,7 @@ export type TEXT_ALIGN = 'left' | 'center' | 'right'
 export class TextBox extends Widget {
     private _text: string
     private _color: RGBA
+    private _backgroundColor?: RGBA
     private _fontSize: number
     private _paragraph: Paragraph
     private _isPlaceholder: boolean
@@ -33,6 +35,7 @@ export class TextBox extends Widget {
         this._color = props.properties.color
             ? props.properties.color
             : CANVAS_COLORS.BLACK
+        this._backgroundColor = props.properties.backgroundColor
         this._fontSize = props.properties.fontSize
         this._isPlaceholder =
             props.properties.isPlaceholder !== undefined
@@ -61,7 +64,7 @@ export class TextBox extends Widget {
 
     private getParagraphStyle() {
         const color = this.getColor()
-        return new canvasKit.ParagraphStyle({
+        const style: any = {
             textStyle: {
                 color: canvasKit.Color(color.r, color.g, color.b, color.a),
                 fontFamilies: ['Open-Sans'],
@@ -69,7 +72,19 @@ export class TextBox extends Widget {
                 heightMultiplier: this._lineHeight,
             },
             textAlign: canvasKit.TextAlign.Left,
-        })
+        }
+
+        // Add backgroundColor if it exists
+        if (this._backgroundColor && this._backgroundColor.a > 0) {
+            style.textStyle.backgroundColor = canvasKit.Color(
+                this._backgroundColor.r,
+                this._backgroundColor.g,
+                this._backgroundColor.b,
+                this._backgroundColor.a,
+            )
+        }
+
+        return new canvasKit.ParagraphStyle(style)
     }
 
     private getColor(): RGBA {
@@ -111,6 +126,16 @@ export class TextBox extends Widget {
         return true
     }
 
+    canChangeHighlightColor(): boolean {
+        return true
+    }
+
+    changeHighlightColor(newColor: RGBA): boolean {
+        this._backgroundColor = newColor
+        this.createOrUpdateParagraph()
+        return true
+    }
+
     get fontSize(): number {
         return this._fontSize
     }
@@ -127,6 +152,7 @@ export class TextBox extends Widget {
         return {
             text: this._text,
             color: this._color,
+            backgroundColor: this._backgroundColor,
             fontSize: this._fontSize,
             lineHeight: this._lineHeight,
         }
@@ -136,6 +162,7 @@ export class TextBox extends Widget {
     get properties() {
         return {
             color: this._color,
+            backgroundColor: this._backgroundColor,
         }
     }
 }
