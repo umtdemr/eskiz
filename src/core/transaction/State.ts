@@ -15,6 +15,7 @@ export type EditingMethods =
     | 'thickness'
     | 'roundness'
     | 'textColor'
+    | 'highlightColor'
 
 export type State = Record<string, unknown>
 
@@ -122,6 +123,20 @@ export function getPartialState(
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         color: widget.properties.color,
+                    }
+                }
+                break
+            case 'highlightColor':
+                if (widget instanceof Shape) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        textProperties: widget.textProperties, // TODO: fix this to only highlight color
+                    }
+                }
+                if (widget instanceof TextBox) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        backgroundColor: widget.properties.backgroundColor,
                     }
                 }
                 break

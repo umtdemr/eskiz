@@ -187,6 +187,17 @@ export abstract class Shape extends Widget {
         return true
     }
 
+    canChangeHighlightColor(): boolean {
+        return this._text !== null && this._text !== undefined
+    }
+
+    changeHighlightColor(newColor: RGBA): boolean {
+        if (!this._text) return false
+        this._textProperties.backgroundColor = newColor
+        this._text.changeBackgroundColor(newColor)
+        return true
+    }
+
     get textStr(): string {
         if (this._text) {
             return this._text?.text
