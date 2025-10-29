@@ -266,6 +266,11 @@ export abstract class Widget extends Layer {
         return false
     }
 
+    // return true when changing text alignment is allowed
+    canChangeTextAlign(): boolean {
+        return false
+    }
+
     get width() {
         return this._width
     }

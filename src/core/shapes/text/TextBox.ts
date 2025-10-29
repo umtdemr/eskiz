@@ -13,6 +13,7 @@ export interface TextBoxProperties {
     color?: RGBA
     backgroundColor?: RGBA
     fontSize: number
+    textAlign?: TEXT_ALIGN
     isPlaceholder?: boolean
     lineHeight?: number
 }
@@ -24,6 +25,7 @@ export class TextBox extends Widget {
     private _color: RGBA
     private _backgroundColor?: RGBA
     private _fontSize: number
+    private _textAlign: TEXT_ALIGN
     private _paragraph: Paragraph
     private _isPlaceholder: boolean
     private _shouldRender = true
@@ -37,6 +39,7 @@ export class TextBox extends Widget {
             : CANVAS_COLORS.BLACK
         this._backgroundColor = props.properties.backgroundColor
         this._fontSize = props.properties.fontSize
+        this._textAlign = props.properties.textAlign || 'left'
         this._isPlaceholder =
             props.properties.isPlaceholder !== undefined
                 ? props.properties.isPlaceholder
@@ -71,7 +74,7 @@ export class TextBox extends Widget {
                 fontSize: this._fontSize,
                 heightMultiplier: this._lineHeight,
             },
-            textAlign: canvasKit.TextAlign.Left,
+            textAlign: this.getTextAlign(),
         }
 
         // Add backgroundColor if it exists
@@ -85,6 +88,15 @@ export class TextBox extends Widget {
         }
 
         return new canvasKit.ParagraphStyle(style)
+    }
+
+    private getTextAlign() {
+        if (this._textAlign === 'center') {
+            return canvasKit.TextAlign.Center
+        } else if (this._textAlign === 'right') {
+            return canvasKit.TextAlign.Right
+        }
+        return canvasKit.TextAlign.Left
     }
 
     private getColor(): RGBA {
@@ -136,6 +148,17 @@ export class TextBox extends Widget {
         return true
     }
 
+    canChangeTextAlign(): boolean {
+        return true
+    }
+
+    changeTextAlign(newAlign: TEXT_ALIGN): boolean {
+        if (this._textAlign === newAlign) return false
+        this._textAlign = newAlign
+        this.createOrUpdateParagraph()
+        return true
+    }
+
     get fontSize(): number {
         return this._fontSize
     }
@@ -154,6 +177,7 @@ export class TextBox extends Widget {
             color: this._color,
             backgroundColor: this._backgroundColor,
             fontSize: this._fontSize,
+            textAlign: this._textAlign,
             lineHeight: this._lineHeight,
         }
     }
@@ -163,6 +187,7 @@ export class TextBox extends Widget {
         return {
             color: this._color,
             backgroundColor: this._backgroundColor,
+            textAlign: this._textAlign,
         }
     }
 }

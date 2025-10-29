@@ -208,6 +208,11 @@ export class ShapeText extends Widget {
         this.createOrUpdateParagraph()
     }
 
+    changeTextAlign(align: TEXT_ALIGN) {
+        this._textAlign = align
+        this.createOrUpdateParagraph()
+    }
+
     hideText() {
         this._shouldRender = false
     }

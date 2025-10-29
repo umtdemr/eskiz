@@ -10,6 +10,7 @@ import {
     ShapeText,
     ShapeTextConstructProps,
 } from '@/core/shapes/text/ShapeText'
+import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
 
 export interface ShapeProps extends WidgetProps {
     properties: ShapeProperties
@@ -195,6 +196,18 @@ export abstract class Shape extends Widget {
         if (!this._text) return false
         this._textProperties.backgroundColor = newColor
         this._text.changeBackgroundColor(newColor)
+        return true
+    }
+
+    canChangeTextAlign(): boolean {
+        return this._text !== null && this._text !== undefined
+    }
+
+    changeTextAlign(newAlign: TEXT_ALIGN): boolean {
+        if (!this._text) return false
+        if (this._textProperties.textAlign === newAlign) return false
+        this._textProperties.textAlign = newAlign
+        this._text.changeTextAlign(newAlign)
         return true
     }
 
