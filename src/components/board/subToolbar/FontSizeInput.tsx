@@ -1,13 +1,19 @@
 import { Button } from '@/components/ui/button'
 import clsx from 'clsx'
 import { ChevronDown, ChevronUp } from 'lucide-react'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useBoundStore } from '@/store/store'
+import { Engine } from '@/core/engine/Engine'
+import { SelectionService } from '@/core/services/SelectionService'
+import { ChangeFontSize } from '@/core/command/ChangeFontSize'
+import { CommandCtx } from '@/core/command/Command'
+import { TextBox } from '@/core/shapes/text/TextBox'
+import { Shape } from '@/core/shapes/Shape'
 
 export interface FontSizeInputProps {
     id: string
     inputId: string
-    defaultValue?: number
+    engine: Engine
 }
 
 const FONT_SIZE_OPTIONS = [10, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96]
@@ -15,19 +21,39 @@ const FONT_SIZE_OPTIONS = [10, 12, 14, 18, 24, 30, 36, 48, 60, 72, 96]
 export function FontSizeInput({
     id,
     inputId,
-    defaultValue = 10,
+    engine,
 }: FontSizeInputProps) {
-    const [inputVal, setInputVal] = useState(defaultValue.toString())
+    const [inputVal, setInputVal] = useState('14')
     const inputRef = useRef<HTMLInputElement>(null)
+    const changeFontSizeCommandRef = useRef(new ChangeFontSize('changeFontSize'))
     const { activeDropdown, setActiveDropdown, closeDropdown } = useBoundStore()
     const isDropdownMenuOpen = activeDropdown === 'fontSize'
+
+    useEffect(() => {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+
+        if (selectionService.selected.length !== 1) {
+            return
+        }
+        const selectedWidget = selectionService.selected[0]
+
+        if (selectedWidget instanceof TextBox) {
+            setInputVal(selectedWidget.fontSize.toString())
+        } else if (selectedWidget instanceof Shape) {
+            if (selectedWidget.textProperties) {
+                setInputVal(selectedWidget.textProperties.fontSize.toString())
+            }
+        }
+    }, [engine, activeDropdown])
 
     const handleInputFocus = () => {
         setActiveDropdown('fontSize')
     }
 
     const handleOnChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setInputVal(e.target.value)
+        const newValue = e.target.value
+        setInputVal(newValue)
     }
 
     const handleOnKeyUp = (e: React.KeyboardEvent) => {
@@ -45,20 +71,67 @@ export function FontSizeInput({
         const parsedInt = parseInt(inputVal)
         if (!parsedInt || parsedInt < FONT_SIZE_OPTIONS[0]) return
 
-        handleFontSizeChange(parsedInt)
+        executeFontSizeChange(parsedInt, false)
         closeDropdown()
     }
 
-    const handleIncrease = () => {
-        console.log('increase')
+    const executeFontSizeChange = (size: number, isContinuous: boolean) => {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        const widgets = selectionService.selected
+        if (!widgets.length) return
+        if (!selectionService.canAllChangeFontSize()) return
+
+        const ctx: CommandCtx = {
+            selectionService,
+            engine,
+            isContinuous,
+            params: {
+                fontSize: size,
+                widgets,
+            },
+        }
+
+        changeFontSizeCommandRef.current?.execute(ctx)
     }
+
+    const findNextFontSize = (current: number): number => {
+        for (const size of FONT_SIZE_OPTIONS) {
+            if (size > current) {
+                return size
+            }
+        }
+        return FONT_SIZE_OPTIONS[FONT_SIZE_OPTIONS.length - 1]
+    }
+
+    const findPreviousFontSize = (current: number): number => {
+        for (let i = FONT_SIZE_OPTIONS.length - 1; i >= 0; i--) {
+            if (FONT_SIZE_OPTIONS[i] < current) {
+                return FONT_SIZE_OPTIONS[i]
+            }
+        }
+        return FONT_SIZE_OPTIONS[0]
+    }
+
+    const handleIncrease = () => {
+        const current = parseInt(inputVal)
+        if (!current) return
+        const newSize = findNextFontSize(current)
+        setInputVal(newSize.toString())
+        executeFontSizeChange(newSize, true)
+    }
+
     const handleDecrease = () => {
-        console.log('decrease')
+        const current = parseInt(inputVal)
+        if (!current) return
+        const newSize = findPreviousFontSize(current)
+        setInputVal(newSize.toString())
+        executeFontSizeChange(newSize, true)
     }
 
     const handleFontSizeChange = (val: number) => {
-        console.log('change', val)
         setInputVal(val.toString())
+        executeFontSizeChange(val, false)
         closeDropdown()
     }
 

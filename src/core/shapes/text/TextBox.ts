@@ -159,6 +159,17 @@ export class TextBox extends Widget {
         return true
     }
 
+    canChangeFontSize(): boolean {
+        return true
+    }
+
+    changeFontSize(newSize: number): boolean {
+        if (this._fontSize === newSize) return false
+        this._fontSize = newSize
+        this.createOrUpdateParagraph()
+        return true
+    }
+
     get fontSize(): number {
         return this._fontSize
     }
@@ -188,6 +199,7 @@ export class TextBox extends Widget {
             color: this._color,
             backgroundColor: this._backgroundColor,
             textAlign: this._textAlign,
+            fontSize: this._fontSize,
         }
     }
 }

@@ -227,6 +227,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                                 key={action.id}
                                 id={action.id}
                                 inputId={'font_size_input'}
+                                engine={engine}
                             />
                         )
                     } else if (action.type === 'textAlignInput') {

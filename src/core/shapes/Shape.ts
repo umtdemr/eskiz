@@ -211,6 +211,18 @@ export abstract class Shape extends Widget {
         return true
     }
 
+    canChangeFontSize(): boolean {
+        return this._text !== null && this._text !== undefined
+    }
+
+    changeFontSize(newSize: number): boolean {
+        if (!this._text) return false
+        if (this._textProperties.fontSize === newSize) return false
+        this._textProperties.fontSize = newSize
+        this._text.changeFontSize(newSize)
+        return true
+    }
+
     get textStr(): string {
         if (this._text) {
             return this._text?.text

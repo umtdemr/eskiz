@@ -271,6 +271,11 @@ export abstract class Widget extends Layer {
         return false
     }
 
+    // return true when changing font size is allowed
+    canChangeFontSize(): boolean {
+        return false
+    }
+
     get width() {
         return this._width
     }
