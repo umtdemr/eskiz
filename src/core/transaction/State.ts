@@ -16,6 +16,7 @@ export type EditingMethods =
     | 'roundness'
     | 'textColor'
     | 'highlightColor'
+    | 'textAlign'
 
 export type State = Record<string, unknown>
 
@@ -137,6 +138,20 @@ export function getPartialState(
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         backgroundColor: widget.properties.backgroundColor,
+                    }
+                }
+                break
+            case 'textAlign':
+                if (widget instanceof Shape) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        textProperties: widget.textProperties, // TODO: fix this to only text align
+                    }
+                }
+                if (widget instanceof TextBox) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        textAlign: widget.properties.textAlign,
                     }
                 }
                 break

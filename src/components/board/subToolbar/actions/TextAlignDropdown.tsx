@@ -1,12 +1,40 @@
 import './ShapeBorderColorDropdown.scss'
 import { Button } from '@/components/ui/button'
 import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
+import { Engine } from '@/core/engine/Engine'
+import { SelectionService } from '@/core/services/SelectionService'
+import { ChangeTextAlign } from '@/core/command/ChangeTextAlign'
+import { CommandCtx } from '@/core/command/Command'
+import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
 
-export function TextAlignDropdown() {
-    const handleAlignChange = (
-        alignment: 'left' | 'center' | 'right' | 'justify',
-    ) => {
-        console.log('Text alignment changed:', alignment)
+export interface TextAlignDropdownProps {
+    engine: Engine
+    onTextAlignChange: (newTextAlign: TEXT_ALIGN) => void
+}
+
+export function TextAlignDropdown({
+    engine,
+    onTextAlignChange,
+}: TextAlignDropdownProps) {
+    const handleAlignChange = (alignment: TEXT_ALIGN) => {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        const widgets = selectionService.selected
+        if (!widgets.length) return
+        if (!selectionService.canAllChangeTextAlign()) return
+
+        const command = new ChangeTextAlign('changeTextAlign')
+        const ctx: CommandCtx = {
+            selectionService,
+            engine,
+            params: {
+                textAlign: alignment,
+                widgets,
+            },
+        }
+
+        command.execute(ctx)
+        onTextAlignChange(alignment)
     }
 
     return (
@@ -40,4 +68,3 @@ export function TextAlignDropdown() {
         </div>
     )
 }
-
