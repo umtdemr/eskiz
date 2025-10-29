@@ -42,7 +42,7 @@ export function TextColorDropdown({ engine }: TextColorDropdownProps) {
     return (
         <div className="text_color_dd absolute bg-white py-2 px-1 top-[60px] left-[50%] shadow-l -translate-x-1/2 w-[200px] rounded-xl shadow-xs select-none">
             <div className="p-2">
-                <ColorList onColorSelect={handleColorSelect} perColumn={4} />
+                <ColorList onColorSelect={handleColorSelect} perColumn={4} shouldHideTransparentColor />
             </div>
         </div>
     )
