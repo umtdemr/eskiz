@@ -13,6 +13,7 @@ export type Commands =
     | 'changeTextColor'
     | 'changeHighlightColor'
     | 'changeTextAlign'
+    | 'changeFontSize'
 
 export type CommandCtx = {
     selectionService: SelectionService

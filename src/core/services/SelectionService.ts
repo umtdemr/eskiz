@@ -274,6 +274,10 @@ export class SelectionService extends Service {
         return this._selected.every((widget) => widget.canChangeTextAlign())
     }
 
+    canAllChangeFontSize(): boolean {
+        return this._selected.every((widget) => widget.canChangeFontSize())
+    }
+
     get selected() {
         return this._selected
     }

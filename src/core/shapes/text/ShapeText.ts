@@ -213,6 +213,11 @@ export class ShapeText extends Widget {
         this.createOrUpdateParagraph()
     }
 
+    changeFontSize(size: number) {
+        this._fontSize = size
+        this.createOrUpdateParagraph()
+    }
+
     hideText() {
         this._shouldRender = false
     }
