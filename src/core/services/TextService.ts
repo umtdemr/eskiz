@@ -147,7 +147,7 @@ export class TextService extends Service {
         const trimmedText = props.text.replace(/\n$/, '')
 
         if (this.activeSession === 'textBox' && this.textBox) {
-            this.textBox.setText(trimmedText)
+            this.textBox.setTextOps(trimmedText, props.textOps)
 
             // sync text editor dimensions with text box
             this.textEditor.updateSize({
@@ -158,7 +158,7 @@ export class TextService extends Service {
             })
             this.engine.canvas.requestRender()
         } else if (this.activeSession === 'shapeText' && this.shape) {
-            this.shape.updateText(trimmedText)
+            this.shape.updateText(props.text, props.textOps)
         }
 
         if (this.transactionId) {
