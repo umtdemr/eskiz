@@ -1,8 +1,8 @@
 import { Widget, WidgetProps } from '@/core/shapes/Widget.ts'
-import { Paragraph } from 'canvaskit-wasm'
+import { Paragraph as CkParagraph } from 'canvaskit-wasm'
 import { RGBA } from '@/core/shapes/Color.ts'
 import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
-import { CANVAS_COLORS } from '@/helpers/Constant.ts'
+import { createTextOpsFromString, TextOp } from '@/core/textEditor/TextEditor'
 
 export interface TextBoxProps extends Omit<WidgetProps, 'height'> {
     properties: TextBoxProperties
@@ -10,8 +10,7 @@ export interface TextBoxProps extends Omit<WidgetProps, 'height'> {
 
 export interface TextBoxProperties {
     text: string
-    color?: RGBA
-    backgroundColor?: RGBA
+    textOps?: TextOp[]
     fontSize: number
     textAlign?: TEXT_ALIGN
     isPlaceholder?: boolean
@@ -22,11 +21,10 @@ export type TEXT_ALIGN = 'left' | 'center' | 'right'
 
 export class TextBox extends Widget {
     private _text: string
-    private _color: RGBA
-    private _backgroundColor?: RGBA
+    private _textOps: TextOp[]
     private _fontSize: number
     private _textAlign: TEXT_ALIGN
-    private _paragraph: Paragraph
+    private _paragraph: CkParagraph
     private _isPlaceholder: boolean
     private _shouldRender = true
     private _lineHeight: number
@@ -34,10 +32,11 @@ export class TextBox extends Widget {
     constructor(props: TextBoxProps) {
         super('text', props)
         this._text = props.properties.text
-        this._color = props.properties.color
-            ? props.properties.color
-            : CANVAS_COLORS.BLACK
-        this._backgroundColor = props.properties.backgroundColor
+        if (!props.properties.textOps) {
+            this._textOps = createTextOpsFromString(this._text)
+        } else {
+            this._textOps = props.properties.textOps
+        }
         this._fontSize = props.properties.fontSize
         this._textAlign = props.properties.textAlign || 'left'
         this._isPlaceholder =
@@ -50,44 +49,89 @@ export class TextBox extends Widget {
         this._interactive = true
     }
 
-    createOrUpdateParagraph(): Paragraph {
+    private getOpParagraph(): CkParagraph {
         const builder = canvasKit.ParagraphBuilder.Make(
             this.getParagraphStyle(),
             fontManager,
         )
+
+        for (let index = 0; index < this._textOps.length; index++) {
+            const op = this._textOps[index]
+
+            if (!op.text) continue
+            const text =
+                index === this._textOps.length - 1
+                    ? op.text.lastIndexOf('\n') !== -1
+                        ? op.text.substring(0, op.text.lastIndexOf('\n'))
+                        : op.text
+                    : op.text
+
+            const style = new canvasKit.TextStyle({
+                color: op.attributes?.color
+                    ? canvasKit.Color(
+                          (op.attributes.color as RGBA).r,
+                          (op.attributes.color as RGBA).g,
+                          (op.attributes.color as RGBA).b,
+                          (op.attributes.color as RGBA).a,
+                      )
+                    : canvasKit.Color(0, 0, 0, 1),
+                fontFamilies: ['Open-Sans'],
+                fontSize: this._fontSize,
+                heightMultiplier: this._lineHeight,
+                fontStyle: {
+                    weight: op.attributes?.bold
+                        ? canvasKit.FontWeight.ExtraBold
+                        : canvasKit.FontWeight.Normal,
+                    slant: op.attributes?.italic
+                        ? canvasKit.FontSlant.Italic
+                        : canvasKit.FontSlant.Upright,
+                },
+                decoration: op.attributes?.underline
+                    ? 1
+                    : op.attributes?.strike
+                      ? 4
+                      : 0,
+                decorationThickness: 3,
+                decorationStyle: canvasKit.DecorationStyle.Solid,
+            })
+
+            if (op.attributes.background) {
+                style.backgroundColor = canvasKit.Color(
+                    (op.attributes.background as RGBA).r,
+                    (op.attributes.background as RGBA).g,
+                    (op.attributes.background as RGBA).b,
+                    (op.attributes.background as RGBA).a,
+                )
+            }
+
+            builder.pushStyle(style)
+            builder.addText(text)
+            builder.pop()
+        }
+
+        const paragraph = builder.build()
+        paragraph.layout(this.width)
+        return paragraph
+    }
+
+    createOrUpdateParagraph(): CkParagraph {
         if (this._paragraph) {
             this._paragraph.delete()
         }
-        builder.addText(this._text)
-        this._paragraph = builder.build()
-        this._paragraph.layout(this.width)
+        this._paragraph = this.getOpParagraph()
         this.height = this._paragraph.getHeight()
         return this._paragraph
     }
 
     private getParagraphStyle() {
-        const color = this.getColor()
-        const style: any = {
+        return new canvasKit.ParagraphStyle({
             textStyle: {
-                color: canvasKit.Color(color.r, color.g, color.b, color.a),
                 fontFamilies: ['Open-Sans'],
-                fontSize: this._fontSize,
                 heightMultiplier: this._lineHeight,
             },
             textAlign: this.getTextAlign(),
-        }
-
-        // Add backgroundColor if it exists
-        if (this._backgroundColor && this._backgroundColor.a > 0) {
-            style.textStyle.backgroundColor = canvasKit.Color(
-                this._backgroundColor.r,
-                this._backgroundColor.g,
-                this._backgroundColor.b,
-                this._backgroundColor.a,
-            )
-        }
-
-        return new canvasKit.ParagraphStyle(style)
+            // maybe later we can add maxLines and ellipsis here
+        })
     }
 
     private getTextAlign() {
@@ -99,10 +143,6 @@ export class TextBox extends Widget {
         return canvasKit.TextAlign.Left
     }
 
-    private getColor(): RGBA {
-        return this._color
-    }
-
     renderContent(renderContext: RenderContext) {
         if (!this._shouldRender) {
             return
@@ -111,8 +151,15 @@ export class TextBox extends Widget {
         ctx.drawParagraph(this._paragraph, 0, 0)
     }
 
+    setTextOps(text: string, ops: TextOp[]) {
+        this._text = text
+        this._textOps = ops
+        this.createOrUpdateParagraph()
+    }
+
     setText(text: string) {
         this._text = text
+        this._textOps = createTextOpsFromString(this._text)
         this.createOrUpdateParagraph()
     }
 
@@ -133,8 +180,9 @@ export class TextBox extends Widget {
     }
 
     changeTextColor(newColor: RGBA): boolean {
-        this._color = newColor
-        this.createOrUpdateParagraph()
+        // TODO: implement color change
+        // this._color = newColor
+        // this.createOrUpdateParagraph()
         return true
     }
 
@@ -143,8 +191,9 @@ export class TextBox extends Widget {
     }
 
     changeHighlightColor(newColor: RGBA): boolean {
-        this._backgroundColor = newColor
-        this.createOrUpdateParagraph()
+        // TODO: implement highlight color change
+        // this._backgroundColor = newColor
+        // this.createOrUpdateParagraph()
         return true
     }
 
@@ -185,8 +234,7 @@ export class TextBox extends Widget {
     get textPropsJson(): TextBoxProperties {
         return {
             text: this._text,
-            color: this._color,
-            backgroundColor: this._backgroundColor,
+            textOps: this._textOps,
             fontSize: this._fontSize,
             textAlign: this._textAlign,
             lineHeight: this._lineHeight,
@@ -196,10 +244,9 @@ export class TextBox extends Widget {
     // TODO: implement fully when saving in db
     get properties() {
         return {
-            color: this._color,
-            backgroundColor: this._backgroundColor,
             textAlign: this._textAlign,
             fontSize: this._fontSize,
+            textOps: this._textOps,
         }
     }
 }

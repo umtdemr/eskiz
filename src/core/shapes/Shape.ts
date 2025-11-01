@@ -11,6 +11,7 @@ import {
     ShapeTextConstructProps,
 } from '@/core/shapes/text/ShapeText'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
+import { TextOp } from '../textEditor/TextEditor'
 
 export interface ShapeProps extends WidgetProps {
     properties: ShapeProperties
@@ -28,7 +29,6 @@ export type ShapeType = 'rectangle' | 'triangle' | 'ellipse'
 
 const initialTextProps: ShapeTextConstructProps = {
     text: '',
-    color: CANVAS_COLORS.BLACK,
     fontSize: 14,
     lineHeight: 1.4,
     textAlign: 'center',
@@ -133,10 +133,11 @@ export abstract class Shape extends Widget {
         this._text!.showText()
     }
 
-    updateText(text: string) {
+    updateText(text: string, textOps: TextOp[]) {
         if (!this._text) return
-        this._text.setText(text)
+        this._text.setTextOps(text, textOps)
         this._textProperties.text = text
+        this._textProperties.textOps = textOps
     }
 
     canChangeBgColor(): boolean {
@@ -183,7 +184,8 @@ export abstract class Shape extends Widget {
 
     changeTextColor(newColor: RGBA): boolean {
         if (!this._text) return false
-        this._textProperties.color = newColor
+        // todo: implement this
+        // this._textProperties.color = newColor
         this._text.changeColor(newColor)
         return true
     }
@@ -194,7 +196,8 @@ export abstract class Shape extends Widget {
 
     changeHighlightColor(newColor: RGBA): boolean {
         if (!this._text) return false
-        this._textProperties.backgroundColor = newColor
+        // todo: implement this
+        // this._textProperties.backgroundColor = newColor
         this._text.changeBackgroundColor(newColor)
         return true
     }

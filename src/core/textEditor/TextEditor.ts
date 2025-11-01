@@ -1,4 +1,4 @@
-import Quill from 'quill'
+import Quill, { Delta } from 'quill'
 import { Engine } from '@/core/engine/Engine'
 import { Signal } from '@/core/signal/Signal'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
@@ -18,8 +18,14 @@ interface EditProps {
     initialText?: string
 }
 
+export interface TextOp {
+    text: string
+    attributes: { [key: string]: unknown }
+}
+
 export interface TextChangedSignal {
     text: string
+    textOps: TextOp[]
 }
 
 export class TextEditor {
@@ -115,7 +121,10 @@ export class TextEditor {
     }
 
     private onTextChange() {
-        this.textChanged.dispatch({ text: this._quill.getText() })
+        this.textChanged.dispatch({
+            text: this._quill.getText(),
+            textOps: this.convertDeltaToAttributeMap(this._quill.getContents()),
+        })
     }
 
     private onEscape() {
@@ -211,4 +220,22 @@ export class TextEditor {
         this._isShowing = false
         this.clearPrevStyles()
     }
+
+    convertDeltaToAttributeMap(delta: Delta): TextOp[] {
+        return delta.ops.map((op) => ({
+            text: typeof op.insert === 'string' ? op.insert : '',
+            attributes:
+                typeof op.insert === 'string' ? op.attributes || {} : {},
+        }))
+    }
 }
+
+export const createTextOpsFromString = (text: string): TextOp[] => {
+    return [
+        {
+            text,
+            attributes: {},
+        },
+    ]
+}
+
