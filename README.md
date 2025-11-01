@@ -94,6 +94,11 @@
         - [x] Prevent commands
         - [x] Change border color
         - [x] Disallow selecting multiple widgets if widgets are locked
+    - [ ] Rich text support
+        - [x] Add rich text support
+        - [ ] Initialize text editor with ops
+        - [ ] Handle already implemented changes - color change, background change
+        - [ ] Handle text style (bold, italic, underline, strike)
 - Refactor & bug fixes
     - [ ] Fix: ShapesDropdown top position
     - [ ] Fix: sidebar menu in mobile
