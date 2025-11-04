@@ -118,13 +118,13 @@ export function getPartialState(
                 if (widget instanceof Shape) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        textProperties: widget.textProperties, // TODO: fix this to only text color
+                        textProperties: widget.textProperties,
                     }
                 }
                 if (widget instanceof TextBox) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        color: widget.properties.color,
+                        ...widget.textPropsJson,
                     }
                 }
                 break
@@ -132,13 +132,13 @@ export function getPartialState(
                 if (widget instanceof Shape) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        textProperties: widget.textProperties, // TODO: fix this to only highlight color
+                        textProperties: widget.textProperties,
                     }
                 }
                 if (widget instanceof TextBox) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        backgroundColor: widget.properties.backgroundColor,
+                        ...widget.textPropsJson,
                     }
                 }
                 break
@@ -146,7 +146,7 @@ export function getPartialState(
                 if (widget instanceof Shape) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        textProperties: widget.textProperties, // TODO: fix this to only text align
+                        textProperties: widget.textProperties,
                     }
                 }
                 if (widget instanceof TextBox) {
@@ -160,7 +160,7 @@ export function getPartialState(
                 if (widget instanceof Shape) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        textProperties: widget.textProperties, // TODO: fix this to only font size
+                        textProperties: widget.textProperties,
                     }
                 }
                 if (widget instanceof TextBox) {
