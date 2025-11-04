@@ -171,10 +171,15 @@ export class TextBox extends Widget {
         return true
     }
 
-    changeTextColor(newColor: RGBA): boolean {
-        // TODO: implement color change
-        // this._color = newColor
-        // this.createOrUpdateParagraph()
+    changeTextColor(newColor: string): boolean {
+        this._textOps = this._textOps.map((op) => ({
+            ...op,
+            attributes: {
+                ...op.attributes,
+                color: newColor,
+            },
+        }))
+        this.createOrUpdateParagraph()
         return true
     }
 
@@ -182,10 +187,15 @@ export class TextBox extends Widget {
         return true
     }
 
-    changeHighlightColor(newColor: RGBA): boolean {
-        // TODO: implement highlight color change
-        // this._backgroundColor = newColor
-        // this.createOrUpdateParagraph()
+    changeHighlightColor(newColor: string): boolean {
+        this._textOps = this._textOps.map((op) => ({
+            ...op,
+            attributes: {
+                ...op.attributes,
+                background: newColor,
+            },
+        }))
+        this.createOrUpdateParagraph()
         return true
     }
 
