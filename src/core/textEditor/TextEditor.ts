@@ -16,6 +16,7 @@ interface EditProps {
     textAlign: TEXT_ALIGN
     showPlaceholder?: boolean
     initialText?: string
+    textOps?: TextOp[]
 }
 
 export interface TextOp {
@@ -204,7 +205,15 @@ export class TextEditor {
         this.addStyles()
 
         this.setPosition()
-        this._quill.setText(props.initialText || '')
+
+        // if text ops has been sent, set quill contents with it to not lose text formats
+        if (props.textOps && props.textOps.length) {
+            this._quill.setContents(
+                this.convertAttributeMapToDelta(props.textOps),
+            )
+        } else {
+            this._quill.setText(props.initialText || '')
+        }
 
         this._quill.focus()
         this._isShowing = true
@@ -227,6 +236,15 @@ export class TextEditor {
             attributes:
                 typeof op.insert === 'string' ? op.attributes || {} : {},
         }))
+    }
+
+    convertAttributeMapToDelta(textOps: TextOp[]): Delta {
+        return new Delta(
+            textOps.map((op) => ({
+                insert: op.text,
+                attributes: op.attributes,
+            })),
+        )
     }
 
     getSelection(): QRange | null {
