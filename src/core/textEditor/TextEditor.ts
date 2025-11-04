@@ -1,4 +1,4 @@
-import Quill, { Delta } from 'quill'
+import Quill, { Delta, Range as QRange } from 'quill'
 import { Engine } from '@/core/engine/Engine'
 import { Signal } from '@/core/signal/Signal'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
@@ -228,6 +228,20 @@ export class TextEditor {
                 typeof op.insert === 'string' ? op.attributes || {} : {},
         }))
     }
+
+    getSelection(): QRange | null {
+        if (!this._isShowing) return null
+        return this._quill.getSelection()
+    }
+
+    // formats current selection
+    format(name: string, value: unknown) {
+        return this._quill.format(name, value)
+    }
+
+    get isActive(): boolean {
+        return this._isShowing
+    }
 }
 
 export const createTextOpsFromString = (text: string): TextOp[] => {
@@ -238,4 +252,3 @@ export const createTextOpsFromString = (text: string): TextOp[] => {
         },
     ]
 }
-
