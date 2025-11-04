@@ -68,12 +68,7 @@ export class TextBox extends Widget {
 
             const style = new canvasKit.TextStyle({
                 color: op.attributes?.color
-                    ? canvasKit.Color(
-                          (op.attributes.color as RGBA).r,
-                          (op.attributes.color as RGBA).g,
-                          (op.attributes.color as RGBA).b,
-                          (op.attributes.color as RGBA).a,
-                      )
+                    ? canvasKit.parseColorString(op.attributes.color as string)
                     : canvasKit.Color(0, 0, 0, 1),
                 fontFamilies: ['Open-Sans'],
                 fontSize: this._fontSize,
@@ -96,11 +91,8 @@ export class TextBox extends Widget {
             })
 
             if (op.attributes.background) {
-                style.backgroundColor = canvasKit.Color(
-                    (op.attributes.background as RGBA).r,
-                    (op.attributes.background as RGBA).g,
-                    (op.attributes.background as RGBA).b,
-                    (op.attributes.background as RGBA).a,
+                style.backgroundColor = canvasKit.parseColorString(
+                    op.attributes.background as string,
                 )
             }
 
