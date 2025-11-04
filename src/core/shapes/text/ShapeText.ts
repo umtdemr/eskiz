@@ -198,16 +198,28 @@ export class ShapeText extends Widget {
         this.createOrUpdateParagraph()
     }
 
-    changeColor(color: RGBA) {
-        // TODO: implement color change
-        // this._color = color
-        // this.createOrUpdateParagraph()
+    changeColor(color: string) {
+        if (!this._textOps?.length) return
+
+        this._textOps = this._textOps.map((op) => ({
+            ...op,
+            attributes: {
+                ...op.attributes,
+                color: color,
+            },
+        }))
+        this.createOrUpdateParagraph()
     }
 
-    changeBackgroundColor(color: RGBA) {
-        // TODO: implement background change
-        // this._backgroundColor = color
-        // this.createOrUpdateParagraph()
+    changeBackgroundColor(color: string) {
+        this._textOps = this._textOps.map((op) => ({
+            ...op,
+            attributes: {
+                ...op.attributes,
+                background: color,
+            },
+        }))
+        this.createOrUpdateParagraph()
     }
 
     changeTextAlign(align: TEXT_ALIGN) {
@@ -238,5 +250,9 @@ export class ShapeText extends Widget {
 
     get text(): string {
         return this._text
+    }
+
+    get textOps(): TextOp[] {
+        return this._textOps
     }
 }

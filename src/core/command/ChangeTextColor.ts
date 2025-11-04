@@ -4,7 +4,6 @@ import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
 import { CONTINUOUS_THROTTLE_DELAY } from '../transaction/TransactionHandler'
 import { Command, CommandCtx, Commands } from './Command'
-import { RGBA } from '../shapes/Color'
 
 export class ChangeTextColor extends Command {
     private transactionId?: string
@@ -25,7 +24,7 @@ export class ChangeTextColor extends Command {
     execute(ctx: CommandCtx) {
         if (ctx.selectionService.selected.length !== 1) return
 
-        const color = ctx.params?.color as RGBA
+        const color = ctx.params?.rgba as string
         const widgets = ctx.params?.widgets
             ? (ctx.params.widgets as Widget[])
             : []

@@ -42,6 +42,7 @@ export function HighlightColorDropdown({
             isContinuous: !signature.isImmediate,
             params: {
                 color,
+                rgba: signature.rgba,
                 widgets,
             },
         }
@@ -66,4 +67,3 @@ export function HighlightColorDropdown({
         </div>
     )
 }
-

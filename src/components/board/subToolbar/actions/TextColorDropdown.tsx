@@ -41,6 +41,7 @@ export function TextColorDropdown({ engine }: TextColorDropdownProps) {
             isContinuous: !signature.isImmediate,
             params: {
                 color,
+                rgba: signature.rgba,
                 widgets,
             },
         }
@@ -68,4 +69,3 @@ export function TextColorDropdown({ engine }: TextColorDropdownProps) {
         </div>
     )
 }
-

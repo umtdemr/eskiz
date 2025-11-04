@@ -182,11 +182,10 @@ export abstract class Shape extends Widget {
         return this._text !== null && this._text !== undefined
     }
 
-    changeTextColor(newColor: RGBA): boolean {
+    changeTextColor(newColor: string): boolean {
         if (!this._text) return false
-        // todo: implement this
-        // this._textProperties.color = newColor
         this._text.changeColor(newColor)
+        this._textProperties.textOps = this._text.textOps
         return true
     }
 
@@ -194,11 +193,11 @@ export abstract class Shape extends Widget {
         return this._text !== null && this._text !== undefined
     }
 
-    changeHighlightColor(newColor: RGBA): boolean {
+    changeHighlightColor(newColor: string): boolean {
         if (!this._text) return false
-        // todo: implement this
-        // this._textProperties.backgroundColor = newColor
         this._text.changeBackgroundColor(newColor)
+        // TODO: this is annoying. we can populate JSON from the ShapeText directly.
+        this._textProperties.textOps = this._text.textOps
         return true
     }
 
