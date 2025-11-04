@@ -16,6 +16,7 @@ import { TransparentColorButton } from '../colorButton/TransparentColorButton'
 export interface ColorSelectSignature {
     color: RGBA
     isImmediate: boolean
+    rgba: string
 }
 
 export interface ColorListProps {
@@ -83,6 +84,7 @@ export function ColorList({
                                                 a: 0,
                                             },
                                             isImmediate: true, // immediate action
+                                            rgba: `rgba(0, 0, 0, 0)`,
                                         })
                                     }
                                     size={28}
@@ -103,12 +105,14 @@ export function ColorList({
                                     key={color.colorKey}
                                     ariaLabel={`Color ${color.color}`}
                                     color={color.color}
-                                    onClick={() =>
+                                    onClick={() => {
+                                        const rgba = color.rgba
                                         onColorSelect({
-                                            color: color.rgba,
+                                            color: rgba,
                                             isImmediate: true, // immediate action
+                                            rgba: `rgba(${rgba.r}, ${rgba.g}, ${rgba.b}, ${rgba.a})`,
                                         })
-                                    }
+                                    }}
                                     size={28}
                                     showBorder={true}
                                     enableHoverEffect
@@ -130,6 +134,7 @@ export function ColorList({
                                         onColorSelect({
                                             color: { ...color, a: 1 },
                                             isImmediate: false,
+                                            rgba: `rgba(${color.r}, ${color.g}, ${color.b}, 1)`,
                                         }) // continuous action
                                 }
                             />
