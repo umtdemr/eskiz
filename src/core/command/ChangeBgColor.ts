@@ -22,6 +22,7 @@ export class ChangeBgColor extends Command {
     }
 
     execute(ctx: CommandCtx) {
+        if (!this.canExecute(ctx)) return
         if (ctx.selectionService.selected.length !== 1) return
 
         const color = ctx.params?.color as RGBA

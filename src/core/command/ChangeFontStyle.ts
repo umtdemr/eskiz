@@ -19,6 +19,7 @@ export class ChangeFontStyle extends Command {
     }
 
     execute(ctx: CommandCtx) {
+        if (!this.canExecute(ctx)) return
         const style = ctx.params?.style as FontStyleType
         const value = ctx.params?.value as boolean
         const widgets = ctx.params?.widgets
