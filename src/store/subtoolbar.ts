@@ -1,6 +1,15 @@
 import { StateCreator } from 'zustand'
 
-export type ActiveSubtoolbarDropdown = 'shapeBorderColor' | 'shapeBgColor' | 'fontSize' | 'textColor' | 'highlightColor' | 'fontStyle' | 'textAlign' | null
+export type ActiveSubtoolbarDropdown =
+    | 'shapeBorderColor'
+    | 'shapeBgColor'
+    | 'fontSize'
+    | 'textColor'
+    | 'highlightColor'
+    | 'fontStyle'
+    | 'textAlign'
+    | 'moreOptions'
+    | null
 
 export interface SubtoolbarSlice {
     activeDropdown: ActiveSubtoolbarDropdown
@@ -23,3 +32,4 @@ export const createSubtoolbarSlice: StateCreator<
         set({ activeDropdown: current === dropdown ? null : dropdown })
     },
 })
+

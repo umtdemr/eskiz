@@ -24,6 +24,7 @@ import { FontStyleInput } from './actions/FontStyleInput.tsx'
 import { TextAlignInput } from './actions/TextAlignInput.tsx'
 import { useBoundStore } from '@/store/store'
 import useOnClickOutside from '@/hooks/UseOutsideClick'
+import { MoreOptionsDropdown } from './actions/MoreOptionsDropdown.tsx'
 
 export interface SubtoolbarProps {
     engine: Engine
@@ -242,6 +243,10 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                         )
                     }
                 })}
+                <div className="seperator" role="separator"></div>
+                <div>
+                    <MoreOptionsDropdown engine={engine} />
+                </div>
             </TooltipProvider>
         </div>
     )
