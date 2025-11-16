@@ -219,6 +219,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                                 key={action.id}
                                 tooltip={action.tooltip!}
                                 id={action.id}
+                                engine={engine}
                             />
                         )
                     } else if (action.type === 'fontSizeInput') {

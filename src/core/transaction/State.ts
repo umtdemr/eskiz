@@ -18,6 +18,7 @@ export type EditingMethods =
     | 'highlightColor'
     | 'textAlign'
     | 'fontSize'
+    | 'fontStyle'
 
 export type State = Record<string, unknown>
 
@@ -167,6 +168,20 @@ export function getPartialState(
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         fontSize: widget.properties.fontSize,
+                    }
+                }
+                break
+            case 'fontStyle':
+                if (widget instanceof Shape) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        textProperties: widget.textProperties,
+                    }
+                }
+                if (widget instanceof TextBox) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        ...widget.textPropsJson,
                     }
                 }
                 break

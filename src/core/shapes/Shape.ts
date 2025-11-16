@@ -3,6 +3,7 @@ import {
     BorderStyle,
     CANVAS_COLORS,
     DEFAULT_SHAPE_THICKNESS,
+    FontStyleType,
 } from '@/helpers/Constant.ts'
 import { Widget, WidgetJson, WidgetProps } from '@/core/shapes/Widget.ts'
 import { WsWidget } from '@/types/Websocket.ts'
@@ -223,6 +224,34 @@ export abstract class Shape extends Widget {
         this._textProperties.fontSize = newSize
         this._text.changeFontSize(newSize)
         return true
+    }
+
+    canChangeFontStyle(): boolean {
+        return this._text !== null && this._text !== undefined
+    }
+
+    changeFontStyle(style: FontStyleType, value: boolean): boolean {
+        if (!this._text) return false
+
+        const textOps = this._textProperties.textOps || []
+        const updatedOps = textOps.map((op) => ({
+            ...op,
+            attributes: {
+                ...op.attributes,
+                [style]: value,
+            },
+        }))
+
+        this._textProperties.textOps = updatedOps
+        this._text.setTextOps(this._textProperties.text, updatedOps)
+        return true
+    }
+
+    // check if a font style is currently applied
+    hasFontStyle(style: FontStyleType): boolean {
+        const textOps = this._textProperties.textOps || []
+        if (!textOps.length) return false
+        return textOps.some((op) => op.attributes[style] === true)
     }
 
     get textStr(): string {

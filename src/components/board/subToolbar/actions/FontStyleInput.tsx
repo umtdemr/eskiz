@@ -7,16 +7,15 @@ import { Button } from '@/components/ui/button'
 import { FontStyleDropdown } from './FontStyleDropdown'
 import { useBoundStore } from '@/store/store'
 import { WholeWord } from 'lucide-react'
+import { Engine } from '@/core/engine/Engine'
 
 export interface FontStyleInputProps {
     id: string
     tooltip: string
+    engine: Engine
 }
 
-export function FontStyleInput({
-    tooltip,
-    id,
-}: FontStyleInputProps) {
+export function FontStyleInput({ tooltip, id, engine }: FontStyleInputProps) {
     const { activeDropdown, toggleDropdown } = useBoundStore()
     const isActive = activeDropdown === 'fontStyle'
 
@@ -29,7 +28,7 @@ export function FontStyleInput({
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
-                        <Button 
+                        <Button
                             className="iconBox"
                             onClick={handleClick}
                             data-active={isActive}
@@ -40,7 +39,8 @@ export function FontStyleInput({
                 </TooltipTrigger>
                 <TooltipContent>{tooltip}</TooltipContent>
             </Tooltip>
-            {isActive && <FontStyleDropdown />}
+            {isActive && <FontStyleDropdown engine={engine} />}
         </div>
     )
 }
+

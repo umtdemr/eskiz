@@ -144,4 +144,6 @@ export enum BorderStyle {
     DASHED = 'DASHED',
 }
 
+export type FontStyleType = 'bold' | 'italic' | 'underline' | 'strike'
+
 export const DEFAULT_SHAPE_THICKNESS = 2

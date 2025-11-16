@@ -267,7 +267,9 @@ export class SelectionService extends Service {
     }
 
     canAllChangeHighlightColor(): boolean {
-        return this._selected.every((widget) => widget.canChangeHighlightColor())
+        return this._selected.every((widget) =>
+            widget.canChangeHighlightColor(),
+        )
     }
 
     canAllChangeTextAlign(): boolean {
@@ -276,6 +278,10 @@ export class SelectionService extends Service {
 
     canAllChangeFontSize(): boolean {
         return this._selected.every((widget) => widget.canChangeFontSize())
+    }
+
+    canAllChangeFontStyle(): boolean {
+        return this._selected.every((widget) => widget.canChangeFontStyle())
     }
 
     get selected() {
