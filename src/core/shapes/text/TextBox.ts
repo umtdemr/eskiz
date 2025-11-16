@@ -82,11 +82,9 @@ export class TextBox extends Widget {
                         ? canvasKit.FontSlant.Italic
                         : canvasKit.FontSlant.Upright,
                 },
-                decoration: op.attributes?.underline
-                    ? 1
-                    : op.attributes?.strike
-                      ? 4
-                      : 0,
+                decoration: 
+                    (op.attributes?.underline ? 1 : 0) | 
+                    (op.attributes?.strike ? 4 : 0),
                 decorationThickness: 3,
                 decorationStyle: canvasKit.DecorationStyle.Solid,
             })
