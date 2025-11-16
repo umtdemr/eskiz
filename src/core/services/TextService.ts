@@ -230,7 +230,7 @@ export class TextService extends Service {
             for: 'shapeText',
             showPlaceholder: false,
             initialText: this.shape.textStr,
-            textOps: this.shape.textProperties.textOps,
+            textOps: this.shape?.textProperties?.textOps || [],
         })
 
         this.shape.startEditingText()
