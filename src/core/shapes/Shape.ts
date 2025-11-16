@@ -249,7 +249,7 @@ export abstract class Shape extends Widget {
 
     // check if a font style is currently applied
     hasFontStyle(style: FontStyleType): boolean {
-        const textOps = this._textProperties.textOps || []
+        const textOps = this._textProperties?.textOps || []
         if (!textOps.length) return false
         return textOps.some((op) => op.attributes[style] === true)
     }

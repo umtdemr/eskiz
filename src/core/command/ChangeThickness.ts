@@ -21,6 +21,7 @@ export class ChangeThickness extends Command {
     }
 
     execute(ctx: CommandCtx) {
+        if (!this.canExecute(ctx)) return
         if (ctx.selectionService.selected.length !== 1) return
 
         const thickness = ctx.params?.thickness as number

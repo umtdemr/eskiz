@@ -19,6 +19,7 @@ export class ChangeTextAlign extends Command {
     }
 
     execute(ctx: CommandCtx) {
+        if (!this.canExecute(ctx)) return
         if (ctx.selectionService.selected.length !== 1) return
 
         const textAlign = ctx.params?.textAlign as TEXT_ALIGN
