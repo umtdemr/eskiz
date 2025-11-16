@@ -3,6 +3,7 @@ import { Paragraph as CkParagraph } from 'canvaskit-wasm'
 import { RGBA } from '@/core/shapes/Color.ts'
 import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
 import { createTextOpsFromString, TextOp } from '@/core/textEditor/TextEditor'
+import { FontStyleType } from '@/helpers/Constant'
 
 export interface TextBoxProps extends Omit<WidgetProps, 'height'> {
     properties: TextBoxProperties
@@ -219,6 +220,31 @@ export class TextBox extends Widget {
         this._fontSize = newSize
         this.createOrUpdateParagraph()
         return true
+    }
+
+    canChangeFontStyle(): boolean {
+        return true
+    }
+
+    changeFontStyle(style: FontStyleType, value: boolean): boolean {
+        // update all textOps with the new style
+        const updatedOps = this._textOps.map((op) => ({
+            ...op,
+            attributes: {
+                ...op.attributes,
+                [style]: value,
+            },
+        }))
+
+        this._textOps = updatedOps
+        this.createOrUpdateParagraph()
+        return true
+    }
+
+    // check if a font style is currently applied
+    hasFontStyle(style: FontStyleType): boolean {
+        if (!this._textOps.length) return false
+        return this._textOps.some((op) => op.attributes[style] === true)
     }
 
     get fontSize(): number {

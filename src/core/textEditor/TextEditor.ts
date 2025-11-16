@@ -257,6 +257,11 @@ export class TextEditor {
         return this._quill.format(name, value)
     }
 
+    // get format of current selection
+    getFormat() {
+        return this._quill.getFormat()
+    }
+
     get isActive(): boolean {
         return this._isShowing
     }
