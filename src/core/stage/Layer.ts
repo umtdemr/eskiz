@@ -55,6 +55,36 @@ export class Layer {
 
     destroy() {}
 
+    /**
+     * Moves a child to the front (top) of the rendering order.
+     */
+    bringChildToFront(child: Layer | Widget): boolean {
+        return this._children.moveToBack(child)
+    }
+
+    /**
+     * Moves a child to the back (bottom) of the rendering order.
+     */
+    sendChildToBack(child: Layer | Widget): boolean {
+        return this._children.moveToFront(child)
+    }
+
+    /**
+     * Moves a child forward by one position in the rendering order.
+     * TODO: check current viewport first!
+     */
+    bringChildForward(child: Layer | Widget): boolean {
+        return this._children.moveTowardEnd(child)
+    }
+
+    /**
+     * Moves a child backward by one position in the rendering order.
+     * TODO: check current viewport first!
+     */
+    sendChildBackward(child: Layer | Widget): boolean {
+        return this._children.moveTowardStart(child)
+    }
+
     get children() {
         return this._children
     }
