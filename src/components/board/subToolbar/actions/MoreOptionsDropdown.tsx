@@ -9,6 +9,9 @@ import { Button } from '@/components/ui/button'
 import { MoreHorizontal } from 'lucide-react'
 import { Engine } from '@/core/engine/Engine'
 import { useBoundStore } from '@/store/store'
+import { ZIndexAction } from '@/core/command/ChangeZIndex'
+import { SelectionService } from '@/core/services/SelectionService'
+import { CommandCtx } from '@/core/command/Command'
 
 export interface MoreOptionsDropdownProps {
     engine: Engine
@@ -26,20 +29,35 @@ export function MoreOptionsDropdown({ engine }: MoreOptionsDropdownProps) {
         }
     }
 
+    const executeZIndexCommand = (action: ZIndexAction) => {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        if (!selectionService || selectionService.selected.length === 0) return
+
+        const command = engine.getCommand('changeZIndex')
+        const ctx: CommandCtx = {
+            selectionService,
+            engine,
+            params: { action },
+        }
+
+        command.execute(ctx)
+    }
+
     const handleBringToFront = () => {
-        console.log('Bring to front')
+        executeZIndexCommand('bringToFront')
     }
 
     const handleBringForward = () => {
-        console.log('Bring forward')
+        executeZIndexCommand('bringForward')
     }
 
     const handleSendBackward = () => {
-        console.log('Send backward')
+        executeZIndexCommand('sendBackward')
     }
 
     const handleSendToBack = () => {
-        console.log('Send to back')
+        executeZIndexCommand('sendToBack')
     }
 
     return (

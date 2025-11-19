@@ -15,6 +15,7 @@ export type Commands =
     | 'changeTextAlign'
     | 'changeFontSize'
     | 'changeFontStyle'
+    | 'changeZIndex'
 
 export type CommandCtx = {
     selectionService: SelectionService

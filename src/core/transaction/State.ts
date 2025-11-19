@@ -19,6 +19,7 @@ export type EditingMethods =
     | 'textAlign'
     | 'fontSize'
     | 'fontStyle'
+    | 'zIndex'
 
 export type State = Record<string, unknown>
 
@@ -184,6 +185,11 @@ export function getPartialState(
                         ...widget.textPropsJson,
                     }
                 }
+                break
+            case 'zIndex':
+                updateState({
+                    z_index: widget.zIndex,
+                })
                 break
         }
     }
