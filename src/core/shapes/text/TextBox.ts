@@ -67,10 +67,11 @@ export class TextBox extends Widget {
                         : op.text
                     : op.text
 
+            const color = op.attributes?.color
+                ? canvasKit.parseColorString(op.attributes.color as string)
+                : canvasKit.Color(0, 0, 0, 1)
             const style = new canvasKit.TextStyle({
-                color: op.attributes?.color
-                    ? canvasKit.parseColorString(op.attributes.color as string)
-                    : canvasKit.Color(0, 0, 0, 1),
+                color,
                 fontFamilies: ['Open-Sans'],
                 fontSize: this._fontSize,
                 heightMultiplier: this._lineHeight,
@@ -82,11 +83,12 @@ export class TextBox extends Widget {
                         ? canvasKit.FontSlant.Italic
                         : canvasKit.FontSlant.Upright,
                 },
-                decoration: 
-                    (op.attributes?.underline ? 1 : 0) | 
+                decoration:
+                    (op.attributes?.underline ? 1 : 0) |
                     (op.attributes?.strike ? 4 : 0),
                 decorationThickness: 3,
                 decorationStyle: canvasKit.DecorationStyle.Solid,
+                decorationColor: color, // same as text color
             })
 
             if (op.attributes.background) {
