@@ -262,6 +262,15 @@ export class TextEditor {
         return this._quill.getFormat()
     }
 
+    changeTextAlign(textAlign: TEXT_ALIGN) {
+        this._quill.root.style.textAlign = textAlign
+    }
+
+    changeFontSize(fontSize: number) {
+        this._editorContainer.style.fontSize = `${fontSize}px`
+        this._quill.root.style.lineHeight = `${this._editProps.lineHeight * fontSize}px`
+    }
+
     get isActive(): boolean {
         return this._isShowing
     }

@@ -150,7 +150,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
     return (
         <div
             ref={subtoolbarRef}
-            className={clsx('sub_toolbar', {
+            className={clsx('sub_toolbar z-[9]', {
                 show: state.show,
             })}
             style={{
