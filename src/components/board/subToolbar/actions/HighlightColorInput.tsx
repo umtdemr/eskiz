@@ -32,7 +32,7 @@ export function HighlightColorInput({
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
-                        <Button 
+                        <Button
                             className="iconBox"
                             onClick={handleClick}
                             data-active={isActive}
@@ -43,7 +43,13 @@ export function HighlightColorInput({
                 </TooltipTrigger>
                 <TooltipContent>{tooltip}</TooltipContent>
             </Tooltip>
-            {isActive && <HighlightColorDropdown engine={engine} />}
+            {isActive && (
+                <HighlightColorDropdown
+                    engine={engine}
+                    closeDropdown={() => toggleDropdown('highlightColor')}
+                />
+            )}
         </div>
     )
 }
+

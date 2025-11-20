@@ -12,9 +12,13 @@ import { TextEditor } from '@/core/textEditor/TextEditor'
 
 export interface TextColorDropdownProps {
     engine: Engine
+    closeDropdown: () => void
 }
 
-export function TextColorDropdown({ engine }: TextColorDropdownProps) {
+export function TextColorDropdown({
+    engine,
+    closeDropdown,
+}: TextColorDropdownProps) {
     const changeTextColorCommandRef = useRef(
         new ChangeTextColor('changeTextColor'),
     )
@@ -46,6 +50,7 @@ export function TextColorDropdown({ engine }: TextColorDropdownProps) {
             },
         }
         changeTextColorCommandRef.current?.execute(ctx)
+        closeDropdown()
     }
 
     const colorSelectInEditingMode = (
@@ -54,7 +59,7 @@ export function TextColorDropdown({ engine }: TextColorDropdownProps) {
     ) => {
         textEditor.format('color', signature.rgba)
         // TODO: trigger continuous update -- check if it is immediate or not first.
-        // todo: close editor
+        closeDropdown()
     }
 
     return (

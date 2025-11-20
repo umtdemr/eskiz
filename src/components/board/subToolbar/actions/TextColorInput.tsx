@@ -15,11 +15,7 @@ export interface TextColorInputProps {
     engine: Engine
 }
 
-export function TextColorInput({
-    tooltip,
-    id,
-    engine,
-}: TextColorInputProps) {
+export function TextColorInput({ tooltip, id, engine }: TextColorInputProps) {
     const { activeDropdown, toggleDropdown } = useBoundStore()
     const isActive = activeDropdown === 'textColor'
 
@@ -32,7 +28,7 @@ export function TextColorInput({
             <Tooltip>
                 <TooltipTrigger asChild>
                     <div>
-                        <Button 
+                        <Button
                             className="iconBox"
                             onClick={handleClick}
                             data-active={isActive}
@@ -43,7 +39,13 @@ export function TextColorInput({
                 </TooltipTrigger>
                 <TooltipContent>{tooltip}</TooltipContent>
             </Tooltip>
-            {isActive && <TextColorDropdown engine={engine} />}
+            {isActive && (
+                <TextColorDropdown
+                    engine={engine}
+                    closeDropdown={() => toggleDropdown('textColor')}
+                />
+            )}
         </div>
     )
 }
+
