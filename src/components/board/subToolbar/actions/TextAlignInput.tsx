@@ -51,6 +51,9 @@ export function TextAlignInput({ tooltip, id, engine }: TextAlignInputProps) {
 
     const onTextAlignChange = (newAlign: TEXT_ALIGN) => {
         setCurrentAlign(newAlign)
+        if (engine.textEditor?.isActive) {
+            engine.textEditor.changeTextAlign(newAlign)
+        }
     }
 
     const getAlignIcon = () => {
@@ -89,4 +92,3 @@ export function TextAlignInput({ tooltip, id, engine }: TextAlignInputProps) {
         </div>
     )
 }
-
