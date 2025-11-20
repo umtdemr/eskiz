@@ -16,6 +16,7 @@ export interface Action {
         | 'fontStyleInput'
         | 'fontSizeInput'
         | 'textAlignInput'
+        | 'moreOptions'
     btnActionProps?: {
         command: Commands | 'willDo'
         icon?: React.ReactNode
@@ -78,7 +79,7 @@ function getCommonActions(): Action[] {
             type: 'btnAction',
             btnActionProps: {
                 icon: <LockKeyholeOpen />,
-                command: 'willDo',
+                command: 'toggleLock',
             },
         },
     ]
@@ -229,16 +230,34 @@ export function generateActions(engine: Engine): Action[] {
         return getLockedActions()
     }
 
+    const actions: Action[] = []
+
     switch (widget.widgetType) {
         case 'shape':
-            return getShapeActions()
+            actions.push(...getShapeActions())
+            break
         case 'text':
-            return getTextActions()
+            actions.push(...getTextActions())
+            break
         case 'path':
-            return getPathActions()
+            actions.push(...getPathActions())
+            break
         default:
-            return getCommonActions()
+            actions.push(...getCommonActions())
     }
+
+    actions.push(
+        {
+            id: 'seperator_more_opitons',
+            type: 'seperator',
+        },
+        {
+            id: 'moreOptions',
+            type: 'moreOptions',
+        },
+    )
+
+    return actions
 }
 
 export function reducer(state: SubtoolbarState, action: Actions) {

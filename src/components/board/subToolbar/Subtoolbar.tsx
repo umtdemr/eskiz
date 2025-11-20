@@ -241,12 +241,14 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                                 engine={engine}
                             />
                         )
+                    } else if (action.type === 'moreOptions') {
+                        return (
+                            <div>
+                                <MoreOptionsDropdown engine={engine} />
+                            </div>
+                        )
                     }
                 })}
-                <div className="seperator" role="separator"></div>
-                <div>
-                    <MoreOptionsDropdown engine={engine} />
-                </div>
             </TooltipProvider>
         </div>
     )
