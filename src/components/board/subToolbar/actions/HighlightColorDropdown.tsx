@@ -12,10 +12,12 @@ import { TextEditor } from '@/core/textEditor/TextEditor'
 
 export interface HighlightColorDropdownProps {
     engine: Engine
+    closeDropdown: () => void
 }
 
 export function HighlightColorDropdown({
     engine,
+    closeDropdown,
 }: HighlightColorDropdownProps) {
     const changeHighlightColorCommandRef = useRef(
         new ChangeHighlightColor('changeHighlightColor'),
@@ -47,16 +49,16 @@ export function HighlightColorDropdown({
             },
         }
         changeHighlightColorCommandRef.current?.execute(ctx)
+        closeDropdown()
     }
 
     const colorSelectInEditingMode = (
         textEditor: TextEditor,
         signature: ColorSelectSignature,
     ) => {
-        console.log(signature.rgba)
         textEditor.format('background', signature.rgba)
         // TODO: trigger continuous update -- check if it is immediate or not first.
-        // todo: close editor
+        closeDropdown()
     }
 
     return (

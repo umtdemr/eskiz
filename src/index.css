@@ -87,7 +87,15 @@
 }
 
 .ql-editor {
-        outline: none;
+    outline: none;
+}
+
+.ql-editor::selection {
+    background-color: rgba(59, 130, 246, 0.3); /* Blue selection */
+}
+
+.ql-editor *::selection {
+    background-color: rgba(59, 130, 246, 0.3); /* Blue selection */
 }
 
 .ql-blank::before {
