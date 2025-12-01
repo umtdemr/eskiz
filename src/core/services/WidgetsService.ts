@@ -66,6 +66,10 @@ export class WidgetsService extends Service {
                 }
 
                 widget.updateWithPartialState(shape.data)
+
+                if (shape.data.is_deleted && widget.parent) {
+                    widget.parent.removeChild(widget)
+                }
             }
         }
 
