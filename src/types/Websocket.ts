@@ -86,8 +86,9 @@ export type WsWidget = {
     uuid: string
     properties: Record<string, unknown>
     is_deleted: boolean
+    is_locked: boolean
     widget_type: string
-    sub_type: string
+    sub_type?: string | undefined
 }
 
 export type AddWidgetResponse = {

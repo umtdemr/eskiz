@@ -24,6 +24,7 @@ import { ColorButton } from '@/components/colorButton/ColorButton'
 import { PenColorDropdown } from './PenColorDropdown'
 import { useBoundStore } from '@/store/store'
 import { useShallow } from 'zustand/react/shallow'
+import { closeColorPalette } from '@/components/colorList/colorList'
 
 const tools: {
     tooltip: string
@@ -63,6 +64,7 @@ export function PenDropdown({
         if (buttonRef.current!.contains(event.target as Node)) {
             return
         }
+        closeColorPalette.dispatch() // send signal to color palette
         setIsOpen(false)
     }
     useOnClickOutside(menuRef, onClickOutsideHandler)
@@ -153,6 +155,7 @@ export function PenDropdown({
                                                 PEN_CONSTANTS.THICKNESS_MAX
                                             }
                                             onClick={colorBtnClickHandler}
+                                            size={30}
                                         />
                                     </TooltipTrigger>
                                     <TooltipContent>

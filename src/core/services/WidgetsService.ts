@@ -5,9 +5,20 @@ import { WebsocketEventService } from '@/core/services/WebsocketEventService'
 import { WS_EVENTS } from '@/helpers/Constant'
 import { WidgetFactory } from '../engine/WidgetFactory'
 import { Widget } from '../shapes/Widget'
+import { Signal } from '../signal/Signal'
+
+export interface WidgetDeletedSignal {
+    widgets: Widget[]
+}
+export interface WidgetLockStateChangedSignal {
+    widgets: Widget[]
+}
 
 export class WidgetsService extends Service {
     private wsEventService: WebsocketEventService
+
+    widgetDeleted = new Signal<WidgetDeletedSignal>()
+    widgetLockStateChanged = new Signal<WidgetLockStateChangedSignal>()
 
     constructor(engine: Engine, wsEventService: WebsocketEventService) {
         super(engine)
@@ -55,9 +66,27 @@ export class WidgetsService extends Service {
                 }
 
                 widget.updateWithPartialState(shape.data)
+
+                if (shape.data.is_deleted && widget.parent) {
+                    widget.parent.removeChild(widget)
+                }
             }
         }
 
         this.engine.canvas.requestRender()
+    }
+
+    deleteWidget(widget: Widget) {
+        widget.delete()
+        widget.isDeleted = true
+        widget.deleted.dispatch()
+        widget.parent?.removeChild(widget)
+
+        this.widgetDeleted.dispatch({ widgets: [widget] })
+    }
+
+    toggleLockState(widget: Widget) {
+        widget.isLocked = !widget.isLocked
+        this.widgetLockStateChanged.dispatch({ widgets: [widget] })
     }
 }

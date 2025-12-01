@@ -137,3 +137,13 @@ export const ERASER_TRAIL = {
     INTERPOLATION_FACTOR: 0.6,
     DEFAULT_SIZE: 7,
 }
+
+export enum BorderStyle {
+    SOLID = 'SOLID',
+    DOTTED = 'DOTTED',
+    DASHED = 'DASHED',
+}
+
+export type FontStyleType = 'bold' | 'italic' | 'underline' | 'strike'
+
+export const DEFAULT_SHAPE_THICKNESS = 2

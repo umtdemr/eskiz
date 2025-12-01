@@ -1,20 +1,7 @@
 import { useEffect, useReducer, useRef } from 'react'
-import {
-    Copy,
-    Trash2,
-    LockKeyholeOpen,
-    Baseline,
-    WholeWord,
-} from 'lucide-react'
 import { Engine } from '@/core/engine/Engine'
 import './Subtoolbar.scss'
-import {
-    Tooltip,
-    TooltipTrigger,
-    TooltipContent,
-    TooltipProvider,
-} from '@/components/ui/tooltip'
-import { Button } from '@/components/ui/button'
+import { TooltipProvider } from '@/components/ui/tooltip'
 import {
     SelectionChangedProps,
     SelectionService,
@@ -23,10 +10,21 @@ import {
     reducer,
     initialSubtoolbarState,
     ActionKind,
-} from './SubtoolbarReducer'
+    Action as SubtoolbarAction,
+} from './SubtoolbarReducer.tsx'
 import clsx from 'clsx'
 import { SelectionLayer } from '@/core/stage/SelectionLayer'
-import { SelectToolService } from '@/core/services/SelectToolService'
+import { ButtonAction } from './actions/ButtonAction'
+import { FontSizeInput } from './FontSizeInput.tsx'
+import { ShapeBorderColorInput } from './actions/ShapeBorderColorInput.tsx'
+import { ShapeBgColorInput } from './actions/ShapeBgColorInput.tsx'
+import { TextColorInput } from './actions/TextColorInput.tsx'
+import { HighlightColorInput } from './actions/HighlightColorInput.tsx'
+import { FontStyleInput } from './actions/FontStyleInput.tsx'
+import { TextAlignInput } from './actions/TextAlignInput.tsx'
+import { useBoundStore } from '@/store/store'
+import useOnClickOutside from '@/hooks/UseOutsideClick'
+import { MoreOptionsDropdown } from './actions/MoreOptionsDropdown.tsx'
 
 export interface SubtoolbarProps {
     engine: Engine
@@ -36,6 +34,31 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
     const [state, dispatch] = useReducer(reducer, initialSubtoolbarState)
     const selectionLayerRef = useRef<SelectionLayer | null>(null)
     const transformTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
+    const subtoolbarRef = useRef<HTMLDivElement>(null)
+    const { closeDropdown } = useBoundStore()
+
+    useOnClickOutside(subtoolbarRef, () => {
+        closeDropdown()
+    })
+
+    const handleAction = (action: SubtoolbarAction) => {
+        if (
+            !action.btnActionProps?.command ||
+            action.btnActionProps.command === 'willDo'
+        ) {
+            return
+        }
+
+        const command = engine.getCommand(action.btnActionProps.command)
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        const ctx = {
+            selectionService,
+            engine,
+        }
+
+        command.execute(ctx)
+    }
 
     useEffect(() => {
         const selectionService =
@@ -46,9 +69,27 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
 
         const onSelectionChanged = (data: SelectionChangedProps) => {
             if (data.type === 'selected') {
-                dispatch({ type: ActionKind.SHOW })
+                dispatch({
+                    type: ActionKind.SHOW,
+                    engine,
+                })
             } else if (data.type === 'selectionCleared') {
                 dispatch({ type: ActionKind.HIDE })
+                closeDropdown()
+            } else if (data.type === 'updated') {
+                // if there is no widgets left in selection
+                if (!data.widgets?.length) {
+                    dispatch({
+                        type: ActionKind.HIDE,
+                    })
+                    closeDropdown()
+                } else {
+                    // else rerender the subtoolbar
+                    dispatch({
+                        type: ActionKind.FORCE_UPDATE,
+                        engine,
+                    })
+                }
             }
         }
 
@@ -108,7 +149,8 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
 
     return (
         <div
-            className={clsx('sub_toolbar', {
+            ref={subtoolbarRef}
+            className={clsx('sub_toolbar z-[9]', {
                 show: state.show,
             })}
             style={{
@@ -117,104 +159,96 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             }}
         >
             <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="duplicate">
-                            <Button className="iconBox" disabled>
-                                <Copy />
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Copy</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="remove">
-                            <Button className="iconBox" disabled>
-                                <Trash2 />
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Remove</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="lock">
-                            <Button className="iconBox" disabled>
-                                <LockKeyholeOpen />
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Lock</TooltipContent>
-                </Tooltip>
-                <div className="seperator" role="separator"></div>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="fontStyle">
-                            <Button className="iconBox" disabled>
-                                <WholeWord />
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Font style</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="textColor">
-                            <Button className="iconBox" disabled>
-                                <Baseline />
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Text color</TooltipContent>
-                </Tooltip>
-                <div className="seperator" role="separator"></div>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="borderStyleColor">
-                            <Button className="iconBox" disabled>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="lucide lucide-squircle-icon lucide-squircle"
-                                >
-                                    <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9" />
-                                </svg>
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Border style and color</TooltipContent>
-                </Tooltip>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div id="backgroundColor">
-                            <Button className="iconBox" disabled>
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="24"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="lucide lucide-squircle-icon lucide-squircle"
-                                >
-                                    <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9" />
-                                </svg>
-                            </Button>
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent>Background color</TooltipContent>
-                </Tooltip>
+                {state.actions.map((action) => {
+                    if (action.type === 'seperator') {
+                        return (
+                            <div
+                                key={action.id}
+                                className="seperator"
+                                role="separator"
+                            ></div>
+                        )
+                    } else if (action.type === 'btnAction') {
+                        return (
+                            <ButtonAction
+                                key={action.id}
+                                id={action.id}
+                                tooltip={action.tooltip!}
+                                onClick={() => handleAction(action)}
+                                icon={action.btnActionProps!.icon!}
+                            />
+                        )
+                    } else if (action.type === 'shapeBorderColorInput') {
+                        return (
+                            <ShapeBorderColorInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
+                                engine={engine}
+                            />
+                        )
+                    } else if (action.type === 'shapeBgColorInput') {
+                        return (
+                            <ShapeBgColorInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
+                                engine={engine}
+                            />
+                        )
+                    } else if (action.type === 'textColorInput') {
+                        return (
+                            <TextColorInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
+                                engine={engine}
+                            />
+                        )
+                    } else if (action.type === 'highlightColorInput') {
+                        return (
+                            <HighlightColorInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
+                                engine={engine}
+                            />
+                        )
+                    } else if (action.type === 'fontStyleInput') {
+                        return (
+                            <FontStyleInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
+                                engine={engine}
+                            />
+                        )
+                    } else if (action.type === 'fontSizeInput') {
+                        return (
+                            <FontSizeInput
+                                key={action.id}
+                                id={action.id}
+                                inputId={'font_size_input'}
+                                engine={engine}
+                            />
+                        )
+                    } else if (action.type === 'textAlignInput') {
+                        return (
+                            <TextAlignInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
+                                engine={engine}
+                            />
+                        )
+                    } else if (action.type === 'moreOptions') {
+                        return (
+                            <div>
+                                <MoreOptionsDropdown engine={engine} />
+                            </div>
+                        )
+                    }
+                })}
             </TooltipProvider>
         </div>
     )

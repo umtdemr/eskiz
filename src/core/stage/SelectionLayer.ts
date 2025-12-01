@@ -63,6 +63,11 @@ export class SelectionLayer extends Layer {
                 this._selected = []
                 this.addBorders(props.widgets!)
                 break
+            case 'updated':
+                this.clearSelection()
+                this._selected = props.widgets || []
+                this.createSelectionUI(this._selected)
+                break
             case 'selectionCleared':
                 this._selected = []
                 this.clearSelection()
@@ -139,6 +144,9 @@ export class SelectionLayer extends Layer {
         // do not show controls for path
         // TODO: need to find a better way to control this.
         if (widgets[0].widgetType === 'path') {
+            return
+        }
+        if (widgets[0].isLocked) {
             return
         }
 
@@ -226,6 +234,7 @@ export class SelectionLayer extends Layer {
         }
         this._children.clear()
         this.controls.length = 0
+        this._selectionBorder = null
     }
 
     private changeControlsVisibility(visible: boolean) {

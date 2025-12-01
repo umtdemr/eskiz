@@ -1,0 +1,14 @@
+.shape_border_color_dd {
+    .borderStyleBtn {
+        svg {
+            width: 1.5rem;
+            height: 1.5rem;
+        }
+        &.active {
+            svg,
+            path {
+                stroke: rgba(29, 78, 216, 1);
+            }
+        }
+    }
+}

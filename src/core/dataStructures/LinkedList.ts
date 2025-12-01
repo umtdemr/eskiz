@@ -147,8 +147,8 @@ export class LinkedList<T> {
      * @param searchVal Searching value
      * @returns
      */
-    find(searchVal: unknown): unknown {
-        return this.findCb((val: unknown) => val === searchVal)
+    find(cb: (val: T) => boolean): number {
+        return this.findCb(cb)
     }
 
     /**
@@ -156,17 +156,19 @@ export class LinkedList<T> {
      * @param cb Callback method to search item
      * @returns If found, returns value of element
      */
-    findCb(cb: (value: unknown) => boolean): unknown {
+    findCb(cb: (value: T) => boolean): number {
         let current = this._root
 
+        let idx = 0
         while (current !== null) {
             if (cb(current.value)) {
-                return current.value
+                return idx
             }
             current = current.next
+            idx++
         }
 
-        return undefined
+        return -1
     }
 
     /**
@@ -183,6 +185,70 @@ export class LinkedList<T> {
         }
 
         return arr
+    }
+
+    /**
+     * Moves an item to the front of the list (first position).
+     * @param value The value to move to front
+     */
+    moveToFront(value: T): boolean {
+        const idx = this.find((val) => val === value)
+        if (idx === -1 || idx === 0) return false // Not found or already at front
+
+        const [removed, val] = this.removeAt(idx)
+        if (removed && val !== null && val !== undefined) {
+            this.prepend(val as T)
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Moves an item to the back of the list (last position).
+     * @param value The value to move to back
+     */
+    moveToBack(value: T): boolean {
+        const idx = this.find((val) => val === value)
+        if (idx === -1 || idx === this._nodeCount - 1) return false // Not found or already at back
+
+        const [removed, val] = this.removeAt(idx)
+        if (removed && val !== null && val !== undefined) {
+            this.add(val as T)
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Moves an item toward the end of the list (increases index by 1).
+     * @param value The value to move toward end
+     */
+    moveTowardEnd(value: T): boolean {
+        const idx = this.find((val) => val === value)
+        if (idx === -1 || idx === this._nodeCount - 1) return false // Not found or already at end
+
+        const [removed, val] = this.removeAt(idx)
+        if (removed && val !== null && val !== undefined) {
+            this.addAt(idx + 1, val as T)
+            return true
+        }
+        return false
+    }
+
+    /**
+     * Moves an item toward the start of the list (decreases index by 1).
+     * @param value The value to move toward start
+     */
+    moveTowardStart(value: T): boolean {
+        const idx = this.find((val) => val === value)
+        if (idx === -1 || idx === 0) return false // Not found or already at start
+
+        const [removed, val] = this.removeAt(idx)
+        if (removed && val !== null && val !== undefined) {
+            this.addAt(idx - 1, val as T)
+            return true
+        }
+        return false
     }
 
     /**

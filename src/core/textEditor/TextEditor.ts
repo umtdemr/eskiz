@@ -1,4 +1,4 @@
-import Quill from 'quill'
+import Quill, { Delta, Range as QRange } from 'quill'
 import { Engine } from '@/core/engine/Engine'
 import { Signal } from '@/core/signal/Signal'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
@@ -16,10 +16,17 @@ interface EditProps {
     textAlign: TEXT_ALIGN
     showPlaceholder?: boolean
     initialText?: string
+    textOps?: TextOp[]
+}
+
+export interface TextOp {
+    text: string
+    attributes: { [key: string]: unknown }
 }
 
 export interface TextChangedSignal {
     text: string
+    textOps: TextOp[]
 }
 
 export class TextEditor {
@@ -115,7 +122,10 @@ export class TextEditor {
     }
 
     private onTextChange() {
-        this.textChanged.dispatch({ text: this._quill.getText() })
+        this.textChanged.dispatch({
+            text: this._quill.getText(),
+            textOps: this.convertDeltaToAttributeMap(this._quill.getContents()),
+        })
     }
 
     private onEscape() {
@@ -195,7 +205,15 @@ export class TextEditor {
         this.addStyles()
 
         this.setPosition()
-        this._quill.setText(props.initialText || '')
+
+        // if text ops has been sent, set quill contents with it to not lose text formats
+        if (props.textOps && props.textOps.length) {
+            this._quill.setContents(
+                this.convertAttributeMapToDelta(props.textOps),
+            )
+        } else {
+            this._quill.setText(props.initialText || '')
+        }
 
         this._quill.focus()
         this._isShowing = true
@@ -211,4 +229,58 @@ export class TextEditor {
         this._isShowing = false
         this.clearPrevStyles()
     }
+
+    convertDeltaToAttributeMap(delta: Delta): TextOp[] {
+        return delta.ops.map((op) => ({
+            text: typeof op.insert === 'string' ? op.insert : '',
+            attributes:
+                typeof op.insert === 'string' ? op.attributes || {} : {},
+        }))
+    }
+
+    convertAttributeMapToDelta(textOps: TextOp[]): Delta {
+        return new Delta(
+            textOps.map((op) => ({
+                insert: op.text,
+                attributes: op.attributes,
+            })),
+        )
+    }
+
+    getSelection(): QRange | null {
+        if (!this._isShowing) return null
+        return this._quill.getSelection()
+    }
+
+    // formats current selection
+    format(name: string, value: unknown) {
+        return this._quill.format(name, value)
+    }
+
+    // get format of current selection
+    getFormat() {
+        return this._quill.getFormat()
+    }
+
+    changeTextAlign(textAlign: TEXT_ALIGN) {
+        this._quill.root.style.textAlign = textAlign
+    }
+
+    changeFontSize(fontSize: number) {
+        this._editorContainer.style.fontSize = `${fontSize}px`
+        this._quill.root.style.lineHeight = `${this._editProps.lineHeight * fontSize}px`
+    }
+
+    get isActive(): boolean {
+        return this._isShowing
+    }
+}
+
+export const createTextOpsFromString = (text: string): TextOp[] => {
+    return [
+        {
+            text,
+            attributes: {},
+        },
+    ]
 }
