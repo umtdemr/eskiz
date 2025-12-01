@@ -85,6 +85,31 @@ export class Layer {
         return this._children.moveTowardStart(child)
     }
 
+    /**
+     * Repositions a child in the correct position based on its zIndex.
+     */
+    repositionChild(child: Layer | Widget) {
+        // Remove from current position
+        const currentIdx = this._children.find((c) => c === child)
+        if (currentIdx === -1) return
+
+        this._children.removeAt(currentIdx)
+
+        // Find correct position based on zIndex
+        const siblings = this._children.toArray()
+        let insertIdx = 0
+
+        for (let i = 0; i < siblings.length; i++) {
+            if (siblings[i].zIndex > child.zIndex) {
+                insertIdx = i
+                break
+            }
+            insertIdx = i + 1
+        }
+
+        this._children.addAt(insertIdx, child)
+    }
+
     get children() {
         return this._children
     }

@@ -198,8 +198,10 @@ export abstract class Widget extends Layer {
                     this.height = json.height!
                     break
                 case 'z_index':
-                    // TODO: sort widget
                     this.zIndex = json.z_index!
+                    if (this._parent instanceof Layer) {
+                        this._parent.repositionChild(this)
+                    }
                     break
                 case 'is_locked':
                     this.isLocked = json.is_locked!
