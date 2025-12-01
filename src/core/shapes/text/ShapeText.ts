@@ -1,5 +1,4 @@
 import {
-    Path as CkPath,
     TextAlign as CkTextAlign,
     Paragraph as CkParagraph,
 } from 'canvaskit-wasm'
@@ -7,6 +6,7 @@ import { Widget, WidgetProps } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color.ts'
 import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
+import { createTextOpsFromString, TextOp } from '@/core/textEditor/TextEditor'
 
 export interface ShapeTextProps extends WidgetProps {
     properties: ShapeTextConstructProps
@@ -14,10 +14,10 @@ export interface ShapeTextProps extends WidgetProps {
 
 export interface ShapeTextConstructProps {
     text: string
-    color: RGBA
     fontSize: number
     textAlign: TEXT_ALIGN
     lineHeight: number
+    textOps?: TextOp[]
 }
 
 /**
@@ -28,21 +28,23 @@ export interface ShapeTextConstructProps {
  */
 export class ShapeText extends Widget {
     private _text: string
-    private _renderingText: string
-    private _color: RGBA
+    private _textOps: TextOp[] = []
     private _fontSize: number
     private _paragraph: CkParagraph
     private _shouldRender = true
     private _lineHeight: number
-    private _isTextClipped: boolean
-    private _clipPath: CkPath | null = null
     private _textAlign: TEXT_ALIGN
     private _debug: boolean = false
+    private _isTextClipped: boolean = false
 
     constructor(props: ShapeTextProps) {
         super('shapeText', props)
         this._text = props.properties.text
-        this._color = props.properties.color
+        if (!props.properties.textOps) {
+            this._textOps = createTextOpsFromString(this._text)
+        } else {
+            this._textOps = props.properties.textOps
+        }
         this._fontSize = props.properties.fontSize
         this._lineHeight = props.properties.lineHeight
         this._textAlign = props.properties.textAlign
@@ -51,15 +53,13 @@ export class ShapeText extends Widget {
     }
 
     private getParagraphStyle() {
-        const color = this.getColor()
         return new canvasKit.ParagraphStyle({
             textStyle: {
-                color: canvasKit.Color(color.r, color.g, color.b, color.a),
                 fontFamilies: ['Open-Sans'],
-                fontSize: this._fontSize,
                 heightMultiplier: this._lineHeight,
             },
             textAlign: this.getTextAlign(),
+            // maybe later we can add maxLines and ellipsis here
         })
     }
 
@@ -73,76 +73,77 @@ export class ShapeText extends Widget {
         return canvasKit.TextAlign.Center
     }
 
-    private getColor(): RGBA {
-        return this._color
-    }
-
-    /**
-     * ShapeText does not render the text completely if the text overflows the shape.
-     * Instead, it renders N+1 lines that do not overflow.
-     * +1 from N+1 is for indicating that the text overflows the shape.
-     * So it says there is rest of this text. To see it, width, height of the parent shape
-     * must be changed.
-     */
-    private calcRenderingText(): [string, boolean] {
+    private getOpParagraph(): CkParagraph {
         const builder = canvasKit.ParagraphBuilder.Make(
             this.getParagraphStyle(),
             fontManager,
         )
-        builder.addText(this._text)
+
+        for (let index = 0; index < this._textOps.length; index++) {
+            const op = this._textOps[index]
+
+            if (!op.text) continue
+            const text =
+                index === this._textOps.length - 1
+                    ? op.text.lastIndexOf('\n') !== -1
+                        ? op.text.substring(0, op.text.lastIndexOf('\n'))
+                        : op.text
+                    : op.text
+
+            const color = op.attributes?.color
+                ? canvasKit.parseColorString(op.attributes.color as string)
+                : canvasKit.Color(0, 0, 0, 1)
+            const style = new canvasKit.TextStyle({
+                color,
+                fontFamilies: ['Open-Sans'],
+                fontSize: this._fontSize,
+                heightMultiplier: this._lineHeight,
+                fontStyle: {
+                    weight: op.attributes?.bold
+                        ? canvasKit.FontWeight.ExtraBold
+                        : canvasKit.FontWeight.Normal,
+                    slant: op.attributes?.italic
+                        ? canvasKit.FontSlant.Italic
+                        : canvasKit.FontSlant.Upright,
+                },
+                decoration:
+                    (op.attributes?.underline ? 1 : 0) |
+                    (op.attributes?.strike ? 4 : 0),
+                decorationThickness: 3,
+                decorationStyle: canvasKit.DecorationStyle.Solid,
+                decorationColor: color, // same as text color
+            })
+
+            if (op.attributes.background) {
+                style.backgroundColor = canvasKit.parseColorString(
+                    op.attributes.background as string,
+                )
+            }
+
+            builder.pushStyle(style)
+            builder.addText(text)
+            builder.pop()
+        }
+
         const paragraph = builder.build()
         paragraph.layout(this.width)
-
-        // if text does not overflow, no need to calc it
-        if (paragraph.getHeight() <= this._height) {
-            return [this._text, false]
-        }
-
-        let lineHeights = 0
-        let endIndex = this._text.length - 1
-        const totalLines = paragraph.getNumberOfLines()
-
-        for (let i = 0; i < totalLines; i++) {
-            const metrics = paragraph.getLineMetricsAt(i)
-            lineHeights += metrics?.height ? metrics.height : 0
-
-            if (lineHeights > this._height) {
-                endIndex = metrics?.endIndex
-                    ? metrics.endIndex
-                    : this._text.length - 1
-                break
-            }
-        }
-
-        return [this._text.substring(0, endIndex), true]
+        return paragraph
     }
 
     createOrUpdateParagraph(): CkParagraph {
-        // ASI...
-        ;[this._renderingText, this._isTextClipped] = this.calcRenderingText()
-
-        // add clip path
-        if (this._isTextClipped) {
-            this._clipPath = new canvasKit.Path()
-            const clipRect = canvasKit.LTRBRect(0, 0, this._width, this._height)
-            this._clipPath.addRect(clipRect)
-        }
-
-        const builder = canvasKit.ParagraphBuilder.Make(
-            this.getParagraphStyle(),
-            fontManager,
-        )
         if (this._paragraph) {
             this._paragraph.delete()
         }
-        builder.addText(this._renderingText)
-        this._paragraph = builder.build()
-        this._paragraph.layout(this.width)
+
+        const paragraph = this.getOpParagraph()
+        this._paragraph = paragraph
+        const textHeight = paragraph.getHeight()
+        this._isTextClipped = textHeight > this._height
         return this._paragraph
     }
 
     renderContent(renderContext: RenderContext) {
-        if (!this._shouldRender || !this._renderingText.length) {
+        if (!this._shouldRender || !this._text.length) {
             return
         }
 
@@ -159,27 +160,75 @@ export class ShapeText extends Widget {
             rectPaint.delete()
         }
 
-        const textHeight = this._paragraph.getHeight()
-        const consideringHeight =
-            textHeight < this._height ? textHeight : this._height
+        const paragraph = this._paragraph
 
         ctx.save()
 
-        // if text overflows the height, add clip path
-        if (this._isTextClipped && this._clipPath) {
-            ctx.clipPath(this._clipPath, canvasKit.ClipOp.Intersect, false)
+        // if clipped, apply clipping
+        if (this._isTextClipped) {
+            const clipPath = new canvasKit.Path()
+            clipPath.addRect(
+                canvasKit.LTRBRect(0, 0, this._width, this._height),
+            )
+            ctx.clipPath(clipPath, canvasKit.ClipOp.Intersect, true)
+            clipPath.delete()
         }
 
-        // center the text
-        ctx.translate(0, Math.abs(consideringHeight - this._height) / 2)
+        if (!this._isTextClipped) {
+            const yOffset = Math.max(
+                0,
+                (this._height - paragraph.getHeight()) / 2,
+            )
+            ctx.translate(0, yOffset)
+        }
 
-        // render text
-        ctx.drawParagraph(this._paragraph, 0, 0)
+        ctx.drawParagraph(paragraph, 0, 0)
         ctx.restore()
+    }
+
+    setTextOps(text: string, ops: TextOp[]) {
+        this._text = text
+        this._textOps = ops
+        this.createOrUpdateParagraph()
     }
 
     setText(text: string) {
         this._text = text
+        this._textOps = createTextOpsFromString(this._text)
+        this.createOrUpdateParagraph()
+    }
+
+    changeColor(color: string) {
+        if (!this._textOps?.length) return
+
+        this._textOps = this._textOps.map((op) => ({
+            ...op,
+            attributes: {
+                ...op.attributes,
+                color: color,
+            },
+        }))
+        this.createOrUpdateParagraph()
+    }
+
+    changeBackgroundColor(color: string) {
+        this._textOps = this._textOps.map((op) => ({
+            ...op,
+            attributes: {
+                ...op.attributes,
+                background: color,
+            },
+        }))
+        this.createOrUpdateParagraph()
+    }
+
+    changeTextAlign(align: TEXT_ALIGN) {
+        this._textAlign = align
+        this.createOrUpdateParagraph()
+    }
+
+    changeFontSize(size: number) {
+        this._fontSize = size
         this.createOrUpdateParagraph()
     }
 
@@ -199,11 +248,11 @@ export class ShapeText extends Widget {
         return this._lineHeight
     }
 
-    get isTextClipped(): boolean {
-        return this._isTextClipped
-    }
-
     get text(): string {
         return this._text
+    }
+
+    get textOps(): TextOp[] {
+        return this._textOps
     }
 }

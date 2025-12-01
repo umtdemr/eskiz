@@ -1,30 +1,50 @@
 import { ACTION_MODES } from '@/helpers/Constant'
-import { CanvasMouseEvent, Engine } from '../engine/Engine'
+import { Engine } from '../engine/Engine'
 import { BoundingBox } from '../geometry/BoundingBox'
 import { Widget } from '../shapes/Widget'
 import { Signal } from '../signal/Signal'
 import { Service } from './Service'
 import { MainModeChangedState, ToolService } from './ToolService'
+import {
+    WidgetDeletedSignal,
+    WidgetLockStateChangedSignal,
+    WidgetsService,
+} from './WidgetsService'
 
 export interface SelectionChangedProps {
-    type: 'selected' | 'tempSelected' | 'selectionCleared'
+    type: 'selected' | 'tempSelected' | 'selectionCleared' | 'updated'
     widgets?: Widget[]
+    updateData?: {
+        removedWidgets: Widget[]
+        addedWidgets: Widget[]
+    }
 }
 
 export class SelectionService extends Service {
     private _selected: Widget[] = []
     private _selectedDuringDrawing: Widget[] = []
     private toolService: ToolService
+    private widgetsService: WidgetsService
 
     selectionChanged = new Signal<SelectionChangedProps>()
     tempSelected = new Signal<Widget>()
     drawingSelectionUpdated = new Signal()
 
-    constructor(engine: Engine, toolService: ToolService) {
+    constructor(
+        engine: Engine,
+        toolService: ToolService,
+        widgetsService: WidgetsService,
+    ) {
         super(engine)
         this.toolService = toolService
 
         this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
+        this.widgetsService = widgetsService
+        this.widgetsService.widgetDeleted.add(this.onWidgetsDeleted, this)
+        this.widgetsService.widgetLockStateChanged.add(
+            this.onWidgetsLockStateChanged,
+            this,
+        )
     }
 
     private onMainModeChanged(state: MainModeChangedState) {
@@ -35,9 +55,99 @@ export class SelectionService extends Service {
         }
     }
 
+    private onWidgetsDeleted(props: WidgetDeletedSignal) {
+        // find if there is any deleted widget is in the selection
+        const deletedInSelection: Widget[] = []
+        props.widgets.forEach((widget) => {
+            if (this.isWidgetInSelection(widget))
+                [deletedInSelection.push(widget)]
+        })
+
+        if (!deletedInSelection.length) {
+            return
+        }
+
+        this.removeWidgetsFromSelection(deletedInSelection)
+    }
+
+    private onWidgetsLockStateChanged(props: WidgetLockStateChangedSignal) {
+        // find if there is any updated widget is in the selection
+        const lockStateChangedInSelection: Widget[] = []
+        props.widgets.forEach((widget) => {
+            if (this.isWidgetInSelection(widget))
+                [lockStateChangedInSelection.push(widget)]
+        })
+
+        if (!lockStateChangedInSelection.length) {
+            return
+        }
+
+        this.selectionChanged.dispatch({
+            type: 'updated',
+            widgets: this._selected,
+            updateData: {
+                removedWidgets: [],
+                addedWidgets: [],
+            },
+        })
+    }
+
+    private isWidgetInSelection(widget: Widget): boolean {
+        if (
+            this._selected.findIndex(
+                (selectionWidget) => selectionWidget === widget,
+            ) !== -1
+        ) {
+            return true
+        }
+        return false
+    }
+
+    private removeWidgetsFromSelection(widgets: Widget[]) {
+        const removedWidgets: Widget[] = []
+        for (const widget of widgets) {
+            const idx = this._selected.findIndex(
+                (selectionWidget) => selectionWidget === widget,
+            )
+            if (idx === -1) continue
+            widget.selected = false
+            this._selected.splice(idx, 1)
+            removedWidgets.push(widget)
+        }
+
+        if (!removedWidgets.length) {
+            return
+        }
+        this.selectionChanged.dispatch({
+            type: 'updated',
+            widgets: this._selected,
+            updateData: {
+                removedWidgets,
+                addedWidgets: [],
+            },
+        })
+    }
+
     selectWidget(widget: Widget) {
+        this.clearSelection()
+
         widget.selected = true
         this._selected = [widget]
+        this.selectionChanged.dispatch({
+            type: 'selected',
+            widgets: this._selected,
+        })
+        this.engine.canvas.requestRender()
+    }
+
+    selectWidgets(widgets: Widget[]) {
+        if (!widgets.length) return
+        this.clearSelection()
+
+        widgets.forEach((widget: Widget) => {
+            widget.selected = true
+        })
+        this._selected = widgets
         this.selectionChanged.dispatch({
             type: 'selected',
             widgets: this._selected,
@@ -56,6 +166,8 @@ export class SelectionService extends Service {
     }
 
     clearSelection(emit = true) {
+        if (!this._selected.length) return
+
         this._selected.forEach((widget) => {
             widget.selected = false
             widget.deselected.dispatch()
@@ -72,12 +184,20 @@ export class SelectionService extends Service {
         })
     }
 
-    checkObjectsInRect(rect: BoundingBox): Widget[] {
+    checkObjectsInRect(
+        rect: BoundingBox,
+        options: {
+            ignoreLocked: boolean
+        } = {
+            ignoreLocked: true,
+        },
+    ): Widget[] {
         const shapesLayer = this.engine.stage.widgetsDefaultLayer
         const allWidgets = new Set<Widget>()
 
         for (const child of shapesLayer.children) {
             if (!(child instanceof Widget) || !child.interactive) continue
+            if (child.isLocked && options.ignoreLocked) continue
 
             if (rect.containsRect(child.bounds)) {
                 allWidgets.add(child)
@@ -112,6 +232,56 @@ export class SelectionService extends Service {
             type: 'selected',
             widgets: allObjects,
         })
+    }
+
+    isMultipleSelection(): boolean {
+        return this._selected.length > 1
+    }
+
+    isThereLockedWidget(): boolean {
+        return this._selected.some((widget) => widget.isLocked)
+    }
+
+    canAllChangeBgColor(): boolean {
+        return this._selected.every((widget) => widget.canChangeBgColor())
+    }
+
+    canAllChangeBorderColor(): boolean {
+        return this._selected.every((widget) => widget.canChangeBorderColor())
+    }
+
+    canAllChangeBorderStyle(): boolean {
+        return this._selected.every((widget) => widget.canChangeBorderStyle())
+    }
+
+    canAllChangeThickness(): boolean {
+        return this._selected.every((widget) => widget.canChangeThickness())
+    }
+
+    canAllChangeRoundness(): boolean {
+        return this._selected.every((widget) => widget.canChangeRoundness())
+    }
+
+    canAllChangeTextColor(): boolean {
+        return this._selected.every((widget) => widget.canChangeTextColor())
+    }
+
+    canAllChangeHighlightColor(): boolean {
+        return this._selected.every((widget) =>
+            widget.canChangeHighlightColor(),
+        )
+    }
+
+    canAllChangeTextAlign(): boolean {
+        return this._selected.every((widget) => widget.canChangeTextAlign())
+    }
+
+    canAllChangeFontSize(): boolean {
+        return this._selected.every((widget) => widget.canChangeFontSize())
+    }
+
+    canAllChangeFontStyle(): boolean {
+        return this._selected.every((widget) => widget.canChangeFontStyle())
     }
 
     get selected() {

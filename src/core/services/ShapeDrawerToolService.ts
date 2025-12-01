@@ -151,7 +151,7 @@ export class ShapeDrawerToolService extends Service {
         const widgetsService = this.engine.getService<WidgetsService>('widgets')
         const shape = this.shape!
         shape.uuid = uuid
-        const json = { ...shape?.toJson(), page_id: 53 }
+        const json = { ...shape?.toJson(), page_id: this.engine.pageId }
 
         // todo (transaction): check error, if necessary delete from canvas
         widgetsService.addWidget(json as AddWidgetPayload)

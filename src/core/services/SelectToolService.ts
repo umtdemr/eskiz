@@ -93,12 +93,16 @@ export class SelectToolService extends Service {
         ) {
             this.isObjectAlreadySelected = true
             this.isDrawing = false
-            this.dragHandler.start(data, this.selectionService.selected)
-            this.isDragHandlerOwned = true
+            if (!this.selectionService.isThereLockedWidget()) {
+                this.dragHandler.start(data, this.selectionService.selected)
+                this.isDragHandlerOwned = true
+            }
         } else if (this.mouseDownWidget) {
             this.isDrawing = false
-            this.dragHandler.start(data, [this.mouseDownWidget])
-            this.isDragHandlerOwned = true
+            if (!this.mouseDownWidget.isLocked) {
+                this.dragHandler.start(data, [this.mouseDownWidget])
+                this.isDragHandlerOwned = true
+            }
 
             // if there is a selection which is not this widget, clear selection
             this.isObjectAlreadySelected = !!this.mouseDownWidget.selected
@@ -200,6 +204,7 @@ export class SelectToolService extends Service {
         // if clicked to selected single object
         if (
             this.mouseDownWidget &&
+            !this.mouseDownWidget.isLocked &&
             this.selectionService.selected.length === 1 &&
             this.isObjectAlreadySelected &&
             !isObjectMoved

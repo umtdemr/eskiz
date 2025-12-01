@@ -31,6 +31,7 @@ export interface WidgetProps {
     uuid?: string
     z_index?: string
     parent_widget_id?: string
+    is_locked?: boolean
 }
 
 export type WidgetJson = {
@@ -44,6 +45,8 @@ export type WidgetJson = {
     widget_type: DbWidgetType
     sub_type?: SubType
     parent_widget_id?: string
+    is_deleted: boolean
+    is_locked: boolean
 }
 
 export interface WidgetClickedSignal {
@@ -63,11 +66,14 @@ export abstract class Widget extends Layer {
     protected _localBounds: BoundingBox // Local bounds (object's own space)
     protected _selected: boolean = false
     protected _isDynamic: boolean = false
+    protected _isDeleted: boolean = false
+    protected _isLocked: boolean = false
     protected _properties: Record<string, unknown>
 
     boundsChanged = new Signal()
     deselected = new Signal()
     clicked = new Signal<WidgetClickedSignal>()
+    deleted = new Signal()
 
     constructor(type: WidgetType, props: WidgetProps) {
         super({ name: 'widget' })
@@ -88,6 +94,9 @@ export abstract class Widget extends Layer {
 
         if (props.visible !== undefined) {
             this.visible = props.visible
+        }
+        if (props.is_locked !== undefined) {
+            this._isLocked = props.is_locked
         }
         if (props.z_index) {
             this._zIndex = props.z_index
@@ -112,7 +121,7 @@ export abstract class Widget extends Layer {
 
     // Override render to handle child widgets properly
     render(renderContext: RenderContext) {
-        if (!this.visible) return
+        if (!this.visible || this._isDeleted) return
         const ctx = renderContext.ctx
 
         ctx.save()
@@ -190,6 +199,18 @@ export abstract class Widget extends Layer {
                     break
                 case 'z_index':
                     this.zIndex = json.z_index!
+                    if (this._parent instanceof Layer) {
+                        this._parent.repositionChild(this)
+                    }
+                    break
+                case 'is_locked':
+                    this.isLocked = json.is_locked!
+                    break
+                case 'properties':
+                    this._properties = {
+                        ...this.properties,
+                        ...json.properties,
+                    }
                     break
             }
         }
@@ -202,10 +223,72 @@ export abstract class Widget extends Layer {
     onMouseEnter() {}
     onMouseLeave() {}
 
+    destroy() {
+        this.boundsChanged.removeAll()
+        this.deselected.removeAll()
+        this.clicked.removeAll()
+    }
+
+    delete() {
+        this.isDeleted = true
+        this.deleted.dispatch()
+        this.destroy()
+    }
+
     static loadFromJson(json: WsWidget): Widget {
         throw new Error(
             `loadFromJson is not implemented for ${json.widget_type}_${json.sub_type}`,
         )
+    }
+
+    // return true when changing bg color is allowed
+    canChangeBgColor(): boolean {
+        return false
+    }
+
+    // return true when changing border color is allowed
+    canChangeBorderColor(): boolean {
+        return false
+    }
+
+    // return true when changing border style is allowed
+    canChangeBorderStyle(): boolean {
+        return false
+    }
+
+    // return true when changing thickness is allowed
+    canChangeThickness(): boolean {
+        return false
+    }
+
+    // return true when changing roundness is allowed
+    canChangeRoundness(): boolean {
+        return false
+    }
+
+    // return true when changing text color is allowed
+    canChangeTextColor(): boolean {
+        return false
+    }
+
+    // return true when changing highlight/background color is allowed
+    canChangeHighlightColor(): boolean {
+        return false
+    }
+
+    // return true when changing text alignment is allowed
+    canChangeTextAlign(): boolean {
+        return false
+    }
+
+    // return true when changing font size is allowed
+    canChangeFontSize(): boolean {
+        return false
+    }
+
+    // return true when changing font style is allowed
+    canChangeFontStyle(): boolean {
+        return false
     }
 
     get width() {
@@ -323,5 +406,29 @@ export abstract class Widget extends Layer {
 
     get widgetType(): WidgetType {
         return this._widgetType
+    }
+
+    get isDeleted(): boolean {
+        return this._isDeleted
+    }
+
+    set isDeleted(val: boolean) {
+        this._isDeleted = val
+    }
+
+    get isLocked(): boolean {
+        return this._isLocked
+    }
+
+    set isLocked(val: boolean) {
+        this._isLocked = val
+    }
+
+    get parent(): Layer | Widget | null {
+        return this._parent
+    }
+
+    get properties() {
+        return this._properties
     }
 }

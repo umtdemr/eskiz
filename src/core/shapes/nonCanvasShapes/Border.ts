@@ -4,6 +4,7 @@ import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { Layer } from '@/core/stage/Layer'
 import { BoundingBox } from '@/core/geometry/BoundingBox'
 import { Engine } from '@/core/engine/Engine'
+import { RGBA } from '../Color'
 
 export interface BorderProps {
     parentLayer: Layer
@@ -11,10 +12,18 @@ export interface BorderProps {
     engine: Engine
 }
 
+const BorderColor: RGBA = {
+    r: 29,
+    g: 78,
+    b: 216,
+    a: 0.8,
+}
+
 export class Border extends Widget {
     private engine: Engine
     private paint: Paint
     private bindWidgets?: Widget[]
+    private mainWidget: Widget | null
     private needsUpdate = false
 
     constructor(props: BorderProps) {
@@ -32,7 +41,23 @@ export class Border extends Widget {
         this.paint = new canvasKit.Paint()
         this.paint.setAntiAlias(true)
         this.paint.setStyle(canvasKit.PaintStyle.Stroke)
-        this.paint.setColor(canvasKit.Color(29, 78, 216, 0.8))
+
+        if (props.widgets.length === 1) {
+            this.mainWidget = props.widgets[0]
+        }
+
+        if (this.mainWidget?.isLocked) {
+            this.paint.setColor(canvasKit.Color(0, 0, 0, 0.8))
+        } else {
+            this.paint.setColor(
+                canvasKit.Color(
+                    BorderColor.r,
+                    BorderColor.g,
+                    BorderColor.b,
+                    BorderColor.a,
+                ),
+            )
+        }
 
         this.bindWidgets = props.widgets
         this.listenWidgets()

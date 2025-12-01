@@ -7,12 +7,14 @@ import {
 import { createWindowsSlice, WindowSlice } from '@/store/windows.ts'
 import { BoardsSlice, createBoardsSlice } from '@/store/boards.ts'
 import { createToolSlice, ToolSlice } from './tool'
+import { createSubtoolbarSlice, SubtoolbarSlice } from './subtoolbar'
 
 export type ZState = UserSlice &
     CollaboratorsSlice &
     WindowSlice &
     BoardsSlice &
-    ToolSlice
+    ToolSlice &
+    SubtoolbarSlice
 
 export const useBoundStore = create<ZState>()((...a) => ({
     ...createUserSlice(...a),
@@ -20,4 +22,5 @@ export const useBoundStore = create<ZState>()((...a) => ({
     ...createWindowsSlice(...a),
     ...createBoardsSlice(...a),
     ...createToolSlice(...a),
+    ...createSubtoolbarSlice(...a),
 }))

@@ -1,0 +1,61 @@
+import clsx from 'clsx'
+
+export interface TransparentColorButtonProps {
+    ariaLabel: string
+    onClick: () => void
+    fillPercentage?: number
+    size?: number
+    showBorder?: boolean
+    onRightClick?: (e: React.MouseEvent, color: string) => void
+    enableHoverEffect?: boolean
+}
+export function TransparentColorButton({
+    onClick,
+    size = 25,
+    ariaLabel,
+    fillPercentage,
+    showBorder = true,
+    enableHoverEffect = false,
+}: TransparentColorButtonProps) {
+    const appliedFillPercentage =
+        fillPercentage !== null && fillPercentage !== undefined
+            ? fillPercentage
+            : 100
+    const applySize = Math.round((size * appliedFillPercentage) / 100)
+
+    return (
+        <button
+            className={clsx('flex items-center justify-center', {
+                'hover:scale-125': enableHoverEffect,
+            })}
+            aria-label={ariaLabel}
+            onClick={onClick}
+            style={{
+                width: `${size}px`,
+                height: `${size}px`,
+            }}
+        >
+            <div
+                className={clsx('w-full relative h-full rounded-full p-2', {
+                    'outline outline-1 outline-zinc-500': showBorder,
+                })}
+            >
+                <div
+                    className="rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                    style={{
+                        backgroundColor: '#fff',
+                        width: `${applySize}px`,
+                        height: `${applySize}px`,
+                    }}
+                ></div>
+                <div
+                    className="absolute top-0 rotate-45 bg-zinc-500 w-[1px]"
+                    style={{
+                        height: `${applySize}px`,
+                        left: `${applySize / 2}px`,
+                    }}
+                ></div>
+            </div>
+        </button>
+    )
+}

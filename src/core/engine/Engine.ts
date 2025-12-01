@@ -25,6 +25,8 @@ import { TransactionHandler } from '@/core/transaction/TransactionHandler'
 import { PathToolService } from '@/core/services/PathToolService'
 import { TextService } from '../services/TextService'
 import { TextEditor } from '../textEditor/TextEditor'
+import { CommandRegistry } from '../command/CommandRegistry'
+import { Command, Commands } from '../command/Command'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -53,6 +55,7 @@ export class Engine extends Emitter<EngineEventsMap> {
     private _resizeHandler: ResizeHandler
     private _transactionHandler: TransactionHandler
     private _textEditor: TextEditor
+    private _commands: CommandRegistry
 
     upperCanvasRenderer: UpperCanvasRenderer
 
@@ -78,6 +81,7 @@ export class Engine extends Emitter<EngineEventsMap> {
         this._mouseController = new MouseController()
         this._textEditor = new TextEditor(this)
         this.serviceManager = new ServiceManager()
+        this._commands = new CommandRegistry()
         this.initializeServices()
 
         this._stage = new Stage(this)
@@ -139,13 +143,19 @@ export class Engine extends Emitter<EngineEventsMap> {
     private initializeServices() {
         const wsEventService = new WebsocketEventService(this)
         const toolService = new ToolService(this)
-        const selectionService = new SelectionService(this, toolService)
+        const widgetsService = new WidgetsService(this, wsEventService)
+        const selectionService = new SelectionService(
+            this,
+            toolService,
+            widgetsService,
+        )
         // cursor service is responsible of handling cursor changes
 
         this.serviceManager.register('wsEventService', wsEventService)
         this.serviceManager.register('toolService', toolService)
         this.serviceManager.register('cursor', new CursorService(this))
         this.serviceManager.register('selection', selectionService)
+        this.serviceManager.register('widgets', widgetsService)
         this.serviceManager.register(
             'selectTool',
             new SelectToolService(this, this._mouseController, toolService),
@@ -194,14 +204,14 @@ export class Engine extends Emitter<EngineEventsMap> {
             new CollaboratorsService(this, wsEventService),
         )
         this.serviceManager.register('page', new PageService(this))
-        this.serviceManager.register(
-            'widgets',
-            new WidgetsService(this, wsEventService),
-        )
     }
 
     getService<T>(name: string): T {
         return this.serviceManager.get<T>(name)
+    }
+
+    getCommand(cmd: Commands): Command {
+        return this._commands.get(cmd)
     }
 
     get upperCanvasEl() {
@@ -229,5 +239,9 @@ export class Engine extends Emitter<EngineEventsMap> {
 
     get textEditor(): TextEditor {
         return this._textEditor
+    }
+
+    get pageId(): number {
+        return this._pageId
     }
 }

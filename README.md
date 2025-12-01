@@ -63,7 +63,8 @@
     - [x] Adding text
       - [x] UpdateSize
       - [x] Double click to edit texts
-      - [x] Save them in db
+      - [x] Save shapeText in db
+      - [ ] Save textboxes in db
     - [x] Adding text to shapes
         - [ ] Add text as soon as shape is created
     - [ ] Sticky note
@@ -71,9 +72,56 @@
     - [ ] Sub toolbar
         - [x] Add sub toolbar component
         - [ ] Generate toolbar actions based on selected widget(s)
+        - [ ] Subtoolbar multi actions
+            - [ ] Remove
+            - [ ] Clone
+            - [ ] Lock
+    - [ ] Delete
+        - [x] Remove selection
+            - [x] Add update selection method
+            - [x] Remove border
+        - [x] Destroy widgets
+        - [ ] Multiplayer
+            - [ ] Delete when a shape is deleted by other user
+                - [ ] Delete from canvas
+                - [ ] Delete from selection
+                - [ ] Destroy
+    - [x] Lock
+        - [x] Add isLocked prop
+        - [x] Subtoolbar actions restriction if widget is locked
+        - [x] Prevent drag
+        - [x] Prevent resize handler - No need to
+        - [x] Prevent commands
+        - [x] Change border color
+        - [x] Disallow selecting multiple widgets if widgets are locked
+    - [ ] Rich text support
+        - [x] Add rich text support
+        - [ ] Initialize text editor with ops
+        - [ ] Handle already implemented changes - color change, background change
+        - [ ] Handle text style (bold, italic, underline, strike)
 - Refactor & bug fixes
     - [ ] Fix: ShapesDropdown top position
     - [ ] Fix: sidebar menu in mobile
     - [ ] useShallows...
     - [ ] A component to handle boards list
         - [ ] Change error messages on boards list (user) or make it dynamic. Change colors.
+
+## Road map
+
+### Phase 1 -- Make it work! 
+
+* Finalize subtoolbar.
+* Add shortcuts
+* Add history
+* Add sticky note shape
+* Add lines
+
+#### Phase 2 -- Saving!
+
+* Add versions to prevent race conditions.
+* Save storage???
+
+
+#### Phase 3 -- Enhanced collaboration
+
+* CRDT

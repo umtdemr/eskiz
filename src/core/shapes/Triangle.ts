@@ -3,6 +3,7 @@ import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WsWidget } from '@/types/Websocket.ts'
 import { WidgetJson } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color'
+import { BorderStyle } from '@/helpers/Constant'
 
 const TEXT_PADDING = 5
 
@@ -24,7 +25,8 @@ export class Triangle extends Shape {
         path.lineTo(0, this.height) // Back to bottom left
         path.close()
 
-        const strokeHalf = 1
+        const strokeWidth = this._properties.strokeWidth as number
+        const strokeHalf = strokeWidth / 2
         const pathStroke = new canvasKit.Path()
         pathStroke.moveTo(strokeHalf, this.height - strokeHalf)
         pathStroke.lineTo(this.width / 2, strokeHalf)
@@ -46,7 +48,7 @@ export class Triangle extends Shape {
         paint.setStyle(canvasKit.PaintStyle.Fill)
         ctx.drawPath(path, paint)
 
-        paint.setStrokeWidth(2)
+        paint.setStrokeWidth(strokeWidth)
         const strokeColor = canvasKit.Color(
             (this._properties.strokeColor as RGBA).r,
             (this._properties.strokeColor as RGBA).g,
@@ -55,6 +57,20 @@ export class Triangle extends Shape {
         )
         paint.setColor(strokeColor)
         paint.setStyle(canvasKit.PaintStyle.Stroke)
+
+        if (this._properties.borderStyle === BorderStyle.DOTTED) {
+            const pathEffect = canvasKit.PathEffect.MakeDash(
+                [strokeWidth, strokeWidth * 2],
+                0,
+            )
+            paint.setPathEffect(pathEffect)
+        } else if (this._properties.borderStyle === BorderStyle.DASHED) {
+            const pathEffect = canvasKit.PathEffect.MakeDash(
+                [strokeWidth * 5, strokeWidth * 5],
+                0,
+            )
+            paint.setPathEffect(pathEffect)
+        }
 
         ctx.drawPath(pathStroke, paint)
     }
