@@ -93,6 +93,32 @@ export abstract class Shape extends Widget {
         throw new Error(`Shape (${json.sub_type}) be implemented by subclass`)
     }
 
+    updateWithPartialState(json: Partial<WsWidget>) {
+        super.updateWithPartialState(json)
+
+        if (json.properties?.textProperties) {
+            const textProps = json.properties.textProperties as ShapeTextConstructProps
+            this._textProperties = {
+                ...this._textProperties,
+                ...textProps,
+            }
+
+            if (this._text) {
+                if (textProps.text !== undefined && textProps.textOps) {
+                    this._text.setTextOps(textProps.text, textProps.textOps)
+                }
+                if (textProps.fontSize !== undefined) {
+                    this._text.changeFontSize(textProps.fontSize)
+                }
+                if (textProps.textAlign !== undefined) {
+                    this._text.changeTextAlign(textProps.textAlign)
+                }
+            } else if (textProps.text) {
+                this.createTextObject()
+            }
+        }
+    }
+
     get shapeType(): ShapeType {
         return this._shapeType
     }
