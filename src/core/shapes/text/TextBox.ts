@@ -1,9 +1,9 @@
 import { Widget, WidgetProps } from '@/core/shapes/Widget.ts'
 import { Paragraph as CkParagraph } from 'canvaskit-wasm'
-import { RGBA } from '@/core/shapes/Color.ts'
 import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
 import { createTextOpsFromString, TextOp } from '@/core/textEditor/TextEditor'
 import { FontStyleType } from '@/helpers/Constant'
+import { WsWidget } from '@/types/Websocket.ts'
 
 export interface TextBoxProps extends Omit<WidgetProps, 'height'> {
     properties: TextBoxProperties
@@ -144,6 +144,28 @@ export class TextBox extends Widget {
         ctx.drawParagraph(this._paragraph, 0, 0)
     }
 
+    updateWithPartialState(json: Partial<WsWidget>) {
+        super.updateWithPartialState(json)
+
+        if (json.properties) {
+            const props = json.properties as Partial<TextBoxProperties>
+            
+            if (props.text !== undefined && props.textOps) {
+                this.setTextOps(props.text, props.textOps)
+            }
+            if (props.fontSize !== undefined) {
+                this.changeFontSize(props.fontSize)
+            }
+            if (props.textAlign !== undefined) {
+                this.changeTextAlign(props.textAlign)
+            }
+            if (props.lineHeight !== undefined) {
+                this._lineHeight = props.lineHeight
+                this.createOrUpdateParagraph()
+            }
+        }
+    }
+
     setTextOps(text: string, ops: TextOp[]) {
         this._text = text
         this._textOps = ops
@@ -269,12 +291,44 @@ export class TextBox extends Widget {
         }
     }
 
-    // TODO: implement fully when saving in db
     get properties() {
         return {
-            textAlign: this._textAlign,
-            fontSize: this._fontSize,
+            text: this._text,
             textOps: this._textOps,
+            fontSize: this._fontSize,
+            textAlign: this._textAlign,
+            lineHeight: this._lineHeight,
         }
+    }
+
+    toJson() {
+        return {
+            x: this._x,
+            y: this._y,
+            width: this._width,
+            height: this._height,
+            z_index: this._zIndex,
+            uuid: this._uuid!,
+            widget_type: 'textbox' as const,
+            sub_type: 'textbox' as const,
+            properties: this.properties,
+            is_deleted: this._isDeleted,
+            is_locked: this._isLocked,
+            ...(this._parent_widget_id && { parent_widget_id: this._parent_widget_id }),
+        }
+    }
+
+    static loadFromJson(json: WsWidget): TextBox {
+        const properties = json.properties as unknown as TextBoxProperties
+        return new TextBox({
+            x: json.x,
+            y: json.y,
+            width: json.width,
+            properties,
+            uuid: json.uuid,
+            z_index: json.z_index,
+            parent_widget_id: json.parent_widget_id,
+            is_locked: json.is_locked,
+        })
     }
 }
