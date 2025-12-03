@@ -18,6 +18,8 @@ import { Shape } from '@/core/shapes/Shape'
 import { Widget, WidgetClickedSignal } from '@/core/shapes/Widget'
 import { EditingMethods } from '@/core/transaction/State'
 import { nanoid } from 'nanoid'
+import { WidgetsService } from './WidgetsService'
+import { AddWidgetPayload } from '@/types/Websocket'
 
 export class TextService extends Service {
     private mouseController: MouseController
@@ -29,6 +31,8 @@ export class TextService extends Service {
     private textBox: TextBox
     private shape: Shape
     private activeSession: TextEditingSession | null
+    private isTextboxCreatedWithService: boolean
+    private isTextboxSavedInDb: boolean
     private transactionId: string | null
 
     constructor(
@@ -93,9 +97,7 @@ export class TextService extends Service {
             },
         })
 
-        this.engine.stage.widgetsDefaultLayer.addChildren(textbox)
-
-        // TODO (transaction): first add textbox to DB
+        this.engine.stage.addWidget(textbox)
 
         // arrange center
         textbox.top = textbox.top - textbox.height / 2
@@ -112,6 +114,7 @@ export class TextService extends Service {
         })
 
         this.textBox = textbox
+        this.isTextboxCreatedWithService = true // flag for identifying if the textbox is created just now
         this.textBox.hideText() // hide text when text editor is active
         this.textBox.deselected.addOnce(this.onDeselected, this)
         this.textEditor.textChanged.add(this.onTextChanged, this)
@@ -147,6 +150,23 @@ export class TextService extends Service {
         const trimmedText = props.text.replace(/\n$/, '')
 
         if (this.activeSession === 'textBox' && this.textBox) {
+            // if textbox is newly created by this service, add it to the db
+            if (this.isTextboxCreatedWithService && !this.isTextboxSavedInDb) {
+                this.isTextboxSavedInDb = true
+                const uuid = nanoid()
+                const widgetsService =
+                    this.engine.getService<WidgetsService>('widgets')
+                this.textBox.uuid = uuid
+                const json = {
+                    ...this.textBox?.toJson(),
+                    page_id: this.engine.pageId,
+                }
+
+                this.isTextboxSavedInDb = true
+                // todo (transaction): check error, if necessary delete from canvas
+                widgetsService.addWidget(json as AddWidgetPayload)
+            }
+
             this.textBox.setTextOps(trimmedText, props.textOps)
 
             // sync text editor dimensions with text box
@@ -185,6 +205,8 @@ export class TextService extends Service {
             this.engine.transactionHandler.commit(this.transactionId)
         }
         this.transactionId = null
+        this.isTextboxCreatedWithService = false
+        this.isTextboxSavedInDb = false
     }
 
     private onDeselected() {
