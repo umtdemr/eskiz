@@ -11,35 +11,10 @@ import { canvasKit } from '../canvas/Canvas'
 import { Pen } from '../shapes/path/Pen'
 import { RGBA } from '../shapes/Color'
 import { TrailLayer } from '@/core/stage/TrailLayer'
-
-function med(A: number[], B: number[]) {
-    return [(A[0] + B[0]) / 2, (A[1] + B[1]) / 2]
-}
-
-const TO_FIXED_PRECISION = /(\s?[A-Z]?,?-?[0-9]*\.[0-9]{0,2})(([0-9]|e|-)*)/g
-
-function getSvgPathFromStroke(points: number[][]): string {
-    if (!points.length) {
-        return ''
-    }
-
-    const max = points.length - 1
-
-    return points
-        .reduce(
-            (acc, point, i, arr) => {
-                if (i === max) {
-                    acc.push(point, med(point, arr[0]), 'L', arr[0], 'Z')
-                } else {
-                    acc.push(point, med(point, arr[i + 1]))
-                }
-                return acc
-            },
-            ['M', points[0], 'Q'],
-        )
-        .join(' ')
-        .replace(TO_FIXED_PRECISION, '$1')
-}
+import { nanoid } from 'nanoid'
+import { WidgetsService } from './WidgetsService'
+import { AddWidgetPayload } from '@/types/Websocket'
+import { getSvgPathFromStroke } from '../shapes/path/pathUtils'
 
 export class PathToolService extends Service {
     private mouseController: MouseController
@@ -114,6 +89,8 @@ export class PathToolService extends Service {
             parentLayer: this.engine.stage.widgetsDefaultLayer,
             properties: {
                 color: color!,
+                points: [[data.pointer.x, data.pointer.y]],
+                strokeWidth: thickness,
             },
         })
         this.points[0] = [data.pointer.x, data.pointer.y]
@@ -153,7 +130,7 @@ export class PathToolService extends Service {
         this.path.width = newBounds[2] - newBounds[0]
         this.path.height = newBounds[3] - newBounds[1]
 
-        this.path.replacePath(pathFromSvg!)
+        this.path.replacePath(pathFromSvg!, this.points)
         this.engine.canvas.requestRender()
     }
     private onMouseUp() {
@@ -166,6 +143,19 @@ export class PathToolService extends Service {
             return
         }
 
+        if (this.path instanceof Pen) {
+            const uuid = nanoid()
+            const widgetsService =
+                this.engine.getService<WidgetsService>('widgets')
+            this.path.uuid = uuid
+            const json = {
+                ...this.path?.toJson(),
+                page_id: this.engine.pageId,
+            }
+
+            // todo (transaction): check error, if necessary delete from canvas
+            widgetsService.addWidget(json as AddWidgetPayload)
+        }
         this.reset()
     }
 
