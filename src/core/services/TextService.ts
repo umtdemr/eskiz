@@ -162,7 +162,6 @@ export class TextService extends Service {
                     page_id: this.engine.pageId,
                 }
 
-                this.isTextboxSavedInDb = true
                 // todo (transaction): check error, if necessary delete from canvas
                 widgetsService.addWidget(json as AddWidgetPayload)
             }

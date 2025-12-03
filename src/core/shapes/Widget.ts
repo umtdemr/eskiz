@@ -15,9 +15,9 @@ export type WidgetType =
     | 'border'
     | 'control'
 
-export type DbWidgetType = 'shape' | 'textbox'
+export type DbWidgetType = 'shape' | 'textbox' | 'path'
 
-export type SubType = ShapeType | 'textbox'
+export type SubType = ShapeType | 'textbox' | 'pen'
 
 export type WidgetFullType = `${DbWidgetType}_${SubType}`
 
