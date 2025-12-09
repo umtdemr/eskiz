@@ -2,7 +2,8 @@ import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { Path, PathProps, PathProperties } from '@/core/shapes/path/Path'
 import { RGBA } from '@/core/shapes/Color'
 import { WsWidget } from '@/types/Websocket'
-import { reconstructPathFromPoints } from './pathUtils'
+import { getSvgPathFromStroke, reconstructPathFromPoints } from './pathUtils'
+import getStroke from 'perfect-freehand'
 
 export class Pen extends Path {
     constructor(props: PathProps) {
@@ -24,6 +25,7 @@ export class Pen extends Path {
         const paint = new canvasKit.Paint()
         paint.setAntiAlias(true)
         paint.setStyle(canvasKit.PaintStyle.Fill)
+        paint.setStrokeWidth((this._properties.strokeWidth as number) || 2)
         const color = canvasKit.Color(
             (this._properties.color as RGBA).r,
             (this._properties.color as RGBA).g,
@@ -83,5 +85,35 @@ export class Pen extends Path {
                 this._properties.strokeWidth = props.strokeWidth
             }
         }
+    }
+
+    changeThickness(newThickness: number): boolean {
+        this._properties.strokeWidth = newThickness
+
+        // we need to calculate new bounds since changing thickness can change
+        // the bounds of the path
+        const points = this._properties.points as number[][]
+        const stroke = getStroke(points, {
+            size: newThickness,
+        })
+
+        const svg = getSvgPathFromStroke(stroke)
+        const pathFromSvg = canvasKit.Path.MakeFromSVGString(svg)!
+
+        const newBounds = pathFromSvg.getBounds()
+        const transformMatrix = canvasKit.Matrix.translated(
+            -newBounds[0],
+            -newBounds[1],
+        )
+        pathFromSvg.transform(transformMatrix)
+
+        this.left = newBounds[0]
+        this.top = newBounds[1]
+        this.width = newBounds[2] - newBounds[0]
+        this.height = newBounds[3] - newBounds[1]
+
+        this.replacePath(pathFromSvg!, points)
+
+        return true
     }
 }

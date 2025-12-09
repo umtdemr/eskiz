@@ -2,6 +2,7 @@ import { Widget } from '../shapes/Widget'
 import { Shape } from '@/core/shapes/Shape'
 import { TextBox } from '@/core/shapes/text/TextBox'
 import { Rectangle } from '@/core/shapes/Rectangle'
+import { Path } from '@/core/shapes/path/Path'
 
 export type EditingMethods =
     | 'move'
@@ -90,6 +91,11 @@ export function getPartialState(
                         ...(state.properties ? state.properties : undefined),
                         strokeColor: widget.properties.strokeColor,
                     }
+                } else if (widget instanceof Path) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        color: widget.properties.color,
+                    }
                 }
                 break
             case 'borderStyle':
@@ -102,6 +108,11 @@ export function getPartialState(
                 break
             case 'thickness':
                 if (widget instanceof Shape) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        strokeWidth: widget.properties.strokeWidth,
+                    }
+                } else if (widget instanceof Path) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         strokeWidth: widget.properties.strokeWidth,

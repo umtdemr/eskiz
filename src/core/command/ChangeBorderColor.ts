@@ -1,6 +1,7 @@
 import { RGBA } from '../shapes/Color'
 import { Shape } from '../shapes/Shape'
 import { Widget } from '../shapes/Widget'
+import { Path } from '../shapes/path/Path'
 import { EditingMethods } from '../transaction/State'
 import { CONTINUOUS_THROTTLE_DELAY } from '../transaction/TransactionHandler'
 import { Command, CommandCtx, Commands } from './Command'
@@ -34,10 +35,14 @@ export class ChangeBorderColor extends Command {
 
         const affectedWidgets = []
         for (const widget of widgets) {
-            if (!widget.canChangeBorderColor() || !(widget instanceof Shape))
-                continue
+            if (!widget.canChangeBorderColor()) continue
 
-            if (widget.changeBorderColor(color)) {
+            let changed = false
+            if (widget instanceof Shape || widget instanceof Path) {
+                changed = widget.changeBorderColor(color)
+            }
+
+            if (changed) {
                 affectedWidgets.push(widget)
             }
         }
