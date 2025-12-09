@@ -1,5 +1,6 @@
 import { Shape } from '../shapes/Shape'
 import { Widget } from '../shapes/Widget'
+import { Path } from '../shapes/path/Path'
 import { EditingMethods } from '../transaction/State'
 import { CONTINUOUS_THROTTLE_DELAY } from '../transaction/TransactionHandler'
 import { Command, CommandCtx, Commands } from './Command'
@@ -33,10 +34,14 @@ export class ChangeThickness extends Command {
 
         const affectedWidgets = []
         for (const widget of widgets) {
-            if (!widget.canChangeThickness() || !(widget instanceof Shape))
-                continue
+            if (!widget.canChangeThickness()) continue
 
-            if (widget.changeThickness(thickness)) {
+            let changed = false
+            if (widget instanceof Shape || widget instanceof Path) {
+                changed = widget.changeThickness(thickness)
+            }
+
+            if (changed) {
                 affectedWidgets.push(widget)
             }
         }
@@ -46,7 +51,11 @@ export class ChangeThickness extends Command {
 
         const editTable = new Map<Widget, EditingMethods[]>()
         affectedWidgets.forEach((widget) => {
-            editTable.set(widget, ['thickness'])
+            if (widget instanceof Path) {
+                editTable.set(widget, ['resize', 'thickness'])
+            } else {
+                editTable.set(widget, ['thickness'])
+            }
         })
 
         if (ctx.isContinuous) {
