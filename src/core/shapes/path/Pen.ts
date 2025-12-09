@@ -82,7 +82,7 @@ export class Pen extends Path {
                 this._properties.color = props.color
             }
             if (props.strokeWidth !== undefined) {
-                this._properties.strokeWidth = props.strokeWidth
+                this.changeThickness(props.strokeWidth)
             }
         }
     }
