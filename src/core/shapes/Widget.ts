@@ -291,6 +291,38 @@ export abstract class Widget extends Layer {
         return false
     }
 
+    // resizes the widget.
+    // good for changing position or dimension at once since it calls `updateBounds` only once
+    resize(opt: {
+        left?: number
+        top?: number
+        width?: number
+        height?: number
+    }): boolean {
+        let resized = false
+        if (opt.left !== undefined) {
+            this._x = opt.left
+            resized = true
+        }
+        if (opt.top !== undefined) {
+            this._y = opt.top
+            resized = true
+        }
+        if (opt.width !== undefined) {
+            this._width = opt.width
+            resized = true
+        }
+        if (opt.height !== undefined) {
+            this._height = opt.height
+            resized = true
+        }
+
+        if (resized) {
+            this.updateBounds()
+        }
+        return resized
+    }
+
     get width() {
         return this._width
     }
