@@ -106,43 +106,59 @@ export class ResizeHandler {
             case ResizePosition.EDGE_LEFT:
                 // with shift
                 if (data.e.shiftKey) {
-                    this.shape.width = this.initialBounds.width - deltaX * 2
-                    this.shape.left = this.initialBounds.widgetX + deltaX
+                    this.shape.resize({
+                        width: this.initialBounds.width - deltaX * 2,
+                        left: this.initialBounds.widgetX + deltaX,
+                    })
                 } else {
                     // standard
-                    this.shape.width = this.initialBounds.width - deltaX
-                    this.shape.left = this.initialBounds.widgetX + deltaX
+                    this.shape.resize({
+                        width: this.initialBounds.width - deltaX,
+                        left: this.initialBounds.widgetX + deltaX,
+                    })
                 }
                 break
             case ResizePosition.EDGE_RIGHT:
                 // with shift
                 if (data.e.shiftKey) {
-                    this.shape.width = this.initialBounds.width + deltaX * 2
-                    this.shape.left = this.initialBounds.widgetX - deltaX
+                    this.shape.resize({
+                        width: this.initialBounds.width + deltaX * 2,
+                        left: this.initialBounds.widgetX - deltaX,
+                    })
                 } else {
                     // standard
-                    this.shape.width = this.initialBounds.width + deltaX
+                    this.shape.resize({
+                        width: this.initialBounds.width + deltaX,
+                    })
                 }
                 break
             case ResizePosition.EDGE_TOP:
                 // with shift
                 if (data.e.shiftKey) {
-                    this.shape.height = this.initialBounds.height - deltaY * 2
-                    this.shape.top = this.initialBounds.widgetY + deltaY
+                    this.shape.resize({
+                        height: this.initialBounds.height - deltaY * 2,
+                        top: this.initialBounds.widgetY + deltaY,
+                    })
                 } else {
                     // standard
-                    this.shape.height = this.initialBounds.height - deltaY
-                    this.shape.top = this.initialBounds.widgetY + deltaY
+                    this.shape.resize({
+                        height: this.initialBounds.height - deltaY,
+                        top: this.initialBounds.widgetY + deltaY,
+                    })
                 }
                 break
             case ResizePosition.EDGE_BOTTOM:
                 // with shift
                 if (data.e.shiftKey) {
-                    this.shape.height = this.initialBounds.height + deltaY * 2
-                    this.shape.top = this.initialBounds.widgetY - deltaY
+                    this.shape.resize({
+                        height: this.initialBounds.height + deltaY * 2,
+                        top: this.initialBounds.widgetY - deltaY,
+                    })
                 } else {
                     // standard
-                    this.shape.height = this.initialBounds.height + deltaY
+                    this.shape.resize({
+                        height: this.initialBounds.height + deltaY,
+                    })
                 }
                 break
             default:
@@ -196,27 +212,35 @@ export class ResizeHandler {
         let isUpdated = true
         switch (this.position) {
             case ResizePosition.CORNER_BOTTOM_RIGHT:
-                this.shape.width = initial.width + deltaX
-                this.shape.height = initial.height + deltaY
+                this.shape.resize({
+                    width: initial.width + deltaX,
+                    height: initial.height + deltaY,
+                })
                 break
 
             case ResizePosition.CORNER_BOTTOM_LEFT: // Bottom-Left: Anchor is Top-Right
-                this.shape.width = initial.width - deltaX
-                this.shape.height = initial.height + deltaY
-                this.shape.left = initial.widgetX + deltaX
+                this.shape.resize({
+                    width: initial.width - deltaX,
+                    height: initial.height + deltaY,
+                    left: initial.widgetX + deltaX,
+                })
                 break
 
             case ResizePosition.CORNER_TOP_RIGHT:
-                this.shape.width = initial.width + deltaX
-                this.shape.height = initial.height - deltaY
-                this.shape.top = initial.widgetY + deltaY
+                this.shape.resize({
+                    width: initial.width + deltaX,
+                    height: initial.height - deltaY,
+                    top: initial.widgetY + deltaY,
+                })
                 break
 
             case ResizePosition.CORNER_TOP_LEFT: // Top-Left: Anchor is Bottom-Right
-                this.shape.width = initial.width - deltaX
-                this.shape.height = initial.height - deltaY
-                this.shape.left = initial.widgetX + deltaX
-                this.shape.top = initial.widgetY + deltaY
+                this.shape.resize({
+                    width: initial.width - deltaX,
+                    height: initial.height - deltaY,
+                    left: initial.widgetX + deltaX,
+                    top: initial.widgetY + deltaY,
+                })
                 break
             default:
                 isUpdated = false
