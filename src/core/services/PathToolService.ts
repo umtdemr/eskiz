@@ -15,6 +15,7 @@ import { nanoid } from 'nanoid'
 import { WidgetsService } from './WidgetsService'
 import { AddWidgetPayload } from '@/types/Websocket'
 import { getSvgPathFromStroke } from '../shapes/path/pathUtils'
+import { SelectionService } from './SelectionService'
 
 export class PathToolService extends Service {
     private mouseController: MouseController
@@ -29,6 +30,7 @@ export class PathToolService extends Service {
     } = {}
     private activePathTool: 'pen' | 'eraser'
     private trailLayer: TrailLayer
+    private deletedShapesWithEraser: Map<string, Pen> = new Map()
 
     constructor(
         engine: Engine,
@@ -60,6 +62,8 @@ export class PathToolService extends Service {
         this.removeListeners()
 
         if (state.tool === ACTION_MODES.PATH) {
+            this.deletedShapesWithEraser.clear()
+
             if (state.subTool === 'DRAW_PEN') {
                 this.activePathTool = 'pen'
             } else if (state.subTool === 'ERASER') {
@@ -73,6 +77,11 @@ export class PathToolService extends Service {
 
     private onMouseDown(data: CanvasMouseEvent) {
         if (this.activePathTool === 'eraser') {
+            const widget = this.searchPenShapes(data)
+            if (widget) {
+                this.startDeletingPenWidget(widget)
+            }
+
             this.trailLayer.start(data.pointer.x, data.pointer.y)
             return
         }
@@ -100,6 +109,10 @@ export class PathToolService extends Service {
     private onMouseMove(data: CanvasMouseEvent) {
         if (this.activePathTool === 'eraser') {
             this.trailLayer.update(data.pointer.x, data.pointer.y)
+            const widget = this.searchPenShapes(data)
+            if (widget) {
+                this.startDeletingPenWidget(widget)
+            }
             return
         }
 
@@ -137,6 +150,22 @@ export class PathToolService extends Service {
         console.log('uppp')
         if (this.activePathTool === 'eraser') {
             this.trailLayer.finish()
+            // if there are widgets deleted by eraser tool, send them to db
+            if (this.deletedShapesWithEraser.size) {
+                // TODO: we may require setting visible as true for undo-redo
+
+                const widgets = [...this.deletedShapesWithEraser.values()]
+                const selectionService =
+                    this.engine.getService<SelectionService>('selection')
+                const command = this.engine.getCommand('delete')
+                command.execute({
+                    selectionService,
+                    engine: this.engine,
+                    params: {
+                        widgets,
+                    },
+                })
+            }
             return
         }
         if (!this.path) {
@@ -162,12 +191,38 @@ export class PathToolService extends Service {
     private reset() {
         this.path = null
         this.points = []
+        this.deletedShapesWithEraser.clear()
     }
 
     private removeListeners() {
         this.mouseController.off('mouseDown', this.onMouseDown, this)
         this.mouseController.off('mouseMove', this.onMouseMove, this)
         this.mouseController.off('mouseUp', this.onMouseUp, this)
+    }
+
+    private searchPenShapes(mouseData: CanvasMouseEvent): Pen | null {
+        const layer = this.engine.stage.widgetsDefaultLayer
+        if (layer.children.length === 0) return null
+        const pointer = mouseData.pointer
+
+        for (const widget of layer.children) {
+            if (!(widget instanceof Pen)) continue
+            if (!widget.uuid) continue
+
+            // if already deleted, skip
+            if (this.deletedShapesWithEraser.has(widget.uuid)) continue
+            if (widget.bounds.contains(pointer.x, pointer.y)) {
+                return widget
+            }
+        }
+        return null
+    }
+
+    private startDeletingPenWidget(penShape: Pen) {
+        this.deletedShapesWithEraser.set(penShape.uuid!, penShape)
+
+        // hide it
+        penShape.visible = false
     }
 
     dispose(): void {
