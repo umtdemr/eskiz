@@ -24,7 +24,7 @@ import { ColorButton } from '@/components/colorButton/ColorButton'
 import { PenColorDropdown } from './PenColorDropdown'
 import { useBoundStore } from '@/store/store'
 import { useShallow } from 'zustand/react/shallow'
-import { closeColorPalette } from '@/components/colorList/colorList'
+import { closeColorPalette } from '@/components/colorList/colorListUtils'
 
 const tools: {
     tooltip: string
