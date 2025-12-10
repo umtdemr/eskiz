@@ -97,7 +97,8 @@ export abstract class Shape extends Widget {
         super.updateWithPartialState(json)
 
         if (json.properties?.textProperties) {
-            const textProps = json.properties.textProperties as ShapeTextConstructProps
+            const textProps = json.properties
+                .textProperties as ShapeTextConstructProps
             this._textProperties = {
                 ...this._textProperties,
                 ...textProps,
@@ -278,6 +279,28 @@ export abstract class Shape extends Widget {
         const textOps = this._textProperties?.textOps || []
         if (!textOps.length) return false
         return textOps.some((op) => op.attributes[style] === true)
+    }
+
+    resize(opt: {
+        left?: number
+        top?: number
+        width?: number
+        height?: number
+    }): boolean {
+        const resized = super.resize(opt)
+
+        // if resized, update text bounding
+        if (resized && this._text) {
+            const bounds = this.calcTextBounds()
+            this._text.resize({
+                left: bounds.x,
+                top: bounds.y,
+                width: bounds.width,
+                height: bounds.height,
+            })
+        }
+
+        return resized
     }
 
     get textStr(): string {

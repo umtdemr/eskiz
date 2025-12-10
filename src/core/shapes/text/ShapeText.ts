@@ -240,6 +240,20 @@ export class ShapeText extends Widget {
         this._shouldRender = true
     }
 
+    resize(opt: {
+        left?: number
+        top?: number
+        width?: number
+        height?: number
+    }): boolean {
+        this._x = opt.left!
+        this._y = opt.top!
+        this._width = opt.width!
+        this._height = opt.height!
+        this.createOrUpdateParagraph()
+        return true
+    }
+
     get fontSize(): number {
         return this._fontSize
     }
