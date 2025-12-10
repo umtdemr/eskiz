@@ -9,11 +9,14 @@ export class DeleteCommand extends Command {
     }
 
     canExecute(ctx: CommandCtx): boolean {
-        if (!ctx.selectionService.selected?.length) {
+        if (!ctx.params || !ctx.params?.widgets?.length) {
             return false
         }
 
-        if (ctx.selectionService.isThereLockedWidget()) {
+        // if there is any locked widget
+        if (
+            (ctx.params.widgets as Widget[]).some((widget) => widget.isLocked)
+        ) {
             return false
         }
 
@@ -28,7 +31,8 @@ export class DeleteCommand extends Command {
         const widgetService = ctx.engine.getService<WidgetsService>('widgets')
         const editTable = new Map<Widget, EditingMethods[]>()
 
-        ctx.selectionService.selected.forEach((widget) => {
+        const widgets = (ctx.params?.widgets as Widget[]) || []
+        widgets.forEach((widget) => {
             widgetService.deleteWidget(widget)
             editTable.set(widget, ['delete'])
         })
