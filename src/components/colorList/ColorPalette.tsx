@@ -3,7 +3,7 @@ import { Plus } from 'lucide-react'
 import { RgbColor, RgbColorPicker } from 'react-colorful'
 import './ColorPalette.scss'
 import useOnClickOutside from '@/hooks/UseOutsideClick'
-import { closeColorPalette, onColorPaletteVisibilityChange } from './colorList'
+import { closeColorPalette, onColorPaletteVisibilityChange } from './colorListUtils'
 
 export interface ColorPaletteProps {
     size: number
