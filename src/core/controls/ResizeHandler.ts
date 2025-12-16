@@ -37,6 +37,7 @@ export class ResizeHandler {
     private shape: Widget
     private resizer: 'edge' | 'corner'
     private _shiftDominantAxis: 'x' | 'y' | undefined // for corner resize
+    private static readonly MIN_DIMENSION = 1 // Minimum width/height in pixels
 
     constructor(engine: Engine) {
         this.engine = engine
@@ -106,58 +107,70 @@ export class ResizeHandler {
             case ResizePosition.EDGE_LEFT:
                 // with shift
                 if (data.e.shiftKey) {
+                    const newWidth = Math.max(ResizeHandler.MIN_DIMENSION, this.initialBounds.width - deltaX * 2)
+                    const actualDelta = (this.initialBounds.width - newWidth) / 2
                     this.shape.resize({
-                        width: this.initialBounds.width - deltaX * 2,
-                        left: this.initialBounds.widgetX + deltaX,
+                        width: newWidth,
+                        left: this.initialBounds.widgetX + actualDelta,
                     })
                 } else {
                     // standard
+                    const newWidth = Math.max(ResizeHandler.MIN_DIMENSION, this.initialBounds.width - deltaX)
+                    const actualDelta = this.initialBounds.width - newWidth
                     this.shape.resize({
-                        width: this.initialBounds.width - deltaX,
-                        left: this.initialBounds.widgetX + deltaX,
+                        width: newWidth,
+                        left: this.initialBounds.widgetX + actualDelta,
                     })
                 }
                 break
             case ResizePosition.EDGE_RIGHT:
                 // with shift
                 if (data.e.shiftKey) {
+                    const newWidth = Math.max(ResizeHandler.MIN_DIMENSION, this.initialBounds.width + deltaX * 2)
+                    const actualDelta = (newWidth - this.initialBounds.width) / 2
                     this.shape.resize({
-                        width: this.initialBounds.width + deltaX * 2,
-                        left: this.initialBounds.widgetX - deltaX,
+                        width: newWidth,
+                        left: this.initialBounds.widgetX - actualDelta,
                     })
                 } else {
                     // standard
                     this.shape.resize({
-                        width: this.initialBounds.width + deltaX,
+                        width: Math.max(ResizeHandler.MIN_DIMENSION, this.initialBounds.width + deltaX),
                     })
                 }
                 break
             case ResizePosition.EDGE_TOP:
                 // with shift
                 if (data.e.shiftKey) {
+                    const newHeight = Math.max(ResizeHandler.MIN_DIMENSION, this.initialBounds.height - deltaY * 2)
+                    const actualDelta = (this.initialBounds.height - newHeight) / 2
                     this.shape.resize({
-                        height: this.initialBounds.height - deltaY * 2,
-                        top: this.initialBounds.widgetY + deltaY,
+                        height: newHeight,
+                        top: this.initialBounds.widgetY + actualDelta,
                     })
                 } else {
                     // standard
+                    const newHeight = Math.max(ResizeHandler.MIN_DIMENSION, this.initialBounds.height - deltaY)
+                    const actualDelta = this.initialBounds.height - newHeight
                     this.shape.resize({
-                        height: this.initialBounds.height - deltaY,
-                        top: this.initialBounds.widgetY + deltaY,
+                        height: newHeight,
+                        top: this.initialBounds.widgetY + actualDelta,
                     })
                 }
                 break
             case ResizePosition.EDGE_BOTTOM:
                 // with shift
                 if (data.e.shiftKey) {
+                    const newHeight = Math.max(ResizeHandler.MIN_DIMENSION, this.initialBounds.height + deltaY * 2)
+                    const actualDelta = (newHeight - this.initialBounds.height) / 2
                     this.shape.resize({
-                        height: this.initialBounds.height + deltaY * 2,
-                        top: this.initialBounds.widgetY - deltaY,
+                        height: newHeight,
+                        top: this.initialBounds.widgetY - actualDelta,
                     })
                 } else {
                     // standard
                     this.shape.resize({
-                        height: this.initialBounds.height + deltaY,
+                        height: Math.max(ResizeHandler.MIN_DIMENSION, this.initialBounds.height + deltaY),
                     })
                 }
                 break
@@ -169,15 +182,6 @@ export class ResizeHandler {
     }
 
     private resizeFromCorner(data: CanvasMouseEvent): boolean {
-        this.shape.width =
-            this.initialBounds.width +
-            data.pointer.x -
-            this.initialBounds.pointerX
-        this.shape.height =
-            this.initialBounds.height +
-            data.pointer.y -
-            this.initialBounds.pointerY
-
         let deltaX = data.pointer.x - this.initialBounds.pointerX
         let deltaY = data.pointer.y - this.initialBounds.pointerY
         const initial = this.initialBounds
@@ -213,34 +217,48 @@ export class ResizeHandler {
         switch (this.position) {
             case ResizePosition.CORNER_BOTTOM_RIGHT:
                 this.shape.resize({
-                    width: initial.width + deltaX,
-                    height: initial.height + deltaY,
+                    width: Math.max(ResizeHandler.MIN_DIMENSION, initial.width + deltaX),
+                    height: Math.max(ResizeHandler.MIN_DIMENSION, initial.height + deltaY),
                 })
                 break
 
             case ResizePosition.CORNER_BOTTOM_LEFT: // Bottom-Left: Anchor is Top-Right
-                this.shape.resize({
-                    width: initial.width - deltaX,
-                    height: initial.height + deltaY,
-                    left: initial.widgetX + deltaX,
-                })
+                {
+                    const newWidth = Math.max(ResizeHandler.MIN_DIMENSION, initial.width - deltaX)
+                    const actualDeltaX = initial.width - newWidth
+                    this.shape.resize({
+                        width: newWidth,
+                        height: Math.max(ResizeHandler.MIN_DIMENSION, initial.height + deltaY),
+                        left: initial.widgetX + actualDeltaX,
+                    })
+                }
                 break
 
             case ResizePosition.CORNER_TOP_RIGHT:
-                this.shape.resize({
-                    width: initial.width + deltaX,
-                    height: initial.height - deltaY,
-                    top: initial.widgetY + deltaY,
-                })
+                {
+                    const newHeight = Math.max(ResizeHandler.MIN_DIMENSION, initial.height - deltaY)
+                    const actualDeltaY = initial.height - newHeight
+                    this.shape.resize({
+                        width: Math.max(ResizeHandler.MIN_DIMENSION, initial.width + deltaX),
+                        height: newHeight,
+                        top: initial.widgetY + actualDeltaY,
+                    })
+                }
                 break
 
             case ResizePosition.CORNER_TOP_LEFT: // Top-Left: Anchor is Bottom-Right
-                this.shape.resize({
-                    width: initial.width - deltaX,
-                    height: initial.height - deltaY,
-                    left: initial.widgetX + deltaX,
-                    top: initial.widgetY + deltaY,
-                })
+                {
+                    const newWidth = Math.max(ResizeHandler.MIN_DIMENSION, initial.width - deltaX)
+                    const newHeight = Math.max(ResizeHandler.MIN_DIMENSION, initial.height - deltaY)
+                    const actualDeltaX = initial.width - newWidth
+                    const actualDeltaY = initial.height - newHeight
+                    this.shape.resize({
+                        width: newWidth,
+                        height: newHeight,
+                        left: initial.widgetX + actualDeltaX,
+                        top: initial.widgetY + actualDeltaY,
+                    })
+                }
                 break
             default:
                 isUpdated = false
