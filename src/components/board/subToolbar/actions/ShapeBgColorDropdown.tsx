@@ -53,11 +53,12 @@ export function ShapeBgColorDropdown({
         const color = {
             ...(selected.properties.fillColor as RGBA),
             a: newOpacity,
-        }
+        } as RGBA
 
         onColorSelect({
             color,
             isImmediate: false,
+            rgba: `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`,
         })
     }
 
@@ -74,6 +75,7 @@ export function ShapeBgColorDropdown({
         onColorSelect({
             color: { ...signature.color, a: opacity },
             isImmediate: signature.isImmediate,
+            rgba: `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`,
         })
     }
 

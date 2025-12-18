@@ -84,6 +84,12 @@ export function getPartialState(
                         fillColor: widget.properties.fillColor,
                     }
                 }
+                if (widget instanceof TextBox) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        fillColor: widget.properties.fillColor,
+                    }
+                }
                 break
             case 'borderColor':
                 if (widget instanceof Shape) {
