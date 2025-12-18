@@ -116,23 +116,29 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             }, 500)
         }
 
-        const onMoveStarted = () => dispatch({ type: ActionKind.TEMP_HIDE })
-        const onMoveFinished = () => dispatch({ type: ActionKind.TEMP_SHOW })
+        const hideSubtoolbar = () => dispatch({ type: ActionKind.TEMP_HIDE })
+        const showSubtoolbar = () => dispatch({ type: ActionKind.TEMP_SHOW })
 
         if (state.show) {
             engine.canvas.transform.add(onTransform)
-            engine.dragHandler.moveStarted.add(onMoveStarted)
-            engine.dragHandler.moveFinished.add(onMoveFinished)
+            engine.dragHandler.moveStarted.add(hideSubtoolbar)
+            engine.dragHandler.moveFinished.add(showSubtoolbar)
+            engine.resizeHandler.resizeStarted.add(hideSubtoolbar)
+            engine.resizeHandler.resizeFinished.add(showSubtoolbar)
         } else {
             engine.canvas.transform.remove(onTransform)
-            engine.dragHandler.moveStarted.remove(onMoveStarted)
-            engine.dragHandler.moveFinished.remove(onMoveFinished)
+            engine.dragHandler.moveStarted.remove(hideSubtoolbar)
+            engine.dragHandler.moveFinished.remove(showSubtoolbar)
+            engine.resizeHandler.resizeStarted.remove(hideSubtoolbar)
+            engine.resizeHandler.resizeFinished.remove(showSubtoolbar)
         }
 
         return () => {
             engine.canvas.transform.remove(onTransform)
-            engine.dragHandler.moveStarted.remove(onMoveStarted)
-            engine.dragHandler.moveFinished.remove(onMoveFinished)
+            engine.dragHandler.moveStarted.remove(hideSubtoolbar)
+            engine.dragHandler.moveFinished.remove(showSubtoolbar)
+            engine.resizeHandler.resizeStarted.remove(hideSubtoolbar)
+            engine.resizeHandler.resizeFinished.remove(showSubtoolbar)
         }
     }, [state.show])
 
