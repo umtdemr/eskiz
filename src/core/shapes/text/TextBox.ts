@@ -4,6 +4,7 @@ import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
 import { createTextOpsFromString, TextOp } from '@/core/textEditor/TextEditor'
 import { FontStyleType } from '@/helpers/Constant'
 import { WsWidget } from '@/types/Websocket.ts'
+import { RGBA } from '../Color'
 
 export interface TextBoxProps extends Omit<WidgetProps, 'height'> {
     properties: TextBoxProperties
@@ -16,6 +17,7 @@ export interface TextBoxProperties {
     textAlign?: TEXT_ALIGN
     isPlaceholder?: boolean
     lineHeight?: number
+    fillColor?: RGBA
 }
 
 export type TEXT_ALIGN = 'left' | 'center' | 'right'
@@ -29,6 +31,7 @@ export class TextBox extends Widget {
     private _isPlaceholder: boolean
     private _shouldRender = true
     private _lineHeight: number
+    private _fillColor: null | RGBA
 
     constructor(props: TextBoxProps) {
         super('text', props)
@@ -44,6 +47,9 @@ export class TextBox extends Widget {
             props.properties.isPlaceholder !== undefined
                 ? props.properties.isPlaceholder
                 : false
+        this._fillColor = props.properties.fillColor
+            ? props.properties.fillColor
+            : null
         this._lineHeight = props.properties.lineHeight || 1.4
 
         this.createOrUpdateParagraph()
@@ -141,6 +147,25 @@ export class TextBox extends Widget {
             return
         }
         const ctx = renderContext.ctx
+
+        if (this._fillColor && this._fillColor.a > 0) {
+            const paint = new canvasKit.Paint()
+            paint.setStyle(canvasKit.PaintStyle.Fill)
+            paint.setColor(
+                canvasKit.Color(
+                    this._fillColor.r,
+                    this._fillColor.g,
+                    this._fillColor.b,
+                    this._fillColor.a,
+                ),
+            )
+            ctx.drawRect(
+                canvasKit.XYWHRect(0, 0, this.width, this.height),
+                paint,
+            )
+            paint.delete()
+        }
+
         ctx.drawParagraph(this._paragraph, 0, 0)
     }
 
@@ -149,7 +174,7 @@ export class TextBox extends Widget {
 
         if (json.properties) {
             const props = json.properties as Partial<TextBoxProperties>
-            
+
             if (props.text !== undefined && props.textOps) {
                 this.setTextOps(props.text, props.textOps)
             }
@@ -162,6 +187,9 @@ export class TextBox extends Widget {
             if (props.lineHeight !== undefined) {
                 this._lineHeight = props.lineHeight
                 this.createOrUpdateParagraph()
+            }
+            if (props.fillColor !== undefined) {
+                this._fillColor = props.fillColor
             }
         }
     }
@@ -187,6 +215,11 @@ export class TextBox extends Widget {
     }
 
     canChangeBgColor(): boolean {
+        return true
+    }
+
+    changeBgColor(newColor: RGBA): boolean {
+        this._fillColor = newColor
         return true
     }
 
@@ -298,6 +331,9 @@ export class TextBox extends Widget {
             fontSize: this._fontSize,
             textAlign: this._textAlign,
             lineHeight: this._lineHeight,
+            ...(this._fillColor && {
+                fillColor: this._fillColor,
+            }),
         }
     }
 
@@ -314,7 +350,9 @@ export class TextBox extends Widget {
             properties: this.properties,
             is_deleted: this._isDeleted,
             is_locked: this._isLocked,
-            ...(this._parent_widget_id && { parent_widget_id: this._parent_widget_id }),
+            ...(this._parent_widget_id && {
+                parent_widget_id: this._parent_widget_id,
+            }),
         }
     }
 

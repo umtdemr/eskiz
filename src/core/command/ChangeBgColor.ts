@@ -1,5 +1,6 @@
 import { RGBA } from '../shapes/Color'
 import { Shape } from '../shapes/Shape'
+import { TextBox } from '../shapes/text/TextBox'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
 import { CONTINUOUS_THROTTLE_DELAY } from '../transaction/TransactionHandler'
@@ -27,7 +28,7 @@ export class ChangeBgColor extends Command {
 
         const color = ctx.params?.color as RGBA
         const widget = ctx.selectionService.selected[0]
-        if (!(widget instanceof Shape)) return
+        if (!(widget instanceof Shape) && !(widget instanceof TextBox)) return
 
         if (widget.changeBgColor(color)) {
             ctx.engine.canvas.requestRender()
