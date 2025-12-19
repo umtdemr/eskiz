@@ -118,6 +118,15 @@ export abstract class Shape extends Widget {
                 this.createTextObject()
             }
         }
+
+        if ((json.width || json.height) && this._text) {
+            const bounds = this.calcTextBounds()
+            this._text.left = bounds.x
+            this._text.top = bounds.y
+            this._text.width = bounds.width
+            this._text.height = bounds.height
+            this._text.createOrUpdateParagraph()
+        }
     }
 
     get shapeType(): ShapeType {
