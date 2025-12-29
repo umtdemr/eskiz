@@ -21,6 +21,7 @@ import { nanoid } from 'nanoid'
 import { WidgetsService } from './WidgetsService'
 import { AddWidgetPayload } from '@/types/Websocket'
 import { CursorType, TextAlign, TextSessionType } from '@/core/constants.ts'
+import { CreationHistoryEntry } from '@/core/history/HistoryManager'
 
 export class TextService extends Service {
     private mouseController: MouseController
@@ -99,6 +100,9 @@ export class TextService extends Service {
         })
 
         this.engine.stage.addWidget(textbox)
+        this.engine.historyManager.push(
+            new CreationHistoryEntry(this.engine, textbox),
+        )
 
         // arrange center
         textbox.top = textbox.top - textbox.height / 2
@@ -164,6 +168,9 @@ export class TextService extends Service {
 
                 // todo (transaction): check error, if necessary delete from canvas
                 widgetsService.addWidget(json as AddWidgetPayload)
+                this.engine.historyManager.push(
+                    new CreationHistoryEntry(this.engine, this.textBox),
+                )
                 this.initializeTransaction()
             }
 
@@ -177,7 +184,10 @@ export class TextService extends Service {
                 y: this.textBox.centerY,
             })
             this.engine.canvas.requestRender()
-        } else if (this.activeSession === TextSessionType.SHAPE_TEXT && this.shape) {
+        } else if (
+            this.activeSession === TextSessionType.SHAPE_TEXT &&
+            this.shape
+        ) {
             this.shape.updateText(props.text, props.textOps)
         }
 
