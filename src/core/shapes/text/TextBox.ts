@@ -122,6 +122,10 @@ export class TextBox extends Widget {
         return this._paragraph
     }
 
+    getMinWidth(): number {
+        return Math.max(10, this._fontSize)
+    }
+
     private getParagraphStyle() {
         return new canvasKit.ParagraphStyle({
             textStyle: {

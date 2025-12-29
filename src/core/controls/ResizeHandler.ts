@@ -31,6 +31,7 @@ export class ResizeHandler {
         width: 0,
         height: 0,
         aspectRatio: 1,
+        fontSize: 0,
     }
     private transactionHandler: TransactionHandler
     private _transactionId: TransactionId
@@ -58,6 +59,7 @@ export class ResizeHandler {
             width: shape.width,
             height: shape.height,
             aspectRatio: shape.width / shape.height,
+            fontSize: (shape as any).fontSize || 0,
         }
 
         this.position = position
@@ -120,12 +122,20 @@ export class ResizeHandler {
         const deltaY = data.pointer.y - this.initialBounds.pointerY
 
         let isUpdated = true
+        
+        // Special handling for text widgets - prevent width from going below minimum
+        let minWidth = ResizeHandler.MIN_DIMENSION
+        const isTextWidget = this.shape.widgetType === 'text'
+        if (isTextWidget && (this.shape as any).getMinWidth) {
+            minWidth = Math.max(minWidth, (this.shape as any).getMinWidth())
+        }
+
         switch (this.position) {
             case ResizePosition.EDGE_LEFT:
                 // with shift
                 if (data.e.shiftKey) {
                     const newWidth = Math.max(
-                        ResizeHandler.MIN_DIMENSION,
+                        minWidth,
                         this.initialBounds.width - deltaX * 2,
                     )
                     const actualDelta =
@@ -137,7 +147,7 @@ export class ResizeHandler {
                 } else {
                     // standard
                     const newWidth = Math.max(
-                        ResizeHandler.MIN_DIMENSION,
+                        minWidth,
                         this.initialBounds.width - deltaX,
                     )
                     const actualDelta = this.initialBounds.width - newWidth
@@ -146,12 +156,15 @@ export class ResizeHandler {
                         left: this.initialBounds.widgetX + actualDelta,
                     })
                 }
+                if (isTextWidget && (this.shape as any).createOrUpdateParagraph) {
+                    (this.shape as any).createOrUpdateParagraph()
+                }
                 break
             case ResizePosition.EDGE_RIGHT:
                 // with shift
                 if (data.e.shiftKey) {
                     const newWidth = Math.max(
-                        ResizeHandler.MIN_DIMENSION,
+                        minWidth,
                         this.initialBounds.width + deltaX * 2,
                     )
                     const actualDelta =
@@ -164,13 +177,21 @@ export class ResizeHandler {
                     // standard
                     this.shape.resize({
                         width: Math.max(
-                            ResizeHandler.MIN_DIMENSION,
+                            minWidth,
                             this.initialBounds.width + deltaX,
                         ),
                     })
                 }
+                if (isTextWidget && (this.shape as any).createOrUpdateParagraph) {
+                    (this.shape as any).createOrUpdateParagraph()
+                }
                 break
             case ResizePosition.EDGE_TOP:
+                // For text widgets, don't allow height resize (height is determined by content)
+                if (isTextWidget) {
+                    isUpdated = false
+                    break
+                }
                 // with shift
                 if (data.e.shiftKey) {
                     const newHeight = Math.max(
@@ -197,6 +218,11 @@ export class ResizeHandler {
                 }
                 break
             case ResizePosition.EDGE_BOTTOM:
+                // For text widgets, don't allow height resize (height is determined by content)
+                if (isTextWidget) {
+                    isUpdated = false
+                    break
+                }
                 // with shift
                 if (data.e.shiftKey) {
                     const newHeight = Math.max(
@@ -230,6 +256,88 @@ export class ResizeHandler {
         let deltaX = data.pointer.x - this.initialBounds.pointerX
         let deltaY = data.pointer.y - this.initialBounds.pointerY
         const initial = this.initialBounds
+
+        // Special handling for text widgets - scale font size AND resize
+        if (this.shape.widgetType === 'text') {
+            // Calculate scale factor based on diagonal distance change
+            const initialDiagonal = Math.sqrt(initial.width ** 2 + initial.height ** 2)
+            
+            // Calculate current diagonal based on the corner being dragged
+            let currentWidth = initial.width
+            let currentHeight = initial.height
+            
+            // Determine new dimensions based on corner
+            if (this.position === ResizePosition.CORNER_BOTTOM_RIGHT) {
+                currentWidth = initial.width + deltaX
+                currentHeight = initial.height + deltaY
+            } else if (this.position === ResizePosition.CORNER_BOTTOM_LEFT) {
+                currentWidth = initial.width - deltaX
+                currentHeight = initial.height + deltaY
+            } else if (this.position === ResizePosition.CORNER_TOP_RIGHT) {
+                currentWidth = initial.width + deltaX
+                currentHeight = initial.height - deltaY
+            } else if (this.position === ResizePosition.CORNER_TOP_LEFT) {
+                currentWidth = initial.width - deltaX
+                currentHeight = initial.height - deltaY
+            }
+            
+            const currentDiagonal = Math.sqrt(currentWidth ** 2 + currentHeight ** 2)
+            
+            const scaleFactor = currentDiagonal / initialDiagonal
+            const newFontSize = Math.max(1, Math.round(initial.fontSize * scaleFactor))
+            
+            // Apply font size change
+            if ((this.shape as any).changeFontSize) {
+                (this.shape as any).changeFontSize(newFontSize)
+            }
+            
+            // Now we need to resize the box to match the new scale
+            const newWidth = Math.max(ResizeHandler.MIN_DIMENSION, initial.width * scaleFactor)
+            
+            // Apply the resize with correct anchor logic
+            switch (this.position) {
+                case ResizePosition.CORNER_BOTTOM_RIGHT:
+                    this.shape.resize({
+                        width: newWidth,
+                    })
+                    break
+                case ResizePosition.CORNER_BOTTOM_LEFT:
+                    this.shape.resize({
+                        width: newWidth,
+                        left: initial.widgetX + (initial.width - newWidth),
+                    })
+                    break
+                case ResizePosition.CORNER_TOP_RIGHT:
+                    this.shape.resize({
+                        width: newWidth,
+                        top: initial.widgetY, // Top stays same, height auto-adjusts
+                    })
+                    break
+                case ResizePosition.CORNER_TOP_LEFT:
+                    this.shape.resize({
+                        width: newWidth,
+                        left: initial.widgetX + (initial.width - newWidth),
+                        top: initial.widgetY, // We'll adjust top after height calculation
+                    })
+                    break
+            }
+            
+            // Re-create paragraph to apply new dimensions and get correct height
+            if ((this.shape as any).createOrUpdateParagraph) {
+                (this.shape as any).createOrUpdateParagraph()
+            }
+            
+            // If anchoring to bottom (Top corners), we need to adjust top position based on new height
+            if (this.position === ResizePosition.CORNER_TOP_RIGHT || this.position === ResizePosition.CORNER_TOP_LEFT) {
+                const newHeight = this.shape.height
+                const heightDiff = newHeight - initial.height
+                this.shape.resize({
+                    top: initial.widgetY - heightDiff
+                })
+            }
+            
+            return true
+        }
 
         // if shift is pressed, need to scale equally
         if (data.e.shiftKey && initial.aspectRatio) {
