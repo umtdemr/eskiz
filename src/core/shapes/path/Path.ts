@@ -3,6 +3,7 @@ import { canvasKit } from '@/core/canvas/Canvas'
 import { RGBA } from '@/core/shapes/Color'
 import { CANVAS_COLORS } from '@/helpers/Constant'
 import { Path as CkPath } from 'canvaskit-wasm'
+import { WidgetType } from '@/core/constants.ts'
 
 export interface PathProps extends WidgetProps {
     properties: PathProperties
@@ -11,6 +12,7 @@ export interface PathProps extends WidgetProps {
 export interface PathProperties {
     color?: RGBA
     strokeWidth?: number
+    points: number[][]
 }
 
 export type PathType = 'pen' | 'trail'
@@ -18,14 +20,19 @@ export type PathType = 'pen' | 'trail'
 export abstract class Path extends Widget {
     private _pathType: PathType
     protected _path: CkPath
+    protected _points: number[][]
 
     constructor(type: PathType, props: PathProps) {
-        super('path', props)
+        super(WidgetType.PATH, props)
         this._pathType = type
         this._properties = { ...props.properties }
         this._properties.color = this._properties?.color
             ? props.properties.color
             : CANVAS_COLORS.BLACK
+        this._properties.points = this._properties?.points
+            ? props.properties.points
+            : []
+
         this._path = new canvasKit.Path()
     }
 
@@ -33,7 +40,26 @@ export abstract class Path extends Widget {
         return this._pathType
     }
 
-    replacePath(newPath: CkPath) {
+    replacePath(newPath: CkPath, newPoints: number[][]) {
         this._path = newPath
+        this._properties.points = newPoints
+    }
+
+    canChangeBorderColor(): boolean {
+        return true
+    }
+
+    changeBorderColor(newColor: RGBA): boolean {
+        this._properties.color = newColor
+        return true
+    }
+
+    canChangeThickness(): boolean {
+        return true
+    }
+
+    changeThickness(newThickness: number): boolean {
+        this._properties.strokeWidth = newThickness
+        return true
     }
 }

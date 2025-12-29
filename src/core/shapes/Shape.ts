@@ -13,6 +13,11 @@ import {
 } from '@/core/shapes/text/ShapeText'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
 import { TextOp } from '../textEditor/TextEditor'
+import {
+    ShapeType as ShapeTypeConst,
+    TextAlign,
+    WidgetType,
+} from '@/core/constants.ts'
 
 export interface ShapeProps extends WidgetProps {
     properties: ShapeProperties
@@ -26,13 +31,13 @@ export interface ShapeProperties {
     strokeWidth?: number
 }
 
-export type ShapeType = 'rectangle' | 'triangle' | 'ellipse'
+export type ShapeType = typeof ShapeTypeConst[keyof typeof ShapeTypeConst]
 
 const initialTextProps: ShapeTextConstructProps = {
     text: '',
     fontSize: 14,
     lineHeight: 1.4,
-    textAlign: 'center',
+    textAlign: TextAlign.CENTER,
 }
 
 export abstract class Shape extends Widget {
@@ -72,7 +77,7 @@ export abstract class Shape extends Widget {
             height: this._height,
             z_index: this._zIndex,
             uuid: this._uuid!,
-            widget_type: 'shape',
+            widget_type: WidgetType.SHAPE,
             sub_type: this._shapeType,
             properties: {
                 ...this._properties,
@@ -97,7 +102,8 @@ export abstract class Shape extends Widget {
         super.updateWithPartialState(json)
 
         if (json.properties?.textProperties) {
-            const textProps = json.properties.textProperties as ShapeTextConstructProps
+            const textProps = json.properties
+                .textProperties as ShapeTextConstructProps
             this._textProperties = {
                 ...this._textProperties,
                 ...textProps,
@@ -116,6 +122,15 @@ export abstract class Shape extends Widget {
             } else if (textProps.text) {
                 this.createTextObject()
             }
+        }
+
+        if ((json.width || json.height) && this._text) {
+            const bounds = this.calcTextBounds()
+            this._text.left = bounds.x
+            this._text.top = bounds.y
+            this._text.width = bounds.width
+            this._text.height = bounds.height
+            this._text.createOrUpdateParagraph()
         }
     }
 
@@ -278,6 +293,28 @@ export abstract class Shape extends Widget {
         const textOps = this._textProperties?.textOps || []
         if (!textOps.length) return false
         return textOps.some((op) => op.attributes[style] === true)
+    }
+
+    resize(opt: {
+        left?: number
+        top?: number
+        width?: number
+        height?: number
+    }): boolean {
+        const resized = super.resize(opt)
+
+        // if resized, update text bounding
+        if (resized && this._text) {
+            const bounds = this.calcTextBounds()
+            this._text.resize({
+                left: bounds.x,
+                top: bounds.y,
+                width: bounds.width,
+                height: bounds.height,
+            })
+        }
+
+        return resized
     }
 
     get textStr(): string {

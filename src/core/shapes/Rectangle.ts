@@ -1,8 +1,9 @@
 import { Shape, ShapeProperties, ShapeProps } from '@/core/shapes/Shape.ts'
-import { BorderStyle, SHAPES } from '@/helpers/Constant.ts'
+import { BorderStyle } from '@/helpers/Constant.ts'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WidgetJson } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color'
+import { ShapeType } from '@/core/constants.ts'
 
 export interface RectangleProps extends ShapeProps {
     properties: RectangleShapeProperties
@@ -16,7 +17,7 @@ const TEXT_PADDING = 5
 
 export class Rectangle extends Shape {
     constructor(props: RectangleProps) {
-        super(SHAPES.RECTANGLE, props)
+        super(ShapeType.RECTANGLE, props)
         if (props.properties?.radius) {
             this._properties.radius =
                 props.properties.radius >= 0 && props.properties.radius <= 20

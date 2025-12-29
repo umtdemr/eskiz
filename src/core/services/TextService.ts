@@ -18,6 +18,9 @@ import { Shape } from '@/core/shapes/Shape'
 import { Widget, WidgetClickedSignal } from '@/core/shapes/Widget'
 import { EditingMethods } from '@/core/transaction/State'
 import { nanoid } from 'nanoid'
+import { WidgetsService } from './WidgetsService'
+import { AddWidgetPayload } from '@/types/Websocket'
+import { CursorType, TextAlign, TextSessionType } from '@/core/constants.ts'
 
 export class TextService extends Service {
     private mouseController: MouseController
@@ -29,6 +32,8 @@ export class TextService extends Service {
     private textBox: TextBox
     private shape: Shape
     private activeSession: TextEditingSession | null
+    private isTextboxCreatedWithService: boolean
+    private isTextboxSavedInDb: boolean
     private transactionId: string | null
 
     constructor(
@@ -58,7 +63,7 @@ export class TextService extends Service {
      * Initialize events for creating individual textbox
      */
     private init() {
-        this.cursorService.setCursor(this.cursorToolName, 'text')
+        this.cursorService.setCursor(this.cursorToolName, CursorType.TEXT)
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
         this.mouseController.on('mouseUp', this.onMouseUp, this)
@@ -93,9 +98,7 @@ export class TextService extends Service {
             },
         })
 
-        this.engine.stage.widgetsDefaultLayer.addChildren(textbox)
-
-        // TODO (transaction): first add textbox to DB
+        this.engine.stage.addWidget(textbox)
 
         // arrange center
         textbox.top = textbox.top - textbox.height / 2
@@ -107,28 +110,28 @@ export class TextService extends Service {
             height: textbox.height,
             fontSize: textbox.fontSize,
             lineHeight: textbox.lineHeight,
-            for: 'textBox',
-            textAlign: 'left',
+            for: TextSessionType.TEXTBOX,
+            textAlign: TextAlign.LEFT,
+            showPlaceholder: true,
         })
 
         this.textBox = textbox
+        this.isTextboxCreatedWithService = true // flag for identifying if the textbox is created just now
         this.textBox.hideText() // hide text when text editor is active
         this.textBox.deselected.addOnce(this.onDeselected, this)
         this.textEditor.textChanged.add(this.onTextChanged, this)
 
-        this.selectionService.tempSelectWidget(textbox)
-        this.activeSession = 'textBox'
+        this.selectionService.selectWidget(textbox)
+        this.activeSession = TextSessionType.TEXTBOX
         this.toolService.changeTool(ACTION_MODES.SELECT)
-
-        this.initializeTransaction()
     }
 
     private initializeTransaction() {
         const editTable = new Map<Widget, EditingMethods[]>()
-        if (this.activeSession === 'shapeText') {
+        if (this.activeSession === TextSessionType.SHAPE_TEXT) {
             editTable.set(this.shape, ['text'])
         }
-        if (this.activeSession === 'textBox') {
+        if (this.activeSession === TextSessionType.TEXTBOX) {
             editTable.set(this.textBox, ['text'])
         }
 
@@ -146,7 +149,24 @@ export class TextService extends Service {
         // replace one \n to avoid +1 line issue
         const trimmedText = props.text.replace(/\n$/, '')
 
-        if (this.activeSession === 'textBox' && this.textBox) {
+        if (this.activeSession === TextSessionType.TEXTBOX && this.textBox) {
+            // if textbox is newly created by this service, add it to the db
+            if (this.isTextboxCreatedWithService && !this.isTextboxSavedInDb) {
+                this.isTextboxSavedInDb = true
+                const uuid = nanoid()
+                const widgetsService =
+                    this.engine.getService<WidgetsService>('widgets')
+                this.textBox.uuid = uuid
+                const json = {
+                    ...this.textBox?.toJson(),
+                    page_id: this.engine.pageId,
+                }
+
+                // todo (transaction): check error, if necessary delete from canvas
+                widgetsService.addWidget(json as AddWidgetPayload)
+                this.initializeTransaction()
+            }
+
             this.textBox.setTextOps(trimmedText, props.textOps)
 
             // sync text editor dimensions with text box
@@ -157,7 +177,7 @@ export class TextService extends Service {
                 y: this.textBox.centerY,
             })
             this.engine.canvas.requestRender()
-        } else if (this.activeSession === 'shapeText' && this.shape) {
+        } else if (this.activeSession === TextSessionType.SHAPE_TEXT && this.shape) {
             this.shape.updateText(props.text, props.textOps)
         }
 
@@ -172,8 +192,15 @@ export class TextService extends Service {
         }
 
         this.textEditor.hideEditor()
+
         if (this.activeSession === 'textBox' && this.textBox) {
-            this.textBox.showText()
+            // if text is not saved in db, remove it from the canvas
+            if (this.isTextboxCreatedWithService && !this.isTextboxSavedInDb) {
+                this.engine.stage.widgetsDefaultLayer.removeChild(this.textBox)
+            } else {
+                // otherwise render the actual textbox
+                this.textBox.showText()
+            }
         } else if (this.activeSession === 'shapeText' && this.shape) {
             this.shape.finishEditingText()
         }
@@ -185,6 +212,8 @@ export class TextService extends Service {
             this.engine.transactionHandler.commit(this.transactionId)
         }
         this.transactionId = null
+        this.isTextboxCreatedWithService = false
+        this.isTextboxSavedInDb = false
     }
 
     private onDeselected() {

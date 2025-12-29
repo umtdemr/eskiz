@@ -1,4 +1,5 @@
 import { getTextDimension } from '@/helpers/TextHelpers.ts'
+import { TextAlign } from '@/core/constants.ts'
 
 const CURSOR_WIDTH = 20
 const CURSOR_HEIGHT = 20
@@ -85,7 +86,7 @@ export class CollaboratorsRenderer {
             )
             // since ctx is translated into the center of the rectangle, just center the text
             ctx.textBaseline = 'middle'
-            ctx.textAlign = 'center'
+            ctx.textAlign = TextAlign.CENTER
             ctx.font = '14px "Open-Sans", sans-serif'
             ctx.fillStyle = '#f2f2f2'
             ctx.fillText(collaborator.user_name, 0, 0)

@@ -3,21 +3,25 @@ import { BoundingBox } from '../geometry/BoundingBox'
 import { RenderContext } from '../canvas/Canvas'
 import { LinkedList } from '../dataStructures/LinkedList'
 import { Signal } from '../signal/Signal'
-import { ShapeType } from '@/core/shapes/Shape.ts'
 import { WsWidget } from '@/types/Websocket.ts'
+import {
+    PathType as PathTypeConst,
+    ShapeType as ShapeTypeConst,
+    TextType as TextTypeConst,
+    WidgetType as WidgetTypeConst,
+} from '@/core/constants.ts'
 
-export type WidgetType =
-    | 'shape'
-    | 'text'
-    | 'shapeText' // text for shapes
-    | 'path'
-    | 'multiSelector'
-    | 'border'
-    | 'control'
+export type WidgetType = typeof WidgetTypeConst[keyof typeof WidgetTypeConst]
 
-export type DbWidgetType = 'shape'
+export type DbWidgetType =
+    | typeof WidgetTypeConst.SHAPE
+    | typeof WidgetTypeConst.TEXTBOX
+    | typeof WidgetTypeConst.PATH
 
-export type SubType = ShapeType
+export type SubType =
+    | typeof ShapeTypeConst[keyof typeof ShapeTypeConst]
+    | typeof TextTypeConst.TEXTBOX
+    | typeof PathTypeConst.PEN
 
 export type WidgetFullType = `${DbWidgetType}_${SubType}`
 
@@ -289,6 +293,38 @@ export abstract class Widget extends Layer {
     // return true when changing font style is allowed
     canChangeFontStyle(): boolean {
         return false
+    }
+
+    // resizes the widget.
+    // good for changing position or dimension at once since it calls `updateBounds` only once
+    resize(opt: {
+        left?: number
+        top?: number
+        width?: number
+        height?: number
+    }): boolean {
+        let resized = false
+        if (opt.left !== undefined) {
+            this._x = opt.left
+            resized = true
+        }
+        if (opt.top !== undefined) {
+            this._y = opt.top
+            resized = true
+        }
+        if (opt.width !== undefined) {
+            this._width = opt.width
+            resized = true
+        }
+        if (opt.height !== undefined) {
+            this._height = opt.height
+            resized = true
+        }
+
+        if (resized) {
+            this.updateBounds()
+        }
+        return resized
     }
 
     get width() {

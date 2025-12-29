@@ -48,7 +48,7 @@ export function ShapesDropdown({
         }
         setIsOpen(false)
     }
-    useOnClickOutside(menuRef, onClickOutsideHandler)
+    useOnClickOutside(menuRef, onClickOutsideHandler, isOpen)
 
     const shapes: {
         tooltip: string
