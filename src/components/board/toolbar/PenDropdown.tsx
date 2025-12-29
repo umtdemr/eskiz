@@ -67,7 +67,7 @@ export function PenDropdown({
         closeColorPalette.dispatch() // send signal to color palette
         setIsOpen(false)
     }
-    useOnClickOutside(menuRef, onClickOutsideHandler)
+    useOnClickOutside(menuRef, onClickOutsideHandler, isOpen)
 
     const handleClick = () => {
         setIsOpen((old) => !old)
