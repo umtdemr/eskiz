@@ -111,6 +111,7 @@ export class TextService extends Service {
             lineHeight: textbox.lineHeight,
             for: 'textBox',
             textAlign: 'left',
+            showPlaceholder: true,
         })
 
         this.textBox = textbox
@@ -119,11 +120,9 @@ export class TextService extends Service {
         this.textBox.deselected.addOnce(this.onDeselected, this)
         this.textEditor.textChanged.add(this.onTextChanged, this)
 
-        this.selectionService.tempSelectWidget(textbox)
+        this.selectionService.selectWidget(textbox)
         this.activeSession = 'textBox'
         this.toolService.changeTool(ACTION_MODES.SELECT)
-
-        this.initializeTransaction()
     }
 
     private initializeTransaction() {
@@ -164,6 +163,7 @@ export class TextService extends Service {
 
                 // todo (transaction): check error, if necessary delete from canvas
                 widgetsService.addWidget(json as AddWidgetPayload)
+                this.initializeTransaction()
             }
 
             this.textBox.setTextOps(trimmedText, props.textOps)
@@ -191,8 +191,15 @@ export class TextService extends Service {
         }
 
         this.textEditor.hideEditor()
+
         if (this.activeSession === 'textBox' && this.textBox) {
-            this.textBox.showText()
+            // if text is not saved in db, remove it from the canvas
+            if (this.isTextboxCreatedWithService && !this.isTextboxSavedInDb) {
+                this.engine.stage.widgetsDefaultLayer.removeChild(this.textBox)
+            } else {
+                // otherwise render the actual textbox
+                this.textBox.showText()
+            }
         } else if (this.activeSession === 'shapeText' && this.shape) {
             this.shape.finishEditingText()
         }
