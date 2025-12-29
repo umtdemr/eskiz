@@ -2,6 +2,7 @@ import { Commands } from '@/core/command/Command'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { Copy, LockKeyholeOpen, Trash2, LockKeyhole } from 'lucide-react'
+import { WidgetType } from '@/core/constants.ts'
 
 export interface Action {
     id: string
@@ -233,13 +234,13 @@ export function generateActions(engine: Engine): Action[] {
     const actions: Action[] = []
 
     switch (widget.widgetType) {
-        case 'shape':
+        case WidgetType.SHAPE:
             actions.push(...getShapeActions())
             break
-        case 'text':
+        case WidgetType.TEXTBOX:
             actions.push(...getTextActions())
             break
-        case 'path':
+        case WidgetType.PATH:
             actions.push(...getPathActions())
             break
         default:

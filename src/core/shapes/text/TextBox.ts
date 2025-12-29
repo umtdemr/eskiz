@@ -1,9 +1,11 @@
 import { Widget, WidgetProps } from '@/core/shapes/Widget.ts'
 import { Paragraph as CkParagraph } from 'canvaskit-wasm'
-import { RGBA } from '@/core/shapes/Color.ts'
 import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
 import { createTextOpsFromString, TextOp } from '@/core/textEditor/TextEditor'
 import { FontStyleType } from '@/helpers/Constant'
+import { WsWidget } from '@/types/Websocket.ts'
+import { RGBA } from '../Color'
+import { TextAlign, TextType, WidgetType } from '@/core/constants.ts'
 
 export interface TextBoxProps extends Omit<WidgetProps, 'height'> {
     properties: TextBoxProperties
@@ -16,9 +18,10 @@ export interface TextBoxProperties {
     textAlign?: TEXT_ALIGN
     isPlaceholder?: boolean
     lineHeight?: number
+    fillColor?: RGBA
 }
 
-export type TEXT_ALIGN = 'left' | 'center' | 'right'
+export type TEXT_ALIGN = typeof TextAlign[keyof typeof TextAlign]
 
 export class TextBox extends Widget {
     private _text: string
@@ -29,9 +32,10 @@ export class TextBox extends Widget {
     private _isPlaceholder: boolean
     private _shouldRender = true
     private _lineHeight: number
+    private _fillColor: null | RGBA
 
     constructor(props: TextBoxProps) {
-        super('text', props)
+        super(WidgetType.TEXTBOX, props)
         this._text = props.properties.text
         if (!props.properties.textOps) {
             this._textOps = createTextOpsFromString(this._text)
@@ -39,11 +43,14 @@ export class TextBox extends Widget {
             this._textOps = props.properties.textOps
         }
         this._fontSize = props.properties.fontSize
-        this._textAlign = props.properties.textAlign || 'left'
+        this._textAlign = props.properties.textAlign || TextAlign.LEFT
         this._isPlaceholder =
             props.properties.isPlaceholder !== undefined
                 ? props.properties.isPlaceholder
                 : false
+        this._fillColor = props.properties.fillColor
+            ? props.properties.fillColor
+            : null
         this._lineHeight = props.properties.lineHeight || 1.4
 
         this.createOrUpdateParagraph()
@@ -116,6 +123,10 @@ export class TextBox extends Widget {
         return this._paragraph
     }
 
+    getMinWidth(): number {
+        return Math.max(10, this._fontSize)
+    }
+
     private getParagraphStyle() {
         return new canvasKit.ParagraphStyle({
             textStyle: {
@@ -128,9 +139,9 @@ export class TextBox extends Widget {
     }
 
     private getTextAlign() {
-        if (this._textAlign === 'center') {
+        if (this._textAlign === TextAlign.CENTER) {
             return canvasKit.TextAlign.Center
-        } else if (this._textAlign === 'right') {
+        } else if (this._textAlign === TextAlign.RIGHT) {
             return canvasKit.TextAlign.Right
         }
         return canvasKit.TextAlign.Left
@@ -141,7 +152,51 @@ export class TextBox extends Widget {
             return
         }
         const ctx = renderContext.ctx
+
+        if (this._fillColor && this._fillColor.a > 0) {
+            const paint = new canvasKit.Paint()
+            paint.setStyle(canvasKit.PaintStyle.Fill)
+            paint.setColor(
+                canvasKit.Color(
+                    this._fillColor.r,
+                    this._fillColor.g,
+                    this._fillColor.b,
+                    this._fillColor.a,
+                ),
+            )
+            ctx.drawRect(
+                canvasKit.XYWHRect(0, 0, this.width, this.height),
+                paint,
+            )
+            paint.delete()
+        }
+
         ctx.drawParagraph(this._paragraph, 0, 0)
+    }
+
+    updateWithPartialState(json: Partial<WsWidget>) {
+        super.updateWithPartialState(json)
+
+        if (json.properties) {
+            const props = json.properties as Partial<TextBoxProperties>
+
+            if (props.text !== undefined && props.textOps) {
+                this.setTextOps(props.text, props.textOps)
+            }
+            if (props.fontSize !== undefined) {
+                this.changeFontSize(props.fontSize)
+            }
+            if (props.textAlign !== undefined) {
+                this.changeTextAlign(props.textAlign)
+            }
+            if (props.lineHeight !== undefined) {
+                this._lineHeight = props.lineHeight
+                this.createOrUpdateParagraph()
+            }
+            if (props.fillColor !== undefined) {
+                this._fillColor = props.fillColor
+            }
+        }
     }
 
     setTextOps(text: string, ops: TextOp[]) {
@@ -165,6 +220,11 @@ export class TextBox extends Widget {
     }
 
     canChangeBgColor(): boolean {
+        return true
+    }
+
+    changeBgColor(newColor: RGBA): boolean {
+        this._fillColor = newColor
         return true
     }
 
@@ -269,12 +329,49 @@ export class TextBox extends Widget {
         }
     }
 
-    // TODO: implement fully when saving in db
     get properties() {
         return {
-            textAlign: this._textAlign,
-            fontSize: this._fontSize,
+            text: this._text,
             textOps: this._textOps,
+            fontSize: this._fontSize,
+            textAlign: this._textAlign,
+            lineHeight: this._lineHeight,
+            ...(this._fillColor && {
+                fillColor: this._fillColor,
+            }),
         }
+    }
+
+    toJson() {
+        return {
+            x: this._x,
+            y: this._y,
+            width: this._width,
+            height: this._height,
+            z_index: this._zIndex,
+            uuid: this._uuid!,
+            widget_type: WidgetType.TEXTBOX,
+            sub_type: TextType.TEXTBOX,
+            properties: this.properties,
+            is_deleted: this._isDeleted,
+            is_locked: this._isLocked,
+            ...(this._parent_widget_id && {
+                parent_widget_id: this._parent_widget_id,
+            }),
+        }
+    }
+
+    static loadFromJson(json: WsWidget): TextBox {
+        const properties = json.properties as unknown as TextBoxProperties
+        return new TextBox({
+            x: json.x,
+            y: json.y,
+            width: json.width,
+            properties,
+            uuid: json.uuid,
+            z_index: json.z_index,
+            parent_widget_id: json.parent_widget_id,
+            is_locked: json.is_locked,
+        })
     }
 }

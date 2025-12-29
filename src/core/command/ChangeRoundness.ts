@@ -31,21 +31,10 @@ export class ChangeRoundness extends Command {
 
         if (!widgets?.length || roundness === undefined) return
 
-        const affectedWidgets = []
-        for (const widget of widgets) {
-            if (!widget.canChangeRoundness() || !(widget instanceof Rectangle))
-                continue
-
-            if (widget.changeRoundness(roundness)) {
-                affectedWidgets.push(widget)
-            }
-        }
-        if (affectedWidgets.length) {
-            ctx.engine.canvas.requestRender()
-        }
-
         const editTable = new Map<Widget, EditingMethods[]>()
-        affectedWidgets.forEach((widget) => {
+        widgets.forEach((widget) => {
+            if (!widget.canChangeRoundness() || !(widget instanceof Rectangle))
+                return
             editTable.set(widget, ['roundness'])
         })
 
@@ -59,12 +48,29 @@ export class ChangeRoundness extends Command {
                     },
                 )
                 this.transactionId = transactionId
-            } else {
-                // if a transaction already exists, update it
-                clearTimeout(this.continuousTimeoutId)
-                // TODO: phase 2 - check error
-                ctx.engine.transactionHandler.update(this.transactionId)
             }
+
+            const affectedWidgets = []
+            for (const widget of widgets) {
+                if (
+                    !widget.canChangeRoundness() ||
+                    !(widget instanceof Rectangle)
+                )
+                    continue
+
+                if (widget.changeRoundness(roundness)) {
+                    affectedWidgets.push(widget)
+                }
+            }
+            if (affectedWidgets.length) {
+                ctx.engine.canvas.requestRender()
+            }
+
+            // if a transaction already exists, update it
+            clearTimeout(this.continuousTimeoutId)
+            // TODO: phase 2 - check error
+            ctx.engine.transactionHandler.update(this.transactionId)
+
             const thisCtx = this
 
             // after some time, commit the changes
@@ -86,6 +92,22 @@ export class ChangeRoundness extends Command {
                     editTable,
                 },
             )
+
+            const affectedWidgets = []
+            for (const widget of widgets) {
+                if (
+                    !widget.canChangeRoundness() ||
+                    !(widget instanceof Rectangle)
+                )
+                    continue
+
+                if (widget.changeRoundness(roundness)) {
+                    affectedWidgets.push(widget)
+                }
+            }
+            if (affectedWidgets.length) {
+                ctx.engine.canvas.requestRender()
+            }
 
             // add to db
             // TODO: phase 2 - check error

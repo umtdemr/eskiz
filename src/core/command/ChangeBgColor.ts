@@ -1,5 +1,6 @@
 import { RGBA } from '../shapes/Color'
 import { Shape } from '../shapes/Shape'
+import { TextBox } from '../shapes/text/TextBox'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
 import { CONTINUOUS_THROTTLE_DELAY } from '../transaction/TransactionHandler'
@@ -27,11 +28,7 @@ export class ChangeBgColor extends Command {
 
         const color = ctx.params?.color as RGBA
         const widget = ctx.selectionService.selected[0]
-        if (!(widget instanceof Shape)) return
-
-        if (widget.changeBgColor(color)) {
-            ctx.engine.canvas.requestRender()
-        }
+        if (!(widget instanceof Shape) && !(widget instanceof TextBox)) return
 
         const editTable = new Map<Widget, EditingMethods[]>()
         editTable.set(ctx.selectionService.selected[0], ['backgroundColor'])
@@ -46,12 +43,17 @@ export class ChangeBgColor extends Command {
                     },
                 )
                 this.transactionId = transactionId
-            } else {
-                // if a transaction already exists, update it
-                clearTimeout(this.continuousTimeoutId)
-                // TODO: phase 2 - check error
-                ctx.engine.transactionHandler.update(this.transactionId)
             }
+
+            if (widget.changeBgColor(color)) {
+                ctx.engine.canvas.requestRender()
+            }
+
+            // if a transaction already exists, update it
+            clearTimeout(this.continuousTimeoutId)
+            // TODO: phase 2 - check error
+            ctx.engine.transactionHandler.update(this.transactionId)
+
             const thisCtx = this
 
             // after some time, commit the changes
@@ -73,6 +75,10 @@ export class ChangeBgColor extends Command {
                     editTable,
                 },
             )
+
+            if (widget.changeBgColor(color)) {
+                ctx.engine.canvas.requestRender()
+            }
 
             // add to db
             // TODO: phase 2 - check error

@@ -89,6 +89,7 @@ export type WsWidget = {
     is_locked: boolean
     widget_type: string
     sub_type?: string | undefined
+    parent_widget_id?: string
 }
 
 export type AddWidgetResponse = {

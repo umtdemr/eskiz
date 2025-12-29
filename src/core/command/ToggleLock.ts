@@ -29,7 +29,6 @@ export class ToggleLockCommand extends Command {
         const editTable = new Map<Widget, EditingMethods[]>()
 
         ctx.selectionService.selected.forEach((widget) => {
-            widgetService.toggleLockState(widget)
             editTable.set(widget, ['toggleLock'])
         })
         const { transactionId } = ctx.engine.transactionHandler.begin(
@@ -38,6 +37,10 @@ export class ToggleLockCommand extends Command {
                 editTable,
             },
         )
+
+        ctx.selectionService.selected.forEach((widget) => {
+            widgetService.toggleLockState(widget)
+        })
 
         // add to db
         // TODO: phase 2 - check error

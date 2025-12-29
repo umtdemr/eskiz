@@ -51,6 +51,19 @@ export function ShapeBorderColorDropdown({
             return
         }
         const selectedWidget = selectionService.selected[0]
+
+        if (selectedWidget.widgetType === 'path') {
+            const color = selectedWidget.properties.color as RGBA
+            const thickness = selectedWidget.properties.strokeWidth as number
+
+            setOpacity(color?.a || 1)
+            setThickness(thickness || 2)
+            setShowBorderStyle(false)
+            setShowRoundness(false)
+            return
+        }
+
+        // Handle shape widgets
         if (selectedWidget.widgetType !== 'shape') {
             return
         }
@@ -84,7 +97,11 @@ export function ShapeBorderColorDropdown({
         if (!selectionService.canAllChangeBorderStyle()) return
 
         // if the style is not changed
-        if (widgets.every((widget) => widget.properties.borderStyle === newStyle))
+        if (
+            widgets.every(
+                (widget) => widget.properties.borderStyle === newStyle,
+            )
+        )
             return
 
         const command = new ChangeBorderStyle('changeBorderStyle')
@@ -110,8 +127,14 @@ export function ShapeBorderColorDropdown({
         const newOpacity = newOpacityArr[0]
         setOpacity(newOpacity)
 
+        // Get the correct color property based on widget type
+        const colorProp =
+            selected.widgetType === 'path'
+                ? selected.properties.color
+                : selected.properties.strokeColor
+
         const color = {
-            ...(selected.properties.strokeColor as RGBA),
+            ...(colorProp as RGBA),
             a: newOpacity,
         }
 
@@ -132,7 +155,7 @@ export function ShapeBorderColorDropdown({
             engine.getService<SelectionService>('selection')
         const widgets = selectionService.selected
         if (!widgets.length) return
-        if (!selectionService.canAllChangeBorderStyle()) return
+        if (!selectionService.canAllChangeBorderColor()) return
 
         const color = { ...signature.color, a: opacity }
 
@@ -195,11 +218,7 @@ export function ShapeBorderColorDropdown({
         const roundness = roundnessArr[0]
 
         // if the roundness is not changed
-        if (
-            widgets.every(
-                (widget) => widget.properties.radius === roundness,
-            )
-        )
+        if (widgets.every((widget) => widget.properties.radius === roundness))
             return
 
         setRoundness(roundness)
@@ -227,9 +246,7 @@ export function ShapeBorderColorDropdown({
                             <Button
                                 variant="ghost"
                                 className={clsx('borderStyleBtn', {
-                                    active:
-                                        borderStyle ===
-                                        BorderStyle.SOLID,
+                                    active: borderStyle === BorderStyle.SOLID,
                                 })}
                                 onClick={() =>
                                     changeBorderStyle(BorderStyle.SOLID)
@@ -260,9 +277,7 @@ export function ShapeBorderColorDropdown({
                             <Button
                                 variant="ghost"
                                 className={clsx('borderStyleBtn', {
-                                    active:
-                                        borderStyle ===
-                                        BorderStyle.DASHED,
+                                    active: borderStyle === BorderStyle.DASHED,
                                 })}
                                 onClick={() =>
                                     changeBorderStyle(BorderStyle.DASHED)
@@ -293,9 +308,7 @@ export function ShapeBorderColorDropdown({
                             <Button
                                 variant="ghost"
                                 className={clsx('borderStyleBtn', {
-                                    active:
-                                        borderStyle ===
-                                        BorderStyle.DOTTED,
+                                    active: borderStyle === BorderStyle.DOTTED,
                                 })}
                                 onClick={() =>
                                     changeBorderStyle(BorderStyle.DOTTED)
@@ -359,7 +372,11 @@ export function ShapeBorderColorDropdown({
                 </div>
             )}
             <div className="p-2">
-                <ColorList onColorSelect={handleColorSelect} perColumn={4} shouldHideTransparentColor />
+                <ColorList
+                    onColorSelect={handleColorSelect}
+                    perColumn={4}
+                    shouldHideTransparentColor
+                />
             </div>
         </div>
     )

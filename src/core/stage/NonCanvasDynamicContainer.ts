@@ -24,8 +24,8 @@ export class NonCanvasDynamicContainer extends Layer {
         this._selectionLayer = new SelectionLayer(engine, selectionService)
         this._trailLayer = new TrailLayer(engine)
 
-        this.addChildren(this._trailLayer)
         this.addChildren(this._selectionLayer)
+        this.addChildren(this._trailLayer)
         this.addChildren(this._mutliSelector)
     }
 

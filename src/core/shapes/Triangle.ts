@@ -4,12 +4,13 @@ import { WsWidget } from '@/types/Websocket.ts'
 import { WidgetJson } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color'
 import { BorderStyle } from '@/helpers/Constant'
+import { ShapeType } from '@/core/constants.ts'
 
 const TEXT_PADDING = 5
 
 export class Triangle extends Shape {
     constructor(props: ShapeProps) {
-        super('triangle', props)
+        super(ShapeType.TRIANGLE, props)
     }
 
     renderContent(renderContext: RenderContext): void {
