@@ -4,10 +4,11 @@ import { RGBA } from '@/core/shapes/Color'
 import { WsWidget } from '@/types/Websocket'
 import { getSvgPathFromStroke, reconstructPathFromPoints } from './pathUtils'
 import getStroke from 'perfect-freehand'
+import { PathType, WidgetType } from '@/core/constants.ts'
 
 export class Pen extends Path {
     constructor(props: PathProps) {
-        super('pen', props)
+        super(PathType.PEN, props)
         this._interactive = true
 
         if (props.properties.points && props.properties.points.length > 1) {
@@ -46,8 +47,8 @@ export class Pen extends Path {
             height: this._height,
             z_index: this._zIndex,
             uuid: this._uuid!,
-            widget_type: 'path' as const,
-            sub_type: 'pen' as const,
+            widget_type: WidgetType.PATH,
+            sub_type: PathType.PEN,
             properties: this.properties,
             is_deleted: this._isDeleted,
             is_locked: this._isLocked,

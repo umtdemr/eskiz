@@ -16,6 +16,7 @@ import { WidgetsService } from './WidgetsService'
 import { AddWidgetPayload } from '@/types/Websocket'
 import { getSvgPathFromStroke } from '../shapes/path/pathUtils'
 import { SelectionService } from './SelectionService'
+import { CursorType, PathToolType } from '@/core/constants.ts'
 
 export class PathToolService extends Service {
     private mouseController: MouseController
@@ -28,7 +29,7 @@ export class PathToolService extends Service {
         color?: RGBA
         thickness?: number
     } = {}
-    private activePathTool: 'pen' | 'eraser'
+    private activePathTool: typeof PathToolType[keyof typeof PathToolType]
     private trailLayer: TrailLayer
     private deletedShapesWithEraser: Map<string, Pen> = new Map()
 
@@ -47,7 +48,7 @@ export class PathToolService extends Service {
     }
 
     private init() {
-        this.cursorService.setCursor(this.cursorToolName, 'crosshair')
+        this.cursorService.setCursor(this.cursorToolName, CursorType.CROSSHAIR)
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
         this.mouseController.on('mouseUp', this.onMouseUp, this)
@@ -65,9 +66,9 @@ export class PathToolService extends Service {
             this.deletedShapesWithEraser.clear()
 
             if (state.subTool === 'DRAW_PEN') {
-                this.activePathTool = 'pen'
+                this.activePathTool = PathToolType.PEN
             } else if (state.subTool === 'ERASER') {
-                this.activePathTool = 'eraser'
+                this.activePathTool = PathToolType.ERASER
             }
             this.init()
         } else {
@@ -76,7 +77,7 @@ export class PathToolService extends Service {
     }
 
     private onMouseDown(data: CanvasMouseEvent) {
-        if (this.activePathTool === 'eraser') {
+        if (this.activePathTool === PathToolType.ERASER) {
             const widget = this.searchPenShapes(data)
             if (widget) {
                 this.startDeletingPenWidget(widget)

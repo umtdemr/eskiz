@@ -5,6 +5,7 @@ import { createTextOpsFromString, TextOp } from '@/core/textEditor/TextEditor'
 import { FontStyleType } from '@/helpers/Constant'
 import { WsWidget } from '@/types/Websocket.ts'
 import { RGBA } from '../Color'
+import { TextAlign, TextType, WidgetType } from '@/core/constants.ts'
 
 export interface TextBoxProps extends Omit<WidgetProps, 'height'> {
     properties: TextBoxProperties
@@ -20,7 +21,7 @@ export interface TextBoxProperties {
     fillColor?: RGBA
 }
 
-export type TEXT_ALIGN = 'left' | 'center' | 'right'
+export type TEXT_ALIGN = typeof TextAlign[keyof typeof TextAlign]
 
 export class TextBox extends Widget {
     private _text: string
@@ -34,7 +35,7 @@ export class TextBox extends Widget {
     private _fillColor: null | RGBA
 
     constructor(props: TextBoxProps) {
-        super('text', props)
+        super(WidgetType.TEXTBOX, props)
         this._text = props.properties.text
         if (!props.properties.textOps) {
             this._textOps = createTextOpsFromString(this._text)
@@ -42,7 +43,7 @@ export class TextBox extends Widget {
             this._textOps = props.properties.textOps
         }
         this._fontSize = props.properties.fontSize
-        this._textAlign = props.properties.textAlign || 'left'
+        this._textAlign = props.properties.textAlign || TextAlign.LEFT
         this._isPlaceholder =
             props.properties.isPlaceholder !== undefined
                 ? props.properties.isPlaceholder
@@ -138,9 +139,9 @@ export class TextBox extends Widget {
     }
 
     private getTextAlign() {
-        if (this._textAlign === 'center') {
+        if (this._textAlign === TextAlign.CENTER) {
             return canvasKit.TextAlign.Center
-        } else if (this._textAlign === 'right') {
+        } else if (this._textAlign === TextAlign.RIGHT) {
             return canvasKit.TextAlign.Right
         }
         return canvasKit.TextAlign.Left
@@ -349,8 +350,8 @@ export class TextBox extends Widget {
             height: this._height,
             z_index: this._zIndex,
             uuid: this._uuid!,
-            widget_type: 'textbox' as const,
-            sub_type: 'textbox' as const,
+            widget_type: WidgetType.TEXTBOX,
+            sub_type: TextType.TEXTBOX,
             properties: this.properties,
             is_deleted: this._isDeleted,
             is_locked: this._isLocked,

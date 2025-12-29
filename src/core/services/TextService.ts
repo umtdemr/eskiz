@@ -20,6 +20,7 @@ import { EditingMethods } from '@/core/transaction/State'
 import { nanoid } from 'nanoid'
 import { WidgetsService } from './WidgetsService'
 import { AddWidgetPayload } from '@/types/Websocket'
+import { CursorType, TextAlign, TextSessionType } from '@/core/constants.ts'
 
 export class TextService extends Service {
     private mouseController: MouseController
@@ -62,7 +63,7 @@ export class TextService extends Service {
      * Initialize events for creating individual textbox
      */
     private init() {
-        this.cursorService.setCursor(this.cursorToolName, 'text')
+        this.cursorService.setCursor(this.cursorToolName, CursorType.TEXT)
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
         this.mouseController.on('mouseUp', this.onMouseUp, this)
@@ -109,8 +110,8 @@ export class TextService extends Service {
             height: textbox.height,
             fontSize: textbox.fontSize,
             lineHeight: textbox.lineHeight,
-            for: 'textBox',
-            textAlign: 'left',
+            for: TextSessionType.TEXTBOX,
+            textAlign: TextAlign.LEFT,
             showPlaceholder: true,
         })
 
@@ -121,16 +122,16 @@ export class TextService extends Service {
         this.textEditor.textChanged.add(this.onTextChanged, this)
 
         this.selectionService.selectWidget(textbox)
-        this.activeSession = 'textBox'
+        this.activeSession = TextSessionType.TEXTBOX
         this.toolService.changeTool(ACTION_MODES.SELECT)
     }
 
     private initializeTransaction() {
         const editTable = new Map<Widget, EditingMethods[]>()
-        if (this.activeSession === 'shapeText') {
+        if (this.activeSession === TextSessionType.SHAPE_TEXT) {
             editTable.set(this.shape, ['text'])
         }
-        if (this.activeSession === 'textBox') {
+        if (this.activeSession === TextSessionType.TEXTBOX) {
             editTable.set(this.textBox, ['text'])
         }
 
@@ -148,7 +149,7 @@ export class TextService extends Service {
         // replace one \n to avoid +1 line issue
         const trimmedText = props.text.replace(/\n$/, '')
 
-        if (this.activeSession === 'textBox' && this.textBox) {
+        if (this.activeSession === TextSessionType.TEXTBOX && this.textBox) {
             // if textbox is newly created by this service, add it to the db
             if (this.isTextboxCreatedWithService && !this.isTextboxSavedInDb) {
                 this.isTextboxSavedInDb = true
@@ -176,7 +177,7 @@ export class TextService extends Service {
                 y: this.textBox.centerY,
             })
             this.engine.canvas.requestRender()
-        } else if (this.activeSession === 'shapeText' && this.shape) {
+        } else if (this.activeSession === TextSessionType.SHAPE_TEXT && this.shape) {
             this.shape.updateText(props.text, props.textOps)
         }
 
