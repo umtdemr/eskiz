@@ -32,25 +32,9 @@ export class ChangeThickness extends Command {
 
         if (!widgets?.length || !thickness) return
 
-        const affectedWidgets = []
-        for (const widget of widgets) {
-            if (!widget.canChangeThickness()) continue
-
-            let changed = false
-            if (widget instanceof Shape || widget instanceof Path) {
-                changed = widget.changeThickness(thickness)
-            }
-
-            if (changed) {
-                affectedWidgets.push(widget)
-            }
-        }
-        if (affectedWidgets.length) {
-            ctx.engine.canvas.requestRender()
-        }
-
         const editTable = new Map<Widget, EditingMethods[]>()
-        affectedWidgets.forEach((widget) => {
+        widgets.forEach((widget) => {
+            if (!widget.canChangeThickness()) return
             if (widget instanceof Path) {
                 editTable.set(widget, ['resize', 'thickness'])
             } else {
@@ -68,12 +52,30 @@ export class ChangeThickness extends Command {
                     },
                 )
                 this.transactionId = transactionId
-            } else {
-                // if a transaction already exists, update it
-                clearTimeout(this.continuousTimeoutId)
-                // TODO: phase 2 - check error
-                ctx.engine.transactionHandler.update(this.transactionId)
             }
+
+            const affectedWidgets = []
+            for (const widget of widgets) {
+                if (!widget.canChangeThickness()) continue
+
+                let changed = false
+                if (widget instanceof Shape || widget instanceof Path) {
+                    changed = widget.changeThickness(thickness)
+                }
+
+                if (changed) {
+                    affectedWidgets.push(widget)
+                }
+            }
+            if (affectedWidgets.length) {
+                ctx.engine.canvas.requestRender()
+            }
+
+            // if a transaction already exists, update it
+            clearTimeout(this.continuousTimeoutId)
+            // TODO: phase 2 - check error
+            ctx.engine.transactionHandler.update(this.transactionId)
+
             const thisCtx = this
 
             // after some time, commit the changes
@@ -95,6 +97,23 @@ export class ChangeThickness extends Command {
                     editTable,
                 },
             )
+
+            const affectedWidgets = []
+            for (const widget of widgets) {
+                if (!widget.canChangeThickness()) continue
+
+                let changed = false
+                if (widget instanceof Shape || widget instanceof Path) {
+                    changed = widget.changeThickness(thickness)
+                }
+
+                if (changed) {
+                    affectedWidgets.push(widget)
+                }
+            }
+            if (affectedWidgets.length) {
+                ctx.engine.canvas.requestRender()
+            }
 
             // add to db
             // TODO: phase 2 - check error
