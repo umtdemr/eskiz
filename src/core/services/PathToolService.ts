@@ -17,6 +17,7 @@ import { AddWidgetPayload } from '@/types/Websocket'
 import { getSvgPathFromStroke } from '../shapes/path/pathUtils'
 import { SelectionService } from './SelectionService'
 import { CursorType, PathToolType } from '@/core/constants.ts'
+import { CreationHistoryEntry } from '@/core/history/HistoryManager'
 
 export class PathToolService extends Service {
     private mouseController: MouseController
@@ -29,7 +30,7 @@ export class PathToolService extends Service {
         color?: RGBA
         thickness?: number
     } = {}
-    private activePathTool: typeof PathToolType[keyof typeof PathToolType]
+    private activePathTool: (typeof PathToolType)[keyof typeof PathToolType]
     private trailLayer: TrailLayer
     private deletedShapesWithEraser: Map<string, Pen> = new Map()
 
@@ -156,6 +157,11 @@ export class PathToolService extends Service {
                 // TODO: we may require setting visible as true for undo-redo
 
                 const widgets = [...this.deletedShapesWithEraser.values()]
+                // we will change isDeleted in widget state to true
+                // so, visible should be true to avoid issues in history manager
+                for (const widget of widgets) {
+                    widget.visible = true
+                }
                 const selectionService =
                     this.engine.getService<SelectionService>('selection')
                 const command = this.engine.getCommand('delete')
@@ -185,6 +191,9 @@ export class PathToolService extends Service {
 
             // todo (transaction): check error, if necessary delete from canvas
             widgetsService.addWidget(json as AddWidgetPayload)
+            this.engine.historyManager.push(
+                new CreationHistoryEntry(this.engine, this.path),
+            )
         }
         this.reset()
     }

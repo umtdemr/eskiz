@@ -17,6 +17,7 @@ import { SelectionService } from './SelectionService'
 import { WidgetsService } from '@/core/services/WidgetsService.ts'
 import { AddWidgetPayload } from '@/types/Websocket.ts'
 import { CursorService } from '@/core/services/CursorService.ts'
+import { CreationHistoryEntry } from '@/core/history/HistoryManager'
 
 export class ShapeDrawerToolService extends Service {
     private mouseController: MouseController
@@ -146,6 +147,9 @@ export class ShapeDrawerToolService extends Service {
         }, 0)
         if (this.shape) {
             this.selectionService.selectWidget(this.shape)
+            this.engine.historyManager.push(
+                new CreationHistoryEntry(this.engine, this.shape),
+            )
         }
         const uuid = nanoid()
         const widgetsService = this.engine.getService<WidgetsService>('widgets')

@@ -1,6 +1,8 @@
 import { nanoid } from 'nanoid'
 import { Widget } from '@/core/shapes/Widget'
 import { WsEngine } from '@/core/WsEngine'
+import { Engine } from '@/core/engine/Engine'
+import { TransactionHistoryEntry } from '@/core/history/HistoryManager'
 import {
     EditingMethods,
     getPartialState,
@@ -30,15 +32,15 @@ export const CONTINUOUS_THROTTLE_DELAY = 300 // 300 MS
  * TransactionHandler handles updating/deleting widgets
  */
 export class TransactionHandler {
-    private wsEngine: WsEngine
+    private engine: Engine
     private transactions = new Map<TransactionId, Transaction>()
     private autoUpdateTimeout = new Map<
         TransactionId,
         ReturnType<typeof setTimeout>
     >()
 
-    constructor(wsEngine: WsEngine) {
-        this.wsEngine = wsEngine
+    constructor(engine: Engine) {
+        this.engine = engine
     }
 
     private clear(id: TransactionId) {
@@ -126,7 +128,7 @@ export class TransactionHandler {
             shapes: widgetStates,
         }
 
-        this.wsEngine.sendAsyncMessage<'updateWidget'>({
+        this.engine.wsEngine.sendAsyncMessage<'updateWidget'>({
             type: 'updateWidget',
             data: sendingData,
         })
@@ -137,7 +139,7 @@ export class TransactionHandler {
     /**
      * sends last update for the transaction
      */
-    commit(id: TransactionId) {
+    commit(id: TransactionId, addToHistory: boolean = true) {
         const transaction = this.transactions.get(id)
         if (!transaction) {
             console.error(`no transaction found for: ${id}`)
@@ -152,6 +154,23 @@ export class TransactionHandler {
 
         // send latest changes
         this.sendChanges(transaction)
+
+        if (addToHistory) {
+            // capture final state for history
+            const finalState = new Map<Widget, State>()
+            for (const widget of transaction.editTable.keys()) {
+                const editingMethods = transaction.editTable.get(widget)!
+                finalState.set(widget, getPartialState(widget, editingMethods))
+            }
+
+            this.engine.historyManager.push(
+                new TransactionHistoryEntry(this.engine, {
+                    initialState: transaction.initialState,
+                    finalState,
+                    editTable: transaction.editTable,
+                }),
+            )
+        }
 
         // clear state for the transaction
         this.clear(id)
