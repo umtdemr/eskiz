@@ -33,7 +33,6 @@ export class DeleteCommand extends Command {
 
         const widgets = (ctx.params?.widgets as Widget[]) || []
         widgets.forEach((widget) => {
-            widgetService.deleteWidget(widget)
             editTable.set(widget, ['delete'])
         })
         const { transactionId } = ctx.engine.transactionHandler.begin(
@@ -42,6 +41,10 @@ export class DeleteCommand extends Command {
                 editTable,
             },
         )
+
+        widgets.forEach((widget) => {
+            widgetService.deleteWidget(widget)
+        })
 
         ctx.engine.transactionHandler.commit(transactionId)
         ctx.engine.canvas.requestRender()
