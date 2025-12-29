@@ -13,6 +13,11 @@ import {
 } from '@/core/shapes/text/ShapeText'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
 import { TextOp } from '../textEditor/TextEditor'
+import {
+    ShapeType as ShapeTypeConst,
+    TextAlign,
+    WidgetType,
+} from '@/core/constants.ts'
 
 export interface ShapeProps extends WidgetProps {
     properties: ShapeProperties
@@ -26,13 +31,13 @@ export interface ShapeProperties {
     strokeWidth?: number
 }
 
-export type ShapeType = 'rectangle' | 'triangle' | 'ellipse'
+export type ShapeType = typeof ShapeTypeConst[keyof typeof ShapeTypeConst]
 
 const initialTextProps: ShapeTextConstructProps = {
     text: '',
     fontSize: 14,
     lineHeight: 1.4,
-    textAlign: 'center',
+    textAlign: TextAlign.CENTER,
 }
 
 export abstract class Shape extends Widget {
@@ -72,7 +77,7 @@ export abstract class Shape extends Widget {
             height: this._height,
             z_index: this._zIndex,
             uuid: this._uuid!,
-            widget_type: 'shape',
+            widget_type: WidgetType.SHAPE,
             sub_type: this._shapeType,
             properties: {
                 ...this._properties,

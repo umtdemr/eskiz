@@ -3,6 +3,7 @@ import { canvasKit } from '@/core/canvas/Canvas'
 import { RGBA } from '@/core/shapes/Color'
 import { CANVAS_COLORS } from '@/helpers/Constant'
 import { Path as CkPath } from 'canvaskit-wasm'
+import { WidgetType } from '@/core/constants.ts'
 
 export interface PathProps extends WidgetProps {
     properties: PathProperties
@@ -22,7 +23,7 @@ export abstract class Path extends Widget {
     protected _points: number[][]
 
     constructor(type: PathType, props: PathProps) {
-        super('path', props)
+        super(WidgetType.PATH, props)
         this._pathType = type
         this._properties = { ...props.properties }
         this._properties.color = this._properties?.color

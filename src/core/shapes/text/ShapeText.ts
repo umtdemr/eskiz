@@ -7,6 +7,7 @@ import { RGBA } from '@/core/shapes/Color.ts'
 import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
 import { createTextOpsFromString, TextOp } from '@/core/textEditor/TextEditor'
+import { TextAlign, WidgetType } from '@/core/constants.ts'
 
 export interface ShapeTextProps extends WidgetProps {
     properties: ShapeTextConstructProps
@@ -38,7 +39,7 @@ export class ShapeText extends Widget {
     private _isTextClipped: boolean = false
 
     constructor(props: ShapeTextProps) {
-        super('shapeText', props)
+        super(WidgetType.SHAPE_TEXT, props)
         this._text = props.properties.text
         if (!props.properties.textOps) {
             this._textOps = createTextOpsFromString(this._text)
@@ -64,10 +65,10 @@ export class ShapeText extends Widget {
     }
 
     private getTextAlign(): CkTextAlign {
-        if (this._textAlign === 'left') {
+        if (this._textAlign === TextAlign.LEFT) {
             return canvasKit.TextAlign.Left
         }
-        if (this._textAlign === 'right') {
+        if (this._textAlign === TextAlign.RIGHT) {
             return canvasKit.TextAlign.Right
         }
         return canvasKit.TextAlign.Center

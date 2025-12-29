@@ -18,6 +18,8 @@ import {
 } from '@/core/shapes/nonCanvasShapes/EdgeControl.ts'
 import { DragHandler } from '../controls/DragHandler'
 
+import { WidgetType } from '@/core/constants.ts'
+
 export class SelectionLayer extends Layer {
     private engine: Engine
     private selectionService: SelectionService
@@ -143,7 +145,7 @@ export class SelectionLayer extends Layer {
 
         // do not show controls for path
         // TODO: need to find a better way to control this.
-        if (widgets[0].widgetType === 'path') {
+        if (widgets[0].widgetType === WidgetType.PATH) {
             return
         }
         if (widgets[0].isLocked) {

@@ -6,6 +6,7 @@ import {
 } from '@/core/transaction/TransactionHandler'
 import { EditingMethods } from '../transaction/State'
 import { Signal } from '../signal/Signal'
+import { WidgetType } from '@/core/constants.ts'
 
 export enum ResizePosition {
     EDGE_LEFT,
@@ -125,7 +126,7 @@ export class ResizeHandler {
 
         // Special handling for text widgets - prevent width from going below minimum
         let minWidth = ResizeHandler.MIN_DIMENSION
-        const isTextWidget = this.shape.widgetType === 'text'
+        const isTextWidget = this.shape.widgetType === WidgetType.TEXTBOX
         if (isTextWidget && (this.shape as any).getMinWidth) {
             minWidth = Math.max(minWidth, (this.shape as any).getMinWidth())
         }
@@ -264,7 +265,7 @@ export class ResizeHandler {
         const initial = this.initialBounds
 
         // Special handling for text widgets - scale font size AND resize
-        if (this.shape.widgetType === 'text') {
+        if (this.shape.widgetType === WidgetType.TEXTBOX) {
             // Calculate scale factor based on diagonal distance change
             const initialDiagonal = Math.sqrt(
                 initial.width ** 2 + initial.height ** 2,

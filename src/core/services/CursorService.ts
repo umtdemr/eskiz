@@ -1,6 +1,7 @@
 import { Service } from '@/core/services/Service.ts'
 import { Engine } from '@/core/engine/Engine.ts'
 import { ToolService } from '@/core/services/ToolService.ts'
+import { CursorType } from '@/core/constants.ts'
 
 export enum CursorPriority {
     Default = 10,
@@ -8,19 +9,19 @@ export enum CursorPriority {
 }
 
 export type ResizeCursors =
-    | 'horizontal-resize'
-    | 'vertical-resize'
-    | 'scale-resize-left'
-    | 'scale-resize-right'
+    | typeof CursorType.HORIZONTAL_RESIZE
+    | typeof CursorType.VERTICAL_RESIZE
+    | typeof CursorType.SCALE_RESIZE_LEFT
+    | typeof CursorType.SCALE_RESIZE_RIGHT
 
 export type Cursors =
-    | 'default'
-    | 'pointer'
-    | 'pan'
-    | 'panning'
-    | 'crosshair'
+    | typeof CursorType.DEFAULT
+    | typeof CursorType.POINTER
+    | typeof CursorType.PAN
+    | typeof CursorType.PANNING
+    | typeof CursorType.CROSSHAIR
     | ResizeCursors
-    | 'text'
+    | typeof CursorType.TEXT
 
 export interface CursorRequest {
     cursor: Cursors

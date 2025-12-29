@@ -3,21 +3,25 @@ import { BoundingBox } from '../geometry/BoundingBox'
 import { RenderContext } from '../canvas/Canvas'
 import { LinkedList } from '../dataStructures/LinkedList'
 import { Signal } from '../signal/Signal'
-import { ShapeType } from '@/core/shapes/Shape.ts'
 import { WsWidget } from '@/types/Websocket.ts'
+import {
+    PathType as PathTypeConst,
+    ShapeType as ShapeTypeConst,
+    TextType as TextTypeConst,
+    WidgetType as WidgetTypeConst,
+} from '@/core/constants.ts'
 
-export type WidgetType =
-    | 'shape'
-    | 'text'
-    | 'shapeText' // text for shapes
-    | 'path'
-    | 'multiSelector'
-    | 'border'
-    | 'control'
+export type WidgetType = typeof WidgetTypeConst[keyof typeof WidgetTypeConst]
 
-export type DbWidgetType = 'shape' | 'textbox' | 'path'
+export type DbWidgetType =
+    | typeof WidgetTypeConst.SHAPE
+    | typeof WidgetTypeConst.TEXTBOX
+    | typeof WidgetTypeConst.PATH
 
-export type SubType = ShapeType | 'textbox' | 'pen'
+export type SubType =
+    | typeof ShapeTypeConst[keyof typeof ShapeTypeConst]
+    | typeof TextTypeConst.TEXTBOX
+    | typeof PathTypeConst.PEN
 
 export type WidgetFullType = `${DbWidgetType}_${SubType}`
 
