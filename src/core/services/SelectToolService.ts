@@ -1,7 +1,7 @@
 import { CanvasMouseEvent, Engine } from '../engine/Engine'
 import { MouseController } from '../engine/MouseController'
 import { Widget } from '../shapes/Widget'
-import { Signal } from '@/core/signal/Signal'
+
 import { Layer } from '../stage/Layer'
 import { SelectionService } from './SelectionService'
 import { Service } from './Service'
@@ -16,7 +16,7 @@ export class SelectToolService extends Service {
     private toolService: ToolService
     dragHandler: DragHandler
     private isDrawing: boolean = false
-    private shapesLayer: Layer
+
     private selectionService: SelectionService
     private controlOwned: Control | null = null
     private cursorService: CursorService
@@ -68,7 +68,7 @@ export class SelectToolService extends Service {
 
     init() {
         this.cursorService.setCursor(this.cursorToolName, 'default')
-        this.shapesLayer = this.engine.stage.widgetsDefaultLayer
+
         this.selectionService = this.engine.getService('selection')
 
         this.mouseController.on('mouseDown', this.onMouseDown, this)
@@ -226,7 +226,7 @@ export class SelectToolService extends Service {
             for (const widget of layer.children) {
                 if (!(widget instanceof Widget)) continue
 
-                if (!widget.interactive) {
+                if (!widget.interactive || widget.isDeleted) {
                     continue
                 }
 
