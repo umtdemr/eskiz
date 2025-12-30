@@ -15,6 +15,7 @@ import { Check } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import { Engine } from '@/core/engine/Engine.ts'
 import { BoardNameService } from '@/core/services/BoardNameService.ts'
+import { BoardSettingsMenu } from './BoardSettingsMenu'
 
 export function BoardName({ engine }: { engine: Engine }) {
     const [isEditing, setIsEditing] = useState(false)
@@ -202,6 +203,7 @@ export function BoardName({ engine }: { engine: Engine }) {
                     </Tooltip>
                 </TooltipProvider>
             ) : null}
+            <BoardSettingsMenu engine={engine} />
         </div>
     )
 }
