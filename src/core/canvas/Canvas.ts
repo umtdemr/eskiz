@@ -3,10 +3,15 @@ import CanvasKitInit, {
     Surface,
     Canvas as SkiaCanvas,
     FontMgr,
+    Paint,
+    Path,
 } from 'canvaskit-wasm'
 import { ZOOM_LEVELS } from '@/helpers/Constant.ts'
 import { Stage } from '../stage/Stage'
 import { Signal } from '../signal/Signal'
+import { BoardGridType } from '../constants'
+
+export type GridType = (typeof BoardGridType)[keyof typeof BoardGridType]
 
 export type Point = {
     x: number
@@ -37,6 +42,10 @@ export class Canvas {
     private needsRender = false
     private scale = 1
 
+    private gridPaint: Paint
+    private gridPath: Path
+    public gridType: GridType = BoardGridType.LINES
+
     tickBefore = new Signal()
     tick = new Signal()
     transform = new Signal()
@@ -60,6 +69,12 @@ export class Canvas {
 
         this.surface = canvasKit.MakeWebGLCanvasSurface(canvas)!
 
+        this.gridPaint = new canvasKit.Paint()
+        this.gridPaint.setColor(canvasKit.BLACK)
+        this.gridPaint.setAntiAlias(true)
+
+        this.gridPath = new canvasKit.Path()
+
         this._initialized = true
 
         return true
@@ -73,8 +88,9 @@ export class Canvas {
             ctx.scale(this.scale, this.scale)
             ctx.translate(this.offsetX, this.offsetY)
 
-            // TODO perf:
-            this.drawGrid(ctx)
+            if (this.gridType !== BoardGridType.NONE) {
+                this.drawGrid(ctx)
+            }
 
             // render all elements
             this._stage.render({ ctx, scale: this.scale })
@@ -99,7 +115,14 @@ export class Canvas {
         window.requestAnimationFrame(this.draw.bind(this))
     }
 
+    setGridType(type: GridType) {
+        this.gridType = type
+        this.requestRender()
+    }
+
     drawGrid(ctx: SkiaCanvas) {
+        if (this.gridType === BoardGridType.NONE) return
+
         const height = this.surface.height()
         const width = this.surface.width()
         const baseGridSize = 50
@@ -119,59 +142,88 @@ export class Canvas {
         const gridSize1 = baseGridSize * Math.pow(10, -power)
         const gridSize2 = gridSize1 / 10
 
-        // Calculate base alpha that decreases as zoom increases
-        const maxAlpha = 0.3
-        const zoomFactor = this.scale
-        const baseAlpha = maxAlpha / zoomFactor
+        // Constant base alpha
+        const baseAlpha = 0.3
 
         // Calculate alpha for smooth transition
-        const alpha1 = Math.min(baseAlpha, (1 - fraction) * baseAlpha)
-        const alpha2 = Math.min(baseAlpha, fraction * baseAlpha)
+        // As we zoom out (fraction 1 -> 0), gridSize2 (small) fades out, gridSize1 (large) fades in
+        const alpha1 = (1 - fraction) * baseAlpha
+        const alpha2 = fraction * baseAlpha
 
-        // Calculate line width that decreases with zoom
-        const baseWidth =
-            this.scale < 1
-                ? Math.min(0.6, (1 / this.scale) * 2)
-                : Math.min(0.3, (1 / this.scale) * 2)
+        // Calculate line width to maintain constant screen pixel size
+        const screenLineWidth = 0.4
+        const screenDotSize = 3
+
+        const lineWidth = screenLineWidth / this.scale
+        const dotSize = screenDotSize / this.scale
+
+        if (!this.gridPaint) {
+            this.gridPaint = new canvasKit.Paint()
+            this.gridPaint.setColor(canvasKit.BLACK)
+            this.gridPaint.setAntiAlias(true)
+        }
+        if (!this.gridPath) {
+            this.gridPath = new canvasKit.Path()
+        }
 
         ;[
             { size: gridSize1, alpha: alpha1 },
             { size: gridSize2, alpha: alpha2 },
         ].forEach(({ size, alpha }) => {
-            if (alpha > 0) {
-                const gridPath = new canvasKit.Path()
-                const gridPaint = new canvasKit.Paint()
-                gridPaint.setColor(canvasKit.BLACK)
-                gridPaint.setStyle(canvasKit.PaintStyle.Stroke)
-                gridPaint.setAntiAlias(true)
-                gridPaint.setAlphaf(alpha)
-                gridPaint.setStrokeWidth(baseWidth)
+            if (alpha <= 0.02) return // Slightly higher threshold to avoid faint ghosting
 
-                // Calculate grid lines that cover the visible area
-                const startX = Math.floor(visibleLeft / size) * size
-                const endX = Math.ceil(visibleRight / size) * size
-                const startY = Math.floor(visibleTop / size) * size
-                const endY = Math.ceil(visibleBottom / size) * size
+            this.gridPaint.setAlphaf(alpha)
+
+            const startX = Math.floor(visibleLeft / size) * size
+            const endX = Math.ceil(visibleRight / size) * size
+            const startY = Math.floor(visibleTop / size) * size
+            const endY = Math.ceil(visibleBottom / size) * size
+
+            if (this.gridType === 'lines') {
+                this.gridPaint.setStyle(canvasKit.PaintStyle.Stroke)
+                this.gridPaint.setStrokeWidth(lineWidth)
+                this.gridPaint.setStrokeCap(canvasKit.StrokeCap.Butt)
+
+                this.gridPath.rewind()
 
                 // Draw horizontal lines
                 for (let y = startY; y <= endY; y += size) {
-                    gridPath.moveTo(startX, y)
-                    gridPath.lineTo(endX, y)
+                    this.gridPath.moveTo(startX, y)
+                    this.gridPath.lineTo(endX, y)
                 }
 
                 // Draw vertical lines
                 for (let x = startX; x <= endX; x += size) {
-                    gridPath.moveTo(x, startY)
-                    gridPath.lineTo(x, endY)
+                    this.gridPath.moveTo(x, startY)
+                    this.gridPath.lineTo(x, endY)
                 }
 
-                gridPath.close()
-                ctx.drawPath(gridPath, gridPaint)
+                ctx.drawPath(this.gridPath, this.gridPaint)
+            } else {
+                // Dots
+                this.gridPaint.setStyle(canvasKit.PaintStyle.Stroke)
+                this.gridPaint.setStrokeWidth(dotSize)
+                this.gridPaint.setStrokeCap(canvasKit.StrokeCap.Round)
+
+                const points: number[] = []
+                for (let x = startX; x <= endX; x += size) {
+                    for (let y = startY; y <= endY; y += size) {
+                        points.push(x, y)
+                    }
+                }
+                ctx.drawPoints(
+                    canvasKit.PointMode.Points,
+                    points,
+                    this.gridPaint,
+                )
             }
         })
     }
 
-    dispose() {}
+    dispose() {
+        this.gridPaint?.delete()
+        this.gridPath?.delete()
+    }
 
     getPointer(e: MouseEvent): Point {
         const pointer = {
