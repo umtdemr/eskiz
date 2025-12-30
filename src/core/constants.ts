@@ -51,3 +51,9 @@ export const TextSessionType = {
     TEXTBOX: 'textBox',
     SHAPE_TEXT: 'shapeText',
 } as const
+
+export const BoardGridType = {
+    NONE: 'none',
+    LINES: 'lines',
+    DOTS: 'dots',
+} as const
