@@ -10,6 +10,7 @@ import { ZOOM_LEVELS } from '@/helpers/Constant.ts'
 import { Stage } from '../stage/Stage'
 import { Signal } from '../signal/Signal'
 import { BoardGridType } from '../constants'
+import { useBoundStore } from '@/store/store'
 
 export type GridType = (typeof BoardGridType)[keyof typeof BoardGridType]
 
@@ -76,6 +77,9 @@ export class Canvas {
         this.gridPath = new canvasKit.Path()
 
         this._initialized = true
+
+        const store = useBoundStore.getState()
+        this.gridType = store.gridType
 
         return true
     }
@@ -179,7 +183,7 @@ export class Canvas {
             const startY = Math.floor(visibleTop / size) * size
             const endY = Math.ceil(visibleBottom / size) * size
 
-            if (this.gridType === 'lines') {
+            if (this.gridType === BoardGridType.LINES) {
                 this.gridPaint.setStyle(canvasKit.PaintStyle.Stroke)
                 this.gridPaint.setStrokeWidth(lineWidth)
                 this.gridPaint.setStrokeCap(canvasKit.StrokeCap.Butt)
