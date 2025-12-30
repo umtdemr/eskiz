@@ -6,15 +6,38 @@ import {
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
 import { Hand, MousePointer2, Redo, StickyNote, Type, Undo } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import { ShapesDropdown } from '@/components/board/toolbar/ShapesDropdown.tsx'
 import { useBoundStore } from '@/store/store'
 import { useShallow } from 'zustand/react/shallow'
 import { ACTION_MODES, SUB_ACTION_MODES } from '@/helpers/Constant'
 import { PenDropdown } from '@/components/board/toolbar/PenDropdown'
+import { Engine } from '@/core/engine/Engine'
 
-export default function Toolbar() {
+interface ToolbarProps {
+    engine: Engine
+}
+
+export default function Toolbar({ engine }: ToolbarProps) {
+    const [historyState, setHistoryState] = useState({
+        canUndo: engine.historyManager.canUndo,
+        canRedo: engine.historyManager.canRedo,
+    })
+
+    useEffect(() => {
+        const onHistoryChanged = (state: {
+            canUndo: boolean
+            canRedo: boolean
+        }) => {
+            setHistoryState(state)
+        }
+        engine.historyManager.historyChanged.add(onHistoryChanged)
+        return () => {
+            engine.historyManager.historyChanged.remove(onHistoryChanged)
+        }
+    }, [engine])
+
     const activeMode = {
         mainMode: useBoundStore(useShallow((state) => state.mainMode)),
         subMode: useBoundStore(useShallow((state) => state.subMode)),
@@ -138,7 +161,12 @@ export default function Toolbar() {
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button disabled variant="ghost" className="px-2">
+                        <Button
+                            variant="ghost"
+                            className="px-2"
+                            onClick={() => engine.historyManager.undo()}
+                            disabled={!historyState.canUndo}
+                        >
                             <Undo />
                         </Button>
                     </TooltipTrigger>
@@ -150,7 +178,12 @@ export default function Toolbar() {
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button disabled variant="ghost" className="px-2">
+                        <Button
+                            variant="ghost"
+                            className="px-2"
+                            onClick={() => engine.historyManager.redo()}
+                            disabled={!historyState.canRedo}
+                        >
                             <Redo />
                         </Button>
                     </TooltipTrigger>

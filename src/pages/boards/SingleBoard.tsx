@@ -255,7 +255,9 @@ export default function SingleBoard() {
             {boardQuery.isSuccess && isInitialized && !connectionError ? (
                 <>
                     <Header engine={engineRef.current!} />
-                    {!isDisconnected ? <Toolbar /> : null}
+                    {!isDisconnected ? (
+                        <Toolbar engine={engineRef.current!} />
+                    ) : null}
                     {!isDisconnected ? (
                         <Subtoolbar engine={engineRef.current!} />
                     ) : null}

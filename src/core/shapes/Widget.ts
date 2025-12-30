@@ -11,7 +11,7 @@ import {
     WidgetType as WidgetTypeConst,
 } from '@/core/constants.ts'
 
-export type WidgetType = typeof WidgetTypeConst[keyof typeof WidgetTypeConst]
+export type WidgetType = (typeof WidgetTypeConst)[keyof typeof WidgetTypeConst]
 
 export type DbWidgetType =
     | typeof WidgetTypeConst.SHAPE
@@ -19,7 +19,7 @@ export type DbWidgetType =
     | typeof WidgetTypeConst.PATH
 
 export type SubType =
-    | typeof ShapeTypeConst[keyof typeof ShapeTypeConst]
+    | (typeof ShapeTypeConst)[keyof typeof ShapeTypeConst]
     | typeof TextTypeConst.TEXTBOX
     | typeof PathTypeConst.PEN
 
@@ -115,6 +115,14 @@ export abstract class Widget extends Layer {
         this.updateBounds()
     }
 
+    get visible(): boolean {
+        return this._visible && !this._isDeleted
+    }
+
+    set visible(val: boolean) {
+        this._visible = val
+    }
+
     // Add a method to add child widgets
     addWidget(child: Widget) {
         // Use parent from Layer class instead of _layer
@@ -206,6 +214,9 @@ export abstract class Widget extends Layer {
                     if (this._parent instanceof Layer) {
                         this._parent.repositionChild(this)
                     }
+                    break
+                case 'is_deleted':
+                    this._isDeleted = json.is_deleted!
                     break
                 case 'is_locked':
                     this.isLocked = json.is_locked!

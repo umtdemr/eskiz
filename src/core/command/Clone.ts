@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid'
 import { PageService } from '../services/PageService'
 import { Command, CommandCtx, Commands } from './Command'
 import { WidgetsService } from '../services/WidgetsService'
+import { CreationHistoryEntry } from '@/core/history/HistoryManager'
 
 export class CloneCommand extends Command {
     constructor(name: Commands) {
@@ -49,5 +50,8 @@ export class CloneCommand extends Command {
         // add to db
         // TODO: phase 2 - check error
         widgetsService.addWidget({ ...widgetJson, page_id: ctx.engine.pageId })
+        ctx.engine.historyManager.push(
+            new CreationHistoryEntry(ctx.engine, addedWidgets),
+        )
     }
 }

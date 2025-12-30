@@ -66,10 +66,6 @@ export class WidgetsService extends Service {
                 }
 
                 widget.updateWithPartialState(shape.data)
-
-                if (shape.data.is_deleted && widget.parent) {
-                    widget.parent.removeChild(widget)
-                }
             }
         }
 
@@ -78,9 +74,9 @@ export class WidgetsService extends Service {
 
     deleteWidget(widget: Widget) {
         widget.delete()
+        // note: I'm just setting isDeleted here, the actual removal is not happening
         widget.isDeleted = true
         widget.deleted.dispatch()
-        widget.parent?.removeChild(widget)
 
         this.widgetDeleted.dispatch({ widgets: [widget] })
     }

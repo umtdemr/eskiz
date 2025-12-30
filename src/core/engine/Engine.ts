@@ -27,6 +27,8 @@ import { TextService } from '../services/TextService'
 import { TextEditor } from '../textEditor/TextEditor'
 import { CommandRegistry } from '../command/CommandRegistry'
 import { Command, Commands } from '../command/Command'
+import { HistoryManager } from '../history/HistoryManager'
+import { ShortcutService } from '../services/ShortcutService'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -56,6 +58,7 @@ export class Engine extends Emitter<EngineEventsMap> {
     private _transactionHandler: TransactionHandler
     private _textEditor: TextEditor
     private _commands: CommandRegistry
+    private _historyManager: HistoryManager
 
     upperCanvasRenderer: UpperCanvasRenderer
 
@@ -75,13 +78,14 @@ export class Engine extends Emitter<EngineEventsMap> {
             this._pageId,
         )
 
-        this._transactionHandler = new TransactionHandler(this.wsEngine)
+        this._transactionHandler = new TransactionHandler(this)
         this._dragHandler = new DragHandler(this)
         this._resizeHandler = new ResizeHandler(this)
         this._mouseController = new MouseController()
         this._textEditor = new TextEditor(this)
         this.serviceManager = new ServiceManager()
         this._commands = new CommandRegistry()
+        this._historyManager = new HistoryManager(this)
         this.initializeServices()
 
         this._stage = new Stage(this)
@@ -195,6 +199,7 @@ export class Engine extends Emitter<EngineEventsMap> {
             'cursorSender',
             new CursorSenderService(this, this.wsEngine, this._mouseController),
         )
+        this.serviceManager.register('shortcut', new ShortcutService(this))
         this.serviceManager.register(
             'boardName',
             new BoardNameService(this, wsEventService),
@@ -235,6 +240,10 @@ export class Engine extends Emitter<EngineEventsMap> {
 
     get transactionHandler(): TransactionHandler {
         return this._transactionHandler
+    }
+
+    get historyManager(): HistoryManager {
+        return this._historyManager
     }
 
     get textEditor(): TextEditor {
