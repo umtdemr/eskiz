@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom'
 import { initialUserData } from '@/store/userSlice.ts'
 
 export default function useAuth() {
+    const data = useBoundStore()
     const setUserData = useBoundStore(
         useShallow((state) => state.changeUserData),
     )
