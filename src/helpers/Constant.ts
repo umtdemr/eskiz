@@ -102,6 +102,7 @@ export const ACTION_MODES = {
     CREATE: 'CREATE',
     TEXT: 'TEXT',
     PATH: 'PATH',
+    LINE: 'LINE',
 } as const
 
 export const DRAWING_MODES = {
