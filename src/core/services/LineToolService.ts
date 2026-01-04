@@ -1,0 +1,99 @@
+import { Service } from '@/core/services/Service'
+import { MainModeChangedState, ToolService } from '@/core/services/ToolService'
+import { CanvasMouseEvent, Engine } from '@/core/engine/Engine'
+import { MouseController } from '@/core/engine/MouseController'
+import { Line } from '@/core/shapes/line/Line'
+import { ACTION_MODES, CURSOR_OWNERS } from '@/helpers/Constant'
+import { CursorService } from '@/core/services/CursorService'
+import { CursorType } from '@/core/constants.ts'
+
+export class LineToolService extends Service {
+    private mouseController: MouseController
+    private toolService: ToolService
+    private line: Line | null = null
+    private cursorService: CursorService
+    private cursorToolName = CURSOR_OWNERS.SHAPE_DRAWER_TOOL
+
+    constructor(
+        engine: Engine,
+        mouseController: MouseController,
+        toolService: ToolService,
+    ) {
+        super(engine)
+        this.mouseController = mouseController
+        this.toolService = toolService
+
+        this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
+        this.cursorService = this.engine.getService<CursorService>('cursor')
+    }
+
+    private init() {
+        this.cursorService.setCursor(this.cursorToolName, CursorType.CROSSHAIR)
+        this.mouseController.on('mouseDown', this.onMouseDown, this)
+        this.mouseController.on('mouseMove', this.onMouseMove, this)
+        this.mouseController.on('mouseUp', this.onMouseUp, this)
+    }
+
+    private onMainModeChanged(state: MainModeChangedState) {
+        this.reset()
+        this.removeListeners()
+
+        if (state.tool === ACTION_MODES.LINE) {
+            this.init()
+        } else {
+            this.dispose()
+        }
+    }
+
+    private onMouseDown(data: CanvasMouseEvent) {
+        const { x, y } = data.pointer
+
+        this.line = new Line({
+            width: 0,
+            x: 0,
+            y: 0,
+            parentLayer: this.engine.stage.widgetsDefaultLayer,
+            properties: {
+                points: [
+                    [x, y],
+                    [x, y],
+                    // TODO: add stroke color and width later
+                ],
+            },
+        })
+
+        this.engine.stage.widgetsDefaultLayer.addChildren(this.line)
+    }
+
+    private onMouseMove(data: CanvasMouseEvent) {
+        if (!this.line) return
+        const { x, y } = data.pointer
+        const startPoint = this.line.points[0]
+
+        this.line.setPoints([startPoint, [x, y]])
+        this.engine.canvas.requestRender()
+    }
+
+    private onMouseUp() {
+        if (!this.line) return
+        this.line.setBoundsFromPoints()
+        // TODO: add to db
+
+        this.reset()
+    }
+
+    private reset() {
+        this.line = null
+    }
+
+    private removeListeners() {
+        this.mouseController.off('mouseDown', this.onMouseDown, this)
+        this.mouseController.off('mouseMove', this.onMouseMove, this)
+        this.mouseController.off('mouseUp', this.onMouseUp, this)
+    }
+
+    dispose(): void {
+        this.removeListeners()
+        this.reset()
+    }
+}

@@ -23,6 +23,7 @@ import { DragHandler } from '@/core/controls/DragHandler'
 import { ResizeHandler } from '@/core/controls/ResizeHandler'
 import { TransactionHandler } from '@/core/transaction/TransactionHandler'
 import { PathToolService } from '@/core/services/PathToolService'
+import { LineToolService } from '@/core/services/LineToolService'
 import { TextService } from '../services/TextService'
 import { TextEditor } from '../textEditor/TextEditor'
 import { CommandRegistry } from '../command/CommandRegistry'
@@ -184,6 +185,10 @@ export class Engine extends Emitter<EngineEventsMap> {
         this.serviceManager.register(
             'pathTool',
             new PathToolService(this, this._mouseController, toolService),
+        )
+        this.serviceManager.register(
+            'lineTool',
+            new LineToolService(this, this._mouseController, toolService),
         )
         this.serviceManager.register(
             'text',
