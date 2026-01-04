@@ -6,6 +6,7 @@ export const WidgetType = {
     MULTI_SELECTOR: 'multiSelector',
     BORDER: 'border',
     CONTROL: 'control',
+    LINE: 'line',
 } as const
 
 export const ShapeType = {
