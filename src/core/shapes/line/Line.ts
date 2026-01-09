@@ -27,6 +27,8 @@ export class Line extends Widget {
     private _hasTailArrow: boolean
     private _hasHeadArrow: boolean
     private _arrowSize = 5
+    private _strokeWidth = 2
+    private _strokeColor: RGBA = { r: 0, g: 0, b: 0, a: 1 }
 
     private _arrowPath: CkPath | null = null
     private _paint: CkPaint | null = null
@@ -37,6 +39,14 @@ export class Line extends Widget {
         this._points = props.properties.points
         this._hasHeadArrow = !!props.properties.hasHeadArrow
         this._hasTailArrow = !!props.properties.hasTailArrow
+        
+        this._strokeWidth = props.properties.strokeWidth || 2
+        this._strokeColor = props.properties.strokeColor || {
+            r: 0,
+            g: 0,
+            b: 0,
+            a: 1,
+        }
 
         this.updatePath()
     }
@@ -76,12 +86,16 @@ export class Line extends Widget {
         if (this._points.length < 2) {
             return
         }
+        
+        const strokeWidth = this._strokeWidth || 2
+        this._arrowSize = strokeWidth * 2.5
+        const vOffset = strokeWidth
 
         const path = new canvasKit.Path()
         path.moveTo(-this._arrowSize, 0)
-        path.lineTo(-this._arrowSize - 2, this._arrowSize)
+        path.lineTo(-this._arrowSize - vOffset, this._arrowSize)
         path.lineTo(0, 0)
-        path.lineTo(-this._arrowSize - 2, -this._arrowSize)
+        path.lineTo(-this._arrowSize - vOffset, -this._arrowSize)
         path.lineTo(-this._arrowSize, 0)
         this._arrowPath = path
     }
@@ -138,11 +152,15 @@ export class Line extends Widget {
         if (!this._paint) {
             this._paint = new canvasKit.Paint()
             this._paint.setAntiAlias(true)
-            this._paint.setStrokeWidth(2)
-            this._paint.setColor(canvasKit.Color(0, 0, 0, 1))
+
+            const strokeWidth = this._strokeWidth || 2
+            const strokeColor = this._strokeColor || { r:0, g:0, b:0, a:1 }
+
+            this._paint.setStrokeWidth(strokeWidth)
+            this._paint.setColor(canvasKit.Color(strokeColor.r, strokeColor.g, strokeColor.b, strokeColor.a))
             this._paint.setStrokeJoin(canvasKit.StrokeJoin.Round)
         }
-
+        
         // draw line
         this._paint.setStyle(canvasKit.PaintStyle.Stroke)
         ctx.drawPath(this._path, this._paint)
@@ -164,6 +182,14 @@ export class Line extends Widget {
             this._drawArrow(ctx, arrowLocation, controlPoint)
             ctx.restore()
         }
+    }
+    
+    canChangeBorderColor(): boolean {
+        return true
+    }
+
+    canChangeThickness(): boolean {
+        return true
     }
 
     // returns points
