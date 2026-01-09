@@ -123,12 +123,12 @@ export class Line extends Widget {
         this.top = bounds[1]
         this.width = bounds[2] - bounds[0]
         this.height = bounds[3] - bounds[1]
-
         // update to relative points
         this._points = this._points.map((point) => [
-            this.right - point[0],
-            this.bottom - point[1],
+            point[0] - this.left,
+            point[1] - this.top,
         ])
+
         this.updatePath()
     }
 
@@ -174,8 +174,8 @@ export class Line extends Widget {
     // returns points in actual coordinates
     get absolutePoints() {
         return this._points.map((point) => [
-            this.right - point[0],
-            this.bottom - point[1],
+            this.left + point[0],
+            this.top + point[1],
         ])
     }
 }
