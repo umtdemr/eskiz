@@ -188,7 +188,7 @@ export class Engine extends Emitter<EngineEventsMap> {
         )
         this.serviceManager.register(
             'lineTool',
-            new LineToolService(this, this._mouseController, toolService),
+            new LineToolService(this, this._mouseController, toolService, selectionService),
         )
         this.serviceManager.register(
             'text',
