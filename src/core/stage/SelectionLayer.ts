@@ -19,6 +19,7 @@ import {
 import { DragHandler } from '../controls/DragHandler'
 
 import { LineBorder } from '@/core/shapes/nonCanvasShapes/LineBorder'
+import { PointControl } from '@/core/shapes/nonCanvasShapes/PointControl'
 import { Line } from '@/core/shapes/line/Line'
 import { WidgetType } from '@/core/constants.ts'
 
@@ -167,6 +168,25 @@ export class SelectionLayer extends Layer {
             CornerPosition.BOTTOM_LEFT,
             CornerPosition.BOTTOM_RIGHT,
         ]
+
+        if (widgets[0].widgetType === WidgetType.LINE) {
+            const line = widgets[0] as Line
+            line.points.forEach((_, index) => {
+                const handle = new PointControl(
+                    {
+                        pointIndex: index,
+                        x: 0,
+                        y: 0,
+                        selectionLayer: this,
+                    },
+                    this.engine,
+                    this.selectionService,
+                )
+                this.controls.push(handle)
+                this.addChildren(handle)
+            })
+            return
+        }
 
         // TODO: fix order of controls when I fix the widget searching algo
         for (const position of cornerControls) {

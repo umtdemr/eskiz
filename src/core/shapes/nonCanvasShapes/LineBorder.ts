@@ -35,7 +35,9 @@ export class LineBorder extends Widget {
         this.paint = new canvasKit.Paint()
         this.paint.setAntiAlias(true)
         this.paint.setStyle(canvasKit.PaintStyle.Stroke)
-        this.paint.setColor(canvasKit.Color(BorderColor.r, BorderColor.g, BorderColor.b, 1))
+        this.paint.setColor(
+            canvasKit.Color(BorderColor.r, BorderColor.g, BorderColor.b, 1),
+        )
         this.paint.setStrokeJoin(canvasKit.StrokeJoin.Round)
         this.paint.setStrokeCap(canvasKit.StrokeCap.Round)
 
