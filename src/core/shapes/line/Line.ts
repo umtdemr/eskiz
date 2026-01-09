@@ -116,22 +116,7 @@ export class Line extends Widget {
      * Updates line's bound from points and sets points relative
      */
     setBoundsFromPoints() {
-        // TODO: fix this
         const bounds = this._path.getBounds()
-
-        //         const m = this._path.copy()
-        // const success = m.stroke({
-        //     width: 2,
-        //     cap: canvasKit.StrokeCap.Butt,
-        //     join: canvasKit.StrokeJoin.Miter,
-        //     miter_limit: 4,
-        // })
-        // const k = m.getBounds()
-        // this.left = k[0]
-        // this.top = k[1]
-        // this.width = k[2] - k[0]
-        // this.height = k[3] - k[1]
-        // m.delete()
 
         // set line's bound first
         this.left = bounds[0]
@@ -144,6 +129,7 @@ export class Line extends Widget {
             this.right - point[0],
             this.bottom - point[1],
         ])
+        this.updatePath()
     }
 
     renderContent(renderContext: RenderContext) {
@@ -152,7 +138,7 @@ export class Line extends Widget {
         if (!this._paint) {
             this._paint = new canvasKit.Paint()
             this._paint.setAntiAlias(true)
-            this._paint.setStrokeWidth(20)
+            this._paint.setStrokeWidth(2)
             this._paint.setColor(canvasKit.Color(0, 0, 0, 1))
             this._paint.setStrokeJoin(canvasKit.StrokeJoin.Round)
         }
@@ -180,7 +166,16 @@ export class Line extends Widget {
         }
     }
 
+    // returns points
     get points() {
         return this._points
+    }
+
+    // returns points in actual coordinates
+    get absolutePoints() {
+        return this._points.map((point) => [
+            this.right - point[0],
+            this.bottom - point[1],
+        ])
     }
 }
