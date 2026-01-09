@@ -7,6 +7,7 @@ import { SelectionService } from './SelectionService'
 import { Service } from './Service'
 import { MainModeChangedState, ToolService } from './ToolService'
 import { ACTION_MODES, CURSOR_OWNERS } from '@/helpers/Constant'
+import { WidgetType } from '@/core/constants'
 import { Control } from '@/core/shapes/nonCanvasShapes/Control.ts'
 import { CursorService } from '@/core/services/CursorService.ts'
 import { DragHandler } from '@/core/controls/DragHandler'
@@ -230,7 +231,7 @@ export class SelectToolService extends Service {
                     continue
                 }
 
-                if (widget.isDynamic) {
+                if (widget.isDynamic || widget.widgetType === WidgetType.LINE) {
                     if (
                         widget.contains(
                             pointer.x,

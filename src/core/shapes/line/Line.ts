@@ -204,4 +204,52 @@ export class Line extends Widget {
             this.top + point[1],
         ])
     }
+
+    contains(x: number, y: number, scale: number = 1): boolean {
+        const tolerance = 10 / scale
+
+        const lx = x - this.bounds.x
+        const ly = y - this.bounds.y
+
+        // check if point is roughly within the bounding box
+        if (
+            lx < -tolerance ||
+            lx > this.bounds.width + tolerance ||
+            ly < -tolerance ||
+            ly > this.bounds.height + tolerance
+        ) {
+            return false
+        }
+
+        // check if point is on the line
+        for (let i = 0; i < this._points.length - 1; i++) {
+            const p1 = this._points[i]
+            const p2 = this._points[i + 1]
+            if (
+                distanceToSegment(
+                    { x: lx, y: ly },
+                    { x: p1[0], y: p1[1] },
+                    { x: p2[0], y: p2[1] },
+                ) <= tolerance
+            ) {
+                return true
+            }
+        }
+        return false
+    }
+}
+
+function distanceToSegment(
+    p: { x: number; y: number },
+    v: { x: number; y: number },
+    w: { x: number; y: number },
+): number {
+    const l2 = (v.x - w.x) ** 2 + (v.y - w.y) ** 2
+    if (l2 === 0) return Math.sqrt((p.x - v.x) ** 2 + (p.y - v.y) ** 2)
+    let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2
+    t = Math.max(0, Math.min(1, t))
+    return Math.sqrt(
+        (p.x - (v.x + t * (w.x - v.x))) ** 2 +
+            (p.y - (v.y + t * (w.y - v.y))) ** 2,
+    )
 }
