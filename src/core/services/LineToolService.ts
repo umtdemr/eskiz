@@ -6,6 +6,7 @@ import { Line } from '@/core/shapes/line/Line'
 import { ACTION_MODES, CURSOR_OWNERS } from '@/helpers/Constant'
 import { CursorService } from '@/core/services/CursorService'
 import { CursorType } from '@/core/constants.ts'
+import { SelectionService } from './SelectionService'
 
 export class LineToolService extends Service {
     private mouseController: MouseController
@@ -13,15 +14,18 @@ export class LineToolService extends Service {
     private line: Line | null = null
     private cursorService: CursorService
     private cursorToolName = CURSOR_OWNERS.SHAPE_DRAWER_TOOL
+    private selectionService: SelectionService
 
     constructor(
         engine: Engine,
         mouseController: MouseController,
         toolService: ToolService,
+        selectionService: SelectionService,
     ) {
         super(engine)
         this.mouseController = mouseController
         this.toolService = toolService
+        this.selectionService = selectionService
 
         this.toolService.mainModeChanged.add(this.onMainModeChanged, this)
         this.cursorService = this.engine.getService<CursorService>('cursor')
@@ -54,6 +58,7 @@ export class LineToolService extends Service {
             y: 0,
             parentLayer: this.engine.stage.widgetsDefaultLayer,
             properties: {
+                hasHeadArrow: true,
                 points: [
                     [x, y],
                     [x, y],
@@ -77,6 +82,8 @@ export class LineToolService extends Service {
     private onMouseUp() {
         if (!this.line) return
         this.line.setBoundsFromPoints()
+        this.selectionService.selectWidget(this.line)
+        this.toolService.changeTool(ACTION_MODES.SELECT)
         // TODO: add to db
 
         this.reset()
