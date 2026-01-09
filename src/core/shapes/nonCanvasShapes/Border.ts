@@ -12,7 +12,7 @@ export interface BorderProps {
     engine: Engine
 }
 
-const BorderColor: RGBA = {
+export const BorderColor: RGBA = {
     r: 29,
     g: 78,
     b: 216,

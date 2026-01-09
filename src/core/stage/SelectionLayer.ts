@@ -18,6 +18,8 @@ import {
 } from '@/core/shapes/nonCanvasShapes/EdgeControl.ts'
 import { DragHandler } from '../controls/DragHandler'
 
+import { LineBorder } from '@/core/shapes/nonCanvasShapes/LineBorder'
+import { Line } from '@/core/shapes/line/Line'
 import { WidgetType } from '@/core/constants.ts'
 
 export class SelectionLayer extends Layer {
@@ -206,13 +208,23 @@ export class SelectionLayer extends Layer {
      */
     private addBorders(widgets: Widget[]) {
         for (const widget of widgets) {
-            this.addChildren(
-                new Border({
-                    widgets: [widget],
-                    parentLayer: this,
-                    engine: this.engine,
-                }),
-            )
+            if (widget.widgetType === WidgetType.LINE) {
+                this.addChildren(
+                    new LineBorder({
+                        line: widget as Line,
+                        parentLayer: this,
+                        engine: this.engine,
+                    }),
+                )
+            } else {
+                this.addChildren(
+                    new Border({
+                        widgets: [widget],
+                        parentLayer: this,
+                        engine: this.engine,
+                    }),
+                )
+            }
         }
     }
 
