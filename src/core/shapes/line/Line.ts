@@ -39,7 +39,7 @@ export class Line extends Widget {
         this._points = props.properties.points
         this._hasHeadArrow = !!props.properties.hasHeadArrow
         this._hasTailArrow = !!props.properties.hasTailArrow
-        
+
         this._strokeWidth = props.properties.strokeWidth || 2
         this._strokeColor = props.properties.strokeColor || {
             r: 0,
@@ -86,7 +86,7 @@ export class Line extends Widget {
         if (this._points.length < 2) {
             return
         }
-        
+
         const strokeWidth = this._strokeWidth || 2
         this._arrowSize = strokeWidth * 2.5
         const vOffset = strokeWidth
@@ -131,19 +131,33 @@ export class Line extends Widget {
      */
     setBoundsFromPoints() {
         const bounds = this._path.getBounds()
+        const newLeft = bounds[0]
+        const newTop = bounds[1]
+        const newWidth = bounds[2] - bounds[0]
+        const newHeight = bounds[3] - bounds[1]
 
-        // set line's bound first
-        this.left = bounds[0]
-        this.top = bounds[1]
-        this.width = bounds[2] - bounds[0]
-        this.height = bounds[3] - bounds[1]
         // update to relative points
         this._points = this._points.map((point) => [
-            point[0] - this.left,
-            point[1] - this.top,
+            point[0] - newLeft,
+            point[1] - newTop,
         ])
 
+        // set line's bound after updating points to relative
+        // so when boundsChanged event fired, points are already relative
+        this.left = newLeft
+        this.top = newTop
+        this.width = newWidth
+        this.height = newHeight
+
         this.updatePath()
+    }
+
+    updateFromAbsolutePoints(points: [number, number][]) {
+        this._points = points
+        // calculate new path in absolute coordinates
+        this.updatePath()
+        // calculate new bounds and relativize points
+        this.setBoundsFromPoints()
     }
 
     renderContent(renderContext: RenderContext) {
@@ -154,13 +168,20 @@ export class Line extends Widget {
             this._paint.setAntiAlias(true)
 
             const strokeWidth = this._strokeWidth || 2
-            const strokeColor = this._strokeColor || { r:0, g:0, b:0, a:1 }
+            const strokeColor = this._strokeColor || { r: 0, g: 0, b: 0, a: 1 }
 
             this._paint.setStrokeWidth(strokeWidth)
-            this._paint.setColor(canvasKit.Color(strokeColor.r, strokeColor.g, strokeColor.b, strokeColor.a))
+            this._paint.setColor(
+                canvasKit.Color(
+                    strokeColor.r,
+                    strokeColor.g,
+                    strokeColor.b,
+                    strokeColor.a,
+                ),
+            )
             this._paint.setStrokeJoin(canvasKit.StrokeJoin.Round)
         }
-        
+
         // draw line
         this._paint.setStyle(canvasKit.PaintStyle.Stroke)
         ctx.drawPath(this._path, this._paint)
@@ -183,7 +204,7 @@ export class Line extends Widget {
             ctx.restore()
         }
     }
-    
+
     canChangeBorderColor(): boolean {
         return true
     }

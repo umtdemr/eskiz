@@ -21,6 +21,7 @@ import { PageService } from '@/core/services/PageService.ts'
 import { CursorService } from '@/core/services/CursorService.ts'
 import { DragHandler } from '@/core/controls/DragHandler'
 import { ResizeHandler } from '@/core/controls/ResizeHandler'
+import { ReshapeHandler } from '@/core/controls/ReshapeHandler'
 import { TransactionHandler } from '@/core/transaction/TransactionHandler'
 import { PathToolService } from '@/core/services/PathToolService'
 import { LineToolService } from '@/core/services/LineToolService'
@@ -56,6 +57,7 @@ export class Engine extends Emitter<EngineEventsMap> {
     private _isRunning = false
     private _dragHandler: DragHandler
     private _resizeHandler: ResizeHandler
+    private _reshapeHandler: ReshapeHandler
     private _transactionHandler: TransactionHandler
     private _textEditor: TextEditor
     private _commands: CommandRegistry
@@ -82,6 +84,7 @@ export class Engine extends Emitter<EngineEventsMap> {
         this._transactionHandler = new TransactionHandler(this)
         this._dragHandler = new DragHandler(this)
         this._resizeHandler = new ResizeHandler(this)
+        this._reshapeHandler = new ReshapeHandler(this)
         this._mouseController = new MouseController()
         this._textEditor = new TextEditor(this)
         this.serviceManager = new ServiceManager()
@@ -188,7 +191,12 @@ export class Engine extends Emitter<EngineEventsMap> {
         )
         this.serviceManager.register(
             'lineTool',
-            new LineToolService(this, this._mouseController, toolService, selectionService),
+            new LineToolService(
+                this,
+                this._mouseController,
+                toolService,
+                selectionService,
+            ),
         )
         this.serviceManager.register(
             'text',
@@ -241,6 +249,10 @@ export class Engine extends Emitter<EngineEventsMap> {
 
     get resizeHandler(): ResizeHandler {
         return this._resizeHandler
+    }
+
+    get reshapeHandler(): ReshapeHandler {
+        return this._reshapeHandler
     }
 
     get transactionHandler(): TransactionHandler {

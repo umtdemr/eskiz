@@ -1,6 +1,6 @@
 import { ControlProps, Control } from '@/core/shapes/nonCanvasShapes/Control'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas.ts'
-import { Engine } from '@/core/engine/Engine.ts'
+import { CanvasMouseEvent, Engine } from '@/core/engine/Engine.ts'
 import { SelectionService } from '@/core/services/SelectionService.ts'
 import { Line } from '@/core/shapes/line/Line.ts'
 
@@ -73,6 +73,18 @@ export class PointControl extends Control {
             this._x = point[0]
             this._y = point[1]
         }
+    }
+
+    onMouseDown(data: CanvasMouseEvent): void {
+        this.engine.reshapeHandler.start(data, this.line, this.pointIndex)
+    }
+
+    onMouseMove(data: CanvasMouseEvent): void {
+        this.engine.reshapeHandler.handle(data)
+    }
+
+    onMouseUp(data: CanvasMouseEvent): void {
+        this.engine.reshapeHandler.end(data)
     }
 
     destroy() {
