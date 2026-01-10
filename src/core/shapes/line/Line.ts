@@ -3,10 +3,11 @@ import {
     Paint as CkPaint,
     Canvas as SkiaCanvas,
 } from 'canvaskit-wasm'
-import { Widget, WidgetProps } from '../Widget'
+import { Widget, WidgetJson, WidgetProps } from '../Widget'
 import { RGBA } from '../Color'
-import { WidgetType } from '@/core/constants'
+import { LineType, WidgetType } from '@/core/constants'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
+import { WsWidget } from '@/types/Websocket'
 
 export interface LineProps extends WidgetProps {
     properties: LineProperties
@@ -257,6 +258,86 @@ export class Line extends Widget {
             }
         }
         return false
+    }
+
+    toJson(): WidgetJson {
+        const data: WidgetJson = {
+            x: this._x,
+            y: this._y,
+            width: this._width,
+            height: this._height,
+            z_index: this._zIndex,
+            uuid: this._uuid!,
+            widget_type: WidgetType.LINE,
+            sub_type: LineType.LINE,
+            properties: {
+                points: this._points,
+                strokeColor: this._strokeColor,
+                strokeWidth: this._strokeWidth,
+                hasHeadArrow: this._hasHeadArrow,
+                hasTailArrow: this._hasTailArrow,
+            },
+            is_deleted: this._isDeleted,
+            is_locked: this._isLocked,
+        }
+
+        if (this._parent_widget_id) {
+            data.parent_widget_id = this._parent_widget_id
+        }
+
+        return data
+    }
+
+    static loadFromJson(json: WsWidget): Line {
+        const properties = json.properties as unknown as LineProperties
+        return new Line({
+            x: json.x,
+            y: json.y,
+            width: json.width,
+            height: json.height,
+            uuid: json.uuid,
+            z_index: json.z_index,
+            parent_widget_id: json.parent_widget_id,
+            is_locked: json.is_locked,
+            properties: {
+                points: properties.points,
+                strokeColor: properties.strokeColor,
+                strokeWidth: properties.strokeWidth,
+                hasHeadArrow: properties.hasHeadArrow,
+                hasTailArrow: properties.hasTailArrow,
+            },
+        })
+    }
+
+    updateWithPartialState(json: Partial<WsWidget>) {
+        super.updateWithPartialState(json)
+
+        if (json.properties) {
+            const properties = json.properties as Partial<LineProperties>
+            if (properties.points) {
+                this.setPoints(properties.points)
+            }
+            if (properties.strokeColor) {
+                this._strokeColor = properties.strokeColor
+                // force paint update
+                if (this._paint) this._paint.delete()
+                this._paint = null
+            }
+            if (properties.strokeWidth) {
+                this._strokeWidth = properties.strokeWidth
+                // force paint update
+                if (this._paint) this._paint.delete()
+                this._paint = null
+            }
+            if (properties.hasHeadArrow !== undefined) {
+                this._hasHeadArrow = properties.hasHeadArrow
+                this.updatePath()
+            }
+             if (properties.hasTailArrow !== undefined) {
+                this._hasTailArrow = properties.hasTailArrow
+                this.updatePath()
+            }
+        }
     }
 }
 

@@ -9,6 +9,7 @@ import {
     ShapeType as ShapeTypeConst,
     TextType as TextTypeConst,
     WidgetType as WidgetTypeConst,
+    LineType as LineTypeConst,
 } from '@/core/constants.ts'
 
 export type WidgetType = (typeof WidgetTypeConst)[keyof typeof WidgetTypeConst]
@@ -17,11 +18,13 @@ export type DbWidgetType =
     | typeof WidgetTypeConst.SHAPE
     | typeof WidgetTypeConst.TEXTBOX
     | typeof WidgetTypeConst.PATH
+    | typeof WidgetTypeConst.LINE
 
 export type SubType =
     | (typeof ShapeTypeConst)[keyof typeof ShapeTypeConst]
     | typeof TextTypeConst.TEXTBOX
     | typeof PathTypeConst.PEN
+    | typeof LineTypeConst.LINE
 
 export type WidgetFullType = `${DbWidgetType}_${SubType}`
 
