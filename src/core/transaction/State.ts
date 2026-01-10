@@ -23,6 +23,7 @@ export type EditingMethods =
     | 'fontStyle'
     | 'zIndex'
     | 'points'
+    | 'arrowPosition'
 
 export type State = Record<string, unknown>
 
@@ -117,6 +118,11 @@ export function getPartialState(
                         ...(state.properties ? state.properties : undefined),
                         borderStyle: widget.properties.borderStyle,
                     }
+                } else if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        borderStyle: widget.borderStyle,
+                    }
                 }
                 break
             case 'thickness':
@@ -129,6 +135,11 @@ export function getPartialState(
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         strokeWidth: widget.properties.strokeWidth,
+                    }
+                } else if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        strokeWidth: widget.strokeWidth,
                     }
                 }
                 break
@@ -220,6 +231,15 @@ export function getPartialState(
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         points: widget.points,
+                    }
+                }
+                break
+            case 'arrowPosition':
+                if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        hasHeadArrow: widget.hasHeadArrow,
+                        hasTailArrow: widget.hasTailArrow,
                     }
                 }
                 break

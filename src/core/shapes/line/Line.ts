@@ -266,6 +266,17 @@ export class Line extends Widget {
         return true
     }
 
+    changeThickness(thickness: number): boolean {
+        if (this._strokeWidth === thickness) return false
+        this._strokeWidth = thickness
+        // force paint update
+        if (this._paint) this._paint.delete()
+        this._paint = null
+
+        this.updatePath()
+        return true
+    }
+
     // returns points
     get points() {
         return this._points
@@ -382,6 +393,8 @@ export class Line extends Widget {
                 // force paint update
                 if (this._paint) this._paint.delete()
                 this._paint = null
+
+                this.updatePath()
             }
             if (properties.hasHeadArrow !== undefined) {
                 this._hasHeadArrow = properties.hasHeadArrow
@@ -400,12 +413,47 @@ export class Line extends Widget {
         }
     }
 
+    canChangeArrows(): boolean {
+        return true
+    }
+
+    changeArrows(hasHeadArrow: boolean, hasTailArrow: boolean): boolean {
+        let changed = false
+        if (this._hasHeadArrow !== hasHeadArrow) {
+            this._hasHeadArrow = hasHeadArrow
+            changed = true
+        }
+        if (this._hasTailArrow !== hasTailArrow) {
+            this._hasTailArrow = hasTailArrow
+            changed = true
+        }
+        if (changed) {
+            this.updatePath()
+            // force paint update
+            if (this._paint) this._paint.delete()
+            this._paint = null
+        }
+        return changed
+    }
+
     get strokeColor() {
         return this._strokeColor
     }
 
     get strokeWidth() {
         return this._strokeWidth
+    }
+
+    get hasHeadArrow() {
+        return this._hasHeadArrow
+    }
+
+    get hasTailArrow() {
+        return this._hasTailArrow
+    }
+
+    get borderStyle() {
+        return this._borderStyle
     }
 }
 

@@ -1,6 +1,7 @@
 import { Shape } from '../shapes/Shape'
 import { Widget } from '../shapes/Widget'
 import { Path } from '../shapes/path/Path'
+import { Line } from '../shapes/line/Line'
 import { EditingMethods } from '../transaction/State'
 import { CONTINUOUS_THROTTLE_DELAY } from '../transaction/TransactionHandler'
 import { Command, CommandCtx, Commands } from './Command'
@@ -59,7 +60,11 @@ export class ChangeThickness extends Command {
                 if (!widget.canChangeThickness()) continue
 
                 let changed = false
-                if (widget instanceof Shape || widget instanceof Path) {
+                if (
+                    widget instanceof Shape ||
+                    widget instanceof Path ||
+                    widget instanceof Line
+                ) {
                     changed = widget.changeThickness(thickness)
                 }
 
@@ -103,7 +108,11 @@ export class ChangeThickness extends Command {
                 if (!widget.canChangeThickness()) continue
 
                 let changed = false
-                if (widget instanceof Shape || widget instanceof Path) {
+                if (
+                    widget instanceof Shape ||
+                    widget instanceof Path ||
+                    widget instanceof Line
+                ) {
                     changed = widget.changeThickness(thickness)
                 }
 
