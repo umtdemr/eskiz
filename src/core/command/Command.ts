@@ -16,6 +16,7 @@ export type Commands =
     | 'changeFontSize'
     | 'changeFontStyle'
     | 'changeZIndex'
+    | 'changeLineArrow'
 
 export type CommandCtx = {
     selectionService: SelectionService

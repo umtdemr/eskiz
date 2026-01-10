@@ -26,6 +26,7 @@ import { useBoundStore } from '@/store/store'
 import useOnClickOutside from '@/hooks/UseOutsideClick'
 import { MoreOptionsDropdown } from './actions/MoreOptionsDropdown.tsx'
 import { LineColorInput } from './actions/LineColorInput.tsx'
+import { LineStyleInput } from './actions/LineStyleInput.tsx'
 
 export interface SubtoolbarProps {
     engine: Engine
@@ -260,6 +261,15 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                     } else if (action.type === 'lineColorInput') {
                         return (
                             <LineColorInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
+                                engine={engine}
+                            />
+                        )
+                    } else if (action.type === 'lineStyleInput') {
+                        return (
+                            <LineStyleInput
                                 key={action.id}
                                 tooltip={action.tooltip!}
                                 id={action.id}

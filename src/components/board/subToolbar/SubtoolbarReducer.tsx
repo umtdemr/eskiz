@@ -19,6 +19,7 @@ export interface Action {
         | 'fontSizeInput'
         | 'textAlignInput'
         | 'moreOptions'
+        | 'lineStyleInput'
     btnActionProps?: {
         command: Commands | 'willDo'
         icon?: React.ReactNode
@@ -218,6 +219,11 @@ function getLineActions(): Action[] {
             id: 'lineColor',
             tooltip: 'Line color',
             type: 'lineColorInput',
+        },
+        {
+            id: 'lineStyle',
+            tooltip: 'Line type',
+            type: 'lineStyleInput',
         },
     ]
 }
