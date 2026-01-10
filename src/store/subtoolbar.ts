@@ -9,6 +9,7 @@ export type ActiveSubtoolbarDropdown =
     | 'fontStyle'
     | 'textAlign'
     | 'moreOptions'
+    | 'lineColor'
     | null
 
 export interface SubtoolbarSlice {
@@ -32,4 +33,3 @@ export const createSubtoolbarSlice: StateCreator<
         set({ activeDropdown: current === dropdown ? null : dropdown })
     },
 })
-

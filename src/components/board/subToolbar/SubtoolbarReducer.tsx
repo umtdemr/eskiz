@@ -13,6 +13,7 @@ export interface Action {
         | 'shapeBorderColorInput'
         | 'shapeBgColorInput'
         | 'textColorInput'
+        | 'lineColorInput'
         | 'highlightColorInput'
         | 'fontStyleInput'
         | 'fontSizeInput'
@@ -205,6 +206,22 @@ function getPathActions(): Action[] {
     ]
 }
 
+// actions for lines
+function getLineActions(): Action[] {
+    return [
+        ...getCommonActions(),
+        {
+            id: 'seperator1',
+            type: 'seperator',
+        },
+        {
+            id: 'lineColor',
+            tooltip: 'Line color',
+            type: 'lineColorInput',
+        },
+    ]
+}
+
 // actions for locked widgets
 function getLockedActions(): Action[] {
     return [
@@ -242,6 +259,9 @@ export function generateActions(engine: Engine): Action[] {
             break
         case WidgetType.PATH:
             actions.push(...getPathActions())
+            break
+        case WidgetType.LINE:
+            actions.push(...getLineActions())
             break
         default:
             actions.push(...getCommonActions())

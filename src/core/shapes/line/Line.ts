@@ -205,10 +205,10 @@ export class Line extends Widget {
                 0,
             )
             this._paint.setPathEffect(pathEffect)
-             this._paint.setStrokeCap(canvasKit.StrokeCap.Butt)
+            this._paint.setStrokeCap(canvasKit.StrokeCap.Butt)
         } else {
-             this._paint.setPathEffect(null)
-             this._paint.setStrokeCap(canvasKit.StrokeCap.Butt)
+            this._paint.setPathEffect(null)
+            this._paint.setStrokeCap(canvasKit.StrokeCap.Butt)
         }
 
         ctx.drawPath(this._path, this._paint)
@@ -238,6 +238,14 @@ export class Line extends Widget {
     }
 
     canChangeBorderColor(): boolean {
+        return true
+    }
+
+    changeBorderColor(newColor: RGBA): boolean {
+        this._strokeColor = newColor
+        // force paint update
+        if (this._paint) this._paint.delete()
+        this._paint = null
         return true
     }
 
@@ -379,7 +387,7 @@ export class Line extends Widget {
                 this._hasHeadArrow = properties.hasHeadArrow
                 this.updatePath()
             }
-             if (properties.hasTailArrow !== undefined) {
+            if (properties.hasTailArrow !== undefined) {
                 this._hasTailArrow = properties.hasTailArrow
                 this.updatePath()
             }
@@ -390,6 +398,14 @@ export class Line extends Widget {
                 this._paint = null
             }
         }
+    }
+
+    get strokeColor() {
+        return this._strokeColor
+    }
+
+    get strokeWidth() {
+        return this._strokeWidth
     }
 }
 
