@@ -3,6 +3,7 @@ import { Shape } from '@/core/shapes/Shape'
 import { TextBox } from '@/core/shapes/text/TextBox'
 import { Rectangle } from '@/core/shapes/Rectangle'
 import { Path } from '@/core/shapes/path/Path'
+import { Line } from '@/core/shapes/line/Line'
 
 export type EditingMethods =
     | 'move'
@@ -21,6 +22,7 @@ export type EditingMethods =
     | 'fontSize'
     | 'fontStyle'
     | 'zIndex'
+    | 'points'
 
 export type State = Record<string, unknown>
 
@@ -207,6 +209,14 @@ export function getPartialState(
                 updateState({
                     z_index: widget.zIndex,
                 })
+                break
+            case 'points':
+                if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        points: widget.points,
+                    }
+                }
                 break
         }
     }

@@ -2,11 +2,16 @@ import { CanvasMouseEvent, Engine } from '@/core/engine/Engine'
 import { Widget } from '@/core/shapes/Widget'
 import { Line } from '@/core/shapes/line/Line'
 import { Signal } from '@/core/signal/Signal'
+import {
+    EditTable,
+    TransactionId,
+} from '@/core/transaction/TransactionHandler'
 
 export class ReshapeHandler {
     private engine: Engine
     private shape: Line | null = null
     private pointIndex: number = -1
+    private transactionId: TransactionId | null = null
 
     reshapeStarted = new Signal<{ widgets: Widget[] }>()
     reshapeFinished = new Signal<{ widgets: Widget[] }>()
@@ -18,6 +23,16 @@ export class ReshapeHandler {
     start(_data: CanvasMouseEvent, shape: Line, pointIndex: number) {
         this.shape = shape
         this.pointIndex = pointIndex
+
+        const editTable: EditTable = new Map()
+        editTable.set(shape, ['points', 'resize'])
+        const { transactionId } = this.engine.transactionHandler.begin(
+            'continuous',
+            {
+                editTable,
+            },
+        )
+        this.transactionId = transactionId
 
         this.reshapeStarted.dispatch({ widgets: [shape] })
     }
@@ -34,6 +49,10 @@ export class ReshapeHandler {
                 absolutePoints as [number, number][],
             )
 
+            if (this.transactionId) {
+                this.engine.transactionHandler.update(this.transactionId)
+            }
+
             this.engine.canvas.requestRender()
             return true
         }
@@ -41,6 +60,11 @@ export class ReshapeHandler {
     }
 
     end(_data: CanvasMouseEvent) {
+        if (this.transactionId) {
+            this.engine.transactionHandler.commit(this.transactionId)
+            this.transactionId = null
+        }
+
         if (this.shape) {
             this.reshapeFinished.dispatch({ widgets: [this.shape] })
         }

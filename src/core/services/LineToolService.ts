@@ -7,6 +7,10 @@ import { ACTION_MODES, CURSOR_OWNERS } from '@/helpers/Constant'
 import { CursorService } from '@/core/services/CursorService'
 import { CursorType } from '@/core/constants.ts'
 import { SelectionService } from './SelectionService'
+import { nanoid } from 'nanoid'
+import { WidgetsService } from '@/core/services/WidgetsService.ts'
+import { AddWidgetPayload } from '@/types/Websocket.ts'
+import { CreationHistoryEntry } from '@/core/history/HistoryManager'
 
 export class LineToolService extends Service {
     private mouseController: MouseController
@@ -67,7 +71,7 @@ export class LineToolService extends Service {
             },
         })
 
-        this.engine.stage.widgetsDefaultLayer.addChildren(this.line)
+        this.engine.stage.addWidget(this.line)
     }
 
     private onMouseMove(data: CanvasMouseEvent) {
@@ -82,9 +86,22 @@ export class LineToolService extends Service {
     private onMouseUp() {
         if (!this.line) return
         this.line.setBoundsFromPoints()
+        
         this.selectionService.selectWidget(this.line)
+        
+        this.engine.historyManager.push(
+            new CreationHistoryEntry(this.engine, this.line),
+        )
+
+        const uuid = nanoid()
+        this.line.uuid = uuid
+        const widgetsService = this.engine.getService<WidgetsService>('widgets')
+        
+        const json = { ...this.line.toJson(), page_id: this.engine.pageId }
+
+        widgetsService.addWidget(json as AddWidgetPayload)
+
         this.toolService.changeTool(ACTION_MODES.SELECT)
-        // TODO: add to db
 
         this.reset()
     }

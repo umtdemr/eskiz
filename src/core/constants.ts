@@ -19,6 +19,10 @@ export const PathType = {
     PEN: 'pen',
 } as const
 
+export const LineType = {
+    LINE: 'line',
+} as const
+
 export const TextType = {
     TEXTBOX: 'textbox',
     SHAPE_TEXT: 'shapeText',

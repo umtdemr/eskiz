@@ -5,11 +5,13 @@ import { Triangle } from '@/core/shapes/Triangle.ts'
 import { TextBox } from '@/core/shapes/text/TextBox.ts'
 import { Pen } from '@/core/shapes/path/Pen.ts'
 import {
+    LineType,
     PathType,
     ShapeType,
     TextType,
     WidgetType,
 } from '@/core/constants.ts'
+import { Line } from '@/core/shapes/line/Line'
 
 export function initializeAllWidgets() {
     WidgetFactory.registerWidget(WidgetType.SHAPE, ShapeType.RECTANGLE, Rectangle)
@@ -17,4 +19,5 @@ export function initializeAllWidgets() {
     WidgetFactory.registerWidget(WidgetType.SHAPE, ShapeType.TRIANGLE, Triangle)
     WidgetFactory.registerWidget(WidgetType.TEXTBOX, TextType.TEXTBOX, TextBox)
     WidgetFactory.registerWidget(WidgetType.PATH, PathType.PEN, Pen)
+    WidgetFactory.registerWidget(WidgetType.LINE, LineType.LINE, Line)
 }
