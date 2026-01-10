@@ -6,6 +6,7 @@ import {
 import { Widget, WidgetJson, WidgetProps } from '../Widget'
 import { RGBA } from '../Color'
 import { LineType, WidgetType } from '@/core/constants'
+import { BorderStyle } from '@/helpers/Constant'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WsWidget } from '@/types/Websocket'
 
@@ -16,7 +17,7 @@ export interface LineProps extends WidgetProps {
 export interface LineProperties {
     points: [number, number][]
     strokeColor?: RGBA
-    // borderStyle?: BorderStyle // TODO: add it later
+    borderStyle?: BorderStyle
     strokeWidth?: number
     hasTailArrow?: boolean
     hasHeadArrow?: boolean
@@ -30,6 +31,7 @@ export class Line extends Widget {
     private _arrowSize = 5
     private _strokeWidth = 2
     private _strokeColor: RGBA = { r: 0, g: 0, b: 0, a: 1 }
+    private _borderStyle: BorderStyle = BorderStyle.SOLID
 
     private _arrowPath: CkPath | null = null
     private _paint: CkPaint | null = null
@@ -48,6 +50,7 @@ export class Line extends Widget {
             b: 0,
             a: 1,
         }
+        this._borderStyle = props.properties.borderStyle || BorderStyle.SOLID
 
         this.updatePath()
     }
@@ -185,7 +188,35 @@ export class Line extends Widget {
 
         // draw line
         this._paint.setStyle(canvasKit.PaintStyle.Stroke)
+
+        const strokeWidth = this._strokeWidth || 2
+
+        // apply path effect for border styles
+        if (this._borderStyle === BorderStyle.DOTTED) {
+            const pathEffect = canvasKit.PathEffect.MakeDash(
+                [0, strokeWidth * 2],
+                0,
+            )
+            this._paint.setPathEffect(pathEffect)
+            this._paint.setStrokeCap(canvasKit.StrokeCap.Round)
+        } else if (this._borderStyle === BorderStyle.DASHED) {
+            const pathEffect = canvasKit.PathEffect.MakeDash(
+                [strokeWidth * 5, strokeWidth * 5],
+                0,
+            )
+            this._paint.setPathEffect(pathEffect)
+             this._paint.setStrokeCap(canvasKit.StrokeCap.Butt)
+        } else {
+             this._paint.setPathEffect(null)
+             this._paint.setStrokeCap(canvasKit.StrokeCap.Butt)
+        }
+
         ctx.drawPath(this._path, this._paint)
+
+        // remove path effect for arrows so they are solid
+        this._paint.setPathEffect(null)
+        // reset stroke cap to default
+        this._paint.setStrokeCap(canvasKit.StrokeCap.Butt)
 
         // draw arrows if there is
         if (this._hasHeadArrow && this._arrowPath) {
@@ -207,6 +238,19 @@ export class Line extends Widget {
     }
 
     canChangeBorderColor(): boolean {
+        return true
+    }
+
+    canChangeBorderStyle(): boolean {
+        return true
+    }
+
+    changeBorderStyle(newStyle: BorderStyle): boolean {
+        if (this._borderStyle === newStyle) return false
+        this._borderStyle = newStyle
+        // force paint update
+        if (this._paint) this._paint.delete()
+        this._paint = null
         return true
     }
 
@@ -276,6 +320,7 @@ export class Line extends Widget {
                 strokeWidth: this._strokeWidth,
                 hasHeadArrow: this._hasHeadArrow,
                 hasTailArrow: this._hasTailArrow,
+                borderStyle: this._borderStyle,
             },
             is_deleted: this._isDeleted,
             is_locked: this._isLocked,
@@ -305,6 +350,7 @@ export class Line extends Widget {
                 strokeWidth: properties.strokeWidth,
                 hasHeadArrow: properties.hasHeadArrow,
                 hasTailArrow: properties.hasTailArrow,
+                borderStyle: properties.borderStyle,
             },
         })
     }
@@ -336,6 +382,12 @@ export class Line extends Widget {
              if (properties.hasTailArrow !== undefined) {
                 this._hasTailArrow = properties.hasTailArrow
                 this.updatePath()
+            }
+            if (properties.borderStyle) {
+                this._borderStyle = properties.borderStyle
+                // force paint update
+                if (this._paint) this._paint.delete()
+                this._paint = null
             }
         }
     }
