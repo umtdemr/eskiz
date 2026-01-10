@@ -6,9 +6,8 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { Engine } from '@/core/engine/Engine'
-import { useState, useRef } from 'react'
 import { LineStyleDropdown } from './LineStyleDropdown'
-import useOnClickOutside from '@/hooks/UseOutsideClick'
+import { useBoundStore } from '@/store/store'
 
 export interface LineStyleInputProps {
     id: string
@@ -17,28 +16,26 @@ export interface LineStyleInputProps {
 }
 
 export function LineStyleInput({ id, tooltip, engine }: LineStyleInputProps) {
-    const [open, setOpen] = useState(false)
-    const ref = useRef<HTMLDivElement>(null)
-
-    useOnClickOutside(ref, () => setOpen(false))
+    const { activeDropdown, toggleDropdown } = useBoundStore()
+    const isActive = activeDropdown === 'lineStyle'
 
     return (
-        <div ref={ref} className="relative" id={id}>
+        <div className="relative" id={id}>
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
                         size="icon"
                         className="iconBox"
-                        onClick={() => setOpen(!open)}
-                        data-active={open}
+                        onClick={() => toggleDropdown('lineStyle')}
+                        data-active={isActive}
                     >
                         <MoveUpRight />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent>{tooltip}</TooltipContent>
             </Tooltip>
-            {open && <LineStyleDropdown engine={engine} />}
+            {isActive && <LineStyleDropdown engine={engine} />}
         </div>
     )
 }

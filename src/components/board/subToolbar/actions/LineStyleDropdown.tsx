@@ -276,7 +276,14 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
                                     changeArrowPoisition(false, false)
                                 }
                             >
-                                <Minus className="h-5 w-5" />
+                                <Minus
+                                    className="h-5 w-5"
+                                    color={
+                                        !hasHeadArrow && !hasTailArrow
+                                            ? 'rgb(29, 78, 216)'
+                                            : 'black'
+                                    }
+                                />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -298,7 +305,14 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
                                     changeArrowPoisition(false, true)
                                 }
                             >
-                                <MoveLeft className="h-5 w-5" />
+                                <MoveLeft
+                                    className="h-5 w-5"
+                                    color={
+                                        !hasHeadArrow && hasTailArrow
+                                            ? 'rgb(29, 78, 216)'
+                                            : 'black'
+                                    }
+                                />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -320,7 +334,14 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
                                     changeArrowPoisition(true, false)
                                 }
                             >
-                                <MoveRight className="h-5 w-5" />
+                                <MoveRight
+                                    className="h-5 w-5"
+                                    color={
+                                        hasHeadArrow && !hasTailArrow
+                                            ? 'rgb(29, 78, 216)'
+                                            : 'black'
+                                    }
+                                />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -340,7 +361,14 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
                                 })}
                                 onClick={() => changeArrowPoisition(true, true)}
                             >
-                                <MoveHorizontal className="h-5 w-5" />
+                                <MoveHorizontal
+                                    className="h-5 w-5"
+                                    color={
+                                        hasHeadArrow && hasTailArrow
+                                            ? 'rgb(29, 78, 216)'
+                                            : 'black'
+                                    }
+                                />
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent>
