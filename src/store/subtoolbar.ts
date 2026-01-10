@@ -10,6 +10,7 @@ export type ActiveSubtoolbarDropdown =
     | 'textAlign'
     | 'moreOptions'
     | 'lineColor'
+    | 'lineStyle'
     | null
 
 export interface SubtoolbarSlice {
