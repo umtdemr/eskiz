@@ -104,6 +104,11 @@ export function getPartialState(
                         ...(state.properties ? state.properties : undefined),
                         color: widget.properties.color,
                     }
+                } else if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        strokeColor: widget.strokeColor,
+                    }
                 }
                 break
             case 'borderStyle':
