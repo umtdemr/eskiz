@@ -98,4 +98,51 @@ export class Triangle extends Shape {
     static loadFromJson(json: WsWidget): Triangle {
         return new Triangle(json)
     }
+
+    getSnapPoints(): { x: number; y: number }[] {
+        // triangle points:
+        // top middle: (this.width / 2, 0)
+        // bottom left: (0, this.height)
+        // bottom right: (this.width, this.height)
+
+        const topMiddle = {
+            x: this.bounds.x + this.width / 2,
+            y: this.bounds.y,
+        }
+        const bottomLeft = {
+            x: this.bounds.x,
+            y: this.bounds.y + this.height,
+        }
+        const bottomRight = {
+            x: this.bounds.x + this.width,
+            y: this.bounds.y + this.height,
+        }
+
+        // midpoints of slanted sides
+        // left slant (bottom left to top middle)
+        const leftSlantMid = {
+            x: (bottomLeft.x + topMiddle.x) / 2,
+            y: (bottomLeft.y + topMiddle.y) / 2,
+        }
+        // right slant (bottom right to top middle)
+        const rightSlantMid = {
+            x: (bottomRight.x + topMiddle.x) / 2,
+            y: (bottomRight.y + topMiddle.y) / 2,
+        }
+
+        // midpoint of bottom side
+        const bottomMid = {
+            x: (bottomLeft.x + bottomRight.x) / 2,
+            y: (bottomLeft.y + bottomRight.y) / 2,
+        }
+
+        return [
+            topMiddle,
+            bottomLeft,
+            bottomRight,
+            leftSlantMid,
+            rightSlantMid,
+            bottomMid,
+        ]
+    }
 }

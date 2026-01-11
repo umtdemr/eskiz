@@ -7,6 +7,7 @@ export const WidgetType = {
     BORDER: 'border',
     CONTROL: 'control',
     LINE: 'line',
+    MAGNET_CIRCLE: 'magnetCircle',
 } as const
 
 export const ShapeType = {

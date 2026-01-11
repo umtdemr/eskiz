@@ -11,6 +11,7 @@ import { nanoid } from 'nanoid'
 import { WidgetsService } from '@/core/services/WidgetsService.ts'
 import { AddWidgetPayload } from '@/types/Websocket.ts'
 import { CreationHistoryEntry } from '@/core/history/HistoryManager'
+import { MagnetService } from './MagnetService'
 
 export class LineToolService extends Service {
     private mouseController: MouseController
@@ -79,16 +80,34 @@ export class LineToolService extends Service {
         const { x, y } = data.pointer
         const startPoint = this.line.points[0]
 
-        this.line.setPoints([startPoint, [x, y]])
+        // check for magnetic snapping
+        const magnetService = this.engine.getService<MagnetService>('magnet')
+        const magnetLayer =
+            this.engine.stage.nonCanvasDynamicContainer.magnetLayer
+
+        const scanResult = magnetService.scan({ x, y })
+        const { nearbyWidget, snappedPoint, snappedPointIndex } = scanResult
+
+        let targetX = x
+        let targetY = y
+
+        if (snappedPoint) {
+            targetX = snappedPoint.x
+            targetY = snappedPoint.y
+        }
+
+        magnetLayer.update(nearbyWidget, snappedPointIndex)
+
+        this.line.setPoints([startPoint, [targetX, targetY]])
         this.engine.canvas.requestRender()
     }
 
     private onMouseUp() {
         if (!this.line) return
         this.line.setBoundsFromPoints()
-        
+
         this.selectionService.selectWidget(this.line)
-        
+
         this.engine.historyManager.push(
             new CreationHistoryEntry(this.engine, this.line),
         )
@@ -96,10 +115,13 @@ export class LineToolService extends Service {
         const uuid = nanoid()
         this.line.uuid = uuid
         const widgetsService = this.engine.getService<WidgetsService>('widgets')
-        
+
         const json = { ...this.line.toJson(), page_id: this.engine.pageId }
 
         widgetsService.addWidget(json as AddWidgetPayload)
+
+        this.engine.stage.nonCanvasDynamicContainer.magnetLayer.update(null)
+        this.engine.canvas.requestRender()
 
         this.toolService.changeTool(ACTION_MODES.SELECT)
 

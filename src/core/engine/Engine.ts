@@ -31,6 +31,7 @@ import { CommandRegistry } from '../command/CommandRegistry'
 import { Command, Commands } from '../command/Command'
 import { HistoryManager } from '../history/HistoryManager'
 import { ShortcutService } from '../services/ShortcutService'
+import { MagnetService } from '../services/MagnetService'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -222,6 +223,7 @@ export class Engine extends Emitter<EngineEventsMap> {
             new CollaboratorsService(this, wsEventService),
         )
         this.serviceManager.register('page', new PageService(this))
+        this.serviceManager.register('magnet', new MagnetService(this))
     }
 
     getService<T>(name: string): T {
