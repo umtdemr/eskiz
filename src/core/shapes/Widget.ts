@@ -481,4 +481,12 @@ export abstract class Widget extends Layer {
     get properties() {
         return this._properties
     }
+
+    canSnap(): boolean {
+        return false
+    }
+
+    getSnapPoints(): { x: number; y: number }[] {
+        return []
+    }
 }

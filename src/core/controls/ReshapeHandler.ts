@@ -2,10 +2,8 @@ import { CanvasMouseEvent, Engine } from '@/core/engine/Engine'
 import { Widget } from '@/core/shapes/Widget'
 import { Line } from '@/core/shapes/line/Line'
 import { Signal } from '@/core/signal/Signal'
-import {
-    EditTable,
-    TransactionId,
-} from '@/core/transaction/TransactionHandler'
+import { EditTable, TransactionId } from '@/core/transaction/TransactionHandler'
+import { MagnetService } from '../services/MagnetService'
 
 export class ReshapeHandler {
     private engine: Engine
@@ -43,8 +41,31 @@ export class ReshapeHandler {
         const pointer = data.pointer
         const absolutePoints = [...this.shape.absolutePoints]
 
+        // check for magnetic snapping
+        const magnetService = this.engine.getService<MagnetService>('magnet')
+        const magnetLayer =
+            this.engine.stage.nonCanvasDynamicContainer.magnetLayer
+
+        const scanResult = magnetService.scan(
+            { x: pointer.x, y: pointer.y },
+            50,
+            20,
+            this.shape.uuid,
+        )
+        const { nearbyWidget, snappedPoint, snappedPointIndex } = scanResult
+
+        let targetX = pointer.x
+        let targetY = pointer.y
+
+        if (snappedPoint) {
+            targetX = snappedPoint.x
+            targetY = snappedPoint.y
+        }
+
+        magnetLayer.update(nearbyWidget, snappedPointIndex)
+
         if (this.pointIndex >= 0 && this.pointIndex < absolutePoints.length) {
-            absolutePoints[this.pointIndex] = [pointer.x, pointer.y]
+            absolutePoints[this.pointIndex] = [targetX, targetY]
             this.shape.updateFromAbsolutePoints(
                 absolutePoints as [number, number][],
             )
@@ -71,5 +92,7 @@ export class ReshapeHandler {
 
         this.shape = null
         this.pointIndex = -1
+        this.engine.stage.nonCanvasDynamicContainer.magnetLayer.update(null)
+        this.engine.canvas.requestRender()
     }
 }
