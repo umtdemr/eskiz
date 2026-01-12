@@ -6,6 +6,7 @@ import { WS_EVENTS } from '@/helpers/Constant'
 import { WidgetFactory } from '../engine/WidgetFactory'
 import { Widget } from '../shapes/Widget'
 import { Signal } from '../signal/Signal'
+import { Line } from '../shapes/line/Line'
 
 export interface WidgetDeletedSignal {
     widgets: Widget[]
@@ -50,6 +51,35 @@ export class WidgetsService extends Service {
             return
         }
         widgetLayer.addChildren(widgetClass)
+
+        if (widgetClass instanceof Line) {
+            widgetClass.resolveBindings(widgetLayer)
+        } else {
+            // if a widget is added, existing lines might want to bind to it
+            // TODO: is this the best way to do this?
+            const addedWidget = widgetClass
+            for (const child of widgetLayer.children) {
+                if (child instanceof Line) {
+                    if (
+                        child.headBinding?.id === addedWidget.uuid &&
+                        !child.headBindingWidget
+                    ) {
+                        child.headBindingWidget = addedWidget
+                        addedWidget.addAttachedLine(child)
+                        child.updatePointFromBinding('head')
+                    }
+                    if (
+                        child.tailBinding?.id === addedWidget.uuid &&
+                        !child.tailBindingWidget
+                    ) {
+                        child.tailBindingWidget = addedWidget
+                        addedWidget.addAttachedLine(child)
+                        child.updatePointFromBinding('tail')
+                    }
+                }
+            }
+        }
+
         this.engine.canvas.requestRender()
     }
 
@@ -66,6 +96,10 @@ export class WidgetsService extends Service {
                 }
 
                 widget.updateWithPartialState(shape.data)
+
+                if (widget instanceof Line) {
+                    widget.resolveBindings(widgetLayer)
+                }
             }
         }
 

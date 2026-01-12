@@ -2,6 +2,7 @@ import { Service } from '@/core/services/Service.ts'
 import { WsWidget } from '@/types/Websocket.ts'
 import { WidgetFactory } from '@/core/engine/WidgetFactory.ts'
 import { Widget } from '../shapes/Widget'
+import { Line } from '@/core/shapes/line/Line'
 
 export class PageService extends Service {
     async fetchPageDetails(page_id: number) {
@@ -29,6 +30,24 @@ export class PageService extends Service {
 
             addedWidgets.push(widgetClass)
             widgetLayer.addChildren(widgetClass)
+        }
+
+        // resolve bindings for all lines after all widgets are added
+        for (const widget of addedWidgets) {
+            if (!(widget instanceof Line)) {
+                continue
+            }
+            widget.resolveBindings(widgetLayer)
+
+            // update line points if binding is set
+            // because when we move the widget, the line points are not updated
+
+            if (widget.headBindingWidget) {
+                widget.updatePointFromBinding('head')
+            }
+            if (widget.tailBindingWidget) {
+                widget.updatePointFromBinding('tail')
+            }
         }
 
         return addedWidgets

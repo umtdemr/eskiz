@@ -4,6 +4,7 @@ import { RenderContext } from '../canvas/Canvas'
 import { LinkedList } from '../dataStructures/LinkedList'
 import { Signal } from '../signal/Signal'
 import { WsWidget } from '@/types/Websocket.ts'
+import type { Line } from '@/core/shapes/line/Line'
 import {
     PathType as PathTypeConst,
     ShapeType as ShapeTypeConst,
@@ -76,6 +77,9 @@ export abstract class Widget extends Layer {
     protected _isDeleted: boolean = false
     protected _isLocked: boolean = false
     protected _properties: Record<string, unknown>
+
+    public attachedLineIds: Set<string> = new Set()
+    public attachedLines: Set<Line> = new Set()
 
     boundsChanged = new Signal()
     deselected = new Signal()
@@ -198,13 +202,16 @@ export abstract class Widget extends Layer {
     }
 
     updateWithPartialState(json: Partial<WsWidget>) {
+        let isMoved = false
         for (const key of Object.keys(json)) {
             switch (key) {
                 case 'x':
                     this.left = json.x!
+                    isMoved = true
                     break
                 case 'y':
                     this.top = json.y!
+                    isMoved = true
                     break
                 case 'width':
                     this.width = json.width!
@@ -230,6 +237,15 @@ export abstract class Widget extends Layer {
                         ...json.properties,
                     }
                     break
+            }
+        }
+
+        if (isMoved) {
+            for (const line of this.attachedLines) {
+                line.headBinding?.id === this._uuid &&
+                    line.updatePointFromBinding('head')
+                line.tailBinding?.id === this._uuid &&
+                    line.updatePointFromBinding('tail')
             }
         }
     }
@@ -403,6 +419,47 @@ export abstract class Widget extends Layer {
     set top(top: number) {
         this._y = top
         this.updateBounds()
+    }
+
+    move(newX: number, newY: number) {
+        this._x = newX
+        this._y = newY
+        this.updateBounds()
+
+        for (const line of this.attachedLines) {
+            line.headBinding?.id === this._uuid &&
+                line.updatePointFromBinding('head')
+            line.tailBinding?.id === this._uuid &&
+                line.updatePointFromBinding('tail')
+        }
+    }
+
+    addAttachedLine(line: Line) {
+        this.attachedLines.add(line)
+        if (line.uuid) {
+            this.attachedLineIds.add(line.uuid)
+        }
+    }
+
+    removeAttachedLine(line: Line) {
+        this.attachedLines.delete(line)
+        if (line.uuid) {
+            this.attachedLineIds.delete(line.uuid)
+        }
+    }
+
+    getPointFromRelative(rx: number, ry: number): { x: number; y: number } {
+        const cx = this.centerX
+        const cy = this.centerY
+        const x = rx * (this.width / 2) + cx
+        const y = ry * (this.height / 2) + cy
+        return { x, y }
+    }
+
+    getRelativeFromPoint(x: number, y: number): { rx: number; ry: number } {
+        const rx = (x - this.centerX) / (this.width / 2)
+        const ry = (y - this.centerY) / (this.height / 2)
+        return { rx, ry }
     }
 
     get right() {

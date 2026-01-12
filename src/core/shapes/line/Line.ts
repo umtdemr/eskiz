@@ -9,9 +9,16 @@ import { LineType, WidgetType } from '@/core/constants'
 import { BorderStyle } from '@/helpers/Constant'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WsWidget } from '@/types/Websocket'
+import { Layer } from '@/core/stage/Layer'
 
 export interface LineProps extends WidgetProps {
     properties: LineProperties
+}
+
+export interface LineBinding {
+    id: string
+    rx: number
+    ry: number
 }
 
 export interface LineProperties {
@@ -21,6 +28,8 @@ export interface LineProperties {
     strokeWidth?: number
     hasTailArrow?: boolean
     hasHeadArrow?: boolean
+    headBinding?: LineBinding
+    tailBinding?: LineBinding
 }
 
 export class Line extends Widget {
@@ -32,6 +41,10 @@ export class Line extends Widget {
     private _strokeWidth = 2
     private _strokeColor: RGBA = { r: 0, g: 0, b: 0, a: 1 }
     private _borderStyle: BorderStyle = BorderStyle.SOLID
+    private _headBinding: LineBinding | null = null
+    private _tailBinding: LineBinding | null = null
+    public headBindingWidget: Widget | null = null
+    public tailBindingWidget: Widget | null = null
 
     private _arrowPath: CkPath | null = null
     private _paint: CkPaint | null = null
@@ -51,6 +64,8 @@ export class Line extends Widget {
             a: 1,
         }
         this._borderStyle = props.properties.borderStyle || BorderStyle.SOLID
+        this._headBinding = props.properties.headBinding || null
+        this._tailBinding = props.properties.tailBinding || null
 
         this.updatePath()
     }
@@ -349,6 +364,14 @@ export class Line extends Widget {
             data.parent_widget_id = this._parent_widget_id
         }
 
+        if (this._headBinding) {
+            data.properties.headBinding = this._headBinding
+        }
+
+        if (this._tailBinding) {
+            data.properties.tailBinding = this._tailBinding
+        }
+
         return data
     }
 
@@ -370,6 +393,8 @@ export class Line extends Widget {
                 hasHeadArrow: properties.hasHeadArrow,
                 hasTailArrow: properties.hasTailArrow,
                 borderStyle: properties.borderStyle,
+                headBinding: properties.headBinding,
+                tailBinding: properties.tailBinding,
             },
         })
     }
@@ -410,6 +435,18 @@ export class Line extends Widget {
                 if (this._paint) this._paint.delete()
                 this._paint = null
             }
+            if (properties.headBinding !== undefined) {
+                this._headBinding = properties.headBinding || null
+                if (this._headBinding) {
+                    this.updatePointFromBinding('head')
+                }
+            }
+            if (properties.tailBinding !== undefined) {
+                this._tailBinding = properties.tailBinding || null
+                if (this._tailBinding) {
+                    this.updatePointFromBinding('tail')
+                }
+            }
         }
     }
 
@@ -436,6 +473,76 @@ export class Line extends Widget {
         return changed
     }
 
+    resolveBindings(widgetLayer: Layer) {
+        if (this._headBinding) {
+            if (
+                this.headBindingWidget &&
+                this.headBindingWidget.uuid === this._headBinding.id
+            ) {
+                this.headBindingWidget.addAttachedLine(this)
+            } else {
+                let foundWidget: Widget | null = null
+                for (const w of widgetLayer.children) {
+                    if (
+                        w instanceof Widget &&
+                        w.uuid === this._headBinding.id
+                    ) {
+                        foundWidget = w
+                        break
+                    }
+                }
+
+                if (foundWidget) {
+                    this.headBindingWidget = foundWidget
+                    foundWidget.addAttachedLine(this)
+                }
+            }
+        }
+        if (this._tailBinding) {
+            if (
+                this.tailBindingWidget &&
+                this.tailBindingWidget.uuid === this._tailBinding.id
+            ) {
+                this.tailBindingWidget.addAttachedLine(this)
+            } else {
+                let foundWidget: Widget | null = null
+                for (const w of widgetLayer.children) {
+                    if (
+                        w instanceof Widget &&
+                        w.uuid === this._tailBinding.id
+                    ) {
+                        foundWidget = w
+                        break
+                    }
+                }
+
+                if (foundWidget) {
+                    this.tailBindingWidget = foundWidget
+                    foundWidget.addAttachedLine(this)
+                }
+            }
+        }
+    }
+
+    updatePointFromBinding(end: 'head' | 'tail') {
+        const binding = end === 'head' ? this._headBinding : this._tailBinding
+        const widget =
+            end === 'head' ? this.headBindingWidget : this.tailBindingWidget
+
+        if (!binding || !widget) return
+
+        const absPos = widget.getPointFromRelative(binding.rx, binding.ry)
+        const absolutePoints = [...this.absolutePoints] as [number, number][]
+
+        if (end === 'head') {
+            absolutePoints[absolutePoints.length - 1] = [absPos.x, absPos.y]
+        } else {
+            absolutePoints[0] = [absPos.x, absPos.y]
+        }
+
+        this.updateFromAbsolutePoints(absolutePoints)
+    }
+
     get strokeColor() {
         return this._strokeColor
     }
@@ -454,6 +561,22 @@ export class Line extends Widget {
 
     get borderStyle() {
         return this._borderStyle
+    }
+
+    get headBinding() {
+        return this._headBinding
+    }
+
+    set headBinding(binding: LineBinding | null) {
+        this._headBinding = binding
+    }
+
+    get tailBinding() {
+        return this._tailBinding
+    }
+
+    set tailBinding(binding: LineBinding | null) {
+        this._tailBinding = binding
     }
 }
 
