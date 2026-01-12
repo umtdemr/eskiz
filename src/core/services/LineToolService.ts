@@ -12,6 +12,7 @@ import { WidgetsService } from '@/core/services/WidgetsService.ts'
 import { AddWidgetPayload } from '@/types/Websocket.ts'
 import { CreationHistoryEntry } from '@/core/history/HistoryManager'
 import { MagnetService } from './MagnetService'
+import { Widget } from '@/core/shapes/Widget'
 
 export class LineToolService extends Service {
     private mouseController: MouseController
@@ -20,6 +21,11 @@ export class LineToolService extends Service {
     private cursorService: CursorService
     private cursorToolName = CURSOR_OWNERS.SHAPE_DRAWER_TOOL
     private selectionService: SelectionService
+    private currentScanResult: {
+        nearbyWidget: Widget | null
+        snappedPoint: { x: number; y: number } | null
+        snappedPointIndex: number
+    } | null = null
 
     constructor(
         engine: Engine,
@@ -72,13 +78,65 @@ export class LineToolService extends Service {
             },
         })
 
+        let scanResult = this.currentScanResult
+
+        // first click without move
+        if (!scanResult) {
+            const magnetService =
+                this.engine.getService<MagnetService>('magnet')
+            scanResult = magnetService.scan({ x, y })
+        }
+
+        if (
+            scanResult &&
+            scanResult.nearbyWidget &&
+            scanResult.nearbyWidget.canSnap()
+        ) {
+            const widget = scanResult.nearbyWidget
+            let rx = 0
+            let ry = 0
+            let startX = x
+            let startY = y
+
+            if (scanResult.snappedPoint) {
+                const { rx: newRx, ry: newRy } = widget.getRelativeFromPoint(
+                    scanResult.snappedPoint.x,
+                    scanResult.snappedPoint.y,
+                )
+                rx = newRx
+                ry = newRy
+                startX = scanResult.snappedPoint.x
+                startY = scanResult.snappedPoint.y
+            } else {
+                const { rx: newRx, ry: newRy } = widget.getRelativeFromPoint(
+                    x,
+                    y,
+                )
+                rx = newRx
+                ry = newRy
+            }
+
+            this.line.tailBinding = {
+                id: widget.uuid!,
+                rx,
+                ry,
+            }
+            this.line.tailBindingWidget = widget
+            widget.addAttachedLine(this.line)
+
+            // adjust start point to snapped or relative point
+            const points = this.line.points
+            points[0] = [startX, startY]
+            points[1] = [startX, startY]
+            this.line.setPoints(points)
+        }
+
         this.engine.stage.addWidget(this.line)
     }
 
     private onMouseMove(data: CanvasMouseEvent) {
-        if (!this.line) return
         const { x, y } = data.pointer
-        const startPoint = this.line.points[0]
+        const startPoint = this.line?.points[0]
 
         // check for magnetic snapping
         const magnetService = this.engine.getService<MagnetService>('magnet')
@@ -86,6 +144,7 @@ export class LineToolService extends Service {
             this.engine.stage.nonCanvasDynamicContainer.magnetLayer
 
         const scanResult = magnetService.scan({ x, y })
+        this.currentScanResult = scanResult
         const { nearbyWidget, snappedPoint, snappedPointIndex } = scanResult
 
         let targetX = x
@@ -98,7 +157,10 @@ export class LineToolService extends Service {
 
         magnetLayer.update(nearbyWidget, snappedPointIndex)
 
-        this.line.setPoints([startPoint, [targetX, targetY]])
+        if (this.line) {
+            this.line.setPoints([startPoint!, [targetX, targetY]])
+        }
+
         this.engine.canvas.requestRender()
     }
 
@@ -108,12 +170,51 @@ export class LineToolService extends Service {
 
         this.selectionService.selectWidget(this.line)
 
+        const uuid = nanoid()
+        this.line.uuid = uuid
+
+        const scanResult = this.currentScanResult
+
+        if (
+            scanResult &&
+            scanResult.nearbyWidget &&
+            scanResult.nearbyWidget.canSnap()
+        ) {
+            const widget = scanResult.nearbyWidget
+            let rx = 0
+            let ry = 0
+
+            if (scanResult.snappedPoint) {
+                const { rx: newRx, ry: newRy } = widget.getRelativeFromPoint(
+                    scanResult.snappedPoint.x,
+                    scanResult.snappedPoint.y,
+                )
+                rx = newRx
+                ry = newRy
+            } else {
+                const absPoints = this.line.absolutePoints
+                const absEnd = absPoints[absPoints.length - 1]
+                const { rx: newRx, ry: newRy } = widget.getRelativeFromPoint(
+                    absEnd[0],
+                    absEnd[1],
+                )
+                rx = newRx
+                ry = newRy
+            }
+
+            this.line.headBinding = {
+                id: widget.uuid!,
+                rx,
+                ry,
+            }
+            this.line.headBindingWidget = widget
+            widget.addAttachedLine(this.line)
+        }
+
         this.engine.historyManager.push(
             new CreationHistoryEntry(this.engine, this.line),
         )
 
-        const uuid = nanoid()
-        this.line.uuid = uuid
         const widgetsService = this.engine.getService<WidgetsService>('widgets')
 
         const json = { ...this.line.toJson(), page_id: this.engine.pageId }
@@ -130,6 +231,7 @@ export class LineToolService extends Service {
 
     private reset() {
         this.line = null
+        this.currentScanResult = null
     }
 
     private removeListeners() {
