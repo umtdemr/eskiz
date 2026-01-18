@@ -203,6 +203,7 @@ export abstract class Widget extends Layer {
 
     updateWithPartialState(json: Partial<WsWidget>) {
         let isMoved = false
+        let isResized = false
         for (const key of Object.keys(json)) {
             switch (key) {
                 case 'x':
@@ -215,9 +216,11 @@ export abstract class Widget extends Layer {
                     break
                 case 'width':
                     this.width = json.width!
+                    isResized = true
                     break
                 case 'height':
                     this.height = json.height!
+                    isResized = true
                     break
                 case 'z_index':
                     this.zIndex = json.z_index!
@@ -240,7 +243,7 @@ export abstract class Widget extends Layer {
             }
         }
 
-        if (isMoved) {
+        if (isMoved || isResized) {
             for (const line of this.attachedLines) {
                 line.headBinding?.id === this._uuid &&
                     line.updatePointFromBinding('head')
@@ -353,6 +356,12 @@ export abstract class Widget extends Layer {
 
         if (resized) {
             this.updateBounds()
+             for (const line of this.attachedLines) {
+                line.headBinding?.id === this._uuid &&
+                    line.updatePointFromBinding('head')
+                line.tailBinding?.id === this._uuid &&
+                    line.updatePointFromBinding('tail')
+            }
         }
         return resized
     }
