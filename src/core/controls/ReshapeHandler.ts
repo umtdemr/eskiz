@@ -57,30 +57,36 @@ export class ReshapeHandler {
         const pointer = data.pointer
         const absolutePoints = [...this.shape.absolutePoints]
 
-        // check for magnetic snapping
-        const magnetService = this.engine.getService<MagnetService>('magnet')
-        const magnetLayer =
-            this.engine.stage.nonCanvasDynamicContainer.magnetLayer
-
-        const scanResult = magnetService.scan(
-            { x: pointer.x, y: pointer.y },
-            50,
-            20,
-            this.shape.uuid,
-        )
-        const { nearbyWidget, snappedPoint, snappedPointIndex } = scanResult
-
         let targetX = pointer.x
         let targetY = pointer.y
 
-        if (snappedPoint) {
-            targetX = snappedPoint.x
-            targetY = snappedPoint.y
+        // if head or tail point is being dragged, check for magnetic snapping
+        if (
+            this.pointIndex === 0 ||
+            this.pointIndex === absolutePoints.length - 1
+        ) {
+            // check for magnetic snapping
+            const magnetService =
+                this.engine.getService<MagnetService>('magnet')
+            const magnetLayer =
+                this.engine.stage.nonCanvasDynamicContainer.magnetLayer
+
+            const scanResult = magnetService.scan(
+                { x: pointer.x, y: pointer.y },
+                50,
+                20,
+                this.shape.uuid,
+            )
+            const { nearbyWidget, snappedPoint, snappedPointIndex } = scanResult
+
+            if (snappedPoint) {
+                targetX = snappedPoint.x
+                targetY = snappedPoint.y
+            }
+            this.currentScanResult = scanResult
+
+            magnetLayer.update(nearbyWidget, snappedPointIndex)
         }
-
-        this.currentScanResult = scanResult
-
-        magnetLayer.update(nearbyWidget, snappedPointIndex)
 
         if (this.pointIndex >= 0 && this.pointIndex < absolutePoints.length) {
             absolutePoints[this.pointIndex] = [targetX, targetY]
