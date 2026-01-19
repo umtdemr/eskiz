@@ -24,7 +24,8 @@ export type EditingMethods =
     | 'zIndex'
     | 'points'
     | 'arrowPosition'
-    | 'lineBinding'
+    | 'headLineBinding'
+    | 'tailLineBinding'
 
 export type State = Record<string, unknown>
 
@@ -244,11 +245,18 @@ export function getPartialState(
                     }
                 }
                 break
-            case 'lineBinding':
+            case 'headLineBinding':
                 if (widget instanceof Line) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         headBinding: widget.headBinding,
+                    }
+                }
+                break
+            case 'tailLineBinding':
+                if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
                         tailBinding: widget.tailBinding,
                     }
                 }

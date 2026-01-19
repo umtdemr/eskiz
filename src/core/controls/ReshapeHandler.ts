@@ -190,7 +190,7 @@ export class ReshapeHandler {
                         widget.addAttachedLine(this.shape)
                     }
                 } else {
-                    // moved away from magnet -> unbind
+                    // moved away from widget -> unbind
                     if (isHead) {
                         if (this.shape.headBindingWidget) {
                             this.shape.headBindingWidget.removeAttachedLine(
@@ -213,26 +213,30 @@ export class ReshapeHandler {
 
             // check for binding changes and update existing transaction
             if (this.transactionId) {
-                if (
-                    this.shape.headBinding !== this.initialHeadBinding ||
-                    this.shape.tailBinding !== this.initialTailBinding
-                ) {
+                if (this.shape.headBinding !== this.initialHeadBinding) {
                     const initialBindingState = {} as any
-                    const props: any = {}
-
-                    if (this.shape.headBinding !== this.initialHeadBinding) {
-                        props.headBinding = this.initialHeadBinding ?? null
+                    initialBindingState.properties = {
+                        headBinding: this.initialHeadBinding ?? null,
                     }
-                    if (this.shape.tailBinding !== this.initialTailBinding) {
-                        props.tailBinding = this.initialTailBinding ?? null
-                    }
-
-                    initialBindingState.properties = props
 
                     this.engine.transactionHandler.addEditingMethod(
                         this.transactionId,
                         this.shape,
-                        'lineBinding',
+                        'headLineBinding',
+                        initialBindingState,
+                    )
+                }
+
+                if (this.shape.tailBinding !== this.initialTailBinding) {
+                    const initialBindingState = {} as any
+                    initialBindingState.properties = {
+                        tailBinding: this.initialTailBinding ?? null,
+                    }
+
+                    this.engine.transactionHandler.addEditingMethod(
+                        this.transactionId,
+                        this.shape,
+                        'tailLineBinding',
                         initialBindingState,
                     )
                 }

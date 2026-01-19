@@ -474,52 +474,66 @@ export class Line extends Widget {
     }
 
     resolveBindings(widgetLayer: Layer) {
-        if (this._headBinding) {
-            if (
-                this.headBindingWidget &&
-                this.headBindingWidget.uuid === this._headBinding.id
-            ) {
-                this.headBindingWidget.addAttachedLine(this)
-            } else {
-                let foundWidget: Widget | null = null
-                for (const w of widgetLayer.children) {
-                    if (
-                        w instanceof Widget &&
-                        w.uuid === this._headBinding.id
-                    ) {
-                        foundWidget = w
-                        break
-                    }
-                }
+        this.resolveHeadBinding(widgetLayer)
+        this.resolveTailBinding(widgetLayer)
+    }
 
-                if (foundWidget) {
-                    this.headBindingWidget = foundWidget
-                    foundWidget.addAttachedLine(this)
+    resolveHeadBinding(widgetLayer: Layer) {
+        if (!this._headBinding) {
+            if (this.headBindingWidget) {
+                this.headBindingWidget.removeAttachedLine(this)
+                this.headBindingWidget = null
+            }
+            return
+        }
+
+        if (
+            this.headBindingWidget &&
+            this.headBindingWidget.uuid === this._headBinding.id
+        ) {
+            this.headBindingWidget.addAttachedLine(this)
+        } else {
+            let foundWidget: Widget | null = null
+            for (const w of widgetLayer.children) {
+                if (w instanceof Widget && w.uuid === this._headBinding.id) {
+                    foundWidget = w
+                    break
                 }
             }
-        }
-        if (this._tailBinding) {
-            if (
-                this.tailBindingWidget &&
-                this.tailBindingWidget.uuid === this._tailBinding.id
-            ) {
-                this.tailBindingWidget.addAttachedLine(this)
-            } else {
-                let foundWidget: Widget | null = null
-                for (const w of widgetLayer.children) {
-                    if (
-                        w instanceof Widget &&
-                        w.uuid === this._tailBinding.id
-                    ) {
-                        foundWidget = w
-                        break
-                    }
-                }
 
-                if (foundWidget) {
-                    this.tailBindingWidget = foundWidget
-                    foundWidget.addAttachedLine(this)
+            if (foundWidget) {
+                this.headBindingWidget = foundWidget
+                foundWidget.addAttachedLine(this)
+            }
+        }
+    }
+
+    resolveTailBinding(widgetLayer: Layer) {
+        if (!this._tailBinding) {
+            if (this.tailBindingWidget) {
+                this.tailBindingWidget.removeAttachedLine(this)
+                this.tailBindingWidget = null
+            }
+            return
+        }
+
+        if (
+            this.tailBindingWidget &&
+            this.tailBindingWidget.uuid === this._tailBinding.id
+        ) {
+            this.tailBindingWidget.addAttachedLine(this)
+        } else {
+            let foundWidget: Widget | null = null
+            for (const w of widgetLayer.children) {
+                if (w instanceof Widget && w.uuid === this._tailBinding.id) {
+                    foundWidget = w
+                    break
                 }
+            }
+
+            if (foundWidget) {
+                this.tailBindingWidget = foundWidget
+                foundWidget.addAttachedLine(this)
             }
         }
     }
