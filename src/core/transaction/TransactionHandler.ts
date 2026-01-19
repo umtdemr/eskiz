@@ -143,6 +143,21 @@ export class TransactionHandler {
                 transaction.initialState.set(widget, stateToMerge)
             } else {
                 const state = transaction.initialState.get(widget)!
+                // if both have properties, merge them
+                if (
+                    state.properties &&
+                    typeof state.properties === 'object' &&
+                    !Array.isArray(state.properties) &&
+                    stateToMerge.properties &&
+                    typeof stateToMerge.properties === 'object' &&
+                    !Array.isArray(stateToMerge.properties)
+                ) {
+                    const properties = state.properties
+                    const mergeProperties = stateToMerge.properties
+                    Object.assign(properties, mergeProperties)
+                    delete stateToMerge.properties
+                }
+
                 Object.assign(state, stateToMerge)
             }
         }
