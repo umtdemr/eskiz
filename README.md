@@ -99,12 +99,51 @@
         - [ ] Initialize text editor with ops
         - [ ] Handle already implemented changes - color change, background change
         - [ ] Handle text style (bold, italic, underline, strike)
+    - [ ] Lines
+        - [x] Can relative path save us with extraordinary long points?
+        - [ ] Line selecting
+            - [x] Disable line selecting from bbox
+            - [x] Select lines from the actual path -- apply contains
+            - [ ] Deselect even if line is selected on clicking to the outside of line's path
+        - [x] Fix stroke width
+            - [x] Make stroke width mutable
+        - [x] Line border -- lines should not have rectangular border
+        - [x] Line controls
+            - [x] Add controls
+            - [x] Make controls mutate line points
+        - [ ] Line attaching
+            - [x] Attaching
+            - [x] Detaching
+            - [x] Updating db
+        - [ ] Line bugs
+            - [x] Modify line points on resizing
+                - [x] Check collaboration
+            - [x] Line should not be moved if it has headBindingWidget or tailBindingWidget
+            - [x] Line should not be moved if one of the attached shapes is outside of the selection
+            - [x] Check is detaching working on reshape handler or toolservice
+            - [x] Fix undo redo issue
+            - [x] Check if middle points are attaching. if yes fix
+            - [x] Line point controls are laggy with collaboration
+    - [ ] Bug fixes and things to implement
+        - [ ] Tooltipprovider
+        - [ ] On scroll should we fire mouse move?
+        - [ ] Wasm delete
+        - [ ] Main color?
+        - [ ] Multi delete etc
+        - [ ] Name
+        - [ ] Users fix?
+        - [ ] Collab list
+        - [ ] Retina display
+        - [ ] Hypo points
+        - [ ] Curved line
+        - [ ] %1 zoom level
 - Refactor & bug fixes
     - [ ] Fix: ShapesDropdown top position
     - [ ] Fix: sidebar menu in mobile
     - [ ] useShallows...
     - [ ] A component to handle boards list
         - [ ] Change error messages on boards list (user) or make it dynamic. Change colors.
+
 
 ## Road map
 

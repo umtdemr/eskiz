@@ -3,6 +3,7 @@ import { Shape } from '@/core/shapes/Shape'
 import { TextBox } from '@/core/shapes/text/TextBox'
 import { Rectangle } from '@/core/shapes/Rectangle'
 import { Path } from '@/core/shapes/path/Path'
+import { Line } from '@/core/shapes/line/Line'
 
 export type EditingMethods =
     | 'move'
@@ -21,6 +22,10 @@ export type EditingMethods =
     | 'fontSize'
     | 'fontStyle'
     | 'zIndex'
+    | 'points'
+    | 'arrowPosition'
+    | 'headLineBinding'
+    | 'tailLineBinding'
 
 export type State = Record<string, unknown>
 
@@ -102,6 +107,11 @@ export function getPartialState(
                         ...(state.properties ? state.properties : undefined),
                         color: widget.properties.color,
                     }
+                } else if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        strokeColor: widget.strokeColor,
+                    }
                 }
                 break
             case 'borderStyle':
@@ -109,6 +119,11 @@ export function getPartialState(
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         borderStyle: widget.properties.borderStyle,
+                    }
+                } else if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        borderStyle: widget.borderStyle,
                     }
                 }
                 break
@@ -122,6 +137,11 @@ export function getPartialState(
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         strokeWidth: widget.properties.strokeWidth,
+                    }
+                } else if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        strokeWidth: widget.strokeWidth,
                     }
                 }
                 break
@@ -207,6 +227,39 @@ export function getPartialState(
                 updateState({
                     z_index: widget.zIndex,
                 })
+                break
+            case 'points':
+                if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        points: widget.points,
+                    }
+                }
+                break
+            case 'arrowPosition':
+                if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        hasHeadArrow: widget.hasHeadArrow,
+                        hasTailArrow: widget.hasTailArrow,
+                    }
+                }
+                break
+            case 'headLineBinding':
+                if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        headBinding: widget.headBinding,
+                    }
+                }
+                break
+            case 'tailLineBinding':
+                if (widget instanceof Line) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        tailBinding: widget.tailBinding,
+                    }
+                }
                 break
         }
     }

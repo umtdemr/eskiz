@@ -7,7 +7,9 @@ import { SelectionService } from './SelectionService'
 import { Service } from './Service'
 import { MainModeChangedState, ToolService } from './ToolService'
 import { ACTION_MODES, CURSOR_OWNERS } from '@/helpers/Constant'
+import { WidgetType } from '@/core/constants'
 import { Control } from '@/core/shapes/nonCanvasShapes/Control.ts'
+import { Line } from '@/core/shapes/line/Line'
 import { CursorService } from '@/core/services/CursorService.ts'
 import { DragHandler } from '@/core/controls/DragHandler'
 
@@ -94,14 +96,24 @@ export class SelectToolService extends Service {
             this.isObjectAlreadySelected = true
             this.isDrawing = false
             if (!this.selectionService.isThereLockedWidget()) {
-                this.dragHandler.start(data, this.selectionService.selected)
-                this.isDragHandlerOwned = true
+                const draggableObjects = this.getDraggableObjects(
+                    this.selectionService.selected,
+                )
+                if (draggableObjects.length) {
+                    this.dragHandler.start(data, draggableObjects)
+                    this.isDragHandlerOwned = true
+                }
             }
         } else if (this.mouseDownWidget) {
             this.isDrawing = false
             if (!this.mouseDownWidget.isLocked) {
-                this.dragHandler.start(data, [this.mouseDownWidget])
-                this.isDragHandlerOwned = true
+                const draggableObjects = this.getDraggableObjects([
+                    this.mouseDownWidget,
+                ])
+                if (draggableObjects.length) {
+                    this.dragHandler.start(data, draggableObjects)
+                    this.isDragHandlerOwned = true
+                }
             }
 
             // if there is a selection which is not this widget, clear selection
@@ -230,7 +242,7 @@ export class SelectToolService extends Service {
                     continue
                 }
 
-                if (widget.isDynamic) {
+                if (widget.isDynamic || widget.widgetType === WidgetType.LINE) {
                     if (
                         widget.contains(
                             pointer.x,
@@ -258,5 +270,30 @@ export class SelectToolService extends Service {
 
     dispose(): void {
         this.reset()
+    }
+
+    private getDraggableObjects(objects: Widget[]): Widget[] {
+        const selectedIds = new Set(objects.map((o) => o.uuid))
+        return objects.filter((widget) => {
+            if (widget instanceof Line) {
+                const headBinding = widget.headBindingWidget
+                const tailBinding = widget.tailBindingWidget
+
+                // If bound to a widget, that widget must be in the selection to allow dragging the line
+                if (
+                    headBinding &&
+                    !selectedIds.has(headBinding.uuid)
+                ) {
+                    return false
+                }
+                if (
+                    tailBinding &&
+                    !selectedIds.has(tailBinding.uuid)
+                ) {
+                    return false
+                }
+            }
+            return true
+        })
     }
 }

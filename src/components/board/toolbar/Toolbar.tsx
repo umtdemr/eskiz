@@ -5,7 +5,15 @@ import {
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
-import { Hand, MousePointer2, Redo, StickyNote, Type, Undo } from 'lucide-react'
+import {
+    Hand,
+    MousePointer2,
+    MoveUpRight,
+    Redo,
+    StickyNote,
+    Type,
+    Undo,
+} from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import { ShapesDropdown } from '@/components/board/toolbar/ShapesDropdown.tsx'
@@ -60,6 +68,10 @@ export default function Toolbar({ engine }: ToolbarProps) {
         },
         [changeActiveMode],
     )
+
+    const handleLineModeChange = useCallback(() => {
+        changeActiveMode(ACTION_MODES.LINE)
+    }, [changeActiveMode])
 
     return (
         <div
@@ -141,6 +153,27 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 activeMode={activeMode}
                 handleShapeModeChange={handleShapeModeChange}
             />
+            <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className={clsx('px-2', {
+                                'bg-amber-500':
+                                    activeMode?.mainMode === ACTION_MODES.LINE,
+                                'hover:bg-amber-500':
+                                    activeMode?.mainMode === ACTION_MODES.LINE,
+                            })}
+                            onClick={handleLineModeChange}
+                        >
+                            <MoveUpRight />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side={'right'}>
+                        <p>Line</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
             <PenDropdown
                 activeMode={activeMode}
                 handlePathModeChange={handlePathModeChange}

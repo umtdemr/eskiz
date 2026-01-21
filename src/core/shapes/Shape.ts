@@ -31,7 +31,7 @@ export interface ShapeProperties {
     strokeWidth?: number
 }
 
-export type ShapeType = typeof ShapeTypeConst[keyof typeof ShapeTypeConst]
+export type ShapeType = (typeof ShapeTypeConst)[keyof typeof ShapeTypeConst]
 
 const initialTextProps: ShapeTextConstructProps = {
     text: '',
@@ -326,5 +326,19 @@ export abstract class Shape extends Widget {
 
     get textProperties(): ShapeTextConstructProps {
         return this._textProperties
+    }
+
+    canSnap(): boolean {
+        return true
+    }
+
+    getSnapPoints(): { x: number; y: number }[] {
+        const bounds = this.bounds
+        return [
+            { x: bounds.x + bounds.width / 2, y: bounds.y }, // top center
+            { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height }, // bottom center
+            { x: bounds.x, y: bounds.y + bounds.height / 2 }, // left center
+            { x: bounds.x + bounds.width, y: bounds.y + bounds.height / 2 }, // right center
+        ]
     }
 }

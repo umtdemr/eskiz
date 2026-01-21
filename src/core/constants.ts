@@ -6,6 +6,8 @@ export const WidgetType = {
     MULTI_SELECTOR: 'multiSelector',
     BORDER: 'border',
     CONTROL: 'control',
+    LINE: 'line',
+    MAGNET_CIRCLE: 'magnetCircle',
 } as const
 
 export const ShapeType = {
@@ -16,6 +18,10 @@ export const ShapeType = {
 
 export const PathType = {
     PEN: 'pen',
+} as const
+
+export const LineType = {
+    LINE: 'line',
 } as const
 
 export const TextType = {

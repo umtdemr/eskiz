@@ -81,8 +81,7 @@ export class DragHandler {
         this.movingObjectState.movingShape.forEach((widget, index) => {
             const initialPos =
                 this.movingObjectState.initialWidgetPositions[index]
-            widget.left = initialPos.left + deltaX
-            widget.top = initialPos.top + deltaY
+            widget.move(initialPos.left + deltaX, initialPos.top + deltaY)
         })
 
         // render canvas
@@ -128,7 +127,7 @@ export class DragHandler {
         }
     }
 
-    end(data: CanvasMouseEvent): boolean {
+    end(_data: CanvasMouseEvent): boolean {
         if (
             this.movingObjectState.isObjectMoved &&
             !this.movingObjectState.isObjectAlreadySelected

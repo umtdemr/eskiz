@@ -12,7 +12,7 @@ export interface BorderProps {
     engine: Engine
 }
 
-const BorderColor: RGBA = {
+export const BorderColor: RGBA = {
     r: 29,
     g: 78,
     b: 216,
@@ -91,6 +91,7 @@ export class Border extends Widget {
     destroy(): void {
         const widget = this.bindWidgets![0]
         widget.boundsChanged.remove(this.onWidgetBoundsChanged, this)
+        this.engine.canvas.tick.remove(this.onTick, this)
     }
 
     private onTick() {

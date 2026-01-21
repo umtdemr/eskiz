@@ -114,6 +114,55 @@ export class TransactionHandler {
         this.sendChanges(transaction)
     }
 
+    /**
+     * update existing transaction edit methods
+     */
+    addEditingMethod(
+        id: TransactionId,
+        widget: Widget,
+        method: EditingMethods,
+        initialData?: State,
+    ) {
+        const transaction = this.transactions.get(id)
+        if (!transaction) {
+            return
+        }
+
+        const editTable = transaction.editTable
+        const existingMethods = editTable.get(widget) || []
+
+        if (!existingMethods.includes(method)) {
+            existingMethods.push(method)
+            editTable.set(widget, existingMethods)
+
+            const stateToMerge =
+                initialData || getPartialState(widget, [method])
+
+            // update initial state
+            if (!transaction.initialState.has(widget)) {
+                transaction.initialState.set(widget, stateToMerge)
+            } else {
+                const state = transaction.initialState.get(widget)!
+                // if both have properties, merge them
+                if (
+                    state.properties &&
+                    typeof state.properties === 'object' &&
+                    !Array.isArray(state.properties) &&
+                    stateToMerge.properties &&
+                    typeof stateToMerge.properties === 'object' &&
+                    !Array.isArray(stateToMerge.properties)
+                ) {
+                    const properties = state.properties
+                    const mergeProperties = stateToMerge.properties
+                    Object.assign(properties, mergeProperties)
+                    delete stateToMerge.properties
+                }
+
+                Object.assign(state, stateToMerge)
+            }
+        }
+    }
+
     private sendChanges(transaction: Transaction) {
         const widgetStates: State[] = []
         for (const [widget, editMethods] of transaction.editTable.entries()) {

@@ -4,6 +4,7 @@ import { Widget } from '@/core/shapes/Widget'
 import { EditingMethods, State } from '@/core/transaction/State'
 import { SelectionService } from '../services/SelectionService'
 import { Signal } from '../signal/Signal'
+import { Line } from '@/core/shapes/line/Line'
 
 export class HistoryManager {
     private undoStack: HistoryEntry[] = []
@@ -77,6 +78,27 @@ export class TransactionHistoryEntry implements HistoryEntry {
 
         for (const [widget, state] of stateMap.entries()) {
             widget.updateWithPartialState(state as any)
+
+            if (widget instanceof Line) {
+                const props = state.properties as any
+                if (
+                    props &&
+                    (props.headBinding !== undefined ||
+                        props.tailBinding !== undefined)
+                ) {
+                    widget.resolveBindings(
+                        this.engine.stage.widgetsDefaultLayer,
+                    )
+
+                    if (props.headBinding !== undefined) {
+                        widget.updatePointFromBinding('head')
+                    }
+
+                    if (props.tailBinding !== undefined) {
+                        widget.updatePointFromBinding('tail')
+                    }
+                }
+            }
 
             if (state.is_deleted === true) {
                 // add to editTable for broadcasting deletion

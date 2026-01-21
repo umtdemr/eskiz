@@ -13,11 +13,13 @@ export interface Action {
         | 'shapeBorderColorInput'
         | 'shapeBgColorInput'
         | 'textColorInput'
+        | 'lineColorInput'
         | 'highlightColorInput'
         | 'fontStyleInput'
         | 'fontSizeInput'
         | 'textAlignInput'
         | 'moreOptions'
+        | 'lineStyleInput'
     btnActionProps?: {
         command: Commands | 'willDo'
         icon?: React.ReactNode
@@ -205,6 +207,27 @@ function getPathActions(): Action[] {
     ]
 }
 
+// actions for lines
+function getLineActions(): Action[] {
+    return [
+        ...getCommonActions(),
+        {
+            id: 'seperator1',
+            type: 'seperator',
+        },
+        {
+            id: 'lineColor',
+            tooltip: 'Line color',
+            type: 'lineColorInput',
+        },
+        {
+            id: 'lineStyle',
+            tooltip: 'Line type',
+            type: 'lineStyleInput',
+        },
+    ]
+}
+
 // actions for locked widgets
 function getLockedActions(): Action[] {
     return [
@@ -242,6 +265,9 @@ export function generateActions(engine: Engine): Action[] {
             break
         case WidgetType.PATH:
             actions.push(...getPathActions())
+            break
+        case WidgetType.LINE:
+            actions.push(...getLineActions())
             break
         default:
             actions.push(...getCommonActions())

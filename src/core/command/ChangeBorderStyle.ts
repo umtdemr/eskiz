@@ -1,6 +1,7 @@
 import { BorderStyle } from '@/helpers/Constant'
 import { Shape } from '../shapes/Shape'
 import { Widget } from '../shapes/Widget'
+import { Line } from '../shapes/line/Line'
 import { Command, CommandCtx, Commands } from './Command'
 import { EditingMethods } from '../transaction/State'
 
@@ -12,7 +13,7 @@ export class ChangeBorderStyle extends Command {
     canExecute(ctx: CommandCtx): boolean {
         if (!ctx.selectionService.selected?.length) return false
         if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeBgColor()) return false
+        if (!ctx.selectionService.canAllChangeBorderStyle()) return false
 
         return true
     }
@@ -32,7 +33,10 @@ export class ChangeBorderStyle extends Command {
 
         const affectedWidgets = []
         for (const widget of widgets) {
-            if (!widget.canChangeBorderStyle() || !(widget instanceof Shape))
+            if (
+                !widget.canChangeBorderStyle() ||
+                (!(widget instanceof Shape) && !(widget instanceof Line))
+            )
                 continue
 
             if (widget.changeBorderStyle(border)) {
