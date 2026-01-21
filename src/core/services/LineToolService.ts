@@ -25,6 +25,7 @@ export class LineToolService extends Service {
         nearbyWidget: Widget | null
         snappedPoint: { x: number; y: number } | null
         snappedPointIndex: number
+        isInside: boolean
     } | null = null
 
     constructor(
@@ -90,7 +91,8 @@ export class LineToolService extends Service {
         if (
             scanResult &&
             scanResult.nearbyWidget &&
-            scanResult.nearbyWidget.canSnap()
+            scanResult.nearbyWidget.canSnap() &&
+            (scanResult.snappedPoint || scanResult.isInside)
         ) {
             const widget = scanResult.nearbyWidget
             let rx = 0
@@ -178,7 +180,8 @@ export class LineToolService extends Service {
         if (
             scanResult &&
             scanResult.nearbyWidget &&
-            scanResult.nearbyWidget.canSnap()
+            scanResult.nearbyWidget.canSnap() &&
+            (scanResult.snappedPoint || scanResult.isInside)
         ) {
             const widget = scanResult.nearbyWidget
             let rx = 0
