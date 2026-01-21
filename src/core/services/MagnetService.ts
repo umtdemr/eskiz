@@ -16,6 +16,7 @@ export class MagnetService extends Service {
         nearbyWidget: Widget | null
         snappedPoint: { x: number; y: number } | null
         snappedPointIndex: number
+        isInside: boolean
     } {
         let bestWidget: Widget | null = null
         let snappedPoint: { x: number; y: number } | null = null
@@ -29,6 +30,7 @@ export class MagnetService extends Service {
                 nearbyWidget: null,
                 snappedPoint: null,
                 snappedPointIndex: -1,
+                isInside: false,
             }
 
         for (const widget of layer.children) {
@@ -77,6 +79,15 @@ export class MagnetService extends Service {
             }
         }
 
-        return { nearbyWidget: bestWidget, snappedPoint, snappedPointIndex }
+        const isInside = bestWidget
+            ? bestWidget.contains(point.x, point.y, 1)
+            : false
+
+        return {
+            nearbyWidget: bestWidget,
+            snappedPoint,
+            snappedPointIndex,
+            isInside,
+        }
     }
 }

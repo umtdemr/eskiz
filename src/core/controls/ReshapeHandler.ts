@@ -26,6 +26,7 @@ export class ReshapeHandler {
         nearbyWidget: Widget | null
         snappedPoint: { x: number; y: number } | null
         snappedPointIndex: number
+        isInside: boolean
     } | null = null
 
     constructor(engine: Engine) {
@@ -125,7 +126,8 @@ export class ReshapeHandler {
                 if (
                     scanResult &&
                     scanResult.nearbyWidget &&
-                    scanResult.nearbyWidget.canSnap()
+                    scanResult.nearbyWidget.canSnap() &&
+                    (scanResult.snappedPoint || scanResult.isInside)
                 ) {
                     const widget = scanResult.nearbyWidget
                     let rx = 0
