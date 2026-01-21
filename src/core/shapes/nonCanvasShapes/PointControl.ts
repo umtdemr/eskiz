@@ -15,6 +15,7 @@ export class PointControl extends Control {
     pointIndex: number
     private line: Line
     private strokeWidth = 1.5
+    private needsUpdate = false
 
     constructor(
         props: PointControlProps,
@@ -27,10 +28,18 @@ export class PointControl extends Control {
 
         this.line.boundsChanged.add(this.onLineBoundsChanged, this)
         this.updatePosition()
+        this.engine.canvas.tick.add(this.onTick, this)
+    }
+
+    private onTick() {
+        if (this.needsUpdate) {
+            this.updatePosition()
+            this.needsUpdate = false
+        }
     }
 
     private onLineBoundsChanged() {
-        this.updatePosition()
+        this.needsUpdate = true
     }
 
     protected renderContent(renderContext: RenderContext) {
@@ -89,6 +98,7 @@ export class PointControl extends Control {
 
     destroy() {
         this.line.boundsChanged.remove(this.onLineBoundsChanged, this)
+        this.engine.canvas.tick.remove(this.onTick, this)
         super.destroy()
     }
 }
