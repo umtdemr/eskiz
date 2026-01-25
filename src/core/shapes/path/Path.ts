@@ -1,5 +1,6 @@
 import { Widget, WidgetProps } from '@/core/shapes/Widget'
 import { canvasKit } from '@/core/canvas/Canvas'
+import { Engine } from '@/core/engine/Engine'
 import { RGBA } from '@/core/shapes/Color'
 import { CANVAS_COLORS } from '@/helpers/Constant'
 import { Path as CkPath } from 'canvaskit-wasm'
@@ -22,8 +23,8 @@ export abstract class Path extends Widget {
     protected _path: CkPath
     protected _points: number[][]
 
-    constructor(type: PathType, props: PathProps) {
-        super(WidgetType.PATH, props)
+    constructor(type: PathType, props: PathProps, engine: Engine) {
+        super(WidgetType.PATH, props, engine)
         this._pathType = type
         this._properties = { ...props.properties }
         this._properties.color = this._properties?.color

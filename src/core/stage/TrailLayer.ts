@@ -19,13 +19,16 @@ export class TrailLayer extends Layer {
         super({ name: 'trail_layer' })
         this.engine = engine
 
-        this._trailWidget = new Trail({
-            x: 0,
-            y: 0,
-            width: 0,
-            height: 0,
-            properties: {},
-        })
+        this._trailWidget = new Trail(
+            {
+                x: 0,
+                y: 0,
+                width: 0,
+                height: 0,
+                properties: {},
+            },
+            engine,
+        )
         this.addChildren(this._trailWidget)
 
         this.animate = this.animate.bind(this)

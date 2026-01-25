@@ -3,6 +3,7 @@ import {
     Paragraph as CkParagraph,
 } from 'canvaskit-wasm'
 import { Widget, WidgetProps } from '@/core/shapes/Widget.ts'
+import { Engine } from '@/core/engine/Engine'
 import { RGBA } from '@/core/shapes/Color.ts'
 import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
@@ -38,8 +39,8 @@ export class ShapeText extends Widget {
     private _debug: boolean = false
     private _isTextClipped: boolean = false
 
-    constructor(props: ShapeTextProps) {
-        super(WidgetType.SHAPE_TEXT, props)
+    constructor(props: ShapeTextProps, engine: Engine) {
+        super(WidgetType.SHAPE_TEXT, props, engine)
         this._text = props.properties.text
         if (!props.properties.textOps) {
             this._textOps = createTextOpsFromString(this._text)

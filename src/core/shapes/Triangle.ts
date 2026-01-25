@@ -5,12 +5,13 @@ import { WidgetJson } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color'
 import { BorderStyle } from '@/helpers/Constant'
 import { ShapeType } from '@/core/constants.ts'
+import { Engine } from '@/core/engine/Engine'
 
 const TEXT_PADDING = 5
 
 export class Triangle extends Shape {
-    constructor(props: ShapeProps) {
-        super(ShapeType.TRIANGLE, props)
+    constructor(props: ShapeProps, engine: Engine) {
+        super(ShapeType.TRIANGLE, props, engine)
     }
 
     renderContent(renderContext: RenderContext): void {
@@ -95,8 +96,8 @@ export class Triangle extends Shape {
         return this.generateJson()
     }
 
-    static loadFromJson(json: WsWidget): Triangle {
-        return new Triangle(json)
+    static loadFromJson(json: WsWidget, engine: Engine): Triangle {
+        return new Triangle(json, engine)
     }
 
     getSnapPoints(): { x: number; y: number }[] {

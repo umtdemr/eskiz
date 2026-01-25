@@ -1,10 +1,11 @@
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
+import { Engine } from '@/core/engine/Engine'
 import { Path, PathProps } from '@/core/shapes/path/Path'
 import { ERASER_TRAIL } from '@/helpers/Constant'
 
 export class Trail extends Path {
-    constructor(props: PathProps) {
-        super('trail', props)
+    constructor(props: PathProps, engine: Engine) {
+        super('trail', props, engine)
     }
 
     protected renderContent(renderContext: RenderContext): void {

@@ -1,4 +1,5 @@
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
+import { Engine } from '@/core/engine/Engine'
 import { Path, PathProps, PathProperties } from '@/core/shapes/path/Path'
 import { RGBA } from '@/core/shapes/Color'
 import { WsWidget } from '@/types/Websocket'
@@ -7,8 +8,8 @@ import getStroke from 'perfect-freehand'
 import { PathType, WidgetType } from '@/core/constants.ts'
 
 export class Pen extends Path {
-    constructor(props: PathProps) {
-        super(PathType.PEN, props)
+    constructor(props: PathProps, engine: Engine) {
+        super(PathType.PEN, props, engine)
         this._interactive = true
 
         if (props.properties.points && props.properties.points.length > 1) {
@@ -58,19 +59,22 @@ export class Pen extends Path {
         }
     }
 
-    static loadFromJson(json: WsWidget): Pen {
+    static loadFromJson(json: WsWidget, engine: Engine): Pen {
         const properties = json.properties as unknown as PathProperties
-        return new Pen({
-            x: json.x,
-            y: json.y,
-            width: json.width,
-            height: json.height,
-            properties,
-            uuid: json.uuid,
-            z_index: json.z_index,
-            parent_widget_id: json.parent_widget_id,
-            is_locked: json.is_locked,
-        })
+        return new Pen(
+            {
+                x: json.x,
+                y: json.y,
+                width: json.width,
+                height: json.height,
+                properties,
+                uuid: json.uuid,
+                z_index: json.z_index,
+                parent_widget_id: json.parent_widget_id,
+                is_locked: json.is_locked,
+            },
+            engine,
+        )
     }
 
     updateWithPartialState(json: Partial<WsWidget>) {

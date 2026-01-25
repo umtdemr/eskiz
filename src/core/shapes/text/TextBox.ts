@@ -1,4 +1,5 @@
 import { Widget, WidgetProps } from '@/core/shapes/Widget.ts'
+import { Engine } from '@/core/engine/Engine'
 import { Paragraph as CkParagraph } from 'canvaskit-wasm'
 import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
 import { createTextOpsFromString, TextOp } from '@/core/textEditor/TextEditor'
@@ -34,8 +35,8 @@ export class TextBox extends Widget {
     private _lineHeight: number
     private _fillColor: null | RGBA
 
-    constructor(props: TextBoxProps) {
-        super(WidgetType.TEXTBOX, props)
+    constructor(props: TextBoxProps, engine: Engine) {
+        super(WidgetType.TEXTBOX, props, engine)
         this._text = props.properties.text
         if (!props.properties.textOps) {
             this._textOps = createTextOpsFromString(this._text)
@@ -361,7 +362,7 @@ export class TextBox extends Widget {
         }
     }
 
-    static loadFromJson(json: WsWidget): TextBox {
+    static loadFromJson(json: WsWidget, engine: Engine): TextBox {
         const properties = json.properties as unknown as TextBoxProperties
         return new TextBox({
             x: json.x,
@@ -372,6 +373,6 @@ export class TextBox extends Widget {
             z_index: json.z_index,
             parent_widget_id: json.parent_widget_id,
             is_locked: json.is_locked,
-        })
+        }, engine)
     }
 }

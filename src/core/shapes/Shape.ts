@@ -1,3 +1,4 @@
+import { Engine } from '@/core/engine/Engine'
 import { RGBA } from '@/core/shapes/Color.ts'
 import {
     BorderStyle,
@@ -45,8 +46,8 @@ export abstract class Shape extends Widget {
     protected _text: ShapeText | null
     protected _textProperties: ShapeTextConstructProps
 
-    protected constructor(type: ShapeType, props: ShapeProps) {
-        super('shape', props)
+    protected constructor(type: ShapeType, props: ShapeProps, engine: Engine) {
+        super(WidgetType.SHAPE, props, engine)
         this._shapeType = type
         this._properties = { ...props.properties }
         this._properties.strokeColor = this._properties?.strokeColor
@@ -94,7 +95,7 @@ export abstract class Shape extends Widget {
         return data
     }
 
-    static loadFromJson(json: WsWidget): Shape {
+    static loadFromJson(json: WsWidget, engine: Engine): Shape {
         throw new Error(`Shape (${json.sub_type}) be implemented by subclass`)
     }
 
@@ -149,12 +150,15 @@ export abstract class Shape extends Widget {
     }
 
     protected createTextObject() {
-        this._text = new ShapeText({
-            ...this.calcTextBounds(),
-            properties: {
-                ...this._textProperties,
+        this._text = new ShapeText(
+            {
+                ...this.calcTextBounds(),
+                properties: {
+                    ...this._textProperties,
+                },
             },
-        })
+            this.engine,
+        )
 
         this.addChildren(this._text)
     }
