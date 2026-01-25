@@ -7,6 +7,7 @@ import {
 import { Button } from '@/components/ui/button.tsx'
 import {
     Hand,
+    Image,
     MousePointer2,
     MoveUpRight,
     Redo,
@@ -22,6 +23,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { ACTION_MODES, SUB_ACTION_MODES } from '@/helpers/Constant'
 import { PenDropdown } from '@/components/board/toolbar/PenDropdown'
 import { Engine } from '@/core/engine/Engine'
+import { ImageUploadService } from '@/core/services/ImageUploadService'
 
 interface ToolbarProps {
     engine: Engine
@@ -171,6 +173,30 @@ export default function Toolbar({ engine }: ToolbarProps) {
                     </TooltipTrigger>
                     <TooltipContent side={'right'}>
                         <p>Line</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+            <TooltipProvider delayDuration={0}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            className="px-2"
+                            onClick={() => {
+                                const boardId =
+                                    useBoundStore.getState().boardData.id
+                                engine
+                                    .getService<ImageUploadService>(
+                                        'imageUpload',
+                                    )
+                                    .pickAndUpload()
+                            }}
+                        >
+                            <Image />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side={'right'}>
+                        <p>Image</p>
                     </TooltipContent>
                 </Tooltip>
             </TooltipProvider>
