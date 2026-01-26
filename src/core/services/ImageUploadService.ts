@@ -4,6 +4,9 @@ import { useBoundStore } from '@/store/store'
 import toast from 'react-hot-toast'
 import { Image as ImageWidget, ImageResponse } from '@/core/shapes/image/Image'
 import { WidgetsService } from '@/core/services/WidgetsService'
+import { nanoid } from 'nanoid'
+import { AddWidgetPayload } from '@/types/Websocket'
+import { CreationHistoryEntry } from '@/core/history/HistoryManager'
 
 export class ImageUploadService extends Service {
     private readonly MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -219,6 +222,7 @@ export class ImageUploadService extends Service {
                     y: startY + p.y,
                     width: p.width,
                     height: p.height,
+                    uuid: nanoid(),
                     properties: {
                         localUrl: localUrl,
                     },
@@ -227,7 +231,7 @@ export class ImageUploadService extends Service {
             )
 
             fileWidgetMap.set(p.file, widget)
-            widgetLayer.addChildren(widget)
+            this.engine.stage.addWidget(widget)
         })
 
         this.engine.canvas.requestRender()
@@ -240,6 +244,7 @@ export class ImageUploadService extends Service {
         errorCounts: Record<string, number>,
     ) {
         const promises: Promise<void>[] = []
+        const widgetsService = this.engine.getService<WidgetsService>('widgets')
 
         fileWidgetMap.forEach((widget, file) => {
             promises.push(
@@ -248,13 +253,23 @@ export class ImageUploadService extends Service {
                         const result = await this.uploadFile(file, boardId)
                         // on success, update widget to use remote url
                         widget.onUploadSuccess(result)
+
+                        // add to db
+                        // TODO: phase 2 - check error
+                        widgetsService.addWidget({
+                            ...(widget.toJson() as AddWidgetPayload),
+                            page_id: this.engine.pageId,
+                        })
+
+                        // add to history
+                        this.engine.historyManager.push(
+                            new CreationHistoryEntry(this.engine, widget),
+                        )
                     } catch (e: any) {
                         console.error('Upload failed', e)
                         errorCounts['upload_failed']++
                         // on fail, remove widget
-                        // TODO: remove in layer
-                        const widgetsService =
-                            this.engine.getService<WidgetsService>('widgets')
+                        // TODO: remove
                         if (widgetsService) {
                             widgetsService.deleteWidget(widget)
                         } else {

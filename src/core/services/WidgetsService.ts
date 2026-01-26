@@ -45,6 +45,7 @@ export class WidgetsService extends Service {
         }
 
         const widgetLayer = this.engine.stage.widgetsDefaultLayer
+        // TODO: prevent duplicates
 
         const widgetClass = WidgetFactory.loadFromJson(
             event.data.widget,

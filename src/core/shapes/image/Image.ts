@@ -1,9 +1,10 @@
-import { WidgetType } from '@/core/constants'
-import { Widget, WidgetProps } from '../Widget'
+import { WidgetType, ImageType } from '@/core/constants'
+import { Widget, WidgetProps, WidgetJson } from '@/core/shapes/Widget'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { Image as SkiaImage } from 'canvaskit-wasm'
 import { ImageLoadingService } from '@/core/services/ImageLoadingService'
 import { Engine } from '@/core/engine/Engine'
+import { WsWidget } from '@/types/Websocket'
 
 export interface ImageProps extends WidgetProps {
     properties: ImageProperties
@@ -73,7 +74,7 @@ export class Image extends Widget {
             )
 
             if (original && original.file_path) {
-                url = `${import.meta.env.VITE_BACKEND_URL}${original.file_path}`
+                url = `${import.meta.env.VITE_BACKEND_URL}/v1/images/${original.file_path}`
             }
         }
 
@@ -153,6 +154,44 @@ export class Image extends Widget {
 
         // reload remote image
         this.loadImage()
+    }
+
+    toJson(): WidgetJson {
+        return {
+            x: this._x,
+            y: this._y,
+            width: this._width,
+            height: this._height,
+            z_index: this._zIndex || '0',
+            uuid: this._uuid || '',
+            properties: {
+                imageData: this._imageData,
+            },
+            widget_type: WidgetType.IMAGE,
+            sub_type: ImageType.IMAGE,
+            parent_widget_id: this._parent_widget_id,
+            is_deleted: this._isDeleted,
+            is_locked: this._isLocked,
+        }
+    }
+
+    static loadFromJson(json: WsWidget, engine: Engine): Image {
+        return new Image(
+            {
+                x: json.x,
+                y: json.y,
+                width: json.width,
+                height: json.height,
+                z_index: json.z_index,
+                parentLayer: engine.stage.widgetsDefaultLayer,
+                uuid: json.uuid,
+                is_locked: json.is_locked,
+                properties: {
+                    imageData: json.properties.imageData as ImageResponse,
+                },
+            },
+            engine,
+        )
     }
 
     destroy() {

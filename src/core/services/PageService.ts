@@ -50,6 +50,36 @@ export class PageService extends Service {
             }
         }
 
+        // const images = []
+        // let col = 0
+        // let row = 0
+        // for (let i = 0; i < 2000; i++) {
+        //     let x = col * 400 + 400
+        //     let y = row * 400 + 400
+
+        //     x += col * 200
+        //     y += row * 200
+
+        //     col++
+        //     if (col > 20) {
+        //         col = 0
+        //         row++
+        //     }
+        //     images.push(
+        //         new Image(
+        //             {
+        //                 width: 400,
+        //                 height: 400,
+        //                 x: x,
+        //                 y: y,
+        //                 properties: {},
+        //             },
+        //             this.engine,
+        //         ),
+        //     )
+        // }
+        // widgetLayer.addChildren(...images)
+
         return addedWidgets
     }
 }

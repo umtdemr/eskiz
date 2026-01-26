@@ -64,3 +64,7 @@ export const BoardGridType = {
     LINES: 'lines',
     DOTS: 'dots',
 } as const
+
+export const ImageType = {
+    IMAGE: 'image',
+} as const
