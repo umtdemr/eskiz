@@ -245,6 +245,7 @@ export class ImageUploadService extends Service {
     ) {
         const promises: Promise<void>[] = []
         const widgetsService = this.engine.getService<WidgetsService>('widgets')
+        const addedImages: ImageWidget[] = []
 
         fileWidgetMap.forEach((widget, file) => {
             promises.push(
@@ -256,15 +257,13 @@ export class ImageUploadService extends Service {
 
                         // add to db
                         // TODO: phase 2 - check error
+                        // TODO: bulk add?
                         widgetsService.addWidget({
                             ...(widget.toJson() as AddWidgetPayload),
                             page_id: this.engine.pageId,
                         })
 
-                        // add to history
-                        this.engine.historyManager.push(
-                            new CreationHistoryEntry(this.engine, widget),
-                        )
+                        addedImages.push(widget)
                     } catch (e: any) {
                         console.error('Upload failed', e)
                         errorCounts['upload_failed']++
@@ -279,6 +278,11 @@ export class ImageUploadService extends Service {
                 })(),
             )
         })
+
+        // add to history
+        this.engine.historyManager.push(
+            new CreationHistoryEntry(this.engine, addedImages),
+        )
 
         await Promise.all(promises)
     }
