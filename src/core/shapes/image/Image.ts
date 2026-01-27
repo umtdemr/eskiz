@@ -41,16 +41,20 @@ export interface ImageProperties {
     imageData?: ImageResponse
 }
 
+export type ImageState = 'local' | 'loadingRemote' | 'loadedRemote' | 'error'
+
 export class Image extends Widget {
     private skImage: SkiaImage | null = null
     private imageLoadingService: ImageLoadingService
 
     private _localUrl: string | undefined
     private _imageData: ImageResponse | undefined
+    private _state: ImageState = 'loadingRemote'
 
     constructor(props: ImageProps, engine: Engine) {
         super(WidgetType.IMAGE, props, engine)
         this._interactive = true
+        this._state = props.properties.localUrl ? 'local' : 'loadingRemote'
         this.imageLoadingService = engine.getService<ImageLoadingService>(
             'imageLoadingService',
         )
@@ -59,6 +63,10 @@ export class Image extends Widget {
         this._imageData = props.properties.imageData
 
         this.loadImage()
+    }
+
+    private setState(state: ImageState) {
+        this._state = state
     }
 
     private async loadImage() {
@@ -74,19 +82,26 @@ export class Image extends Widget {
             )
 
             if (original && original.file_path) {
-                url = `${import.meta.env.VITE_BACKEND_URL}/v1/images/${original.file_path}`
+                url = `${import.meta.env.VITE_BACKEND_URL}v1/images/${original.file_path}`
             }
+            this.setState('loadingRemote')
         }
 
-        const img = await this.imageLoadingService.loadImage(url)
+        try {
+            const img = await this.imageLoadingService.loadImage(url)
 
-        if (this.skImage) {
-            this.skImage.delete()
-        }
+            this.setState(this._localUrl ? 'local' : 'loadedRemote')
 
-        if (img) {
-            this.skImage = img
-            this.engine.canvas.requestRender()
+            if (this.skImage) {
+                this.skImage.delete()
+            }
+
+            if (img) {
+                this.skImage = img
+                this.engine.canvas.requestRender()
+            }
+        } catch (error) {
+            this.setState('error')
         }
     }
 
@@ -110,8 +125,8 @@ export class Image extends Widget {
             )
         }
 
-        // draw loading overlay if local
-        if (this._localUrl) {
+        // draw loading overlay
+        if (this._state === 'local' || this._state === 'loadingRemote') {
             // transparent black rect
             const paint = new canvasKit.Paint()
             paint.setColor(canvasKit.BLACK)
