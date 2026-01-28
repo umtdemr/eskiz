@@ -42,6 +42,7 @@ export interface ImageProperties {
 }
 
 export type ImageState = 'local' | 'loadingRemote' | 'loadedRemote' | 'error'
+export type ImageVariationType = 'preview' | 'md' | 'original'
 
 export class Image extends Widget {
     private skImage: SkiaImage | null = null
@@ -50,6 +51,10 @@ export class Image extends Widget {
     private _localUrl: string | undefined
     private _imageData: ImageResponse | undefined
     private _state: ImageState = 'loadingRemote'
+
+    private _currentVariationType: ImageVariationType | undefined
+    private _loadingVariationType: ImageVariationType | undefined
+    private _loadedVariations: Map<ImageVariationType, SkiaImage> = new Map()
 
     constructor(props: ImageProps, engine: Engine) {
         super(WidgetType.IMAGE, props, engine)
@@ -62,29 +67,110 @@ export class Image extends Widget {
         this._localUrl = props.properties.localUrl
         this._imageData = props.properties.imageData
 
-        this.loadImage()
+        this.loadImage('preview')
     }
 
     private setState(state: ImageState) {
         this._state = state
     }
 
-    private async loadImage() {
-        let url = 'https://placehold.co/400x400/png' // fallback
+    private getBestVariation(scale: number): ImageVariation | undefined {
+        if (!this._imageData || !this._imageData.variations) return undefined
+
+        const renderedWidth = this._width * scale
+        let preferredType = 'original'
+
+        if (renderedWidth <= 120) {
+            preferredType = 'preview'
+        } else if (renderedWidth <= 1000) {
+            preferredType = 'md'
+        }
+
+        const variations = this._imageData.variations
+        let best = variations.find((v) => v.variation_type === preferredType)
+
+        if (!best) {
+            // fallback chain: preview -> md -> original
+            if (preferredType === 'preview') {
+                best = variations.find((v) => v.variation_type === 'md')
+            }
+            if (!best) {
+                best = variations.find((v) => v.variation_type === 'original')
+            }
+        }
+
+        return best
+    }
+
+    private async loadImage(variationType?: ImageVariationType) {
+        let url = ''
+
+        let targetVariationType = variationType
 
         if (this._localUrl) {
             url = this._localUrl
         } else if (this._imageData) {
+            if (!targetVariationType) {
+                // If no type requested, guess based on current scale
+                const best = this.getBestVariation(1)
+                if (best) {
+                    targetVariationType =
+                        best.variation_type as ImageVariationType
+                }
+            }
+
+            // If we are already loading this exact variation, skip
+            if (
+                targetVariationType &&
+                this._loadingVariationType === targetVariationType
+            ) {
+                return
+            }
+
+            // If we already have this variation loaded as current, skip
+            if (
+                targetVariationType &&
+                this._currentVariationType === targetVariationType
+            ) {
+                return
+            }
+
+            // cache check
+            if (
+                targetVariationType &&
+                this._loadedVariations.has(targetVariationType)
+            ) {
+                this.skImage = this._loadedVariations.get(targetVariationType)!
+                this._currentVariationType = targetVariationType
+                this.engine.canvas.requestRender()
+                return
+            }
+
             // find path
             const variations = this._imageData.variations || []
-            const original = variations.find(
-                (v) => v.variation_type === 'original',
+            const target = variations.find(
+                (v) => v.variation_type === targetVariationType,
             )
 
-            if (original && original.file_path) {
-                url = `${import.meta.env.VITE_BACKEND_URL}v1/images/${original.file_path}`
+            if (target && target.file_path) {
+                url = `${import.meta.env.VITE_BACKEND_URL}v1/images/${target.file_path}`
+                this._loadingVariationType = targetVariationType
+            } else {
+                // fallback to original if specific not found
+                const original = variations.find(
+                    (v) => v.variation_type === 'original',
+                )
+                if (original && original.file_path) {
+                    url = `${import.meta.env.VITE_BACKEND_URL}v1/images/${original.file_path}`
+                    // Treat fallback as original for caching purposes if it is indeed original
+                    this._loadingVariationType = 'original'
+                    targetVariationType = 'original'
+                }
             }
-            this.setState('loadingRemote')
+
+            if (!this.skImage) {
+                this.setState('loadingRemote')
+            }
         }
 
         try {
@@ -92,21 +178,37 @@ export class Image extends Widget {
 
             this.setState(this._localUrl ? 'local' : 'loadedRemote')
 
-            if (this.skImage) {
-                this.skImage.delete()
-            }
-
             if (img) {
                 this.skImage = img
+                if (targetVariationType) {
+                    this._loadedVariations.set(targetVariationType, img)
+                    this._currentVariationType = targetVariationType
+                }
                 this.engine.canvas.requestRender()
             }
         } catch (error) {
             this.setState('error')
+        } finally {
+            if (this._loadingVariationType === targetVariationType) {
+                this._loadingVariationType = undefined
+            }
         }
     }
 
     renderContent(renderContext: RenderContext) {
         const ctx = renderContext.ctx
+
+        // LOD Check
+        if (this._imageData && !this._localUrl) {
+            const best = this.getBestVariation(renderContext.scale)
+            if (
+                best &&
+                best.variation_type !== this._currentVariationType &&
+                best.variation_type !== this._loadingVariationType
+            ) {
+                this.loadImage(best.variation_type as ImageVariationType)
+            }
+        }
 
         if (this.skImage && !this.skImage.isDeleted()) {
             const srcRect = canvasKit.XYWHRect(
@@ -125,8 +227,11 @@ export class Image extends Widget {
             )
         }
 
-        // draw loading overlay
-        if (this._state === 'local' || this._state === 'loadingRemote') {
+        // draw loading overlay only if we have NO image to show
+        if (
+            (this._state === 'local' || this._state === 'loadingRemote') &&
+            !this.skImage
+        ) {
             // transparent black rect
             const paint = new canvasKit.Paint()
             paint.setColor(canvasKit.BLACK)
@@ -161,6 +266,8 @@ export class Image extends Widget {
     onUploadSuccess(data: ImageResponse) {
         this._imageData = data
         this._localUrl = undefined
+        this._currentVariationType = undefined
+        this._loadingVariationType = undefined
 
         if (this._localUrl) {
             URL.revokeObjectURL(this._localUrl)
@@ -210,9 +317,28 @@ export class Image extends Widget {
     }
 
     destroy() {
-        if (this.skImage) {
+        this._loadedVariations.forEach((img) => img.delete())
+        this._loadedVariations.clear()
+
+        // if we have a skImage that is not in the map, delete it
+        if (this.skImage && !this.skImage.isDeleted()) {
             this.skImage.delete()
         }
+
         super.destroy()
+    }
+
+    canSnap(): boolean {
+        return true
+    }
+
+    getSnapPoints(): { x: number; y: number }[] {
+        const bounds = this.bounds
+        return [
+            { x: bounds.x + bounds.width / 2, y: bounds.y }, // top center
+            { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height }, // bottom center
+            { x: bounds.x, y: bounds.y + bounds.height / 2 }, // left center
+            { x: bounds.x + bounds.width, y: bounds.y + bounds.height / 2 }, // right center
+        ]
     }
 }
