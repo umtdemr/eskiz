@@ -8,6 +8,7 @@ export const WidgetType = {
     CONTROL: 'control',
     LINE: 'line',
     MAGNET_CIRCLE: 'magnetCircle',
+    IMAGE: 'image',
 } as const
 
 export const ShapeType = {
@@ -62,4 +63,8 @@ export const BoardGridType = {
     NONE: 'none',
     LINES: 'lines',
     DOTS: 'dots',
+} as const
+
+export const ImageType = {
+    IMAGE: 'image',
 } as const

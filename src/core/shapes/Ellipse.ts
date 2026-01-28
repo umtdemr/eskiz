@@ -5,12 +5,13 @@ import { WidgetJson } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color'
 import { BorderStyle } from '@/helpers/Constant'
 import { ShapeType } from '@/core/constants.ts'
+import { Engine } from '@/core/engine/Engine'
 
 const TEXT_PADDING = 5
 
 export class Ellipse extends Shape {
-    constructor(props: ShapeProps) {
-        super(ShapeType.ELLIPSE, props)
+    constructor(props: ShapeProps, engine: Engine) {
+        super(ShapeType.ELLIPSE, props, engine)
     }
 
     renderContent(renderContext: RenderContext): void {
@@ -94,7 +95,7 @@ export class Ellipse extends Shape {
         return this.generateJson()
     }
 
-    static loadFromJson(json: WsWidget): Ellipse {
-        return new Ellipse(json)
+    static loadFromJson(json: WsWidget, engine: Engine): Ellipse {
+        return new Ellipse(json, engine)
     }
 }

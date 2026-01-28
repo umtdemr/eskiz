@@ -360,7 +360,12 @@ export class ResizeHandler {
         }
 
         // if shift is pressed, need to scale equally
-        if (data.e.shiftKey && initial.aspectRatio) {
+        // for images, we always want to scale equally
+        const shouldLockAspectRatio =
+            (data.e.shiftKey || this.shape.widgetType === WidgetType.IMAGE) &&
+            initial.aspectRatio
+
+        if (shouldLockAspectRatio) {
             // determine the dominant axis
             if (!this._shiftDominantAxis) {
                 if (

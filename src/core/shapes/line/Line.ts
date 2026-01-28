@@ -10,6 +10,7 @@ import { BorderStyle } from '@/helpers/Constant'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WsWidget } from '@/types/Websocket'
 import { Layer } from '@/core/stage/Layer'
+import { Engine } from '@/core/engine/Engine'
 
 export interface LineProps extends WidgetProps {
     properties: LineProperties
@@ -49,8 +50,8 @@ export class Line extends Widget {
     private _arrowPath: CkPath | null = null
     private _paint: CkPaint | null = null
 
-    constructor(props: LineProps) {
-        super(WidgetType.LINE, props)
+    constructor(props: LineProps, engine: Engine) {
+        super(WidgetType.LINE, props, engine)
         this._interactive = true
         this._points = props.properties.points
         this._hasHeadArrow = !!props.properties.hasHeadArrow
@@ -375,28 +376,31 @@ export class Line extends Widget {
         return data
     }
 
-    static loadFromJson(json: WsWidget): Line {
+    static loadFromJson(json: WsWidget, engine: Engine): Line {
         const properties = json.properties as unknown as LineProperties
-        return new Line({
-            x: json.x,
-            y: json.y,
-            width: json.width,
-            height: json.height,
-            uuid: json.uuid,
-            z_index: json.z_index,
-            parent_widget_id: json.parent_widget_id,
-            is_locked: json.is_locked,
-            properties: {
-                points: properties.points,
-                strokeColor: properties.strokeColor,
-                strokeWidth: properties.strokeWidth,
-                hasHeadArrow: properties.hasHeadArrow,
-                hasTailArrow: properties.hasTailArrow,
-                borderStyle: properties.borderStyle,
-                headBinding: properties.headBinding,
-                tailBinding: properties.tailBinding,
+        return new Line(
+            {
+                x: json.x,
+                y: json.y,
+                width: json.width,
+                height: json.height,
+                uuid: json.uuid,
+                z_index: json.z_index,
+                parent_widget_id: json.parent_widget_id,
+                is_locked: json.is_locked,
+                properties: {
+                    points: properties.points,
+                    strokeColor: properties.strokeColor,
+                    strokeWidth: properties.strokeWidth,
+                    hasHeadArrow: properties.hasHeadArrow,
+                    hasTailArrow: properties.hasTailArrow,
+                    borderStyle: properties.borderStyle,
+                    headBinding: properties.headBinding,
+                    tailBinding: properties.tailBinding,
+                },
             },
-        })
+            engine,
+        )
     }
 
     updateWithPartialState(json: Partial<WsWidget>) {

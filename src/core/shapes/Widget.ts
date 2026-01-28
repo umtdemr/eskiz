@@ -1,4 +1,5 @@
 import { Layer } from '../stage/Layer'
+import { Engine } from '../engine/Engine'
 import { BoundingBox } from '../geometry/BoundingBox'
 import { RenderContext } from '../canvas/Canvas'
 import { LinkedList } from '../dataStructures/LinkedList'
@@ -11,6 +12,7 @@ import {
     TextType as TextTypeConst,
     WidgetType as WidgetTypeConst,
     LineType as LineTypeConst,
+    ImageType as ImageTypeConst,
 } from '@/core/constants.ts'
 
 export type WidgetType = (typeof WidgetTypeConst)[keyof typeof WidgetTypeConst]
@@ -20,12 +22,14 @@ export type DbWidgetType =
     | typeof WidgetTypeConst.TEXTBOX
     | typeof WidgetTypeConst.PATH
     | typeof WidgetTypeConst.LINE
+    | typeof WidgetTypeConst.IMAGE
 
 export type SubType =
     | (typeof ShapeTypeConst)[keyof typeof ShapeTypeConst]
     | typeof TextTypeConst.TEXTBOX
     | typeof PathTypeConst.PEN
     | typeof LineTypeConst.LINE
+    | typeof ImageTypeConst.IMAGE
 
 export type WidgetFullType = `${DbWidgetType}_${SubType}`
 
@@ -77,6 +81,7 @@ export abstract class Widget extends Layer {
     protected _isDeleted: boolean = false
     protected _isLocked: boolean = false
     protected _properties: Record<string, unknown>
+    protected _engine: Engine
 
     public attachedLineIds: Set<string> = new Set()
     public attachedLines: Set<Line> = new Set()
@@ -86,9 +91,10 @@ export abstract class Widget extends Layer {
     clicked = new Signal<WidgetClickedSignal>()
     deleted = new Signal()
 
-    constructor(type: WidgetType, props: WidgetProps) {
+    constructor(type: WidgetType, props: WidgetProps, engine: Engine) {
         super({ name: 'widget' })
 
+        this._engine = engine
         this._children = new LinkedList<Widget>()
 
         this._widgetType = type
@@ -272,7 +278,7 @@ export abstract class Widget extends Layer {
         this.destroy()
     }
 
-    static loadFromJson(json: WsWidget): Widget {
+    static loadFromJson(json: WsWidget, engine: Engine): Widget {
         throw new Error(
             `loadFromJson is not implemented for ${json.widget_type}_${json.sub_type}`,
         )
@@ -356,7 +362,7 @@ export abstract class Widget extends Layer {
 
         if (resized) {
             this.updateBounds()
-             for (const line of this.attachedLines) {
+            for (const line of this.attachedLines) {
                 line.headBinding?.id === this._uuid &&
                     line.updatePointFromBinding('head')
                 line.tailBinding?.id === this._uuid &&
@@ -554,5 +560,13 @@ export abstract class Widget extends Layer {
 
     getSnapPoints(): { x: number; y: number }[] {
         return []
+    }
+
+    get engine() {
+        return this._engine
+    }
+
+    requestRender() {
+        this._engine.canvas.requestRender()
     }
 }

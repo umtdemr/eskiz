@@ -4,6 +4,7 @@ import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WidgetJson } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color'
 import { ShapeType } from '@/core/constants.ts'
+import { Engine } from '@/core/engine/Engine'
 
 export interface RectangleProps extends ShapeProps {
     properties: RectangleShapeProperties
@@ -16,8 +17,8 @@ export interface RectangleShapeProperties extends ShapeProperties {
 const TEXT_PADDING = 5
 
 export class Rectangle extends Shape {
-    constructor(props: RectangleProps) {
-        super(ShapeType.RECTANGLE, props)
+    constructor(props: RectangleProps, engine: Engine) {
+        super(ShapeType.RECTANGLE, props, engine)
         if (props.properties?.radius) {
             this._properties.radius =
                 props.properties.radius >= 0 && props.properties.radius <= 20
@@ -131,7 +132,7 @@ export class Rectangle extends Shape {
         return this.generateJson()
     }
 
-    static loadFromJson(json: RectangleProps): Rectangle {
-        return new Rectangle(json)
+    static loadFromJson(json: RectangleProps, engine: Engine): Rectangle {
+        return new Rectangle(json, engine)
     }
 }

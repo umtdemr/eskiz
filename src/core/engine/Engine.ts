@@ -32,6 +32,8 @@ import { Command, Commands } from '../command/Command'
 import { HistoryManager } from '../history/HistoryManager'
 import { ShortcutService } from '../services/ShortcutService'
 import { MagnetService } from '../services/MagnetService'
+import { ImageLoadingService } from '../services/ImageLoadingService'
+import { ImageUploadService } from '@/core/services/ImageUploadService'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -224,6 +226,14 @@ export class Engine extends Emitter<EngineEventsMap> {
         )
         this.serviceManager.register('page', new PageService(this))
         this.serviceManager.register('magnet', new MagnetService(this))
+        this.serviceManager.register(
+            'imageLoadingService',
+            new ImageLoadingService(this),
+        )
+        this.serviceManager.register(
+            'imageUpload',
+            new ImageUploadService(this),
+        )
     }
 
     getService<T>(name: string): T {
@@ -271,5 +281,9 @@ export class Engine extends Emitter<EngineEventsMap> {
 
     get pageId(): number {
         return this._pageId
+    }
+
+    get boardId(): number {
+        return this._boardId
     }
 }

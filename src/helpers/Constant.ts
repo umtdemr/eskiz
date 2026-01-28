@@ -6,6 +6,7 @@ export const API_ENDPOINTS = {
     CREATE_BOARD: import.meta.env.VITE_BACKEND_URL + 'v1/boards',
     BOARD: import.meta.env.VITE_BACKEND_URL + 'v1/boards/:slugId',
     INVITE_TO_BOARD: import.meta.env.VITE_BACKEND_URL + 'v1/boards/invite',
+    IMAGE_UPLOAD: import.meta.env.VITE_BACKEND_URL + 'v1/image-upload',
 } as const
 
 export const ZOOM_LEVELS = {

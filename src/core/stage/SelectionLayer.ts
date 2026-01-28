@@ -205,6 +205,13 @@ export class SelectionLayer extends Layer {
             this.addChildren(handle)
         }
 
+
+
+        // do not show edge controls for images
+        if (widgets[0].widgetType === WidgetType.IMAGE) {
+            return
+        }
+
         for (const position of edgeControls) {
             const handle = new EdgeControl(
                 {

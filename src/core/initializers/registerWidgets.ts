@@ -10,7 +10,9 @@ import {
     ShapeType,
     TextType,
     WidgetType,
+    ImageType,
 } from '@/core/constants.ts'
+import { Image } from '@/core/shapes/image/Image'
 import { Line } from '@/core/shapes/line/Line'
 
 export function initializeAllWidgets() {
@@ -20,4 +22,5 @@ export function initializeAllWidgets() {
     WidgetFactory.registerWidget(WidgetType.TEXTBOX, TextType.TEXTBOX, TextBox)
     WidgetFactory.registerWidget(WidgetType.PATH, PathType.PEN, Pen)
     WidgetFactory.registerWidget(WidgetType.LINE, LineType.LINE, Line)
+    WidgetFactory.registerWidget(WidgetType.IMAGE, ImageType.IMAGE, Image)
 }

@@ -1,3 +1,4 @@
+import { Engine } from '@/core/engine/Engine'
 import {
     DbWidgetType,
     SubType,
@@ -7,7 +8,7 @@ import {
 import { WsWidget } from '@/types/Websocket.ts'
 
 interface WidgetConstructor {
-    loadFromJson(json: unknown): Widget
+    loadFromJson(json: unknown, engine: Engine): Widget
 }
 
 export class WidgetFactory {
@@ -28,7 +29,7 @@ export class WidgetFactory {
         WidgetFactory._registry.set(key, widget)
     }
 
-    static loadFromJson(data: WsWidget) {
+    static loadFromJson(data: WsWidget, engine: Engine) {
         const key = `${data.widget_type}_${data.sub_type}` as WidgetFullType
         const WidgetClass = WidgetFactory._registry.get(key)
         if (!WidgetClass) {
@@ -38,6 +39,6 @@ export class WidgetFactory {
             return
         }
 
-        return WidgetClass.loadFromJson(data)
+        return WidgetClass.loadFromJson(data, engine)
     }
 }

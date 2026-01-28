@@ -23,7 +23,7 @@ export class PageService extends Service {
         const widgetLayer = this.engine.stage.widgetsDefaultLayer
         for (const widget of widgets) {
             if (widget.is_deleted) continue
-            const widgetClass = WidgetFactory.loadFromJson(widget)
+            const widgetClass = WidgetFactory.loadFromJson(widget, this.engine)
             if (!widgetClass) {
                 continue
             }
