@@ -234,6 +234,9 @@ export class ImageUploadService extends Service {
                 this.engine,
             )
 
+            // set mime type for proper
+            widget.setMimeType(p.file.type)
+
             fileWidgetMap.set(p.file, widget)
             this.engine.stage.addWidget(widget)
         })

@@ -1,7 +1,7 @@
 import { Service } from './Service'
 
 export interface ImageLoadResult {
-    data: ArrayBuffer | string  // ArrayBuffer for raster, string for SVG
+    data: ArrayBuffer | string // ArrayBuffer for raster, string for SVG
     isSvg: boolean
 }
 
@@ -20,7 +20,7 @@ export class ImageLoadingService extends Service {
 
     private async ensureCacheInitialized(): Promise<void> {
         if (this.cacheInitialized) return
-        
+
         if (!this.cacheInitPromise) {
             this.cacheInitPromise = this.initCache()
         }
@@ -39,7 +39,7 @@ export class ImageLoadingService extends Service {
     async loadImage(url: string): Promise<ImageLoadResult | null> {
         // ensure cache is initialized
         await this.ensureCacheInitialized()
-        
+
         return new Promise((resolve) => {
             this.queue.push({ url, resolve })
             this.processQueue()
@@ -91,9 +91,11 @@ export class ImageLoadingService extends Service {
 
             const contentType = response.headers.get('content-type') || ''
             const isSvg = contentType.includes('svg')
-            
+
             // return text for svg, arraybuffer for raster
-            const data = isSvg ? await response.text() : await response.arrayBuffer()
+            const data = isSvg
+                ? await response.text()
+                : await response.arrayBuffer()
 
             request.resolve({ data, isSvg })
         } catch (error) {

@@ -10,10 +10,24 @@ interface CacheEntry {
     lastUsed: number
 }
 
+/**
+ * Maximum SVG rasterization size to prevent memory issues.
+ */
+const MAX_SVG_RASTER_SIZE = 4096
+
+export interface TextureOptions {
+    url: string
+    isLocal?: boolean
+    isSvg?: boolean
+    width?: number
+    height?: number
+    scale?: number
+}
+
 export class TextureManager extends Service {
     private cache: Map<string, CacheEntry> = new Map()
     private pendingRequests: Map<string, Promise<SkiaImage | null>> = new Map()
-    private invalidatedKeys: Set<string> = new Set() // track invalidated keys during fetch
+    private invalidatedKeys: Set<string> = new Set()
     private currentMemory: number = 0
     private maxMemory: number = 512 * 1024 * 1024 // 512MB
 
@@ -25,15 +39,26 @@ export class TextureManager extends Service {
     }
 
     /**
-     * Get a texture for a given URL. Returns cached texture if available,
-     * otherwise fetches and creates a new texture.
-     * For SVGs, pass original width/height from variation data for proper rasterization.
+     * Get a texture for a given URL.
+     *
+     * For local images: loaded once without scaling
+     * For remote PNGs (preview/md): loaded directly
+     * For remote SVGs (original): rasterized at scale tier based on zoom
      */
-    async getTexture(url: string, svgWidth?: number, svgHeight?: number): Promise<SkiaImage | null> {
-        // for SVGs, use composite key with dimensions to avoid collisions
-        const cacheKey = svgWidth && svgHeight 
-            ? `${url}:${Math.ceil(svgWidth)}x${Math.ceil(svgHeight)}` 
-            : url
+    async getTexture(options: TextureOptions): Promise<SkiaImage | null> {
+        const { url, isLocal, isSvg, width, height, scale } = options
+
+        // Build cache key
+        let cacheKey: string
+        if (isLocal) {
+            cacheKey = url
+        } else if (isSvg && width && height && scale) {
+            // Remote SVGs: include scale tier (1-4) in cache key
+            cacheKey = `${url}:${Math.ceil(width)}x${Math.ceil(height)}@${scale}x`
+        } else {
+            // remote raster
+            cacheKey = url
+        }
 
         // check in-memory cache first
         const cached = this.cache.get(cacheKey)
@@ -49,7 +74,7 @@ export class TextureManager extends Service {
         }
 
         // create and store the pending request
-        const request = this.fetchAndCreateTexture(url, cacheKey, svgWidth, svgHeight)
+        const request = this.fetchAndCreateTexture(options, cacheKey)
         this.pendingRequests.set(cacheKey, request)
 
         try {
@@ -60,87 +85,125 @@ export class TextureManager extends Service {
     }
 
     private async fetchAndCreateTexture(
-        url: string,
+        options: TextureOptions,
         cacheKey: string,
-        svgWidth?: number,
-        svgHeight?: number
     ): Promise<SkiaImage | null> {
+        const { url, isLocal, isSvg, width, height, scale } = options
+
         // fetch from ImageLoadingService
         const result = await this.imageLoadingService.loadImage(url)
-        
-        // check if invalidated during fetch (race condition guard)
+
         if (this.invalidatedKeys.has(cacheKey)) {
             this.invalidatedKeys.delete(cacheKey)
             return null
         }
-        
+
         if (!result) {
             return null
         }
 
-        // if svg, rasterize it
+        // If it's an SVG that needs scaling (remote original SVG)
+        if (result.isSvg && isSvg && !isLocal && width && height && scale) {
+            // scale is already the tier (1-4) passed from Image.ts
+            return this.rasterizeSvg(
+                result.data as string,
+                cacheKey,
+                width,
+                height,
+                scale,
+            )
+        }
+
         if (result.isSvg) {
-            const width = svgWidth || 256
-            const height = svgHeight || 256
-            return this.rasterizeSvg(result.data as string, cacheKey, width, height)
+            return this.rasterizeSvg(result.data as string, cacheKey)
         } else {
-            // raster image: decode directly
-            return this.createTextureFromBuffer(cacheKey, result.data as ArrayBuffer)
+            return this.createTextureFromBuffer(
+                cacheKey,
+                result.data as ArrayBuffer,
+            )
         }
     }
 
     /**
-     * Rasterize SVG text to a SkiaImage at specified dimensions
+     * Rasterize SVG to a SkiaImage.
+     * If width/height/scale provided, rasterizes at that size.
+     * Otherwise uses natural dimensions.
      */
     private async rasterizeSvg(
         svgString: string,
         cacheKey: string,
-        width: number,
-        height: number
+        width?: number,
+        height?: number,
+        scale: number = 1,
     ): Promise<SkiaImage | null> {
         return new Promise((resolve) => {
             try {
-                // create a blob URL for the SVG
                 const blob = new Blob([svgString], { type: 'image/svg+xml' })
                 const blobUrl = URL.createObjectURL(blob)
-                
-                const w = Math.max(1, Math.ceil(width))
-                const h = Math.max(1, Math.ceil(height))
-                
+
                 const img = new window.Image()
                 img.src = blobUrl
-                
+
                 img.onload = async () => {
                     URL.revokeObjectURL(blobUrl)
-                    
-                    // check if invalidated during load
+
                     if (this.invalidatedKeys.has(cacheKey)) {
                         this.invalidatedKeys.delete(cacheKey)
                         resolve(null)
                         return
                     }
-                    
+
                     try {
+                        let w: number
+                        let h: number
+
+                        if (width && height) {
+                            let scaledWidth = Math.ceil(width * scale)
+                            let scaledHeight = Math.ceil(height * scale)
+
+                            const maxDimension = Math.max(
+                                scaledWidth,
+                                scaledHeight,
+                            )
+                            if (maxDimension > MAX_SVG_RASTER_SIZE) {
+                                const ratio = MAX_SVG_RASTER_SIZE / maxDimension
+                                scaledWidth = Math.floor(scaledWidth * ratio)
+                                scaledHeight = Math.floor(scaledHeight * ratio)
+                            }
+
+                            w = Math.max(1, scaledWidth)
+                            h = Math.max(1, scaledHeight)
+                        } else {
+                            w = img.naturalWidth || 256
+                            h = img.naturalHeight || 256
+                        }
+
                         const canvas = new OffscreenCanvas(w, h)
                         const ctx = canvas.getContext('2d')
                         if (!ctx) {
                             resolve(null)
                             return
                         }
-                        
+
                         ctx.drawImage(img, 0, 0, w, h)
-                        
-                        const pngBlob = await canvas.convertToBlob({ type: 'image/png' })
+                        // todo: is this efficient?
+
+                        const pngBlob = await canvas.convertToBlob({
+                            type: 'image/png',
+                        })
                         const buffer = await pngBlob.arrayBuffer()
-                        
-                        const skImage = this.createTextureFromBuffer(cacheKey, buffer)
+
+                        const skImage = this.createTextureFromBuffer(
+                            cacheKey,
+                            buffer,
+                        )
                         resolve(skImage)
                     } catch (error) {
                         console.error('failed to rasterize svg:', error)
                         resolve(null)
                     }
                 }
-                
+
                 img.onerror = () => {
                     URL.revokeObjectURL(blobUrl)
                     console.error('failed to load svg for rasterization')
@@ -156,7 +219,10 @@ export class TextureManager extends Service {
     /**
      * Create a SkiaImage texture from raw bytes and cache it
      */
-    private createTextureFromBuffer(cacheKey: string, buffer: ArrayBuffer): SkiaImage | null {
+    private createTextureFromBuffer(
+        cacheKey: string,
+        buffer: ArrayBuffer,
+    ): SkiaImage | null {
         const image = canvasKit.MakeImageFromEncoded(buffer)
         if (!image) {
             console.error(`failed to decode image: ${cacheKey}`)
@@ -166,7 +232,7 @@ export class TextureManager extends Service {
         // use actual GPU memory size (width × height × 4 bytes per pixel)
         const imageInfo = image.getImageInfo()
         const size = imageInfo.width * imageInfo.height * 4
-        
+
         // evict if necessary before adding
         this.evictIfNeeded(size)
 
@@ -174,7 +240,7 @@ export class TextureManager extends Service {
         this.cache.set(cacheKey, {
             image,
             size,
-            lastUsed: Date.now()
+            lastUsed: Date.now(),
         })
         this.currentMemory += size
 
@@ -190,8 +256,9 @@ export class TextureManager extends Service {
         }
 
         // sort entries by lastUsed (oldest first)
-        const entries = Array.from(this.cache.entries())
-            .sort((a, b) => a[1].lastUsed - b[1].lastUsed)
+        const entries = Array.from(this.cache.entries()).sort(
+            (a, b) => a[1].lastUsed - b[1].lastUsed,
+        )
 
         for (const [key, entry] of entries) {
             if (this.currentMemory + incomingSize <= this.maxMemory) {
@@ -217,7 +284,7 @@ export class TextureManager extends Service {
                 this.invalidatedKeys.add(key)
             }
         }
-        
+
         // invalidate all cache entries for this URL (and any size variants)
         for (const [key, entry] of this.cache) {
             if (key === url || key.startsWith(`${url}:`)) {

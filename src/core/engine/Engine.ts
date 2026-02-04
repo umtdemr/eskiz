@@ -228,10 +228,7 @@ export class Engine extends Emitter<EngineEventsMap> {
         this.serviceManager.register('page', new PageService(this))
         this.serviceManager.register('magnet', new MagnetService(this))
         const imageLoadingService = new ImageLoadingService(this)
-        this.serviceManager.register(
-            'imageLoadingService',
-            imageLoadingService,
-        )
+        this.serviceManager.register('imageLoadingService', imageLoadingService)
         this.serviceManager.register(
             'textureManager',
             new TextureManager(this, imageLoadingService),
