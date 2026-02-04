@@ -2,7 +2,7 @@ import { WidgetType, ImageType } from '@/core/constants'
 import { Widget, WidgetProps, WidgetJson } from '@/core/shapes/Widget'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { Image as SkiaImage } from 'canvaskit-wasm'
-import { ImageLoadingService } from '@/core/services/ImageLoadingService'
+import { TextureManager } from '@/core/services/TextureManager'
 import { Engine } from '@/core/engine/Engine'
 import { WsWidget } from '@/types/Websocket'
 
@@ -46,7 +46,7 @@ export type ImageVariationType = 'preview' | 'md' | 'original'
 
 export class Image extends Widget {
     private skImage: SkiaImage | null = null
-    private imageLoadingService: ImageLoadingService
+    private textureManager: TextureManager
 
     private _localUrl: string | undefined
     private _imageData: ImageResponse | undefined
@@ -54,15 +54,12 @@ export class Image extends Widget {
 
     private _currentVariationType: ImageVariationType | undefined
     private _loadingVariationType: ImageVariationType | undefined
-    private _loadedVariations: Map<ImageVariationType, SkiaImage> = new Map()
 
     constructor(props: ImageProps, engine: Engine) {
         super(WidgetType.IMAGE, props, engine)
         this._interactive = true
         this._state = props.properties.localUrl ? 'local' : 'loadingRemote'
-        this.imageLoadingService = engine.getService<ImageLoadingService>(
-            'imageLoadingService',
-        )
+        this.textureManager = engine.getService<TextureManager>('textureManager')
 
         this._localUrl = props.properties.localUrl
         this._imageData = props.properties.imageData
@@ -104,8 +101,9 @@ export class Image extends Widget {
 
     private async loadImage(variationType?: ImageVariationType) {
         let url = ''
-
         let targetVariationType = variationType
+        let variationWidth: number | undefined
+        let variationHeight: number | undefined
 
         if (this._localUrl) {
             url = this._localUrl
@@ -114,8 +112,7 @@ export class Image extends Widget {
                 // If no type requested, guess based on current scale
                 const best = this.getBestVariation(1)
                 if (best) {
-                    targetVariationType =
-                        best.variation_type as ImageVariationType
+                    targetVariationType = best.variation_type as ImageVariationType
                 }
             }
 
@@ -135,25 +132,17 @@ export class Image extends Widget {
                 return
             }
 
-            // cache check
-            if (
-                targetVariationType &&
-                this._loadedVariations.has(targetVariationType)
-            ) {
-                this.skImage = this._loadedVariations.get(targetVariationType)!
-                this._currentVariationType = targetVariationType
-                this.engine.canvas.requestRender()
-                return
-            }
-
-            // find path
+            // find path and variation dimensions (for SVG rasterization)
             const variations = this._imageData.variations || []
+            
             const target = variations.find(
                 (v) => v.variation_type === targetVariationType,
             )
 
             if (target && target.file_path) {
                 url = `${import.meta.env.VITE_BACKEND_URL}v1/images/${target.file_path}`
+                variationWidth = target.width
+                variationHeight = target.height
                 this._loadingVariationType = targetVariationType
             } else {
                 // fallback to original if specific not found
@@ -162,7 +151,8 @@ export class Image extends Widget {
                 )
                 if (original && original.file_path) {
                     url = `${import.meta.env.VITE_BACKEND_URL}v1/images/${original.file_path}`
-                    // Treat fallback as original for caching purposes if it is indeed original
+                    variationWidth = original.width
+                    variationHeight = original.height
                     this._loadingVariationType = 'original'
                     targetVariationType = 'original'
                 }
@@ -173,15 +163,19 @@ export class Image extends Widget {
             }
         }
 
+        if (!url) {
+            return
+        }
+
         try {
-            const img = await this.imageLoadingService.loadImage(url)
+            // pass variation dimensions for SVG rasterization
+            const img = await this.textureManager.getTexture(url, variationWidth, variationHeight)
 
             this.setState(this._localUrl ? 'local' : 'loadedRemote')
 
             if (img) {
                 this.skImage = img
                 if (targetVariationType) {
-                    this._loadedVariations.set(targetVariationType, img)
                     this._currentVariationType = targetVariationType
                 }
                 this.engine.canvas.requestRender()
@@ -317,14 +311,9 @@ export class Image extends Widget {
     }
 
     destroy() {
-        this._loadedVariations.forEach((img) => img.delete())
-        this._loadedVariations.clear()
-
-        // if we have a skImage that is not in the map, delete it
-        if (this.skImage && !this.skImage.isDeleted()) {
-            this.skImage.delete()
-        }
-
+        // TextureManager owns the textures, just clear our reference
+        // TODO: local url revoke
+        this.skImage = null
         super.destroy()
     }
 
