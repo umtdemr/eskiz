@@ -186,16 +186,13 @@ export class TextureManager extends Service {
                         }
 
                         ctx.drawImage(img, 0, 0, w, h)
-                        // todo: is this efficient?
+                        const imageData = ctx.getImageData(0, 0, w, h)
 
-                        const pngBlob = await canvas.convertToBlob({
-                            type: 'image/png',
-                        })
-                        const buffer = await pngBlob.arrayBuffer()
-
-                        const skImage = this.createTextureFromBuffer(
+                        const skImage = this.createTextureFromPixels(
                             cacheKey,
-                            buffer,
+                            imageData.data,
+                            w,
+                            h,
                         )
                         resolve(skImage)
                     } catch (error) {
@@ -232,6 +229,48 @@ export class TextureManager extends Service {
         // use actual GPU memory size (width × height × 4 bytes per pixel)
         const imageInfo = image.getImageInfo()
         const size = imageInfo.width * imageInfo.height * 4
+
+        // evict if necessary before adding
+        this.evictIfNeeded(size)
+
+        // cache the texture
+        this.cache.set(cacheKey, {
+            image,
+            size,
+            lastUsed: Date.now(),
+        })
+        this.currentMemory += size
+
+        return image
+    }
+
+    /**
+     * Create a SkiaImage texture from raw pixel data and cache it
+     */
+    private createTextureFromPixels(
+        cacheKey: string,
+        pixels: Uint8ClampedArray,
+        width: number,
+        height: number,
+    ): SkiaImage | null {
+        const image = canvasKit.MakeImage(
+            {
+                width,
+                height,
+                colorType: canvasKit.ColorType.RGBA_8888,
+                alphaType: canvasKit.AlphaType.Unpremul,
+                colorSpace: canvasKit.ColorSpace.SRGB,
+            },
+            pixels,
+            width * 4, // bytes per row
+        )
+
+        if (!image) {
+            console.error(`failed to create image from pixels: ${cacheKey}`)
+            return null
+        }
+
+        const size = width * height * 4
 
         // evict if necessary before adding
         this.evictIfNeeded(size)
