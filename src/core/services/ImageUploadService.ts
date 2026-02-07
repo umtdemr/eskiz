@@ -12,7 +12,11 @@ export class ImageUploadService extends Service {
     private readonly MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
     private readonly MAX_TOTAL_SIZE = 50 * 1024 * 1024 // 50MB
     private readonly MAX_DIMENSION = 7096 // 7k roughly
-    private readonly ALLOWED_TYPES = ['image/jpeg', 'image/png']
+    private readonly ALLOWED_TYPES = [
+        'image/jpeg',
+        'image/png',
+        'image/svg+xml',
+    ]
 
     private async handleFiles(files: File[], boardId: number) {
         const errorCounts = this.getInitialErrorCounts()
@@ -229,6 +233,9 @@ export class ImageUploadService extends Service {
                 },
                 this.engine,
             )
+
+            // set mime type for proper
+            widget.setMimeType(p.file.type)
 
             fileWidgetMap.set(p.file, widget)
             this.engine.stage.addWidget(widget)

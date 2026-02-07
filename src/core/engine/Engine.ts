@@ -34,6 +34,7 @@ import { ShortcutService } from '../services/ShortcutService'
 import { MagnetService } from '../services/MagnetService'
 import { ImageLoadingService } from '../services/ImageLoadingService'
 import { ImageUploadService } from '@/core/services/ImageUploadService'
+import { TextureManager } from '../services/TextureManager'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -226,9 +227,11 @@ export class Engine extends Emitter<EngineEventsMap> {
         )
         this.serviceManager.register('page', new PageService(this))
         this.serviceManager.register('magnet', new MagnetService(this))
+        const imageLoadingService = new ImageLoadingService(this)
+        this.serviceManager.register('imageLoadingService', imageLoadingService)
         this.serviceManager.register(
-            'imageLoadingService',
-            new ImageLoadingService(this),
+            'textureManager',
+            new TextureManager(this, imageLoadingService),
         )
         this.serviceManager.register(
             'imageUpload',
