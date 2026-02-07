@@ -9,6 +9,7 @@ export const WidgetType = {
     LINE: 'line',
     MAGNET_CIRCLE: 'magnetCircle',
     IMAGE: 'image',
+    STICKY_NOTE: 'stickyNote',
 } as const
 
 export const ShapeType = {
@@ -57,6 +58,7 @@ export const TextAlign = {
 export const TextSessionType = {
     TEXTBOX: 'textBox',
     SHAPE_TEXT: 'shapeText',
+    STICKY_NOTE: 'stickyNote',
 } as const
 
 export const BoardGridType = {
@@ -67,4 +69,8 @@ export const BoardGridType = {
 
 export const ImageType = {
     IMAGE: 'image',
+} as const
+
+export const StickyNoteType = {
+    STICKY_NOTE: 'stickyNote',
 } as const

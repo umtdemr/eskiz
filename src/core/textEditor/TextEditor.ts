@@ -3,7 +3,7 @@ import { Engine } from '@/core/engine/Engine'
 import { Signal } from '@/core/signal/Signal'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
 
-export type TextEditingSession = 'textBox' | 'shapeText'
+export type TextEditingSession = 'textBox' | 'shapeText' | 'stickyNote'
 
 interface EditProps {
     x: number
@@ -102,6 +102,7 @@ export class TextEditor {
             this._wrapperEl.style.top = `${transformedPosition.y - (this._editProps.height * scale) / 2}px`
             this._quill.root.style.height = `${this._editProps.height}px`
         } else {
+            // shapeText and stickyNote use top-left positioning
             this._wrapperEl.style.left = `${transformedPosition.x}px`
             this._wrapperEl.style.top = `${transformedPosition.y}px`
         }
@@ -151,7 +152,10 @@ export class TextEditor {
         this._quill.root.style.textAlign = `${this._editProps.textAlign}`
         this._editorContainer.style.width = `${this._editProps.width}px`
 
-        if (this._editProps.for === 'shapeText') {
+        if (
+            this._editProps.for === 'shapeText' ||
+            this._editProps.for === 'stickyNote'
+        ) {
             this.addStyle(this._editorContainer, 'overflow', 'hidden')
             this.addStyle(this._editorContainer, 'width', 'hidden')
             this.addStyle(

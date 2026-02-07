@@ -144,6 +144,20 @@ export class ShapeText extends Widget {
         return this._paragraph
     }
 
+    /**
+     * Calculate the height the text would occupy at a given font size.
+     * Used for auto font size calculation.
+     */
+    calculateHeightAtFontSize(fontSize: number): number {
+        const originalFontSize = this._fontSize
+        this._fontSize = fontSize
+        const paragraph = this.getOpParagraph()
+        const height = paragraph.getHeight()
+        paragraph.delete()
+        this._fontSize = originalFontSize
+        return height
+    }
+
     renderContent(renderContext: RenderContext) {
         if (!this._shouldRender || !this._text.length) {
             return

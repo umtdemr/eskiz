@@ -22,6 +22,7 @@ import { WidgetsService } from './WidgetsService'
 import { AddWidgetPayload } from '@/types/Websocket'
 import { CursorType, TextAlign, TextSessionType } from '@/core/constants.ts'
 import { CreationHistoryEntry } from '@/core/history/HistoryManager'
+import { StickyNote } from '@/core/shapes/stickyNote/StickyNote'
 
 export class TextService extends Service {
     private mouseController: MouseController
@@ -32,6 +33,7 @@ export class TextService extends Service {
     private textEditor: TextEditor
     private textBox: TextBox
     private shape: Shape
+    private stickyNote: StickyNote
     private activeSession: TextEditingSession | null
     private isTextboxCreatedWithService: boolean
     private isTextboxSavedInDb: boolean
@@ -138,6 +140,9 @@ export class TextService extends Service {
         if (this.activeSession === TextSessionType.TEXTBOX) {
             editTable.set(this.textBox, ['text'])
         }
+        if (this.activeSession === TextSessionType.STICKY_NOTE) {
+            editTable.set(this.stickyNote, ['text'])
+        }
 
         if (!editTable.size) return
 
@@ -189,6 +194,19 @@ export class TextService extends Service {
             this.shape
         ) {
             this.shape.updateText(props.text, props.textOps)
+        } else if (
+            this.activeSession === TextSessionType.STICKY_NOTE &&
+            this.stickyNote
+        ) {
+            this.stickyNote.updateText(props.text, props.textOps)
+
+            // sync auto font size to the text editor
+            if (this.stickyNote.autoFontSize) {
+                const newFontSize = this.stickyNote.textProperties?.fontSize
+                if (newFontSize) {
+                    this.textEditor.changeFontSize(newFontSize)
+                }
+            }
         }
 
         if (this.transactionId) {
@@ -213,6 +231,8 @@ export class TextService extends Service {
             }
         } else if (this.activeSession === 'shapeText' && this.shape) {
             this.shape.finishEditingText()
+        } else if (this.activeSession === 'stickyNote' && this.stickyNote) {
+            this.stickyNote.finishEditingText()
         }
 
         this.engine.canvas.requestRender()
@@ -252,6 +272,10 @@ export class TextService extends Service {
             this.textBox = widget
 
             this.textBox.clicked.add(this.onWidgetClicked, this)
+        } else if (widget instanceof StickyNote) {
+            this.stickyNote = widget
+
+            this.stickyNote.clicked.add(this.onWidgetClicked, this)
         }
     }
 
@@ -306,8 +330,35 @@ export class TextService extends Service {
             this.onShapeClicked()
         } else if (data.widget instanceof TextBox) {
             this.onTextboxClicked()
+        } else if (data.widget instanceof StickyNote) {
+            this.onStickyNoteClicked()
         }
         this.initializeTransaction()
+    }
+
+    private onStickyNoteClicked() {
+        const bounds = this.stickyNote.calcTextBounds()
+
+        this.textEditor.showEditor({
+            x: bounds.x + this.stickyNote.left,
+            y: bounds.y + this.stickyNote.top,
+            width: bounds.width,
+            height: bounds.height,
+            fontSize: this.stickyNote.textProperties?.fontSize ?? 18,
+            lineHeight: this.stickyNote.textProperties?.lineHeight ?? 1.4,
+            textAlign: this.stickyNote.textProperties?.textAlign ?? 'left',
+            for: 'stickyNote',
+            showPlaceholder: false,
+            initialText: this.stickyNote.textStr,
+            textOps: this.stickyNote?.textProperties?.textOps || [],
+        })
+
+        this.stickyNote.startEditingText()
+
+        this.stickyNote.deselected.addOnce(this.onDeselected, this)
+        this.textEditor.textChanged.add(this.onTextChanged, this)
+        this.activeSession = 'stickyNote'
+        this.engine.canvas.requestRender()
     }
 
     dispose(): void {
