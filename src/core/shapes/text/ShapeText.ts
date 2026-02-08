@@ -132,6 +132,45 @@ export class ShapeText extends Widget {
         return paragraph
     }
 
+    /**
+     * measure the width of a specific word at the current font size.
+     */
+    private measureWordWidth(word: string): number {
+        // todo: we can optimize this by caching the paragraph?
+        const builder = canvasKit.ParagraphBuilder.Make(
+            this.getParagraphStyle(),
+            fontManager,
+        )
+        const style = new canvasKit.TextStyle({
+            color: canvasKit.Color(0, 0, 0, 1),
+            fontFamilies: ['Open-Sans'],
+            fontSize: this._fontSize,
+            heightMultiplier: this._lineHeight,
+        })
+        builder.pushStyle(style)
+        builder.addText(word)
+        builder.pop()
+        const para = builder.build()
+        para.layout(Infinity) // layout with infinite width to get natural width
+        const width = para.getMaxIntrinsicWidth()
+        para.delete()
+        return width
+    }
+
+    /**
+     * get the longest word from the text content.
+     */
+    private getLongestWord(): string {
+        // trim trailing whitespace/newlines to match how paragraph strips them
+        const text = this._text.trim()
+        if (!text) return ''
+        const words = text.split(/\s+/).filter((w) => w.length > 0)
+        return words.reduce(
+            (longest, word) => (word.length > longest.length ? word : longest),
+            '',
+        )
+    }
+
     createOrUpdateParagraph(): CkParagraph {
         if (this._paragraph) {
             this._paragraph.delete()
@@ -156,6 +195,37 @@ export class ShapeText extends Widget {
         paragraph.delete()
         this._fontSize = originalFontSize
         return height
+    }
+
+    checkFitsAtFontSize(fontSize: number, maxHeight: number): boolean {
+        const originalFontSize = this._fontSize
+        this._fontSize = fontSize
+        // todo: we can optimize this by caching the paragraph
+        const paragraph = this.getOpParagraph()
+
+        const height = paragraph.getHeight()
+
+        // check height first
+        if (height > maxHeight) {
+            paragraph.delete()
+            this._fontSize = originalFontSize
+            return false
+        }
+
+        // check if longest word fits without breaking
+        const longestWord = this.getLongestWord()
+        if (longestWord && longestWord.length <= 16) {
+            const wordWidth = this.measureWordWidth(longestWord)
+            if (wordWidth > this._width) {
+                paragraph.delete()
+                this._fontSize = originalFontSize
+                return false
+            }
+        }
+
+        paragraph.delete()
+        this._fontSize = originalFontSize
+        return true
     }
 
     renderContent(renderContext: RenderContext) {

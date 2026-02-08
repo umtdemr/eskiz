@@ -189,7 +189,6 @@ export class StickyNote extends Widget {
 
     /**
      * Calculate the optimal font size that fits the text within the available bounds.
-     * Uses binary search for efficiency.
      */
     private calculateAndApplyOptimalFontSize(): void {
         if (!this._text) return
@@ -201,12 +200,15 @@ export class StickyNote extends Widget {
         let maxSize = MAX_FONT_SIZE
         let optimalSize = MIN_FONT_SIZE
 
-        // Binary search to find the largest font size that fits
+        // find the largest font size that fits
         while (minSize <= maxSize) {
             const midSize = Math.floor((minSize + maxSize) / 2)
-            const textHeight = this._text.calculateHeightAtFontSize(midSize)
+            const fits = this._text.checkFitsAtFontSize(
+                midSize,
+                availableHeight,
+            )
 
-            if (textHeight <= availableHeight) {
+            if (fits) {
                 optimalSize = midSize
                 minSize = midSize + 1
             } else {
