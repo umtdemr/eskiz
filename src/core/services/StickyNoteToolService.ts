@@ -46,7 +46,7 @@ export class StickyNoteToolService extends Service {
     }
 
     private init() {
-        this.cursorService.setCursor(this.cursorToolName, CursorType.CROSSHAIR)
+        this.cursorService.setCursor(this.cursorToolName, CursorType.STICKY_NOTE)
         this.mouseController.on('mouseDown', this.onMouseDown, this)
     }
 

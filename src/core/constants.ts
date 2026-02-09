@@ -47,6 +47,7 @@ export const CursorType = {
     VERTICAL_RESIZE: 'vertical-resize',
     SCALE_RESIZE_LEFT: 'scale-resize-left',
     SCALE_RESIZE_RIGHT: 'scale-resize-right',
+    STICKY_NOTE: 'sticky-note',
 } as const
 
 export const TextAlign = {
