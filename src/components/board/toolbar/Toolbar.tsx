@@ -207,7 +207,20 @@ export default function Toolbar({ engine }: ToolbarProps) {
             <TooltipProvider delayDuration={0}>
                 <Tooltip>
                     <TooltipTrigger asChild>
-                        <Button disabled variant="ghost" className="px-2">
+                        <Button
+                            variant="ghost"
+                            className={clsx('px-2', {
+                                'bg-amber-500':
+                                    activeMode?.mainMode ===
+                                    ACTION_MODES.STICKY_NOTE,
+                                'hover:bg-amber-500':
+                                    activeMode?.mainMode ===
+                                    ACTION_MODES.STICKY_NOTE,
+                            })}
+                            onClick={() =>
+                                changeActiveMode(ACTION_MODES.STICKY_NOTE)
+                            }
+                        >
                             <StickyNote />
                         </Button>
                     </TooltipTrigger>

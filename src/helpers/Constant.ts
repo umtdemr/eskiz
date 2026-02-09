@@ -104,6 +104,7 @@ export const ACTION_MODES = {
     TEXT: 'TEXT',
     PATH: 'PATH',
     LINE: 'LINE',
+    STICKY_NOTE: 'STICKY_NOTE',
 } as const
 
 export const DRAWING_MODES = {
@@ -126,6 +127,7 @@ export const CURSOR_OWNERS = {
     EDGE_CONTROL: 'edge-control',
     CORNER_CONTROL: 'corner-control',
     TEXT_SERVICE: 'text-service',
+    STICKY_NOTE_TOOL: 'sticky-note-tool',
 }
 
 export const PEN_CONSTANTS = {

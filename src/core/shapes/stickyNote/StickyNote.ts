@@ -21,8 +21,9 @@ export interface StickyNoteProperties {
     autoFontSize?: boolean
 }
 
-const DEFAULT_WIDTH = 300
-const DEFAULT_HEIGHT = 310
+export const DEFAULT_WIDTH = 325
+export const DEFAULT_HEIGHT = 350
+
 const DEFAULT_FILL_COLOR: RGBA = { r: 255, g: 232, b: 150, a: 1 }
 const TEXT_PADDING = 16
 const CORNER_RADIUS = 12
