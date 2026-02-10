@@ -155,10 +155,7 @@ export class TextEditor {
         this._quill.root.style.textAlign = `${this._editProps.textAlign}`
         this._editorContainer.style.width = `${this._editProps.width}px`
 
-        if (
-            this._editProps.for === 'shapeText' ||
-            this._editProps.for === 'stickyNote'
-        ) {
+        if (this._editProps.for === 'shapeText') {
             this.addStyle(this._editorContainer, 'overflow', 'hidden')
             this.addStyle(this._editorContainer, 'width', 'hidden')
             this.addStyle(
@@ -174,6 +171,29 @@ export class TextEditor {
             )
             this.addStyle(this._quill.root, 'vertical-align', 'middle')
             this.addStyle(this._quill.root, 'overflow', 'hidden')
+            this.addStyle(this._quill.root, 'overflow-wrap', 'break-word')
+            this.addStyle(this._quill.root, 'white-space', 'pre-wrap')
+            this.addStyle(
+                this._quill.root,
+                'line-height',
+                `${this._editProps.lineHeight * this._editProps.fontSize}px`,
+            )
+            this.addStyle(this._quill.root, 'height', 'auto')
+        }
+
+        if (this._editProps.for === 'stickyNote') {
+            this.addStyle(
+                this._editorContainer,
+                'line-height',
+                `${this._editProps.height}px`,
+            )
+            this.addStyle(this._quill.root, 'display', 'inline-block')
+            this.addStyle(
+                this._quill.root,
+                'width',
+                `${this._editProps.width}px`,
+            )
+            this.addStyle(this._quill.root, 'vertical-align', 'middle')
             this.addStyle(this._quill.root, 'overflow-wrap', 'break-word')
             this.addStyle(this._quill.root, 'white-space', 'pre-wrap')
             this.addStyle(
