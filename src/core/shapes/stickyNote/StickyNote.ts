@@ -32,7 +32,6 @@ const SHADOW_BLUR = 20
 const SHADOW_OFFSET_Y = 20
 const SHADOW_COLOR = { r: 0, g: 0, b: 0, a: 0.15 }
 
-// Auto font size limits
 const MIN_FONT_SIZE = 10
 const MAX_FONT_SIZE = 72
 const DEFAULT_FONT_SIZE = 18
@@ -51,7 +50,6 @@ export class StickyNote extends Widget {
     protected _autoFontSize: boolean = true
 
     constructor(props: StickyNoteProps, engine: Engine) {
-        // Set default dimensions if not provided
         const width = props.width || DEFAULT_WIDTH
         const height = props.height || DEFAULT_HEIGHT
 
@@ -61,13 +59,41 @@ export class StickyNote extends Widget {
         this._textProperties = props.properties.textProperties || {
             ...initialTextProps,
         }
-        this._autoFontSize = props.properties.autoFontSize ?? true // Default to auto
+        this._autoFontSize = props.properties.autoFontSize ?? true
         this._interactive = true
 
-        // Create text object if there's initial text
         if (this._textProperties.text) {
             this.createTextObject()
         }
+    }
+
+    getScaleFactor(): number {
+        return Math.min(
+            this._width / DEFAULT_WIDTH,
+            this._height / DEFAULT_HEIGHT,
+        )
+    }
+
+    render(renderContext: RenderContext) {
+        if (!this.visible || this._isDeleted) return
+        const ctx = renderContext.ctx
+
+        ctx.save()
+        ctx.translate(this._x, this._y)
+
+        // render the sticky note background
+        this.renderContent(renderContext)
+
+        // apply scale transform for text
+        const scale = this.getScaleFactor()
+        ctx.scale(scale, scale)
+
+        // render text
+        for (const child of this._children) {
+            child.render(renderContext)
+        }
+
+        ctx.restore()
     }
 
     protected renderContent(renderContext: RenderContext) {
@@ -77,10 +103,13 @@ export class StickyNote extends Widget {
             return
         }
 
-        // Draw box shadow
-        this.drawShadow(ctx)
+        const scale = this.getScaleFactor()
+        const scaledCornerRadius = CORNER_RADIUS * scale
 
-        // Draw the rounded rectangle background
+        // draw box shadow
+        this.drawShadow(ctx, scale)
+
+        // draw the rounded rectangle background
         const paint = new canvasKit.Paint()
         paint.setAntiAlias(true)
         paint.setStyle(canvasKit.PaintStyle.Fill)
@@ -94,12 +123,20 @@ export class StickyNote extends Widget {
         )
 
         const rect = canvasKit.LTRBRect(0, 0, this._width, this._height)
-        const rrect = canvasKit.RRectXY(rect, CORNER_RADIUS, CORNER_RADIUS)
+        const rrect = canvasKit.RRectXY(
+            rect,
+            scaledCornerRadius,
+            scaledCornerRadius,
+        )
         ctx.drawRRect(rrect, paint)
         paint.delete()
     }
 
-    private drawShadow(ctx: CanvasRenderingContext2D | any) {
+    private drawShadow(ctx: CanvasRenderingContext2D | any, scale: number) {
+        const scaledBlur = SHADOW_BLUR * scale
+        const scaledOffsetY = SHADOW_OFFSET_Y * scale
+        const scaledCornerRadius = CORNER_RADIUS * scale
+
         const shadowPaint = new canvasKit.Paint()
         shadowPaint.setAntiAlias(true)
         shadowPaint.setStyle(canvasKit.PaintStyle.Fill)
@@ -115,7 +152,7 @@ export class StickyNote extends Widget {
         // Create blur effect for shadow
         const blurFilter = canvasKit.MaskFilter.MakeBlur(
             canvasKit.BlurStyle.Normal,
-            SHADOW_BLUR / 2,
+            scaledBlur / 2,
             true,
         )
         shadowPaint.setMaskFilter(blurFilter)
@@ -123,14 +160,14 @@ export class StickyNote extends Widget {
         // Shadow rect is offset
         const shadowRect = canvasKit.LTRBRect(
             0,
-            SHADOW_OFFSET_Y,
+            scaledOffsetY,
             this._width,
-            this._height + SHADOW_OFFSET_Y,
+            this._height + scaledOffsetY,
         )
         const shadowRRect = canvasKit.RRectXY(
             shadowRect,
-            CORNER_RADIUS,
-            CORNER_RADIUS,
+            scaledCornerRadius,
+            scaledCornerRadius,
         )
         ctx.drawRRect(shadowRRect, shadowPaint)
 
@@ -155,8 +192,8 @@ export class StickyNote extends Widget {
         return {
             x: TEXT_PADDING,
             y: TEXT_PADDING,
-            width: this._width - TEXT_PADDING * 2,
-            height: this._height - TEXT_PADDING * 2,
+            width: DEFAULT_WIDTH - TEXT_PADDING * 2,
+            height: DEFAULT_HEIGHT - TEXT_PADDING * 2,
         }
     }
 
@@ -288,18 +325,8 @@ export class StickyNote extends Widget {
         height?: number
     }): boolean {
         const resized = super.resize(opt)
-
-        // if resized, update text bounding
-        if (resized && this._text) {
-            const bounds = this.calcTextBounds()
-            this._text.resize({
-                left: bounds.x,
-                top: bounds.y,
-                width: bounds.width,
-                height: bounds.height,
-            })
-        }
-
+        // we do NOT resize the text child here.
+        // text is always rendered at DEFAULT size and scaled via transform.
         return resized
     }
 
@@ -418,5 +445,9 @@ export class StickyNote extends Widget {
 
     get autoFontSize(): boolean {
         return this._autoFontSize
+    }
+
+    get fontSize(): number {
+        return this._textProperties.fontSize || DEFAULT_FONT_SIZE
     }
 }

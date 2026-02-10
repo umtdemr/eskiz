@@ -338,10 +338,11 @@ export class TextService extends Service {
 
     private onStickyNoteClicked() {
         const bounds = this.stickyNote.calcTextBounds()
+        const contentScale = this.stickyNote.getScaleFactor()
 
         this.textEditor.showEditor({
-            x: bounds.x + this.stickyNote.left,
-            y: bounds.y + this.stickyNote.top,
+            x: bounds.x * contentScale + this.stickyNote.left,
+            y: bounds.y * contentScale + this.stickyNote.top,
             width: bounds.width,
             height: bounds.height,
             fontSize: this.stickyNote.textProperties?.fontSize ?? 18,
@@ -351,6 +352,7 @@ export class TextService extends Service {
             showPlaceholder: false,
             initialText: this.stickyNote.textStr,
             textOps: this.stickyNote?.textProperties?.textOps || [],
+            contentScale,
         })
 
         this.stickyNote.startEditingText()

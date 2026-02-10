@@ -17,6 +17,7 @@ interface EditProps {
     showPlaceholder?: boolean
     initialText?: string
     textOps?: TextOp[]
+    contentScale?: number
 }
 
 export interface TextOp {
@@ -92,7 +93,9 @@ export class TextEditor {
             transform,
         )
         const scale = this.engine.canvas.zoom
-        this._wrapperEl.style.transform = `scale(${scale})`
+        const contentScale = this._editProps.contentScale ?? 1
+        const totalScale = scale * contentScale
+        this._wrapperEl.style.transform = `scale(${totalScale})`
         this._editorContainer.style.height = `${this._editProps.height}px`
         this._wrapperEl.style.width = `${this._editProps.width}px`
         this._wrapperEl.style.height = `${this._editProps.height}px`
