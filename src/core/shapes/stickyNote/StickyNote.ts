@@ -28,9 +28,9 @@ const DEFAULT_FILL_COLOR: RGBA = { r: 255, g: 232, b: 150, a: 1 }
 const TEXT_PADDING = 16
 const CORNER_RADIUS = 12
 
-const SHADOW_BLUR = 20
-const SHADOW_OFFSET_Y = 20
-const SHADOW_COLOR = { r: 0, g: 0, b: 0, a: 0.15 }
+const SHADOW_BLUR = 2
+const SHADOW_OFFSET_Y = 2
+const SHADOW_COLOR = { r: 0, g: 0, b: 0, a: 0.1 }
 
 const MIN_FONT_SIZE = 10
 const MAX_FONT_SIZE = 72
