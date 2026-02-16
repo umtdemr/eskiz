@@ -211,7 +211,7 @@ export function getPartialState(
                 }
                 break
             case 'fontStyle':
-                if (widget instanceof Shape) {
+                if (widget instanceof Shape || widget instanceof StickyNote) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
                         textProperties: widget.textProperties,

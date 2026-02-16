@@ -238,6 +238,11 @@ function getStickyNoteActions(): Action[] {
             type: 'seperator',
         },
         {
+            id: 'fontStyle',
+            tooltip: 'Font style',
+            type: 'fontStyleInput',
+        },
+        {
             id: 'stickyNoteBgColor',
             tooltip: 'Background color',
             type: 'stickyNoteBgColorInput',
