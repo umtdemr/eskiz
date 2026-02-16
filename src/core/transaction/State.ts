@@ -4,6 +4,7 @@ import { TextBox } from '@/core/shapes/text/TextBox'
 import { Rectangle } from '@/core/shapes/Rectangle'
 import { Path } from '@/core/shapes/path/Path'
 import { Line } from '@/core/shapes/line/Line'
+import { StickyNote } from '@/core/shapes/stickyNote/StickyNote'
 
 export type EditingMethods =
     | 'move'
@@ -62,7 +63,7 @@ export function getPartialState(
                 })
                 break
             case 'text':
-                if (widget instanceof Shape) {
+                if (widget instanceof Shape || widget instanceof StickyNote) {
                     updateState({
                         properties: {
                             textProperties: widget.textProperties,
