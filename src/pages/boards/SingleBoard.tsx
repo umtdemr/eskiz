@@ -39,6 +39,7 @@ export default function SingleBoard() {
     const engineRef = useRef<Engine | null>(null)
     const [connectionError, setConnectionError] = useState<WsErrorMessage>(null)
     const disconnectionToastId = useRef('')
+    const whiteboardRef = useRef<HTMLDivElement>(null)
 
     const token = useBoundStore(useShallow((state) => state.token))
     const userData = useBoundStore(useShallow((state) => state.userData))
@@ -57,6 +58,18 @@ export default function SingleBoard() {
     )
 
     const navigate = useNavigate()
+
+    useEffect(() => {
+        const el = whiteboardRef.current
+        if (!el) return
+        const handler = (e: WheelEvent) => {
+            if (e.ctrlKey || e.metaKey) {
+                e.preventDefault()
+            }
+        }
+        el.addEventListener('wheel', handler, { passive: false })
+        return () => el.removeEventListener('wheel', handler)
+    }, [])
 
     const boardQuery = useQuery({
         queryKey: ['board', slugId, token],
@@ -243,7 +256,7 @@ export default function SingleBoard() {
 
     return (
         <TooltipProvider delayDuration={0}>
-            <div className="whiteboard">
+            <div className="whiteboard" ref={whiteboardRef}>
                 <div className="canvas_wrapper">
                     <canvas id="board"></canvas>
                 </div>
