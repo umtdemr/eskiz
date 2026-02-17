@@ -22,73 +22,73 @@ export const STICKY_NOTE_COLORS: StickyNoteColor[] = [
     },
     {
         name: 'Yellow',
-        rgba: { r: 253, g: 224, b: 71, a: 1 },
-        color: 'rgb(253, 224, 71)',
+        rgba: { r: 254, g: 240, b: 138, a: 1 }, // yellow-200
+        color: 'rgb(254, 240, 138)',
     },
     {
         name: 'Dark Yellow',
-        rgba: { r: 234, g: 179, b: 8, a: 1 },
-        color: 'rgb(234, 179, 8)',
+        rgba: { r: 253, g: 230, b: 138, a: 1 }, // amber-200
+        color: 'rgb(253, 230, 138)',
     },
     {
         name: 'Orange',
-        rgba: { r: 251, g: 146, b: 60, a: 1 },
-        color: 'rgb(251, 146, 60)',
+        rgba: { r: 254, g: 215, b: 170, a: 1 }, // orange-200
+        color: 'rgb(254, 215, 170)',
     },
     {
         name: 'Light Blue',
-        rgba: { r: 186, g: 230, b: 253, a: 1 },
-        color: 'rgb(186, 230, 253)',
+        rgba: { r: 224, g: 242, b: 254, a: 1 }, // sky-100
+        color: 'rgb(224, 242, 254)',
     },
     {
         name: 'Blue',
-        rgba: { r: 96, g: 165, b: 250, a: 1 },
-        color: 'rgb(96, 165, 250)',
+        rgba: { r: 186, g: 230, b: 253, a: 1 }, // sky-200
+        color: 'rgb(186, 230, 253)',
     },
     {
         name: 'Dark Blue',
-        rgba: { r: 29, g: 78, b: 216, a: 1 },
-        color: 'rgb(29, 78, 216)',
+        rgba: { r: 147, g: 197, b: 253, a: 1 }, // blue-300
+        color: 'rgb(147, 197, 253)',
     },
     {
         name: 'Cyan',
-        rgba: { r: 103, g: 232, b: 249, a: 1 },
-        color: 'rgb(103, 232, 249)',
+        rgba: { r: 165, g: 243, b: 252, a: 1 }, // cyan-200
+        color: 'rgb(165, 243, 252)',
     },
     {
         name: 'Light Green',
-        rgba: { r: 74, g: 222, b: 128, a: 1 },
-        color: 'rgb(74, 222, 128)',
+        rgba: { r: 187, g: 247, b: 208, a: 1 }, // green-200
+        color: 'rgb(187, 247, 208)',
     },
     {
         name: 'Green',
-        rgba: { r: 22, g: 163, b: 74, a: 1 },
-        color: 'rgb(22, 163, 74)',
+        rgba: { r: 134, g: 239, b: 172, a: 1 }, // green-300
+        color: 'rgb(134, 239, 172)',
     },
     {
         name: 'Dark Green',
-        rgba: { r: 20, g: 83, b: 45, a: 1 },
-        color: 'rgb(20, 83, 45)',
+        rgba: { r: 110, g: 231, b: 183, a: 1 }, // emerald-300
+        color: 'rgb(110, 231, 183)',
     },
     {
         name: 'Light Rose',
-        rgba: { r: 251, g: 113, b: 133, a: 1 },
-        color: 'rgb(251, 113, 133)',
+        rgba: { r: 254, g: 205, b: 211, a: 1 }, // rose-200
+        color: 'rgb(254, 205, 211)',
     },
     {
         name: 'Rose',
-        rgba: { r: 244, g: 63, b: 94, a: 1 },
-        color: 'rgb(244, 63, 94)',
+        rgba: { r: 253, g: 164, b: 175, a: 1 }, // rose-300
+        color: 'rgb(253, 164, 175)',
     },
     {
         name: 'Dark Rose',
-        rgba: { r: 159, g: 18, b: 57, a: 1 },
-        color: 'rgb(159, 18, 57)',
+        rgba: { r: 251, g: 113, b: 133, a: 1 }, // rose-400
+        color: 'rgb(251, 113, 133)',
     },
     {
         name: 'Gray',
-        rgba: { r: 243, g: 244, b: 246, a: 1 },
-        color: 'rgb(209, 213, 219)',
+        rgba: { r: 243, g: 244, b: 246, a: 1 }, // gray-100
+        color: 'rgb(243, 244, 246)',
     },
     {
         name: 'Black',
