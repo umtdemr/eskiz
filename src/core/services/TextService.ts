@@ -339,6 +339,18 @@ export class TextService extends Service {
     private onStickyNoteClicked() {
         const bounds = this.stickyNote.calcTextBounds()
         const contentScale = this.stickyNote.getScaleFactor()
+        const textColor = this.stickyNote.getTextColor()
+
+        // map text ops to include the correct text color for the editor overlay
+        const textOps = (this.stickyNote?.textProperties?.textOps || []).map(
+            (op) => ({
+                ...op,
+                attributes: {
+                    ...op.attributes,
+                    color: textColor,
+                },
+            }),
+        )
 
         this.textEditor.showEditor({
             x: bounds.x * contentScale + this.stickyNote.left,
@@ -351,7 +363,7 @@ export class TextService extends Service {
             for: 'stickyNote',
             showPlaceholder: false,
             initialText: this.stickyNote.textStr,
-            textOps: this.stickyNote?.textProperties?.textOps || [],
+            textOps,
             contentScale,
         })
 

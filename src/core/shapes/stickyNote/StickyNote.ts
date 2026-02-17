@@ -9,7 +9,7 @@ import {
 } from '@/core/shapes/text/ShapeText'
 import { TextOp } from '@/core/textEditor/TextEditor'
 import { FontStyleType } from '@/helpers/Constant'
-import { RGBA } from '@/core/shapes/Color'
+import { RGBA, isDarkColor } from '@/core/shapes/Color'
 
 export interface StickyNoteProps extends WidgetProps {
     properties: StickyNoteProperties
@@ -186,6 +186,7 @@ export class StickyNote extends Widget {
         )
 
         this.addChildren(this._text)
+        this.syncTextColor()
     }
 
     calcTextBounds(): { x: number; y: number; width: number; height: number } {
@@ -267,11 +268,24 @@ export class StickyNote extends Widget {
 
     changeBgColor(newColor: RGBA): boolean {
         this._fillColor = newColor
+        this.syncTextColor()
         return true
     }
 
     canChangeTextColor(): boolean {
         return false
+    }
+
+    getTextColor(): string {
+        return isDarkColor(this._fillColor) ? '#ffffff' : '#000000'
+    }
+
+    private syncTextColor() {
+        if (!this._text) return
+        const color = isDarkColor(this._fillColor)
+            ? canvasKit.Color(255, 255, 255, 1)
+            : canvasKit.Color(0, 0, 0, 1)
+        this._text.setDefaultTextColor(color)
     }
 
     canChangeFontSize(): boolean {
@@ -410,6 +424,7 @@ export class StickyNote extends Widget {
 
         if (json.properties?.fillColor) {
             this._fillColor = json.properties.fillColor as RGBA
+            this.syncTextColor()
         }
 
         if ((json.width || json.height) && this._text) {

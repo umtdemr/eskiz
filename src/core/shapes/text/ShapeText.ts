@@ -38,6 +38,7 @@ export class ShapeText extends Widget {
     private _textAlign: TEXT_ALIGN
     private _debug: boolean = false
     private _isTextClipped: boolean = false
+    private _defaultTextColor: Float32Array | null = null
 
     constructor(props: ShapeTextProps, engine: Engine) {
         super(WidgetType.SHAPE_TEXT, props, engine)
@@ -94,7 +95,7 @@ export class ShapeText extends Widget {
 
             const color = op.attributes?.color
                 ? canvasKit.parseColorString(op.attributes.color as string)
-                : canvasKit.Color(0, 0, 0, 1)
+                : (this._defaultTextColor ?? canvasKit.Color(0, 0, 0, 1))
             const style = new canvasKit.TextStyle({
                 color,
                 fontFamilies: ['Open-Sans'],
@@ -294,6 +295,11 @@ export class ShapeText extends Widget {
                 color: color,
             },
         }))
+        this.createOrUpdateParagraph()
+    }
+
+    setDefaultTextColor(color: Float32Array) {
+        this._defaultTextColor = color
         this.createOrUpdateParagraph()
     }
 
