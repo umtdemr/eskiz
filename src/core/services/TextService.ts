@@ -4,7 +4,7 @@ import { Service } from '@/core/services/Service'
 import { MainModeChangedState, ToolService } from '@/core/services/ToolService'
 import { CursorService } from '@/core/services/CursorService.ts'
 import { CURSOR_OWNERS, ACTION_MODES } from '@/helpers/Constant'
-import { TextBox } from '@/core/shapes/text/TextBox'
+import { TextBox, TEXTBOX_MAX_CHARS } from '@/core/shapes/text/TextBox'
 import {
     SelectionChangedProps,
     SelectionService,
@@ -22,7 +22,11 @@ import { WidgetsService } from './WidgetsService'
 import { AddWidgetPayload } from '@/types/Websocket'
 import { CursorType, TextAlign, TextSessionType } from '@/core/constants.ts'
 import { CreationHistoryEntry } from '@/core/history/HistoryManager'
-import { StickyNote } from '@/core/shapes/stickyNote/StickyNote'
+import {
+    StickyNote,
+    STICKY_NOTE_MAX_CHARS,
+} from '@/core/shapes/stickyNote/StickyNote'
+import { SHAPE_MAX_CHARS } from '@/core/shapes/Shape'
 
 export class TextService extends Service {
     private mouseController: MouseController
@@ -119,6 +123,7 @@ export class TextService extends Service {
             for: TextSessionType.TEXTBOX,
             textAlign: TextAlign.LEFT,
             showPlaceholder: true,
+            maxLength: TEXTBOX_MAX_CHARS,
         })
 
         this.textBox = textbox
@@ -294,6 +299,7 @@ export class TextService extends Service {
             showPlaceholder: false,
             initialText: this.shape.textStr,
             textOps: this.shape?.textProperties?.textOps || [],
+            maxLength: SHAPE_MAX_CHARS,
         })
 
         this.shape.startEditingText()
@@ -316,6 +322,7 @@ export class TextService extends Service {
             lineHeight: this.textBox.lineHeight,
             for: 'textBox',
             textAlign: 'left',
+            maxLength: TEXTBOX_MAX_CHARS,
         })
 
         this.activeSession = 'textBox'
@@ -365,6 +372,7 @@ export class TextService extends Service {
             initialText: this.stickyNote.textStr,
             textOps,
             contentScale,
+            maxLength: STICKY_NOTE_MAX_CHARS,
         })
 
         this.stickyNote.startEditingText()

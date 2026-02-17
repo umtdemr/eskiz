@@ -28,11 +28,13 @@ export const DEFAULT_FILL_COLOR: RGBA = { r: 255, g: 232, b: 150, a: 1 }
 const TEXT_PADDING = 16
 const CORNER_RADIUS = 12
 
+export const STICKY_NOTE_MAX_CHARS = 1500
+
 const SHADOW_BLUR = 2
 const SHADOW_OFFSET_Y = 2
 const SHADOW_COLOR = { r: 0, g: 0, b: 0, a: 0.1 }
 
-const MIN_FONT_SIZE = 10
+const MIN_FONT_SIZE = 8
 const MAX_FONT_SIZE = 72
 const DEFAULT_FONT_SIZE = 18
 
@@ -216,6 +218,11 @@ export class StickyNote extends Widget {
 
     updateText(text: string, textOps: TextOp[]) {
         if (!this._text) return
+
+        // enforce character limit
+        const trimmed = text.replace(/\n$/, '')
+        if (trimmed.length > STICKY_NOTE_MAX_CHARS) return
+
         this._text.setTextOps(text, textOps)
         this._textProperties.text = text
         this._textProperties.textOps = textOps

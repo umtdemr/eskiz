@@ -18,6 +18,7 @@ interface EditProps {
     initialText?: string
     textOps?: TextOp[]
     contentScale?: number
+    maxLength?: number
 }
 
 export interface TextOp {
@@ -37,6 +38,7 @@ export class TextEditor {
     private _quill: Quill
     private _isShowing = false
     private _editProps: EditProps
+    private _maxLength: number | undefined
     private _initialStylesHTML: [HTMLElement, string, string][] = []
 
     textChanged = new Signal<TextChangedSignal>()
@@ -126,6 +128,15 @@ export class TextEditor {
     }
 
     private onTextChange() {
+        // enforce character limit
+        if (
+            this._maxLength !== undefined &&
+            this._quill.getText().length - 1 > this._maxLength
+        ) {
+            this._quill.history.undo()
+            return
+        }
+
         this.textChanged.dispatch({
             text: this._quill.getText(),
             textOps: this.convertDeltaToAttributeMap(this._quill.getContents()),
@@ -228,6 +239,7 @@ export class TextEditor {
     showEditor(props: EditProps) {
         this._editProps = props
         this._editProps.showPlaceholder = !!props.showPlaceholder
+        this._maxLength = props.maxLength
 
         this.addStyles()
 

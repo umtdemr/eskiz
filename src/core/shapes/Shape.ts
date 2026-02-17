@@ -34,6 +34,8 @@ export interface ShapeProperties {
 
 export type ShapeType = (typeof ShapeTypeConst)[keyof typeof ShapeTypeConst]
 
+export const SHAPE_MAX_CHARS = 3000
+
 const initialTextProps: ShapeTextConstructProps = {
     text: '',
     fontSize: 14,
@@ -181,6 +183,11 @@ export abstract class Shape extends Widget {
 
     updateText(text: string, textOps: TextOp[]) {
         if (!this._text) return
+
+        // enforce character limit
+        const trimmed = text.replace(/\n$/, '')
+        if (trimmed.length > SHAPE_MAX_CHARS) return
+
         this._text.setTextOps(text, textOps)
         this._textProperties.text = text
         this._textProperties.textOps = textOps
