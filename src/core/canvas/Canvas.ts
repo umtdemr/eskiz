@@ -147,7 +147,7 @@ export class Canvas {
         const gridSize2 = gridSize1 / 10
 
         // Constant base alpha
-        const baseAlpha = 0.3
+        const baseAlpha = 0.18
 
         // Calculate alpha for smooth transition
         // As we zoom out (fraction 1 -> 0), gridSize2 (small) fades out, gridSize1 (large) fades in
