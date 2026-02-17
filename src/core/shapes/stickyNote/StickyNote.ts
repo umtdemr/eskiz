@@ -223,9 +223,15 @@ export class StickyNote extends Widget {
         const trimmed = text.replace(/\n$/, '')
         if (trimmed.length > STICKY_NOTE_MAX_CHARS) return
 
-        this._text.setTextOps(text, textOps)
+        // strip color from textOps
+        const cleanOps = textOps.map((op) => {
+            const { color, ...rest } = op.attributes || {}
+            return { ...op, attributes: rest }
+        })
+
+        this._text.setTextOps(text, cleanOps)
         this._textProperties.text = text
-        this._textProperties.textOps = textOps
+        this._textProperties.textOps = cleanOps
 
         // Auto-adjust font size if enabled
         if (this._autoFontSize && text.trim().length > 0) {
@@ -276,6 +282,7 @@ export class StickyNote extends Widget {
     changeBgColor(newColor: RGBA): boolean {
         this._fillColor = newColor
         this.syncTextColor()
+        this._engine.textEditor.changeTextColor(this.getTextColor())
         return true
     }
 

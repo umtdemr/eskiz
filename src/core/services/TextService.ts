@@ -373,6 +373,7 @@ export class TextService extends Service {
             textOps,
             contentScale,
             maxLength: STICKY_NOTE_MAX_CHARS,
+            textColor,
         })
 
         this.stickyNote.startEditingText()

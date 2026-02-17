@@ -19,6 +19,7 @@ interface EditProps {
     textOps?: TextOp[]
     contentScale?: number
     maxLength?: number
+    textColor?: string
 }
 
 export interface TextOp {
@@ -255,6 +256,11 @@ export class TextEditor {
         }
 
         this._quill.focus()
+
+        if (props.textColor) {
+            this._quill.format('color', props.textColor)
+        }
+
         this._isShowing = true
 
         this.initalizeListeners()
@@ -308,6 +314,15 @@ export class TextEditor {
     changeFontSize(fontSize: number) {
         this._editorContainer.style.fontSize = `${fontSize}px`
         this._quill.root.style.lineHeight = `${this._editProps.lineHeight * fontSize}px`
+    }
+
+    changeTextColor(color: string) {
+        if (!this._isShowing) return
+        const length = this._quill.getLength()
+        // update the text color
+        this._quill.formatText(0, length, 'color', color, 'silent')
+        // update the current text color
+        this._quill.format('color', color)
     }
 
     get isActive(): boolean {
