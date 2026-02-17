@@ -22,7 +22,9 @@ export interface TextBoxProperties {
     fillColor?: RGBA
 }
 
-export type TEXT_ALIGN = typeof TextAlign[keyof typeof TextAlign]
+export type TEXT_ALIGN = (typeof TextAlign)[keyof typeof TextAlign]
+
+export const TEXTBOX_MAX_CHARS = 3000
 
 export class TextBox extends Widget {
     private _text: string
@@ -201,6 +203,10 @@ export class TextBox extends Widget {
     }
 
     setTextOps(text: string, ops: TextOp[]) {
+        // enforce character limit
+        const trimmed = text.replace(/\n$/, '')
+        if (trimmed.length > TEXTBOX_MAX_CHARS) return
+
         this._text = text
         this._textOps = ops
         this.createOrUpdateParagraph()
@@ -364,15 +370,18 @@ export class TextBox extends Widget {
 
     static loadFromJson(json: WsWidget, engine: Engine): TextBox {
         const properties = json.properties as unknown as TextBoxProperties
-        return new TextBox({
-            x: json.x,
-            y: json.y,
-            width: json.width,
-            properties,
-            uuid: json.uuid,
-            z_index: json.z_index,
-            parent_widget_id: json.parent_widget_id,
-            is_locked: json.is_locked,
-        }, engine)
+        return new TextBox(
+            {
+                x: json.x,
+                y: json.y,
+                width: json.width,
+                properties,
+                uuid: json.uuid,
+                z_index: json.z_index,
+                parent_widget_id: json.parent_widget_id,
+                is_locked: json.is_locked,
+            },
+            engine,
+        )
     }
 }

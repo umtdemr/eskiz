@@ -9,6 +9,7 @@ export const WidgetType = {
     LINE: 'line',
     MAGNET_CIRCLE: 'magnetCircle',
     IMAGE: 'image',
+    STICKY_NOTE: 'stickyNote',
 } as const
 
 export const ShapeType = {
@@ -46,6 +47,7 @@ export const CursorType = {
     VERTICAL_RESIZE: 'vertical-resize',
     SCALE_RESIZE_LEFT: 'scale-resize-left',
     SCALE_RESIZE_RIGHT: 'scale-resize-right',
+    STICKY_NOTE: 'sticky-note',
 } as const
 
 export const TextAlign = {
@@ -57,6 +59,7 @@ export const TextAlign = {
 export const TextSessionType = {
     TEXTBOX: 'textBox',
     SHAPE_TEXT: 'shapeText',
+    STICKY_NOTE: 'stickyNote',
 } as const
 
 export const BoardGridType = {
@@ -67,4 +70,8 @@ export const BoardGridType = {
 
 export const ImageType = {
     IMAGE: 'image',
+} as const
+
+export const StickyNoteType = {
+    STICKY_NOTE: 'stickyNote',
 } as const

@@ -1,5 +1,6 @@
 import { RGBA } from '../shapes/Color'
 import { Shape } from '../shapes/Shape'
+import { StickyNote } from '../shapes/stickyNote/StickyNote'
 import { TextBox } from '../shapes/text/TextBox'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
@@ -28,7 +29,12 @@ export class ChangeBgColor extends Command {
 
         const color = ctx.params?.color as RGBA
         const widget = ctx.selectionService.selected[0]
-        if (!(widget instanceof Shape) && !(widget instanceof TextBox)) return
+        if (
+            !(widget instanceof Shape) &&
+            !(widget instanceof TextBox) &&
+            !(widget instanceof StickyNote)
+        )
+            return
 
         const editTable = new Map<Widget, EditingMethods[]>()
         editTable.set(ctx.selectionService.selected[0], ['backgroundColor'])

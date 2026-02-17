@@ -36,6 +36,8 @@ import { ImageLoadingService } from '../services/ImageLoadingService'
 import { ImageUploadService } from '@/core/services/ImageUploadService'
 import { TextureManager } from '../services/TextureManager'
 
+import { StickyNoteToolService } from '../services/StickyNoteToolService'
+
 export type CanvasMouseEvent = {
     e: MouseEvent
     pointer: Point
@@ -236,6 +238,15 @@ export class Engine extends Emitter<EngineEventsMap> {
         this.serviceManager.register(
             'imageUpload',
             new ImageUploadService(this),
+        )
+        this.serviceManager.register(
+            'stickyNoteTool',
+            new StickyNoteToolService(
+                this,
+                this._mouseController,
+                toolService,
+                selectionService,
+            ),
         )
     }
 

@@ -13,6 +13,7 @@ import {
     WidgetType as WidgetTypeConst,
     LineType as LineTypeConst,
     ImageType as ImageTypeConst,
+    StickyNoteType as StickyNoteTypeConst,
 } from '@/core/constants.ts'
 
 export type WidgetType = (typeof WidgetTypeConst)[keyof typeof WidgetTypeConst]
@@ -23,6 +24,7 @@ export type DbWidgetType =
     | typeof WidgetTypeConst.PATH
     | typeof WidgetTypeConst.LINE
     | typeof WidgetTypeConst.IMAGE
+    | typeof WidgetTypeConst.STICKY_NOTE
 
 export type SubType =
     | (typeof ShapeTypeConst)[keyof typeof ShapeTypeConst]
@@ -30,6 +32,7 @@ export type SubType =
     | typeof PathTypeConst.PEN
     | typeof LineTypeConst.LINE
     | typeof ImageTypeConst.IMAGE
+    | typeof StickyNoteTypeConst.STICKY_NOTE
 
 export type WidgetFullType = `${DbWidgetType}_${SubType}`
 

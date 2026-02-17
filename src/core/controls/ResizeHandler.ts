@@ -360,9 +360,11 @@ export class ResizeHandler {
         }
 
         // if shift is pressed, need to scale equally
-        // for images, we always want to scale equally
+        // for images and sticky notes, we always want to scale equally
         const shouldLockAspectRatio =
-            (data.e.shiftKey || this.shape.widgetType === WidgetType.IMAGE) &&
+            (data.e.shiftKey ||
+                this.shape.widgetType === WidgetType.IMAGE ||
+                this.shape.widgetType === WidgetType.STICKY_NOTE) &&
             initial.aspectRatio
 
         if (shouldLockAspectRatio) {

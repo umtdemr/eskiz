@@ -3,6 +3,7 @@ import { StateCreator } from 'zustand'
 export type ActiveSubtoolbarDropdown =
     | 'shapeBorderColor'
     | 'shapeBgColor'
+    | 'stickyNoteBgColor'
     | 'fontSize'
     | 'textColor'
     | 'highlightColor'

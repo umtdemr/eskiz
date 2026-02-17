@@ -12,6 +12,7 @@ export interface Action {
         | 'btnAction'
         | 'shapeBorderColorInput'
         | 'shapeBgColorInput'
+        | 'stickyNoteBgColorInput'
         | 'textColorInput'
         | 'lineColorInput'
         | 'highlightColorInput'
@@ -228,6 +229,27 @@ function getLineActions(): Action[] {
     ]
 }
 
+// actions for sticky notes
+function getStickyNoteActions(): Action[] {
+    return [
+        ...getCommonActions(),
+        {
+            id: 'seperator1',
+            type: 'seperator',
+        },
+        {
+            id: 'fontStyle',
+            tooltip: 'Font style',
+            type: 'fontStyleInput',
+        },
+        {
+            id: 'stickyNoteBgColor',
+            tooltip: 'Background color',
+            type: 'stickyNoteBgColorInput',
+        },
+    ]
+}
+
 // actions for locked widgets
 function getLockedActions(): Action[] {
     return [
@@ -268,6 +290,9 @@ export function generateActions(engine: Engine): Action[] {
             break
         case WidgetType.LINE:
             actions.push(...getLineActions())
+            break
+        case WidgetType.STICKY_NOTE:
+            actions.push(...getStickyNoteActions())
             break
         default:
             actions.push(...getCommonActions())

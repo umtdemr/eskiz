@@ -3,7 +3,7 @@ import { Engine } from '@/core/engine/Engine'
 import { Signal } from '@/core/signal/Signal'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
 
-export type TextEditingSession = 'textBox' | 'shapeText'
+export type TextEditingSession = 'textBox' | 'shapeText' | 'stickyNote'
 
 interface EditProps {
     x: number
@@ -17,6 +17,9 @@ interface EditProps {
     showPlaceholder?: boolean
     initialText?: string
     textOps?: TextOp[]
+    contentScale?: number
+    maxLength?: number
+    textColor?: string
 }
 
 export interface TextOp {
@@ -36,6 +39,7 @@ export class TextEditor {
     private _quill: Quill
     private _isShowing = false
     private _editProps: EditProps
+    private _maxLength: number | undefined
     private _initialStylesHTML: [HTMLElement, string, string][] = []
 
     textChanged = new Signal<TextChangedSignal>()
@@ -92,7 +96,9 @@ export class TextEditor {
             transform,
         )
         const scale = this.engine.canvas.zoom
-        this._wrapperEl.style.transform = `scale(${scale})`
+        const contentScale = this._editProps.contentScale ?? 1
+        const totalScale = scale * contentScale
+        this._wrapperEl.style.transform = `scale(${totalScale})`
         this._editorContainer.style.height = `${this._editProps.height}px`
         this._wrapperEl.style.width = `${this._editProps.width}px`
         this._wrapperEl.style.height = `${this._editProps.height}px`
@@ -102,6 +108,7 @@ export class TextEditor {
             this._wrapperEl.style.top = `${transformedPosition.y - (this._editProps.height * scale) / 2}px`
             this._quill.root.style.height = `${this._editProps.height}px`
         } else {
+            // shapeText and stickyNote use top-left positioning
             this._wrapperEl.style.left = `${transformedPosition.x}px`
             this._wrapperEl.style.top = `${transformedPosition.y}px`
         }
@@ -122,6 +129,15 @@ export class TextEditor {
     }
 
     private onTextChange() {
+        // enforce character limit
+        if (
+            this._maxLength !== undefined &&
+            this._quill.getText().length - 1 > this._maxLength
+        ) {
+            this._quill.history.undo()
+            return
+        }
+
         this.textChanged.dispatch({
             text: this._quill.getText(),
             textOps: this.convertDeltaToAttributeMap(this._quill.getContents()),
@@ -177,6 +193,29 @@ export class TextEditor {
             this.addStyle(this._quill.root, 'height', 'auto')
         }
 
+        if (this._editProps.for === 'stickyNote') {
+            this.addStyle(
+                this._editorContainer,
+                'line-height',
+                `${this._editProps.height}px`,
+            )
+            this.addStyle(this._quill.root, 'display', 'inline-block')
+            this.addStyle(
+                this._quill.root,
+                'width',
+                `${this._editProps.width}px`,
+            )
+            this.addStyle(this._quill.root, 'vertical-align', 'middle')
+            this.addStyle(this._quill.root, 'overflow-wrap', 'break-word')
+            this.addStyle(this._quill.root, 'white-space', 'pre-wrap')
+            this.addStyle(
+                this._quill.root,
+                'line-height',
+                `${this._editProps.lineHeight * this._editProps.fontSize}px`,
+            )
+            this.addStyle(this._quill.root, 'height', 'auto')
+        }
+
         if (!this._editProps.showPlaceholder) {
             this._quill.root.classList.add('disable-placeholder')
         }
@@ -201,6 +240,7 @@ export class TextEditor {
     showEditor(props: EditProps) {
         this._editProps = props
         this._editProps.showPlaceholder = !!props.showPlaceholder
+        this._maxLength = props.maxLength
 
         this.addStyles()
 
@@ -216,6 +256,11 @@ export class TextEditor {
         }
 
         this._quill.focus()
+
+        if (props.textColor) {
+            this._quill.format('color', props.textColor)
+        }
+
         this._isShowing = true
 
         this.initalizeListeners()
@@ -269,6 +314,15 @@ export class TextEditor {
     changeFontSize(fontSize: number) {
         this._editorContainer.style.fontSize = `${fontSize}px`
         this._quill.root.style.lineHeight = `${this._editProps.lineHeight * fontSize}px`
+    }
+
+    changeTextColor(color: string) {
+        if (!this._isShowing) return
+        const length = this._quill.getLength()
+        // update the text color
+        this._quill.formatText(0, length, 'color', color, 'silent')
+        // update the current text color
+        this._quill.format('color', color)
     }
 
     get isActive(): boolean {

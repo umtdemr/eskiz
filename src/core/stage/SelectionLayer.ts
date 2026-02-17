@@ -205,10 +205,11 @@ export class SelectionLayer extends Layer {
             this.addChildren(handle)
         }
 
-
-
-        // do not show edge controls for images
-        if (widgets[0].widgetType === WidgetType.IMAGE) {
+        // do not show edge controls for images and sticky notes
+        if (
+            widgets[0].widgetType === WidgetType.IMAGE ||
+            widgets[0].widgetType === WidgetType.STICKY_NOTE
+        ) {
             return
         }
 

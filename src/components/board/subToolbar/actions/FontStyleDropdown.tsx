@@ -10,6 +10,7 @@ import { TextEditor } from '@/core/textEditor/TextEditor'
 import { FontStyleType } from '@/helpers/Constant'
 import { TextBox } from '@/core/shapes/text/TextBox'
 import { Shape } from '@/core/shapes/Shape'
+import { StickyNote } from '@/core/shapes/stickyNote/StickyNote'
 
 export interface FontStyleDropdownProps {
     engine: Engine
@@ -37,9 +38,11 @@ export function FontStyleDropdown({ engine }: FontStyleDropdownProps) {
         const firstWidget = widgets[0]
         let currentValue = false
 
-        if (firstWidget instanceof TextBox) {
-            currentValue = firstWidget.hasFontStyle(style)
-        } else if (firstWidget instanceof Shape) {
+        if (
+            firstWidget instanceof TextBox ||
+            firstWidget instanceof Shape ||
+            firstWidget instanceof StickyNote
+        ) {
             currentValue = firstWidget.hasFontStyle(style)
         }
 

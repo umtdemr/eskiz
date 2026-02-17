@@ -4,6 +4,7 @@ import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
 import { Command, CommandCtx, Commands } from './Command'
 import { FontStyleType } from '@/helpers/Constant'
+import { StickyNote } from '../shapes/stickyNote/StickyNote'
 
 export class ChangeFontStyle extends Command {
     constructor(name: Commands) {
@@ -34,11 +35,14 @@ export class ChangeFontStyle extends Command {
 
             let changed = false
 
-            if (widget instanceof TextBox) {
-                changed = widget.changeFontStyle(style, value)
-            } else if (widget instanceof Shape) {
+            if (
+                widget instanceof TextBox ||
+                widget instanceof Shape ||
+                widget instanceof StickyNote
+            ) {
                 changed = widget.changeFontStyle(style, value)
             }
+            console.log(changed)
 
             if (changed) {
                 affectedWidgets.push(widget)

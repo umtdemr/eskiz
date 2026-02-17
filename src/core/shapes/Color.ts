@@ -35,3 +35,18 @@ export class ColorConverter {
         return value >= 0 && value <= 1
     }
 }
+
+/**
+ * WCAG
+ */
+export function isDarkColor(color: RGBA): boolean {
+    const toLinear = (c: number) => {
+        const s = c / 255
+        return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4)
+    }
+    const luminance =
+        0.2126 * toLinear(color.r) +
+        0.7152 * toLinear(color.g) +
+        0.0722 * toLinear(color.b)
+    return luminance < 0.12
+}
