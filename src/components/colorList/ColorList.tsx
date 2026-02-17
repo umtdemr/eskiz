@@ -2,7 +2,6 @@ import toast from 'react-hot-toast'
 import {
     Tooltip,
     TooltipContent,
-    TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { RGBA } from '@/core/shapes/Color'
@@ -69,7 +68,7 @@ export function ColorList({
                 className="grid gap-2 flex-wrap"
                 style={{ gridTemplateColumns: `repeat(${perColumn}, 1fr)` }}
             >
-                <TooltipProvider>
+                <>
                     {!shouldHideTransparentColor && (
                         <Tooltip>
                             <TooltipTrigger className="flex justify-center">
@@ -143,7 +142,7 @@ export function ColorList({
                             <p>Add a new color</p>
                         </TooltipContent>
                     </Tooltip>
-                </TooltipProvider>
+                </>
             </div>
         </>
     )

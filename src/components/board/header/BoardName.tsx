@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button.tsx'
 import {
     Tooltip,
     TooltipContent,
-    TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { getTextDimension } from '@/helpers/TextHelpers.ts'
@@ -125,83 +124,75 @@ export function BoardName({ engine }: { engine: Engine }) {
 
     return (
         <div className="flex px-5 py-1 rounded-lg gap-1 items-center select-none bg-white shadow">
-            <TooltipProvider>
+            <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-base font-bold"
+                        disabled={isDisconnected}
+                    >
+                        <Link to={'/boards'}>WB</Link>
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" sideOffset={10}>
+                    Home
+                </TooltipContent>
+            </Tooltip>
+
+            {board.owner_id === user.id && !isDisconnected ? (
                 <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
+                            className={clsx('text-sm max-w-[300px]', {
+                                'border-2 border-solid border-blue-400':
+                                    isEditing,
+                            })}
                             size="sm"
-                            className="text-base font-bold"
-                            disabled={isDisconnected}
+                            disabled={isEditingDisabled}
+                            onClick={nameBtnClickHandler}
                         >
-                            <Link to={'/boards'}>WB</Link>
+                            {isEditing ? (
+                                <input
+                                    value={value}
+                                    onChange={changeNameHandler}
+                                    onBlur={inputOnBlurHandler}
+                                    onKeyDown={inputOnKeyDownHandler}
+                                    ref={inputRef}
+                                    className="outline-none"
+                                    autoFocus
+                                />
+                            ) : (
+                                <span className="overflow-hidden overflow-ellipsis">
+                                    {board.name}
+                                </span>
+                            )}
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent side="bottom" sideOffset={10}>
-                        Home
+                        {isEditing ? 'Press enter to save' : 'Click to edit'}
                     </TooltipContent>
                 </Tooltip>
-            </TooltipProvider>
-
-            {board.owner_id === user.id && !isDisconnected ? (
-                <TooltipProvider>
-                    <Tooltip delayDuration={0}>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                className={clsx('text-sm max-w-[300px]', {
-                                    'border-2 border-solid border-blue-400':
-                                        isEditing,
-                                })}
-                                size="sm"
-                                disabled={isEditingDisabled}
-                                onClick={nameBtnClickHandler}
-                            >
-                                {isEditing ? (
-                                    <input
-                                        value={value}
-                                        onChange={changeNameHandler}
-                                        onBlur={inputOnBlurHandler}
-                                        onKeyDown={inputOnKeyDownHandler}
-                                        ref={inputRef}
-                                        className="outline-none"
-                                        autoFocus
-                                    />
-                                ) : (
-                                    <span className="overflow-hidden overflow-ellipsis">
-                                        {board.name}
-                                    </span>
-                                )}
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" sideOffset={10}>
-                            {isEditing
-                                ? 'Press enter to save'
-                                : 'Click to edit'}
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
             ) : (
                 <span className="text-sm px-3">{board.name}</span>
             )}
             {board.owner_id === user.id && isEditing && !isDisconnected ? (
-                <TooltipProvider>
-                    <Tooltip delayDuration={0}>
-                        <TooltipTrigger asChild>
-                            <Button
-                                variant="ghost"
-                                size="icon"
-                                className=" h-6 bg-blue-600 text-white hover:text-white rounded-3xl w-6 hover:bg-blue-700"
-                                onClick={saveName}
-                            >
-                                <Check size={48} />
-                            </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom" sideOffset={10}>
-                            Save
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+                <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className=" h-6 bg-blue-600 text-white hover:text-white rounded-3xl w-6 hover:bg-blue-700"
+                            onClick={saveName}
+                        >
+                            <Check size={48} />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" sideOffset={10}>
+                        Save
+                    </TooltipContent>
+                </Tooltip>
             ) : null}
             <BoardSettingsMenu engine={engine} />
         </div>

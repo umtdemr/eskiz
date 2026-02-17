@@ -3,7 +3,6 @@ import { ColorButton } from '@/components/colorButton/ColorButton'
 import {
     Tooltip,
     TooltipContent,
-    TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip'
 import { DEFAULT_FILL_COLOR } from '@/core/shapes/stickyNote/StickyNote'
@@ -107,7 +106,7 @@ export function StickyNoteBgColorDropdown({
     return (
         <div className="absolute bg-white py-2 px-2 top-[60px] left-[50%] shadow-l -translate-x-1/2 rounded-xl shadow-xs select-none w-[200px]">
             <div className="grid grid-cols-4 gap-2 p-1">
-                <TooltipProvider>
+                <>
                     {STICKY_NOTE_COLORS.map((color) => (
                         <Tooltip key={color.name}>
                             <TooltipTrigger className="flex justify-center">
@@ -125,7 +124,7 @@ export function StickyNoteBgColorDropdown({
                             </TooltipContent>
                         </Tooltip>
                     ))}
-                </TooltipProvider>
+                </>
             </div>
         </div>
     )

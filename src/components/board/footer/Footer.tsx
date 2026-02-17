@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button.tsx'
 import {
     Tooltip,
     TooltipContent,
-    TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { Minus, Plus, ZoomIn } from 'lucide-react'
@@ -31,35 +30,28 @@ export default function Footer({ engine }: { engine: Engine }) {
             className="fixed flex gap-1 bottom-5 right-5 px-2 py-1 bg-white"
             style={{ boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)' }}
         >
-            <TooltipProvider>
-                <Tooltip delayDuration={0}>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" className="px-2 py-1">
-                            <Minus />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={'top'}>
-                        <p>Zoom out</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                    <Button variant="ghost" className="px-2 py-1">
+                        <Minus />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'top'}>
+                    <p>Zoom out</p>
+                </TooltipContent>
+            </Tooltip>
             <DropdownMenu>
                 <DropdownMenuTrigger>
-                    <TooltipProvider>
-                        <Tooltip delayDuration={0}>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    className="px-2 py-1 w-11"
-                                >
-                                    {zoom}%
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side={'top'}>
-                                <p>Zoom and navigation</p>
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    <Tooltip delayDuration={0}>
+                        <TooltipTrigger asChild>
+                            <Button variant="ghost" className="px-2 py-1 w-11">
+                                {zoom}%
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side={'top'}>
+                            <p>Zoom and navigation</p>
+                        </TooltipContent>
+                    </Tooltip>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent sideOffset={20} side={'top'}>
                     <DropdownMenuItem onClick={() => engine.setZoom(0.5)}>
@@ -73,18 +65,16 @@ export default function Footer({ engine }: { engine: Engine }) {
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            <TooltipProvider>
-                <Tooltip delayDuration={0}>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" className="px-2 py-1">
-                            <Plus />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={'top'}>
-                        <p>Zoom in</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            <Tooltip delayDuration={0}>
+                <TooltipTrigger asChild>
+                    <Button variant="ghost" className="px-2 py-1">
+                        <Plus />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'top'}>
+                    <p>Zoom in</p>
+                </TooltipContent>
+            </Tooltip>
         </div>
     )
 }

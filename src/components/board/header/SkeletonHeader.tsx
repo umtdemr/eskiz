@@ -2,7 +2,6 @@ import { Skeleton } from '@/components/ui/skeleton.tsx'
 import {
     Tooltip,
     TooltipContent,
-    TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
@@ -13,23 +12,21 @@ export default function SkeletonHeader() {
         <>
             <div className="fixed top-5 left-5" id="header_left">
                 <div className="flex px-5 py-1 rounded-lg gap-2 items-center select-none bg-white shadow">
-                    <TooltipProvider>
-                        <Tooltip delayDuration={0}>
-                            <TooltipTrigger asChild>
-                                <Button
-                                    variant="ghost"
-                                    asChild
-                                    size="sm"
-                                    className="text-base font-bold"
-                                >
-                                    <Link to={'/boards'}>WB</Link>
-                                </Button>
-                            </TooltipTrigger>
-                            <TooltipContent side="bottom" sideOffset={10}>
-                                Home
-                            </TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    <Tooltip delayDuration={0}>
+                        <TooltipTrigger asChild>
+                            <Button
+                                variant="ghost"
+                                asChild
+                                size="sm"
+                                className="text-base font-bold"
+                            >
+                                <Link to={'/boards'}>WB</Link>
+                            </Button>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" sideOffset={10}>
+                            Home
+                        </TooltipContent>
+                    </Tooltip>
                     <div className="block w-[0.5px] h-full bg-zinc-300"></div>
                     <Skeleton className="w-[98.38px] py-2" />
                 </div>

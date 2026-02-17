@@ -29,6 +29,7 @@ import { BoardRetrieveResponse } from '@/types/Board.ts'
 import { getAvatar } from '@/helpers/AuthHelper.ts'
 import { CollaboratorUser } from '@/store/collaborators.ts'
 import { PageService } from '@/core/services/PageService.ts'
+import { TooltipProvider } from '@/components/ui/tooltip'
 
 export default function SingleBoard() {
     const [isInitialized, setIsInitialized] = useState(false)
@@ -241,53 +242,56 @@ export default function SingleBoard() {
     ])
 
     return (
-        <div className="whiteboard">
-            <div className="canvas_wrapper">
-                <canvas id="board"></canvas>
-            </div>
-            {(boardQuery.isPending || !isInitialized) && !connectionError ? (
-                <>
-                    <SkeletonHeader />
-                    <SkeletonToolbar />
-                    <SkeletonFooter />
-                </>
-            ) : null}
-            {boardQuery.isSuccess && isInitialized && !connectionError ? (
-                <>
-                    <Header engine={engineRef.current!} />
-                    {!isDisconnected ? (
-                        <Toolbar engine={engineRef.current!} />
-                    ) : null}
-                    {!isDisconnected ? (
-                        <Subtoolbar engine={engineRef.current!} />
-                    ) : null}
-                    {!isDisconnected ? (
-                        <Footer engine={engineRef.current!} />
-                    ) : null}
-                </>
-            ) : null}
+        <TooltipProvider delayDuration={0}>
+            <div className="whiteboard">
+                <div className="canvas_wrapper">
+                    <canvas id="board"></canvas>
+                </div>
+                {(boardQuery.isPending || !isInitialized) &&
+                !connectionError ? (
+                    <>
+                        <SkeletonHeader />
+                        <SkeletonToolbar />
+                        <SkeletonFooter />
+                    </>
+                ) : null}
+                {boardQuery.isSuccess && isInitialized && !connectionError ? (
+                    <>
+                        <Header engine={engineRef.current!} />
+                        {!isDisconnected ? (
+                            <Toolbar engine={engineRef.current!} />
+                        ) : null}
+                        {!isDisconnected ? (
+                            <Subtoolbar engine={engineRef.current!} />
+                        ) : null}
+                        {!isDisconnected ? (
+                            <Footer engine={engineRef.current!} />
+                        ) : null}
+                    </>
+                ) : null}
 
-            {connectionError && !isDisconnected ? (
-                <Dialog open={true}>
-                    <DialogContent showCloseIcon={false}>
-                        <DialogHeader>
-                            <DialogTitle className="flex gap-2 items-center">
-                                An error occurred
-                                <CircleX color="red" />
-                            </DialogTitle>
-                            <DialogDescription>
-                                Sorry but we are not able to open this board for
-                                you. Please try again later.
-                            </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                            <Link to={'/boards'}>
-                                <Button>Go to boards</Button>
-                            </Link>
-                        </DialogFooter>
-                    </DialogContent>
-                </Dialog>
-            ) : null}
-        </div>
+                {connectionError && !isDisconnected ? (
+                    <Dialog open={true}>
+                        <DialogContent showCloseIcon={false}>
+                            <DialogHeader>
+                                <DialogTitle className="flex gap-2 items-center">
+                                    An error occurred
+                                    <CircleX color="red" />
+                                </DialogTitle>
+                                <DialogDescription>
+                                    Sorry but we are not able to open this board
+                                    for you. Please try again later.
+                                </DialogDescription>
+                            </DialogHeader>
+                            <DialogFooter>
+                                <Link to={'/boards'}>
+                                    <Button>Go to boards</Button>
+                                </Link>
+                            </DialogFooter>
+                        </DialogContent>
+                    </Dialog>
+                ) : null}
+            </div>
+        </TooltipProvider>
     )
 }
