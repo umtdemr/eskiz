@@ -139,9 +139,9 @@
         - [x] Fix browser zoom issue
         - [ ] Line moving when all of them in multi selection
         - [ ] Text editing undo redo
-        - [ ] Wasm delete
+        - [x] Wasm delete
         - [ ] Main color?
-        - [ ] Engine initilization
+        - [x] Engine initilization
         - [ ] Multi delete etc
         - [x] Grid color
         - [ ] Name

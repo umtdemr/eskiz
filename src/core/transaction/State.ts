@@ -66,7 +66,9 @@ export function getPartialState(
                 if (widget instanceof Shape || widget instanceof StickyNote) {
                     updateState({
                         properties: {
-                            textProperties: widget.textProperties,
+                            textProperties: structuredClone(
+                                widget.textProperties,
+                            ),
                         },
                     })
                 }
