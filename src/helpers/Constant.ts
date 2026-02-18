@@ -11,7 +11,7 @@ export const API_ENDPOINTS = {
 
 export const ZOOM_LEVELS = {
     MAX: 4,
-    MIN: 0.1,
+    MIN: 0.01,
 } as const
 
 export const WS_EVENTS = {

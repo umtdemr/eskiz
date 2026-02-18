@@ -14,6 +14,12 @@ import {
 } from '@/components/ui/dropdown-menu.tsx'
 import { Engine } from '@/core/engine/Engine.ts'
 
+const ZOOM_STEPS = [
+    0.01, 0.02, 0.05, 0.08, 0.1, 0.15, 0.2, 0.25, 0.33, 0.5, 0.75, 1, 1.25, 1.5,
+    2, 3, 4,
+]
+const ZOOM_DROPDOWN = [0.25, 0.5, 1, 2]
+
 export default function Footer({ engine }: { engine: Engine }) {
     const [zoom, setZoom] = useState(100)
 
@@ -25,6 +31,26 @@ export default function Footer({ engine }: { engine: Engine }) {
         return () => unsubscribe()
     }, [])
 
+    const handleZoomOut = () => {
+        const currentZoom = zoom / 100
+        for (let i = ZOOM_STEPS.length - 1; i >= 0; i--) {
+            if (ZOOM_STEPS[i] < currentZoom - 0.001) {
+                engine.zoomTo(ZOOM_STEPS[i])
+                return
+            }
+        }
+    }
+
+    const handleZoomIn = () => {
+        const currentZoom = zoom / 100
+        for (let i = 0; i < ZOOM_STEPS.length; i++) {
+            if (ZOOM_STEPS[i] > currentZoom + 0.001) {
+                engine.zoomTo(ZOOM_STEPS[i])
+                return
+            }
+        }
+    }
+
     return (
         <div
             className="fixed flex gap-1 bottom-5 right-5 px-2 py-1 bg-white"
@@ -32,7 +58,11 @@ export default function Footer({ engine }: { engine: Engine }) {
         >
             <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
-                    <Button variant="ghost" className="px-2 py-1">
+                    <Button
+                        variant="ghost"
+                        className="px-2 py-1"
+                        onClick={handleZoomOut}
+                    >
                         <Minus />
                     </Button>
                 </TooltipTrigger>
@@ -54,20 +84,23 @@ export default function Footer({ engine }: { engine: Engine }) {
                     </Tooltip>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent sideOffset={20} side={'top'}>
-                    <DropdownMenuItem onClick={() => engine.setZoom(0.5)}>
-                        <ZoomIn /> 50%
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => engine.setZoom(1)}>
-                        <ZoomIn /> 100%
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => engine.setZoom(2)}>
-                        <ZoomIn /> 200%
-                    </DropdownMenuItem>
+                    {ZOOM_DROPDOWN.map((level) => (
+                        <DropdownMenuItem
+                            key={level}
+                            onClick={() => engine.zoomTo(level)}
+                        >
+                            <ZoomIn /> {level * 100}%
+                        </DropdownMenuItem>
+                    ))}
                 </DropdownMenuContent>
             </DropdownMenu>
             <Tooltip delayDuration={0}>
                 <TooltipTrigger asChild>
-                    <Button variant="ghost" className="px-2 py-1">
+                    <Button
+                        variant="ghost"
+                        className="px-2 py-1"
+                        onClick={handleZoomIn}
+                    >
                         <Plus />
                     </Button>
                 </TooltipTrigger>
