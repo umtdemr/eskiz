@@ -7,6 +7,7 @@ import { ResizeCursors } from '@/core/services/CursorService.ts'
 import { CURSOR_OWNERS } from '@/helpers/Constant.ts'
 import { CursorService, CursorPriority } from '@/core/services/CursorService.ts'
 import { ResizeHandler, ResizePosition } from '@/core/controls/ResizeHandler'
+import { Paint } from 'canvaskit-wasm'
 
 export enum EdgePosition {
     LEFT,
@@ -33,6 +34,7 @@ export class EdgeControl extends Control {
     private cursorToolName = CURSOR_OWNERS.EDGE_CONTROL
     private cursorService: CursorService
     private resizeHandler: ResizeHandler
+    private paint: Paint
 
     constructor(
         props: EdgeControlProps,
@@ -55,6 +57,9 @@ export class EdgeControl extends Control {
 
         this.cursorService = engine.getService<CursorService>('cursor')
         this.resizeHandler = engine.resizeHandler
+
+        this.paint = new canvasKit.Paint()
+        this.paint.setAntiAlias(true)
     }
 
     protected renderContent(renderContext: RenderContext) {
@@ -62,8 +67,6 @@ export class EdgeControl extends Control {
             return
         }
 
-        const paint = new canvasKit.Paint()
-        paint.setAntiAlias(true)
         let w = this._width
         let h = this._height
 
@@ -75,12 +78,12 @@ export class EdgeControl extends Control {
 
         const rect = canvasKit.LTRBRect(0, 0, w, h)
 
-        paint.setStrokeWidth(0)
+        this.paint.setStrokeWidth(0)
         const fillColor = canvasKit.Color(255, 0, 0, 1)
-        paint.setColor(fillColor)
-        paint.setStyle(canvasKit.PaintStyle.Fill)
+        this.paint.setColor(fillColor)
+        this.paint.setStyle(canvasKit.PaintStyle.Fill)
 
-        renderContext.ctx.drawRect(rect, paint)
+        renderContext.ctx.drawRect(rect, this.paint)
     }
 
     private updateTransform() {
@@ -200,6 +203,8 @@ export class EdgeControl extends Control {
 
     destroy() {
         this.shape.boundsChanged.remove(this.onShapeBoundsChanged, this)
+        this.paint.delete()
+        super.destroy()
     }
 
     set debug(bool: boolean) {

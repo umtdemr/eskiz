@@ -20,7 +20,7 @@ export type PathType = 'pen' | 'trail'
 
 export abstract class Path extends Widget {
     private _pathType: PathType
-    protected _path: CkPath
+    protected _path: CkPath | null = null
     protected _points: number[][]
 
     constructor(type: PathType, props: PathProps, engine: Engine) {
@@ -42,8 +42,15 @@ export abstract class Path extends Widget {
     }
 
     replacePath(newPath: CkPath, newPoints: number[][]) {
+        this._path?.delete()
         this._path = newPath
         this._properties.points = newPoints
+    }
+
+    destroy() {
+        this._path?.delete()
+        this._path = null
+        super.destroy()
     }
 
     canChangeBorderColor(): boolean {

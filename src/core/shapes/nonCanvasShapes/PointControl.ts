@@ -3,6 +3,7 @@ import { canvasKit, RenderContext } from '@/core/canvas/Canvas.ts'
 import { CanvasMouseEvent, Engine } from '@/core/engine/Engine.ts'
 import { SelectionService } from '@/core/services/SelectionService.ts'
 import { Line } from '@/core/shapes/line/Line.ts'
+import { Paint } from 'canvaskit-wasm'
 
 export interface PointControlProps extends ControlProps {
     pointIndex: number
@@ -16,6 +17,7 @@ export class PointControl extends Control {
     private line: Line
     private strokeWidth = 1.5
     private needsUpdate = false
+    private paint: Paint
 
     constructor(
         props: PointControlProps,
@@ -29,6 +31,8 @@ export class PointControl extends Control {
         this.line.boundsChanged.add(this.onLineBoundsChanged, this)
         this.updatePosition()
         this.engine.canvas.tick.add(this.onTick, this)
+        this.paint = new canvasKit.Paint()
+        this.paint.setAntiAlias(true)
     }
 
     private onTick() {
@@ -43,8 +47,9 @@ export class PointControl extends Control {
     }
 
     protected renderContent(renderContext: RenderContext) {
-        const paint = new canvasKit.Paint()
-        paint.setAntiAlias(true)
+        if (this.paint?.isDeleted()) {
+            return
+        }
 
         const w = this.width / renderContext.scale
         const h = this.height / renderContext.scale
@@ -59,20 +64,18 @@ export class PointControl extends Control {
         )
 
         // render fill
-        paint.setStrokeWidth(0)
+        this.paint.setStrokeWidth(0)
         const fillColor = canvasKit.Color(255, 255, 255, 1)
-        paint.setColor(fillColor)
-        paint.setStyle(canvasKit.PaintStyle.Fill)
-        renderContext.ctx.drawOval(rect, paint)
+        this.paint.setColor(fillColor)
+        this.paint.setStyle(canvasKit.PaintStyle.Fill)
+        renderContext.ctx.drawOval(rect, this.paint)
 
         // render stroke
-        paint.setStrokeWidth(this.strokeWidth / renderContext.scale)
+        this.paint.setStrokeWidth(this.strokeWidth / renderContext.scale)
         const strokeColor = canvasKit.Color(170, 170, 170, 1)
-        paint.setColor(strokeColor)
-        paint.setStyle(canvasKit.PaintStyle.Stroke)
-        renderContext.ctx.drawOval(strokeRect, paint)
-
-        paint.delete()
+        this.paint.setColor(strokeColor)
+        this.paint.setStyle(canvasKit.PaintStyle.Stroke)
+        renderContext.ctx.drawOval(strokeRect, this.paint)
     }
 
     updatePosition() {
@@ -99,6 +102,7 @@ export class PointControl extends Control {
     destroy() {
         this.line.boundsChanged.remove(this.onLineBoundsChanged, this)
         this.engine.canvas.tick.remove(this.onTick, this)
+        this.paint?.delete()
         super.destroy()
     }
 }

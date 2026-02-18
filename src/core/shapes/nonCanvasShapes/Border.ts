@@ -92,6 +92,8 @@ export class Border extends Widget {
         const widget = this.bindWidgets![0]
         widget.boundsChanged.remove(this.onWidgetBoundsChanged, this)
         this.engine.canvas.tick.remove(this.onTick, this)
+        this.paint.delete()
+        super.destroy()
     }
 
     private onTick() {

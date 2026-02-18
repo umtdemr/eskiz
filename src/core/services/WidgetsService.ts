@@ -111,11 +111,8 @@ export class WidgetsService extends Service {
     }
 
     deleteWidget(widget: Widget) {
-        widget.delete()
         // note: I'm just setting isDeleted here, the actual removal is not happening
-        widget.isDeleted = true
-        widget.deleted.dispatch()
-
+        widget.delete()
         this.widgetDeleted.dispatch({ widgets: [widget] })
     }
 

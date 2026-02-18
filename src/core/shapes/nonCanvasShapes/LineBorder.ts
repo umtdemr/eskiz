@@ -3,7 +3,7 @@ import { Widget } from '../Widget'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { Engine } from '@/core/engine/Engine'
 import { Line } from '../line/Line'
-import { Paint } from 'canvaskit-wasm'
+import { Paint, Path as CkPath } from 'canvaskit-wasm'
 import { Layer } from '@/core/stage/Layer'
 import { BorderColor } from './Border'
 
@@ -17,7 +17,8 @@ export class LineBorder extends Widget {
     private engine: Engine
     private line: Line
     private paint: Paint
-    private needsUpdate = false
+    private _borderPath: CkPath | null = null
+    private needsUpdate = true
 
     constructor(props: LineBorderProps) {
         const bounds = props.line.bounds
@@ -61,33 +62,43 @@ export class LineBorder extends Widget {
         this.height = bounds.height
     }
 
+    private updateBorderPath() {
+        const points = this.line.points
+        if (points.length < 2) {
+            this._borderPath?.delete()
+            this._borderPath = null
+            return
+        }
+
+        this._borderPath?.delete()
+        const path = new canvasKit.Path()
+        path.moveTo(points[0][0], points[0][1])
+        for (let i = 1; i < points.length; i++) {
+            path.lineTo(points[i][0], points[i][1])
+        }
+        this._borderPath = path
+    }
+
     private onTick() {
         if (this.needsUpdate) {
             this.updateBbox()
+            this.updateBorderPath()
             this.needsUpdate = false
         }
     }
 
     protected renderContent(renderContext: RenderContext): void {
-        const points = this.line.points
-        if (points.length < 2) return
-
-        const path = new canvasKit.Path()
-
-        path.moveTo(points[0][0], points[0][1])
-        for (let i = 1; i < points.length; i++) {
-            path.lineTo(points[i][0], points[i][1])
-        }
+        if (!this._borderPath) return
 
         this.paint.setStrokeWidth(1 / renderContext.scale)
-
-        renderContext.ctx.drawPath(path, this.paint)
-        path.delete()
+        renderContext.ctx.drawPath(this._borderPath, this.paint)
     }
 
     destroy(): void {
         this.line.boundsChanged.remove(this.onLineBoundsChanged, this)
         this.engine.canvas.tick.remove(this.onTick, this)
+        this._borderPath?.delete()
+        this._borderPath = null
         this.paint.delete()
         super.destroy()
     }

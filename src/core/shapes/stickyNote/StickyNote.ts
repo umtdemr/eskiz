@@ -10,6 +10,7 @@ import {
 import { TextOp } from '@/core/textEditor/TextEditor'
 import { FontStyleType } from '@/helpers/Constant'
 import { RGBA, isDarkColor } from '@/core/shapes/Color'
+import { Paint } from 'canvaskit-wasm'
 
 export interface StickyNoteProps extends WidgetProps {
     properties: StickyNoteProperties
@@ -50,6 +51,8 @@ export class StickyNote extends Widget {
     protected _textProperties: ShapeTextConstructProps
     protected _fillColor: RGBA
     protected _autoFontSize: boolean = true
+    private _bgPaint: Paint | null = null
+    private _shadowPaint: Paint | null = null
 
     constructor(props: StickyNoteProps, engine: Engine) {
         const width = props.width || DEFAULT_WIDTH
@@ -67,6 +70,32 @@ export class StickyNote extends Widget {
         if (this._textProperties.text) {
             this.createTextObject()
         }
+    }
+
+    private ensureBgPaint(): Paint {
+        if (!this._bgPaint) {
+            this._bgPaint = new canvasKit.Paint()
+            this._bgPaint.setAntiAlias(true)
+            this._bgPaint.setStyle(canvasKit.PaintStyle.Fill)
+        }
+        return this._bgPaint
+    }
+
+    private ensureShadowPaint(): Paint {
+        if (!this._shadowPaint) {
+            this._shadowPaint = new canvasKit.Paint()
+            this._shadowPaint.setAntiAlias(true)
+            this._shadowPaint.setStyle(canvasKit.PaintStyle.Fill)
+            this._shadowPaint.setColor(
+                canvasKit.Color(
+                    SHADOW_COLOR.r,
+                    SHADOW_COLOR.g,
+                    SHADOW_COLOR.b,
+                    SHADOW_COLOR.a,
+                ),
+            )
+        }
+        return this._shadowPaint
     }
 
     getScaleFactor(): number {
@@ -112,9 +141,7 @@ export class StickyNote extends Widget {
         this.drawShadow(ctx, scale)
 
         // draw the rounded rectangle background
-        const paint = new canvasKit.Paint()
-        paint.setAntiAlias(true)
-        paint.setStyle(canvasKit.PaintStyle.Fill)
+        const paint = this.ensureBgPaint()
         paint.setColor(
             canvasKit.Color(
                 this._fillColor.r,
@@ -131,7 +158,6 @@ export class StickyNote extends Widget {
             scaledCornerRadius,
         )
         ctx.drawRRect(rrect, paint)
-        paint.delete()
     }
 
     private drawShadow(ctx: CanvasRenderingContext2D | any, scale: number) {
@@ -139,19 +165,9 @@ export class StickyNote extends Widget {
         const scaledOffsetY = SHADOW_OFFSET_Y * scale
         const scaledCornerRadius = CORNER_RADIUS * scale
 
-        const shadowPaint = new canvasKit.Paint()
-        shadowPaint.setAntiAlias(true)
-        shadowPaint.setStyle(canvasKit.PaintStyle.Fill)
-        shadowPaint.setColor(
-            canvasKit.Color(
-                SHADOW_COLOR.r,
-                SHADOW_COLOR.g,
-                SHADOW_COLOR.b,
-                SHADOW_COLOR.a,
-            ),
-        )
+        const shadowPaint = this.ensureShadowPaint()
 
-        // Create blur effect for shadow
+        // Create blur effect for shadow — must be refreshed since it depends on scale
         const blurFilter = canvasKit.MaskFilter.MakeBlur(
             canvasKit.BlurStyle.Normal,
             scaledBlur / 2,
@@ -172,8 +188,14 @@ export class StickyNote extends Widget {
             scaledCornerRadius,
         )
         ctx.drawRRect(shadowRRect, shadowPaint)
+    }
 
-        shadowPaint.delete()
+    destroy() {
+        this._bgPaint?.delete()
+        this._shadowPaint?.delete()
+        this._bgPaint = null
+        this._shadowPaint = null
+        super.destroy()
     }
 
     protected createTextObject() {

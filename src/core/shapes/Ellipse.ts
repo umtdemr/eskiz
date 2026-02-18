@@ -6,12 +6,23 @@ import { RGBA } from '@/core/shapes/Color'
 import { BorderStyle } from '@/helpers/Constant'
 import { ShapeType } from '@/core/constants.ts'
 import { Engine } from '@/core/engine/Engine'
+import { Paint } from 'canvaskit-wasm'
 
 const TEXT_PADDING = 5
 
 export class Ellipse extends Shape {
+    private paint: Paint | null = null
+
     constructor(props: ShapeProps, engine: Engine) {
         super(ShapeType.ELLIPSE, props, engine)
+    }
+
+    private ensurePaint(): Paint {
+        if (!this.paint) {
+            this.paint = new canvasKit.Paint()
+            this.paint.setAntiAlias(true)
+        }
+        return this.paint
     }
 
     renderContent(renderContext: RenderContext): void {
@@ -21,8 +32,6 @@ export class Ellipse extends Shape {
         if (this._width <= 0 || this._height <= 0) {
             return
         }
-        const paint = new canvasKit.Paint()
-        paint.setAntiAlias(true)
 
         const ellipse = canvasKit.LTRBRect(0, 0, this._width, this._height)
 
@@ -36,6 +45,7 @@ export class Ellipse extends Shape {
         )
 
         // draw fill
+        const paint = this.ensurePaint()
         paint.setStrokeWidth(0)
         const fillColor = canvasKit.Color(
             (this._properties.fillColor as RGBA).r,
@@ -74,6 +84,13 @@ export class Ellipse extends Shape {
         }
 
         ctx.drawOval(strokeEllipse, paint)
+        paint.setPathEffect(null)
+    }
+
+    destroy() {
+        this.paint?.delete()
+        this.paint = null
+        super.destroy()
     }
 
     calcTextBounds(): { x: number; y: number; width: number; height: number } {

@@ -68,4 +68,9 @@ export class MultiSelector extends Widget {
     onMouseUp(data: CanvasMouseEvent) {
         this.visible = false
     }
+
+    destroy() {
+        this.paint.delete()
+        super.destroy()
+    }
 }
