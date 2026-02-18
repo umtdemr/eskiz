@@ -7,6 +7,7 @@ import {
     TransactionId,
 } from '@/core/transaction/TransactionHandler'
 import { EditingMethods } from '@/core/transaction/State'
+import { Line } from '../shapes/line/Line'
 
 export class DragHandler {
     private engine: Engine
@@ -16,12 +17,14 @@ export class DragHandler {
         isObjectAlreadySelected: boolean
         initialPointer: Point
         initialWidgetPositions: { left: number; top: number }[]
+        lines: Set<string>
     } = {
         movingShape: [],
         isObjectMoved: false,
         isObjectAlreadySelected: false,
         initialPointer: { x: 0, y: 0 },
         initialWidgetPositions: [],
+        lines: new Set(),
     }
 
     // signals for move
@@ -68,7 +71,12 @@ export class DragHandler {
         }
 
         const editTable = new Map<Widget, EditingMethods[]>()
-        widgets.forEach((widget) => editTable.set(widget, ['move']))
+        widgets.forEach((widget) => {
+            editTable.set(widget, ['move'])
+            if (widget instanceof Line) {
+                this.movingObjectState.lines.add(widget.uuid!)
+            }
+        })
         this.editTable = editTable
     }
 
@@ -81,7 +89,9 @@ export class DragHandler {
         this.movingObjectState.movingShape.forEach((widget, index) => {
             const initialPos =
                 this.movingObjectState.initialWidgetPositions[index]
-            widget.move(initialPos.left + deltaX, initialPos.top + deltaY)
+            widget.move(initialPos.left + deltaX, initialPos.top + deltaY, {
+                lines: this.movingObjectState.lines,
+            })
         })
 
         // render canvas
@@ -150,12 +160,14 @@ export class DragHandler {
     }
 
     private clearMovingObjectState() {
+        this.movingObjectState.lines.clear()
         this.movingObjectState = {
             movingShape: [],
             isObjectMoved: false,
             isObjectAlreadySelected: false,
             initialPointer: { x: 0, y: 0 },
             initialWidgetPositions: [],
+            lines: this.movingObjectState.lines,
         }
     }
 }

@@ -439,12 +439,16 @@ export abstract class Widget extends Layer {
         this.updateBounds()
     }
 
-    move(newX: number, newY: number) {
+    move(newX: number, newY: number, ctx?: { lines: Set<string> }) {
         this._x = newX
         this._y = newY
         this.updateBounds()
 
         for (const line of this.attachedLines) {
+            if (ctx?.lines?.has(line._uuid!)) {
+                console.log('continue')
+                continue
+            }
             line.headBinding?.id === this._uuid &&
                 line.updatePointFromBinding('head')
             line.tailBinding?.id === this._uuid &&
