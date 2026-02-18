@@ -38,7 +38,7 @@ export class WheelService extends Service {
         const mouseX = e.clientX
         const mouseY = e.clientY
 
-        const zoomFactor = e.deltaY > 0 ? 0.4 : 1.6
+        const zoomFactor = Math.pow(0.995, e.deltaY)
         const oldScale = this.canvas.zoom
         this.canvas.zoom = Math.min(
             Math.max(ZOOM_LEVELS.MIN, this.canvas.zoom * zoomFactor),
