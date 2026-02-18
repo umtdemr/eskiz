@@ -14,7 +14,6 @@ export interface LineBorderProps {
 }
 
 export class LineBorder extends Widget {
-    private engine: Engine
     private line: Line
     private paint: Paint
     private _borderPath: CkPath | null = null
@@ -22,15 +21,17 @@ export class LineBorder extends Widget {
 
     constructor(props: LineBorderProps) {
         const bounds = props.line.bounds
-        super(WidgetType.BORDER, {
-            x: bounds.left,
-            y: bounds.top,
-            width: bounds.width,
-            height: bounds.height,
-            parentLayer: props.parentLayer,
-        })
-
-        this.engine = props.engine
+        super(
+            WidgetType.BORDER,
+            {
+                x: bounds.left,
+                y: bounds.top,
+                width: bounds.width,
+                height: bounds.height,
+                parentLayer: props.parentLayer,
+            },
+            props.engine,
+        )
         this.line = props.line
 
         this.paint = new canvasKit.Paint()
@@ -43,7 +44,7 @@ export class LineBorder extends Widget {
         this.paint.setStrokeCap(canvasKit.StrokeCap.Round)
 
         this.listenLine()
-        this.engine.canvas.tick.add(this.onTick, this)
+        this._engine.canvas.tick.add(this.onTick, this)
     }
 
     private listenLine() {
@@ -96,7 +97,7 @@ export class LineBorder extends Widget {
 
     destroy(): void {
         this.line.boundsChanged.remove(this.onLineBoundsChanged, this)
-        this.engine.canvas.tick.remove(this.onTick, this)
+        this._engine.canvas.tick.remove(this.onTick, this)
         this._borderPath?.delete()
         this._borderPath = null
         this.paint.delete()

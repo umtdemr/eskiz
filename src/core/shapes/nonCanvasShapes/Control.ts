@@ -16,7 +16,6 @@ export type ControlTypes = 'corner' | 'edge'
  * Control is mostly a base class for all the other controllers.
  */
 export class Control extends Widget {
-    protected engine: Engine
     protected selectionService: SelectionService
     protected _subType: ControlTypes
 
@@ -26,15 +25,18 @@ export class Control extends Widget {
         engine: Engine,
         selectionService: SelectionService,
     ) {
-        super('control', {
-            ...props,
-            width: 12,
-            height: 12,
-            parentLayer: props.selectionLayer,
-        })
+        super(
+            'control',
+            {
+                ...props,
+                width: 12,
+                height: 12,
+                parentLayer: props.selectionLayer,
+            },
+            engine,
+        )
         this._isDynamic = true
         this._interactive = true
-        this.engine = engine
         this.selectionService = selectionService
         this._subType = subType
     }

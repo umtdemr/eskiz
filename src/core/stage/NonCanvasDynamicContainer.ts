@@ -22,6 +22,7 @@ export class NonCanvasDynamicContainer extends Layer {
             x: 0,
             y: 0,
             parent: this,
+            engine,
         })
         this._selectionLayer = new SelectionLayer(engine, selectionService)
         this._trailLayer = new TrailLayer(engine)
@@ -30,7 +31,7 @@ export class NonCanvasDynamicContainer extends Layer {
         this.addChildren(this._trailLayer)
         this.addChildren(this._mutliSelector)
 
-        this._magnetLayer = new MagnetLayer()
+        this._magnetLayer = new MagnetLayer(engine)
         this.addChildren(this._magnetLayer)
     }
 

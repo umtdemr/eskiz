@@ -2,6 +2,7 @@ import { Widget, WidgetProps } from '../Widget'
 import { RenderContext, canvasKit } from '@/core/canvas/Canvas'
 import { WidgetType } from '@/core/constants'
 import { Paint } from 'canvaskit-wasm'
+import { Engine } from '@/core/engine/Engine'
 
 export interface MagnetPointProps extends WidgetProps {
     isSnapped?: boolean
@@ -11,8 +12,8 @@ export class MagnetPoint extends Widget {
     private _isSnapped: boolean = false
     private paint: Paint
 
-    constructor(props: MagnetPointProps) {
-        super(WidgetType.MAGNET_CIRCLE, props)
+    constructor(props: MagnetPointProps, engine: Engine) {
+        super(WidgetType.MAGNET_CIRCLE, props, engine)
         this._isSnapped = props.isSnapped || false
         this._width = 10
         this._height = 10

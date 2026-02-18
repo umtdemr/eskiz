@@ -1,12 +1,15 @@
 import { Layer } from '@/core/stage/Layer'
 import { Widget } from '../shapes/Widget'
 import { MagnetPoint } from '../shapes/nonCanvasShapes/MagnetPoint'
+import { Engine } from '../engine/Engine'
 
 export class MagnetLayer extends Layer {
     private currentWidgetUuid: string | null = null
+    private engine: Engine
 
-    constructor() {
+    constructor(engine: Engine) {
         super({ name: 'MagnetLayer' })
+        this.engine = engine
     }
 
     update(widget: Widget | null, snappedPointIndex: number = -1) {
@@ -18,12 +21,15 @@ export class MagnetLayer extends Layer {
             if (widget) {
                 const snapPoints = widget.getSnapPoints()
                 snapPoints.forEach((pt) => {
-                    const mp = new MagnetPoint({
-                        x: pt.x - 5,
-                        y: pt.y - 5,
-                        width: 10,
-                        isSnapped: false,
-                    })
+                    const mp = new MagnetPoint(
+                        {
+                            x: pt.x - 5,
+                            y: pt.y - 5,
+                            width: 10,
+                            isSnapped: false,
+                        },
+                        this.engine,
+                    )
                     this.addChildren(mp)
                 })
             }

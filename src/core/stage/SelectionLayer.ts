@@ -246,11 +246,13 @@ export class SelectionLayer extends Layer {
                 )
             } else {
                 this.addChildren(
-                    new Border({
-                        widgets: [widget],
-                        parentLayer: this,
-                        engine: this.engine,
-                    }),
+                    new Border(
+                        {
+                            widgets: [widget],
+                            parentLayer: this,
+                        },
+                        this.engine,
+                    ),
                 )
             }
         }
@@ -261,11 +263,13 @@ export class SelectionLayer extends Layer {
      * @param widgets Widgets to draw bounding box.
      */
     private drawBoundinBoxOfSelection(widgets: Widget[]) {
-        const border = new Border({
-            widgets,
-            parentLayer: this,
-            engine: this.engine,
-        })
+        const border = new Border(
+            {
+                widgets,
+                parentLayer: this,
+            },
+            this.engine,
+        )
         this.addChildren(border)
         return border
     }
