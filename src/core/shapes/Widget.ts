@@ -150,6 +150,24 @@ export abstract class Widget extends Layer {
     // Override render to handle child widgets properly
     render(renderContext: RenderContext) {
         if (!this.visible || this._isDeleted) return
+
+        // TODO: we should use world transform if we decide to use children
+        // with current implementation, we render the widget if it has a parent
+        // widget even if it is outside the viewport
+        if (renderContext.viewport && !(this._parent instanceof Widget)) {
+            const vp = renderContext.viewport
+            const b = this.bounds
+            const padding = 5
+            if (
+                b.right + padding < vp.left ||
+                b.left - padding > vp.right ||
+                b.bottom + padding < vp.top ||
+                b.top - padding > vp.bottom
+            ) {
+                return
+            }
+        }
+
         const ctx = renderContext.ctx
 
         ctx.save()

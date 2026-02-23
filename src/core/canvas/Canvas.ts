@@ -24,6 +24,12 @@ type Transform = [number, number, number, number, number, number]
 export type RenderContext = {
     ctx: SkiaCanvas
     scale: number
+    viewport?: {
+        left: number
+        top: number
+        right: number
+        bottom: number
+    }
 }
 
 export const setCanvasStyles = (canvasEl: HTMLCanvasElement) => {
@@ -92,12 +98,22 @@ export class Canvas {
             ctx.scale(this.scale, this.scale)
             ctx.translate(this.offsetX, this.offsetY)
 
+            const height = this.surface.height()
+            const width = this.surface.width()
+
+            const viewport = {
+                left: -this.offsetX,
+                top: -this.offsetY,
+                right: width / this.scale - this.offsetX,
+                bottom: height / this.scale - this.offsetY,
+            }
+
             if (this.gridType !== BoardGridType.NONE) {
                 this.drawGrid(ctx)
             }
 
             // render all elements
-            this._stage.render({ ctx, scale: this.scale })
+            this._stage.render({ ctx, scale: this.scale, viewport })
 
             ctx.restore()
         }
