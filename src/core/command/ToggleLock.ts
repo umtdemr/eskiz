@@ -21,10 +21,6 @@ export class ToggleLockCommand extends Command {
             return
         }
 
-        if (ctx.selectionService.selected.length !== 1) {
-            return
-        }
-
         const widgetService = ctx.engine.getService<WidgetsService>('widgets')
         const editTable = new Map<Widget, EditingMethods[]>()
 
@@ -45,6 +41,10 @@ export class ToggleLockCommand extends Command {
         // add to db
         // TODO: phase 2 - check error
         ctx.engine.transactionHandler.commit(transactionId)
+
+        if (ctx.selectionService.selected.length > 1) {
+            ctx.selectionService.clearSelection()
+        }
         ctx.engine.canvas.requestRender()
     }
 }

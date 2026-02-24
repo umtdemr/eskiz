@@ -267,8 +267,11 @@ function getLockedActions(): Action[] {
 
 export function generateActions(engine: Engine): Action[] {
     const selectionService = engine.getService<SelectionService>('selection')
-    if (!selectionService.selected) return []
-    if (selectionService.isMultipleSelection()) return []
+    if (!selectionService.selected || selectionService.selected.length === 0)
+        return []
+    if (selectionService.isMultipleSelection()) {
+        return getCommonActions()
+    }
 
     const widget = selectionService.selected[0]
 

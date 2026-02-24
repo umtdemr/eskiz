@@ -37,6 +37,7 @@ import { ImageUploadService } from '@/core/services/ImageUploadService'
 import { TextureManager } from '../services/TextureManager'
 
 import { StickyNoteToolService } from '../services/StickyNoteToolService'
+import { DuplicationService } from '../services/DuplicationService'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -260,6 +261,10 @@ export class Engine extends Emitter<EngineEventsMap> {
                 toolService,
                 selectionService,
             ),
+        )
+        this.serviceManager.register(
+            'duplication',
+            new DuplicationService(this),
         )
     }
 
