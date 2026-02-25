@@ -41,6 +41,16 @@ export class Control extends Widget {
         this._subType = subType
     }
 
+    render(renderContext: RenderContext) {
+        if (!this.visible || this._isDeleted) return
+        // TODO: add viewport check
+        const ctx = renderContext.ctx
+        ctx.save()
+        ctx.translate(this._x, this._y)
+        this.renderContent(renderContext)
+        ctx.restore()
+    }
+
     protected renderContent(renderContext: RenderContext) {}
 
     onMouseEnter(): void {}
