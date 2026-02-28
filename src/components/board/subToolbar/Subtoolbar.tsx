@@ -153,8 +153,8 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
     if (!selectionLayerRef.current?.selectionBorder) return null
 
     const position = {
-        x: selectionLayerRef.current.selectionBorder.left,
-        y: selectionLayerRef.current.selectionBorder.top,
+        x: selectionLayerRef.current.selectionBorder.bounds.left,
+        y: selectionLayerRef.current.selectionBorder.bounds.top,
     }
 
     const transformedPos = engine.canvas.transformPoint(
