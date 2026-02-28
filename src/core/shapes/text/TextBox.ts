@@ -385,6 +385,17 @@ export class TextBox extends Widget {
         }
     }
 
+    resize(opt: {
+        left?: number
+        top?: number
+        width?: number
+        height?: number
+    }): boolean {
+        super.resize(opt)
+        this.createOrUpdateParagraph()
+        return true
+    }
+
     static loadFromJson(json: WsWidget, engine: Engine): TextBox {
         const properties = json.properties as unknown as TextBoxProperties
         return new TextBox(
