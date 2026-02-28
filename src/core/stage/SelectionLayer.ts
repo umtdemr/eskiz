@@ -22,6 +22,7 @@ import { LineBorder } from '@/core/shapes/nonCanvasShapes/LineBorder'
 import { PointControl } from '@/core/shapes/nonCanvasShapes/PointControl'
 import { Line } from '@/core/shapes/line/Line'
 import { WidgetType } from '@/core/constants.ts'
+import { RotateControl } from '../shapes/nonCanvasShapes/RotateControl'
 
 export class SelectionLayer extends Layer {
     private engine: Engine
@@ -228,6 +229,19 @@ export class SelectionLayer extends Layer {
             this.controls.push(handle)
             this.addChildren(handle)
         }
+
+        const rotateControl = new RotateControl(
+            {
+                x: 0,
+                y: 0,
+                selectionLayer: this,
+            },
+            this.engine,
+            this.selectionService,
+        )
+
+        this.controls.push(rotateControl)
+        this.addChildren(rotateControl)
     }
 
     /**
