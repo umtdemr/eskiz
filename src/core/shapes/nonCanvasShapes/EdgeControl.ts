@@ -8,6 +8,7 @@ import { CURSOR_OWNERS } from '@/helpers/Constant.ts'
 import { CursorService, CursorPriority } from '@/core/services/CursorService.ts'
 import { ResizeHandler, ResizePosition } from '@/core/controls/ResizeHandler'
 import { Paint } from 'canvaskit-wasm'
+import { reverseRotatePoint } from '@/core/geometry/math'
 
 export enum EdgePosition {
     LEFT,
@@ -87,34 +88,34 @@ export class EdgeControl extends Control {
     }
 
     private updateTransform() {
+        this.angle = this.shape.angle
+
+        let point: { x: number; y: number } = { x: 0, y: 0 }
         switch (this.position) {
             case EdgePosition.LEFT:
-                this._y = this.shape.top
-                this._x = this.shape.left
+                point = this.shape.getPointFromRelative(-1, 0)
                 this.height = this.shape.height
                 this.width = this._strokeThickness
                 break
             case EdgePosition.RIGHT:
-                this._y = this.shape.top
-                this._x = this.shape.right
+                point = this.shape.getPointFromRelative(1, 0)
                 this.height = this.shape.height
                 this.width = this._strokeThickness
                 break
             case EdgePosition.TOP:
-                this._y = this.shape.top
-                this._x = this.shape.left
+                point = this.shape.getPointFromRelative(0, -1)
                 this.height = this._strokeThickness
                 this.width = this.shape.width
                 break
             case EdgePosition.BOTTOM:
-                this._y = this.shape.bottom
-                this._x = this.shape.left
+                point = this.shape.getPointFromRelative(0, 1)
                 this.height = this._strokeThickness
                 this.width = this.shape.width
                 break
-            default:
-                break
         }
+
+        this._x = point.x - this.width / 2
+        this._y = point.y - this.height / 2
     }
 
     private onShapeBoundsChanged() {
@@ -167,6 +168,22 @@ export class EdgeControl extends Control {
     }
 
     contains(pointX: number, pointY: number, scale: number): boolean {
+        let localPointX = pointX
+        let localPointY = pointY
+
+        if (this.angle !== 0) {
+            const rotatedPoint = reverseRotatePoint(
+                pointX,
+                pointY,
+                this.centerX,
+                this.centerY,
+                this.angle,
+            )
+
+            localPointX = rotatedPoint.x
+            localPointY = rotatedPoint.y
+        }
+
         let w = this.width
         let h = this.height
 
@@ -193,10 +210,10 @@ export class EdgeControl extends Control {
         }
 
         const isInside =
-            pointX >= left &&
-            pointX <= right &&
-            pointY >= top &&
-            pointY <= bottom
+            localPointX >= left &&
+            localPointX <= right &&
+            localPointY >= top &&
+            localPointY <= bottom
 
         return isInside
     }

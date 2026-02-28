@@ -25,13 +25,29 @@ export class Border extends Widget {
     private needsUpdate = false
 
     constructor(props: BorderProps, engine: Engine) {
-        const boundingBox = BoundingBox.createWithMerge(...props.widgets)
+        let boundingBox: BoundingBox
+
+        if (props.widgets.length > 1) {
+            boundingBox = BoundingBox.createWithMerge(
+                ...props.widgets.map((w) => w.bounds),
+            )
+        } else {
+            const widget = props.widgets[0]
+            boundingBox = new BoundingBox(
+                widget.left,
+                widget.top,
+                widget.width,
+                widget.height,
+            )
+        }
+
         const widgetProps = {
             x: boundingBox.left,
             y: boundingBox.top,
             width: boundingBox.width,
             height: boundingBox.height,
             parentLayer: props.parentLayer,
+            angle: props.widgets.length === 1 ? props.widgets[0].angle : 0,
         }
         super('border', widgetProps, engine)
         this.paint = new canvasKit.Paint()

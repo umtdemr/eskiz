@@ -137,24 +137,24 @@ export class CornerControl extends Control {
     }
 
     updatePosition() {
+        let point: { x: number; y: number }
         switch (this.position) {
             case CornerPosition.TOP_LEFT:
-                this._x = this.shape.left
-                this._y = this.shape.top
+                point = this.shape.getPointFromRelative(-1, -1)
                 break
             case CornerPosition.TOP_RIGHT:
-                this._x = this.shape.right
-                this._y = this.shape.top
+                point = this.shape.getPointFromRelative(1, -1)
                 break
             case CornerPosition.BOTTOM_LEFT:
-                this._x = this.shape.left
-                this._y = this.shape.bottom
+                point = this.shape.getPointFromRelative(-1, 1)
                 break
             case CornerPosition.BOTTOM_RIGHT:
-                this._x = this.shape.right
-                this._y = this.shape.bottom
+                point = this.shape.getPointFromRelative(1, 1)
                 break
         }
+
+        this._x = point.x
+        this._y = point.y
     }
 
     destroy() {

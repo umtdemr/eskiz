@@ -69,8 +69,9 @@ export class RotateControl extends Control {
 
     updatePosition() {
         const offset = 23 / this.engine.canvas.zoom
-        this._x = this.shape.left - offset
-        this._y = this.shape.bottom + offset
+        const point = this.shape.getPointFromRelative(-1, 1)
+        this._x = point.x - offset
+        this._y = point.y + offset
     }
 
     destroy() {
