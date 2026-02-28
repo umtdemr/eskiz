@@ -1,7 +1,6 @@
 import { useEffect, useReducer, useRef } from 'react'
 import { Engine } from '@/core/engine/Engine'
 import './Subtoolbar.scss'
-import { TooltipProvider } from '@/components/ui/tooltip'
 import {
     SelectionChangedProps,
     SelectionService,
@@ -176,7 +175,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 top: `${transformedPos.y - 70}px`,
             }}
         >
-            <TooltipProvider>
+            <>
                 {state.actions.map((action) => {
                     if (action.type === 'seperator') {
                         return (
@@ -294,7 +293,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                         )
                     }
                 })}
-            </TooltipProvider>
+            </>
         </div>
     )
 }

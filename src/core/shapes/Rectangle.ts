@@ -5,6 +5,7 @@ import { WidgetJson } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color'
 import { ShapeType } from '@/core/constants.ts'
 import { Engine } from '@/core/engine/Engine'
+import { Paint } from 'canvaskit-wasm'
 
 export interface RectangleProps extends ShapeProps {
     properties: RectangleShapeProperties
@@ -17,6 +18,8 @@ export interface RectangleShapeProperties extends ShapeProperties {
 const TEXT_PADDING = 5
 
 export class Rectangle extends Shape {
+    private paint: Paint | null = null
+
     constructor(props: RectangleProps, engine: Engine) {
         super(ShapeType.RECTANGLE, props, engine)
         if (props.properties?.radius) {
@@ -27,6 +30,14 @@ export class Rectangle extends Shape {
         }
     }
 
+    private ensurePaint(): Paint {
+        if (!this.paint) {
+            this.paint = new canvasKit.Paint()
+            this.paint.setAntiAlias(true)
+        }
+        return this.paint
+    }
+
     protected renderContent(renderContext: RenderContext) {
         const ctx = renderContext.ctx
         // can not render if width or height is less than 0
@@ -34,8 +45,6 @@ export class Rectangle extends Shape {
             return
         }
 
-        const paint = new canvasKit.Paint()
-        paint.setAntiAlias(true)
         let rect = canvasKit.LTRBRect(0, 0, this._width, this._height)
 
         // since border width grows to inward and outward, we don't want it to look like outside the bounding box,
@@ -61,6 +70,7 @@ export class Rectangle extends Shape {
         }
 
         // draw fill
+        const paint = this.ensurePaint()
         paint.setStrokeWidth(0)
         const fillColor = canvasKit.Color(
             (this._properties.fillColor as RGBA).r,
@@ -107,6 +117,14 @@ export class Rectangle extends Shape {
         } else {
             ctx.drawRect(strokeRect, paint)
         }
+
+        paint.setPathEffect(null)
+    }
+
+    destroy() {
+        this.paint?.delete()
+        this.paint = null
+        super.destroy()
     }
 
     calcTextBounds(): { x: number; y: number; width: number; height: number } {

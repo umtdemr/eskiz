@@ -6,8 +6,11 @@ import { WsWidget } from '@/types/Websocket'
 import { getSvgPathFromStroke, reconstructPathFromPoints } from './pathUtils'
 import getStroke from 'perfect-freehand'
 import { PathType, WidgetType } from '@/core/constants.ts'
+import { Paint } from 'canvaskit-wasm'
 
 export class Pen extends Path {
+    private _paint: Paint | null = null
+
     constructor(props: PathProps, engine: Engine) {
         super(PathType.PEN, props, engine)
         this._interactive = true
@@ -23,10 +26,31 @@ export class Pen extends Path {
         }
     }
 
+    private ensurePaint(): Paint {
+        if (!this._paint) {
+            this._paint = new canvasKit.Paint()
+            this._paint.setAntiAlias(true)
+            this._paint.setStyle(canvasKit.PaintStyle.Fill)
+        }
+        return this._paint
+    }
+
     protected renderContent(renderContext: RenderContext): void {
-        const paint = new canvasKit.Paint()
-        paint.setAntiAlias(true)
-        paint.setStyle(canvasKit.PaintStyle.Fill)
+        if (!this._path || this._path.isDeleted()) {
+            const points = this._properties.points as number[][]
+            if (points && points.length > 1) {
+                const path = reconstructPathFromPoints(
+                    points,
+                    (this._properties.strokeWidth as number) || 2,
+                )
+                if (path) {
+                    this._path = path
+                }
+            }
+            if (!this._path) return
+        }
+
+        const paint = this.ensurePaint()
         paint.setStrokeWidth((this._properties.strokeWidth as number) || 2)
         const color = canvasKit.Color(
             (this._properties.color as RGBA).r,
@@ -37,7 +61,12 @@ export class Pen extends Path {
         paint.setColor(color)
 
         renderContext.ctx.drawPath(this._path, paint)
-        paint.delete()
+    }
+
+    destroy() {
+        this._paint?.delete()
+        this._paint = null
+        super.destroy()
     }
 
     toJson() {
@@ -87,19 +116,20 @@ export class Pen extends Path {
                 this._properties.color = props.color
             }
             if (props.strokeWidth !== undefined) {
-                this.changeThickness(props.strokeWidth)
+                this._properties.strokeWidth = props.strokeWidth
+                const { pathFromSvg } = this.rebuildPath(props.strokeWidth)
+                this.replacePath(
+                    pathFromSvg,
+                    this._properties.points as number[][],
+                )
             }
         }
     }
 
-    changeThickness(newThickness: number): boolean {
-        this._properties.strokeWidth = newThickness
-
-        // we need to calculate new bounds since changing thickness can change
-        // the bounds of the path
+    private rebuildPath(thickness: number) {
         const points = this._properties.points as number[][]
         const stroke = getStroke(points, {
-            size: newThickness,
+            size: thickness,
         })
 
         const svg = getSvgPathFromStroke(stroke)
@@ -112,12 +142,35 @@ export class Pen extends Path {
         )
         pathFromSvg.transform(transformMatrix)
 
-        this.left = newBounds[0]
-        this.top = newBounds[1]
+        return { newBounds, pathFromSvg }
+    }
+
+    changeThickness(newThickness: number): boolean {
+        const oldThickness = (this._properties.strokeWidth as number) || 2
+        this._properties.strokeWidth = newThickness
+
+        const points = this._properties.points as number[][]
+
+        // calculate old bounds to find the positional delta
+        const oldStroke = getStroke(points, { size: oldThickness })
+        const oldSvg = getSvgPathFromStroke(oldStroke)
+        const oldPathFromSvg = canvasKit.Path.MakeFromSVGString(oldSvg)!
+        const oldBounds = oldPathFromSvg.getBounds()
+        oldPathFromSvg.delete() // clean up since we only need bounds
+
+        const dx = this.left - oldBounds[0]
+        const dy = this.top - oldBounds[1]
+
+        // we need to calculate new bounds since changing thickness can change
+        // the bounds of the path
+        const { newBounds, pathFromSvg } = this.rebuildPath(newThickness)
+
+        this.left = newBounds[0] + dx
+        this.top = newBounds[1] + dy
         this.width = newBounds[2] - newBounds[0]
         this.height = newBounds[3] - newBounds[1]
 
-        this.replacePath(pathFromSvg!, points)
+        this.replacePath(pathFromSvg, points)
 
         return true
     }

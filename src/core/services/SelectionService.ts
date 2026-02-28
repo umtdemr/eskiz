@@ -197,6 +197,7 @@ export class SelectionService extends Service {
 
         for (const child of shapesLayer.children) {
             if (!(child instanceof Widget) || !child.interactive) continue
+            if (!child.visible || child.isDeleted) continue
             if (child.isLocked && options.ignoreLocked) continue
 
             if (rect.containsRect(child.bounds)) {

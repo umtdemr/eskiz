@@ -6,12 +6,67 @@ import { RGBA } from '@/core/shapes/Color'
 import { BorderStyle } from '@/helpers/Constant'
 import { ShapeType } from '@/core/constants.ts'
 import { Engine } from '@/core/engine/Engine'
+import { Paint, Path as CkPath } from 'canvaskit-wasm'
 
 const TEXT_PADDING = 5
 
 export class Triangle extends Shape {
+    private paint: Paint | null = null
+    private _fillPath: CkPath | null = null
+    private _strokePath: CkPath | null = null
+    private _cachedW = -1
+    private _cachedH = -1
+    private _cachedSW = -1
+
     constructor(props: ShapeProps, engine: Engine) {
         super(ShapeType.TRIANGLE, props, engine)
+    }
+
+    private ensurePaint(): Paint {
+        if (!this.paint) {
+            this.paint = new canvasKit.Paint()
+            this.paint.setAntiAlias(true)
+        }
+        return this.paint
+    }
+
+    private ensurePaths(): { fillPath: CkPath; strokePath: CkPath } {
+        const strokeWidth = this._properties.strokeWidth as number
+        if (
+            this._fillPath &&
+            this._strokePath &&
+            this._cachedW === this._width &&
+            this._cachedH === this._height &&
+            this._cachedSW === strokeWidth
+        ) {
+            return { fillPath: this._fillPath, strokePath: this._strokePath }
+        }
+
+        this._fillPath?.delete()
+        this._strokePath?.delete()
+
+        const fillPath = new canvasKit.Path()
+        fillPath.moveTo(0, this.height)
+        fillPath.lineTo(this.width / 2, 0)
+        fillPath.lineTo(this.width, this.height)
+        fillPath.lineTo(0, this.height)
+        fillPath.close()
+
+        const strokeHalf = strokeWidth / 2
+        const strokePath = new canvasKit.Path()
+        strokePath.moveTo(strokeHalf, this.height - strokeHalf)
+        strokePath.lineTo(this.width / 2, strokeHalf)
+        strokePath.lineTo(this.width - strokeHalf, this.height - strokeHalf)
+        strokePath.lineTo(strokeHalf, this.height - strokeHalf)
+        strokePath.close()
+
+        this._fillPath = fillPath
+        this._strokePath = strokePath
+        this._cachedW = this._width
+        this._cachedH = this._height
+        this._cachedSW = strokeWidth
+
+        return { fillPath, strokePath }
     }
 
     renderContent(renderContext: RenderContext): void {
@@ -20,24 +75,11 @@ export class Triangle extends Shape {
         if (this._width <= 0 || this._height <= 0) {
             return
         }
-        const path = new canvasKit.Path()
-        path.moveTo(0, this.height) // Bottom left
-        path.lineTo(this.width / 2, 0) // Top middle
-        path.lineTo(this.width, this.height) // Bottom right
-        path.lineTo(0, this.height) // Back to bottom left
-        path.close()
+
+        const { fillPath, strokePath } = this.ensurePaths()
+        const paint = this.ensurePaint()
 
         const strokeWidth = this._properties.strokeWidth as number
-        const strokeHalf = strokeWidth / 2
-        const pathStroke = new canvasKit.Path()
-        pathStroke.moveTo(strokeHalf, this.height - strokeHalf)
-        pathStroke.lineTo(this.width / 2, strokeHalf)
-        pathStroke.lineTo(this.width - strokeHalf, this.height - strokeHalf)
-        pathStroke.lineTo(strokeHalf, this.height - strokeHalf)
-        pathStroke.close()
-
-        const paint = new canvasKit.Paint()
-        paint.setAntiAlias(true)
 
         paint.setStrokeWidth(0)
         const fillColor = canvasKit.Color(
@@ -48,7 +90,7 @@ export class Triangle extends Shape {
         )
         paint.setColor(fillColor)
         paint.setStyle(canvasKit.PaintStyle.Fill)
-        ctx.drawPath(path, paint)
+        ctx.drawPath(fillPath, paint)
 
         paint.setStrokeWidth(strokeWidth)
         const strokeColor = canvasKit.Color(
@@ -74,7 +116,18 @@ export class Triangle extends Shape {
             paint.setPathEffect(pathEffect)
         }
 
-        ctx.drawPath(pathStroke, paint)
+        ctx.drawPath(strokePath, paint)
+        paint.setPathEffect(null)
+    }
+
+    destroy() {
+        this.paint?.delete()
+        this.paint = null
+        this._fillPath?.delete()
+        this._strokePath?.delete()
+        this._fillPath = null
+        this._strokePath = null
+        super.destroy()
     }
 
     calcTextBounds(): { x: number; y: number; width: number; height: number } {

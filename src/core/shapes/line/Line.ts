@@ -34,7 +34,7 @@ export interface LineProperties {
 }
 
 export class Line extends Widget {
-    private _path: CkPath
+    private _path: CkPath | null = null
     private _points: [number, number][] = []
     private _hasTailArrow: boolean
     private _hasHeadArrow: boolean
@@ -150,6 +150,9 @@ export class Line extends Widget {
      * Updates line's bound from points and sets points relative
      */
     setBoundsFromPoints() {
+        if (!this._path || this._path.isDeleted()) {
+            return
+        }
         const bounds = this._path.getBounds()
         const newLeft = bounds[0]
         const newTop = bounds[1]
@@ -182,6 +185,10 @@ export class Line extends Widget {
 
     renderContent(renderContext: RenderContext) {
         const ctx = renderContext.ctx
+
+        if (!this._path || this._path.isDeleted()) {
+            this.updatePath()
+        }
 
         if (!this._paint) {
             this._paint = new canvasKit.Paint()
@@ -227,7 +234,7 @@ export class Line extends Widget {
             this._paint.setStrokeCap(canvasKit.StrokeCap.Butt)
         }
 
-        ctx.drawPath(this._path, this._paint)
+        ctx.drawPath(this._path!, this._paint)
 
         // remove path effect for arrows so they are solid
         this._paint.setPathEffect(null)
@@ -595,6 +602,16 @@ export class Line extends Widget {
 
     set tailBinding(binding: LineBinding | null) {
         this._tailBinding = binding
+    }
+
+    destroy() {
+        this._path?.delete()
+        this._arrowPath?.delete()
+        this._paint?.delete()
+        this._path = null
+        this._arrowPath = null
+        this._paint = null
+        super.destroy()
     }
 }
 

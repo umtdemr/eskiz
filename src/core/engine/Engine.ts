@@ -37,6 +37,7 @@ import { ImageUploadService } from '@/core/services/ImageUploadService'
 import { TextureManager } from '../services/TextureManager'
 
 import { StickyNoteToolService } from '../services/StickyNoteToolService'
+import { DuplicationService } from '../services/DuplicationService'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -149,8 +150,21 @@ export class Engine extends Emitter<EngineEventsMap> {
         this.clear() // remove eventListeners in Emitter class
     }
 
-    setZoom(zoom: number) {
-        this.canvas.zoom = zoom
+    zoomTo(targetZoom: number) {
+        const oldScale = this.canvas.zoom
+        this.canvas.zoom = targetZoom
+        const newScale = this.canvas.zoom
+
+        // zoom around viewport center
+        const centerX = window.innerWidth / 2
+        const centerY = window.innerHeight / 2
+
+        this.canvas.translateX =
+            centerX / newScale - centerX / oldScale + this.canvas.translateX
+        this.canvas.translateY =
+            centerY / newScale - centerY / oldScale + this.canvas.translateY
+
+        this.canvas.requestRender()
         this.emit('zoom', this.canvas.zoom)
     }
 
@@ -247,6 +261,10 @@ export class Engine extends Emitter<EngineEventsMap> {
                 toolService,
                 selectionService,
             ),
+        )
+        this.serviceManager.register(
+            'duplication',
+            new DuplicationService(this),
         )
     }
 

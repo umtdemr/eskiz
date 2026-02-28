@@ -1,7 +1,6 @@
 import {
     Tooltip,
     TooltipContent,
-    TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
@@ -83,187 +82,165 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)',
             }}
         >
-            <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className={clsx('px-2', {
-                                'bg-amber-500':
-                                    activeMode?.mainMode ===
-                                    ACTION_MODES.SELECT,
-                                'hover:bg-amber-500':
-                                    activeMode?.mainMode ===
-                                    ACTION_MODES.SELECT,
-                            })}
-                            onClick={() =>
-                                changeActiveMode(ACTION_MODES.SELECT)
-                            }
-                        >
-                            <MousePointer2 />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={'right'}>
-                        <p>Select</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className={clsx('px-2', {
-                                'bg-amber-500':
-                                    activeMode?.mainMode === ACTION_MODES.PAN,
-                                'hover:bg-amber-500':
-                                    activeMode?.mainMode === ACTION_MODES.PAN,
-                            })}
-                            onClick={() => changeActiveMode(ACTION_MODES.PAN)}
-                        >
-                            <Hand />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={'right'}>
-                        <p>Pan</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className={clsx('px-2', {
+                            'bg-amber-500':
+                                activeMode?.mainMode === ACTION_MODES.SELECT,
+                            'hover:bg-amber-500':
+                                activeMode?.mainMode === ACTION_MODES.SELECT,
+                        })}
+                        onClick={() => changeActiveMode(ACTION_MODES.SELECT)}
+                    >
+                        <MousePointer2 />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'right'}>
+                    <p>Select</p>
+                </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className={clsx('px-2', {
+                            'bg-amber-500':
+                                activeMode?.mainMode === ACTION_MODES.PAN,
+                            'hover:bg-amber-500':
+                                activeMode?.mainMode === ACTION_MODES.PAN,
+                        })}
+                        onClick={() => changeActiveMode(ACTION_MODES.PAN)}
+                    >
+                        <Hand />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'right'}>
+                    <p>Pan</p>
+                </TooltipContent>
+            </Tooltip>
             <div className="w-full h-[0.5px] bg-zinc-400 my-5" />
-            <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className={clsx('px-2', {
-                                'bg-amber-500':
-                                    activeMode?.mainMode === ACTION_MODES.TEXT,
-                                'hover:bg-amber-500':
-                                    activeMode?.mainMode === ACTION_MODES.TEXT,
-                            })}
-                            onClick={() => changeActiveMode(ACTION_MODES.TEXT)}
-                        >
-                            <Type />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={'right'}>
-                        <p>Text</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className={clsx('px-2', {
+                            'bg-amber-500':
+                                activeMode?.mainMode === ACTION_MODES.TEXT,
+                            'hover:bg-amber-500':
+                                activeMode?.mainMode === ACTION_MODES.TEXT,
+                        })}
+                        onClick={() => changeActiveMode(ACTION_MODES.TEXT)}
+                    >
+                        <Type />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'right'}>
+                    <p>Text</p>
+                </TooltipContent>
+            </Tooltip>
             <ShapesDropdown
                 activeMode={activeMode}
                 handleShapeModeChange={handleShapeModeChange}
             />
-            <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className={clsx('px-2', {
-                                'bg-amber-500':
-                                    activeMode?.mainMode === ACTION_MODES.LINE,
-                                'hover:bg-amber-500':
-                                    activeMode?.mainMode === ACTION_MODES.LINE,
-                            })}
-                            onClick={handleLineModeChange}
-                        >
-                            <MoveUpRight />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={'right'}>
-                        <p>Line</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className="px-2"
-                            onClick={() => {
-                                const boardId =
-                                    useBoundStore.getState().boardData.id
-                                engine
-                                    .getService<ImageUploadService>(
-                                        'imageUpload',
-                                    )
-                                    .pickAndUpload()
-                            }}
-                        >
-                            <Image />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={'right'}>
-                        <p>Image</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className={clsx('px-2', {
+                            'bg-amber-500':
+                                activeMode?.mainMode === ACTION_MODES.LINE,
+                            'hover:bg-amber-500':
+                                activeMode?.mainMode === ACTION_MODES.LINE,
+                        })}
+                        onClick={handleLineModeChange}
+                    >
+                        <MoveUpRight />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'right'}>
+                    <p>Line</p>
+                </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className="px-2"
+                        onClick={() => {
+                            const boardId =
+                                useBoundStore.getState().boardData.id
+                            engine
+                                .getService<ImageUploadService>('imageUpload')
+                                .pickAndUpload()
+                        }}
+                    >
+                        <Image />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'right'}>
+                    <p>Image</p>
+                </TooltipContent>
+            </Tooltip>
             <PenDropdown
                 activeMode={activeMode}
                 handlePathModeChange={handlePathModeChange}
             />
-            <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className={clsx('px-2', {
-                                'bg-amber-500':
-                                    activeMode?.mainMode ===
-                                    ACTION_MODES.STICKY_NOTE,
-                                'hover:bg-amber-500':
-                                    activeMode?.mainMode ===
-                                    ACTION_MODES.STICKY_NOTE,
-                            })}
-                            onClick={() =>
-                                changeActiveMode(ACTION_MODES.STICKY_NOTE)
-                            }
-                        >
-                            <StickyNote />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={'right'}>
-                        <p>Sticky note</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className={clsx('px-2', {
+                            'bg-amber-500':
+                                activeMode?.mainMode ===
+                                ACTION_MODES.STICKY_NOTE,
+                            'hover:bg-amber-500':
+                                activeMode?.mainMode ===
+                                ACTION_MODES.STICKY_NOTE,
+                        })}
+                        onClick={() =>
+                            changeActiveMode(ACTION_MODES.STICKY_NOTE)
+                        }
+                    >
+                        <StickyNote />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'right'}>
+                    <p>Sticky note</p>
+                </TooltipContent>
+            </Tooltip>
             <div className="w-full h-[0.5px] bg-zinc-400 my-5" />
-            <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className="px-2"
-                            onClick={() => engine.historyManager.undo()}
-                            disabled={!historyState.canUndo}
-                        >
-                            <Undo />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={'right'}>
-                        <p>Undo</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-            <TooltipProvider delayDuration={0}>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className="px-2"
-                            onClick={() => engine.historyManager.redo()}
-                            disabled={!historyState.canRedo}
-                        >
-                            <Redo />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent side={'right'}>
-                        <p>Redo</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className="px-2"
+                        onClick={() => engine.historyManager.undo()}
+                        disabled={!historyState.canUndo}
+                    >
+                        <Undo />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'right'}>
+                    <p>Undo</p>
+                </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className="px-2"
+                        onClick={() => engine.historyManager.redo()}
+                        disabled={!historyState.canRedo}
+                    >
+                        <Redo />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'right'}>
+                    <p>Redo</p>
+                </TooltipContent>
+            </Tooltip>
         </div>
     )
 }

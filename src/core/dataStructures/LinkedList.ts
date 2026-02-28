@@ -262,6 +262,17 @@ export class LinkedList<T> {
         }
     }
 
+    /**
+     * Generator function to iterate the LinkedList backwards
+     */
+    *backward() {
+        let current = this._tail
+        while (current !== null) {
+            yield current.value
+            current = current.prev
+        }
+    }
+
     get length() {
         return this._nodeCount
     }

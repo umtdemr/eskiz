@@ -2,12 +2,13 @@ import { Paint } from 'canvaskit-wasm'
 import { Widget } from '../Widget'
 import { Layer } from '@/core/stage/Layer'
 import { canvasKit, Point, RenderContext } from '@/core/canvas/Canvas'
-import { CanvasMouseEvent } from '@/core/engine/Engine'
+import { CanvasMouseEvent, Engine } from '@/core/engine/Engine'
 
 export interface MultiSelectorProps {
     x: number
     y: number
     parent: Layer
+    engine: Engine
 }
 
 export class MultiSelector extends Widget {
@@ -15,14 +16,18 @@ export class MultiSelector extends Widget {
     private initialPosition: Point = { x: 0, y: 0 }
 
     constructor(props: MultiSelectorProps) {
-        super('multiSelector', {
-            x: props.x,
-            y: props.y,
-            width: 0,
-            height: 0,
-            parentLayer: props.parent,
-            visible: false,
-        })
+        super(
+            'multiSelector',
+            {
+                x: props.x,
+                y: props.y,
+                width: 0,
+                height: 0,
+                parentLayer: props.parent,
+                visible: false,
+            },
+            props.engine,
+        )
         this.paint = new canvasKit.Paint()
         this.paint.setAntiAlias(true)
         this.paint.setStyle(canvasKit.PaintStyle.Fill)
@@ -67,5 +72,10 @@ export class MultiSelector extends Widget {
 
     onMouseUp(data: CanvasMouseEvent) {
         this.visible = false
+    }
+
+    destroy() {
+        this.paint.delete()
+        super.destroy()
     }
 }

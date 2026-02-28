@@ -2,7 +2,6 @@ import { CanvasMouseEvent, Engine } from '../engine/Engine'
 import { MouseController } from '../engine/MouseController'
 import { Widget } from '../shapes/Widget'
 
-import { Layer } from '../stage/Layer'
 import { SelectionService } from './SelectionService'
 import { Service } from './Service'
 import { MainModeChangedState, ToolService } from './ToolService'
@@ -235,10 +234,14 @@ export class SelectToolService extends Service {
         const pointer = mouseData.pointer
         for (const layer of searchLayers) {
             if (layer.children.length === 0) continue
-            for (const widget of layer.children) {
+            for (const widget of layer.children.backward()) {
                 if (!(widget instanceof Widget)) continue
 
-                if (!widget.interactive || widget.isDeleted) {
+                if (
+                    !widget.interactive ||
+                    widget.isDeleted ||
+                    !widget.visible
+                ) {
                     continue
                 }
 
@@ -280,16 +283,10 @@ export class SelectToolService extends Service {
                 const tailBinding = widget.tailBindingWidget
 
                 // If bound to a widget, that widget must be in the selection to allow dragging the line
-                if (
-                    headBinding &&
-                    !selectedIds.has(headBinding.uuid)
-                ) {
+                if (headBinding && !selectedIds.has(headBinding.uuid)) {
                     return false
                 }
-                if (
-                    tailBinding &&
-                    !selectedIds.has(tailBinding.uuid)
-                ) {
+                if (tailBinding && !selectedIds.has(tailBinding.uuid)) {
                     return false
                 }
             }

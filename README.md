@@ -61,10 +61,10 @@
     - [x] Adding ERASER
         - [ ] Make it work when removing is there. Note: add a seperate class to search widgets
     - [x] Adding text
-      - [x] UpdateSize
-      - [x] Double click to edit texts
-      - [x] Save shapeText in db
-      - [ ] Save textboxes in db
+        - [x] UpdateSize
+        - [x] Double click to edit texts
+        - [x] Save shapeText in db
+        - [ ] Save textboxes in db
     - [x] Adding text to shapes
         - [ ] Add text as soon as shape is created
     - [ ] Sticky note
@@ -124,19 +124,33 @@
             - [x] Fix undo redo issue
             - [x] Check if middle points are attaching. if yes fix
             - [x] Line point controls are laggy with collaboration
+        - [ ] Images
+            - [ ] Select on add
+                - [ ] Navigation animation
+            - [ ] On multiple adding, history.
+                - [x] Multiple history is done
+            - [x] Render placeholder
+            - [x] Fix resizing. width and height ratio should be protected.
+            - [x] Should we use exact same width and height for the imported image or should we scale down? - yes
+            - [ ] Image caching on browser?
     - [ ] Bug fixes and things to implement
-        - [ ] Tooltipprovider
+        - [x] Tooltipprovider
         - [ ] On scroll should we fire mouse move?
-        - [ ] Wasm delete
+        - [x] Fix browser zoom issue
+        - [x] Line moving when all of them in multi selection
+        - [x] Text editing undo redo
+        - [x] Wasm delete
         - [ ] Main color?
-        - [ ] Multi delete etc
+        - [x] Engine initilization
+        - [x] Multi delete etc
+        - [x] Grid color
         - [ ] Name
         - [ ] Users fix?
         - [ ] Collab list
-        - [ ] Retina display
+        - [ ] Retina display --------- LATER
         - [ ] Hypo points
         - [ ] Curved line
-        - [ ] %1 zoom level
+        - [x] %1 zoom level
 - Refactor & bug fixes
     - [ ] Fix: ShapesDropdown top position
     - [ ] Fix: sidebar menu in mobile
@@ -144,23 +158,21 @@
     - [ ] A component to handle boards list
         - [ ] Change error messages on boards list (user) or make it dynamic. Change colors.
 
-
 ## Road map
 
-### Phase 1 -- Make it work! 
+### Phase 1 -- Make it work!
 
-* Finalize subtoolbar.
-* Add shortcuts
-* Add history
-* Add sticky note shape
-* Add lines
+- Finalize subtoolbar.
+- Add shortcuts
+- Add history
+- Add sticky note shape
+- Add lines
 
 #### Phase 2 -- Saving!
 
-* Add versions to prevent race conditions.
-* Save storage???
-
+- Add versions to prevent race conditions.
+- Save storage???
 
 #### Phase 3 -- Enhanced collaboration
 
-* CRDT
+- CRDT

@@ -59,6 +59,17 @@ export class TextEditor {
         this._wrapperEl = wrapper
         document.body.appendChild(this._wrapperEl)
 
+        // block native browser zoom
+        this._wrapperEl.addEventListener(
+            'wheel',
+            (e: WheelEvent) => {
+                if (e.ctrlKey || e.metaKey) {
+                    e.preventDefault()
+                }
+            },
+            { passive: false },
+        )
+
         // initialize quill
         this._editorContainer = this._wrapperEl.appendChild(
             this._wrapperEl.ownerDocument.createElement('div'),

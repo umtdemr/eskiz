@@ -10,6 +10,7 @@ import {
 import { Widget } from '@/core/shapes/Widget.ts'
 import { CURSOR_OWNERS } from '@/helpers/Constant.ts'
 import { ResizeHandler, ResizePosition } from '@/core/controls/ResizeHandler'
+import { Paint } from 'canvaskit-wasm'
 
 export enum CornerPosition {
     TOP_LEFT,
@@ -32,6 +33,7 @@ export class CornerControl extends Control {
     private cursorToolName = CURSOR_OWNERS.CORNER_CONTROL
     private cursorService: CursorService
     private resizeHandler: ResizeHandler
+    private paint: Paint
 
     constructor(
         props: CornerControlProps,
@@ -48,6 +50,9 @@ export class CornerControl extends Control {
         this.cursorService = engine.getService<CursorService>('cursor')
 
         this.resizeHandler = engine.resizeHandler
+
+        this.paint = new canvasKit.Paint()
+        this.paint.setAntiAlias(true)
     }
 
     private onShapeBoundsChanged() {
@@ -55,9 +60,6 @@ export class CornerControl extends Control {
     }
 
     protected renderContent(renderContext: RenderContext) {
-        const paint = new canvasKit.Paint()
-        paint.setAntiAlias(true)
-
         const w = this.width / renderContext.scale
         const h = this.height / renderContext.scale
         const rect = canvasKit.LTRBRect(0 - w / 2, 0 - h / 2, w / 2, h / 2)
@@ -71,18 +73,18 @@ export class CornerControl extends Control {
         )
 
         // render fill
-        paint.setStrokeWidth(0)
+        this.paint.setStrokeWidth(0)
         const fillColor = canvasKit.Color(255, 255, 255, 1)
-        paint.setColor(fillColor)
-        paint.setStyle(canvasKit.PaintStyle.Fill)
-        renderContext.ctx.drawOval(rect, paint)
+        this.paint.setColor(fillColor)
+        this.paint.setStyle(canvasKit.PaintStyle.Fill)
+        renderContext.ctx.drawOval(rect, this.paint)
 
         // render stroke
-        paint.setStrokeWidth(this.strokeWidth / renderContext.scale)
+        this.paint.setStrokeWidth(this.strokeWidth / renderContext.scale)
         const strokeColor = canvasKit.Color(170, 170, 170, 1)
-        paint.setColor(strokeColor)
-        paint.setStyle(canvasKit.PaintStyle.Stroke)
-        renderContext.ctx.drawOval(strokeRect, paint)
+        this.paint.setColor(strokeColor)
+        this.paint.setStyle(canvasKit.PaintStyle.Stroke)
+        renderContext.ctx.drawOval(strokeRect, this.paint)
     }
 
     private getCursor(): ResizeCursors {
@@ -157,5 +159,7 @@ export class CornerControl extends Control {
 
     destroy() {
         this.shape.boundsChanged.remove(this.onShapeBoundsChanged, this)
+        this.paint.delete()
+        super.destroy()
     }
 }

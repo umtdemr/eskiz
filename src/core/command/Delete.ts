@@ -31,7 +31,7 @@ export class DeleteCommand extends Command {
         const widgetService = ctx.engine.getService<WidgetsService>('widgets')
         const editTable = new Map<Widget, EditingMethods[]>()
 
-        const widgets = (ctx.params?.widgets as Widget[]) || []
+        const widgets = [...((ctx.params?.widgets as Widget[]) || [])]
         widgets.forEach((widget) => {
             editTable.set(widget, ['delete'])
         })

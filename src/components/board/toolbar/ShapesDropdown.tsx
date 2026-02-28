@@ -1,7 +1,6 @@
 import {
     Tooltip,
     TooltipContent,
-    TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
@@ -84,7 +83,7 @@ export function ShapesDropdown({
 
     return (
         <div className="relative">
-            <TooltipProvider delayDuration={0}>
+            <>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
@@ -137,7 +136,7 @@ export function ShapesDropdown({
                         ))}
                     </div>
                 ) : null}
-            </TooltipProvider>
+            </>
         </div>
     )
 }

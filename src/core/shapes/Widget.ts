@@ -150,6 +150,24 @@ export abstract class Widget extends Layer {
     // Override render to handle child widgets properly
     render(renderContext: RenderContext) {
         if (!this.visible || this._isDeleted) return
+
+        // TODO: we should use world transform if we decide to use children
+        // with current implementation, we render the widget if it has a parent
+        // widget even if it is outside the viewport
+        if (renderContext.viewport && !(this._parent instanceof Widget)) {
+            const vp = renderContext.viewport
+            const b = this.bounds
+            const padding = 5
+            if (
+                b.right + padding < vp.left ||
+                b.left - padding > vp.right ||
+                b.bottom + padding < vp.top ||
+                b.top - padding > vp.bottom
+            ) {
+                return
+            }
+        }
+
         const ctx = renderContext.ctx
 
         ctx.save()
@@ -439,12 +457,16 @@ export abstract class Widget extends Layer {
         this.updateBounds()
     }
 
-    move(newX: number, newY: number) {
+    move(newX: number, newY: number, ctx?: { lines: Set<string> }) {
         this._x = newX
         this._y = newY
         this.updateBounds()
 
         for (const line of this.attachedLines) {
+            if (ctx?.lines?.has(line._uuid!)) {
+                console.log('continue')
+                continue
+            }
             line.headBinding?.id === this._uuid &&
                 line.updatePointFromBinding('head')
             line.tailBinding?.id === this._uuid &&

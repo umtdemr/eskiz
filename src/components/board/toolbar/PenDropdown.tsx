@@ -9,7 +9,6 @@ import { clsx } from 'clsx'
 import {
     Tooltip,
     TooltipContent,
-    TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
 import { Button } from '@/components/ui/button.tsx'
@@ -89,7 +88,7 @@ export function PenDropdown({
 
     return (
         <div className="relative" ref={menuRef}>
-            <TooltipProvider delayDuration={0}>
+            <>
                 <Tooltip>
                     <TooltipTrigger asChild>
                         <Button
@@ -178,7 +177,7 @@ export function PenDropdown({
                         <PenColorDropdown />
                     </div>
                 ) : null}
-            </TooltipProvider>
+            </>
         </div>
     )
 }

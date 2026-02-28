@@ -1,6 +1,6 @@
 import { Widget, WidgetProps } from '@/core/shapes/Widget.ts'
 import { Engine } from '@/core/engine/Engine'
-import { Paragraph as CkParagraph } from 'canvaskit-wasm'
+import { Paragraph as CkParagraph, Paint } from 'canvaskit-wasm'
 import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
 import { createTextOpsFromString, TextOp } from '@/core/textEditor/TextEditor'
 import { FontStyleType } from '@/helpers/Constant'
@@ -36,6 +36,7 @@ export class TextBox extends Widget {
     private _shouldRender = true
     private _lineHeight: number
     private _fillColor: null | RGBA
+    private _fillPaint: Paint | null = null
 
     constructor(props: TextBoxProps, engine: Engine) {
         super(WidgetType.TEXTBOX, props, engine)
@@ -58,6 +59,14 @@ export class TextBox extends Widget {
 
         this.createOrUpdateParagraph()
         this._interactive = true
+    }
+
+    private ensureFillPaint(): Paint {
+        if (!this._fillPaint) {
+            this._fillPaint = new canvasKit.Paint()
+            this._fillPaint.setStyle(canvasKit.PaintStyle.Fill)
+        }
+        return this._fillPaint
     }
 
     private getOpParagraph(): CkParagraph {
@@ -118,7 +127,7 @@ export class TextBox extends Widget {
     }
 
     createOrUpdateParagraph(): CkParagraph {
-        if (this._paragraph) {
+        if (this._paragraph && !this._paragraph.isDeleted()) {
             this._paragraph.delete()
         }
         this._paragraph = this.getOpParagraph()
@@ -154,11 +163,13 @@ export class TextBox extends Widget {
         if (!this._shouldRender) {
             return
         }
+        if (this._paragraph?.isDeleted()) {
+            this.createOrUpdateParagraph()
+        }
         const ctx = renderContext.ctx
 
         if (this._fillColor && this._fillColor.a > 0) {
-            const paint = new canvasKit.Paint()
-            paint.setStyle(canvasKit.PaintStyle.Fill)
+            const paint = this.ensureFillPaint()
             paint.setColor(
                 canvasKit.Color(
                     this._fillColor.r,
@@ -171,10 +182,16 @@ export class TextBox extends Widget {
                 canvasKit.XYWHRect(0, 0, this.width, this.height),
                 paint,
             )
-            paint.delete()
         }
 
         ctx.drawParagraph(this._paragraph, 0, 0)
+    }
+
+    destroy() {
+        this._fillPaint?.delete()
+        this._fillPaint = null
+        this._paragraph?.delete()
+        super.destroy()
     }
 
     updateWithPartialState(json: Partial<WsWidget>) {

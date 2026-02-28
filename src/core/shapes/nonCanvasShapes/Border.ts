@@ -9,7 +9,6 @@ import { RGBA } from '../Color'
 export interface BorderProps {
     parentLayer: Layer
     widgets: Widget[]
-    engine: Engine
 }
 
 export const BorderColor: RGBA = {
@@ -20,13 +19,12 @@ export const BorderColor: RGBA = {
 }
 
 export class Border extends Widget {
-    private engine: Engine
     private paint: Paint
     private bindWidgets?: Widget[]
     private mainWidget: Widget | null
     private needsUpdate = false
 
-    constructor(props: BorderProps) {
+    constructor(props: BorderProps, engine: Engine) {
         const boundingBox = BoundingBox.createWithMerge(...props.widgets)
         const widgetProps = {
             x: boundingBox.left,
@@ -35,9 +33,7 @@ export class Border extends Widget {
             height: boundingBox.height,
             parentLayer: props.parentLayer,
         }
-        super('border', widgetProps)
-
-        this.engine = props.engine
+        super('border', widgetProps, engine)
         this.paint = new canvasKit.Paint()
         this.paint.setAntiAlias(true)
         this.paint.setStyle(canvasKit.PaintStyle.Stroke)
@@ -61,7 +57,7 @@ export class Border extends Widget {
 
         this.bindWidgets = props.widgets
         this.listenWidgets()
-        this.engine.canvas.tick.add(this.onTick, this)
+        this._engine.canvas.tick.add(this.onTick, this)
     }
 
     protected renderContent(renderContext: RenderContext): void {
@@ -91,7 +87,9 @@ export class Border extends Widget {
     destroy(): void {
         const widget = this.bindWidgets![0]
         widget.boundsChanged.remove(this.onWidgetBoundsChanged, this)
-        this.engine.canvas.tick.remove(this.onTick, this)
+        this._engine.canvas.tick.remove(this.onTick, this)
+        this.paint.delete()
+        super.destroy()
     }
 
     private onTick() {
