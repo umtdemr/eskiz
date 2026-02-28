@@ -24,11 +24,14 @@ export default function Footer({ engine }: { engine: Engine }) {
     const [zoom, setZoom] = useState(100)
 
     useEffect(() => {
-        const unsubscribe = engine.on('zoom', (val) => {
+        const zoomChangeHandler = (val: number) => {
             setZoom(Math.floor(val * 100))
-        })
+        }
+        engine.zoomChanged.add(zoomChangeHandler)
 
-        return () => unsubscribe()
+        return () => {
+            engine.zoomChanged.remove(zoomChangeHandler)
+        }
     }, [])
 
     const handleZoomOut = () => {

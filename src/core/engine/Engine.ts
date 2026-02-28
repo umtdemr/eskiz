@@ -1,7 +1,6 @@
 import { Canvas, Point, setCanvasStyles } from '@/core/canvas/Canvas.ts'
 import { WsEngine } from '@/core/WsEngine.ts'
 import { UpperCanvasRenderer } from '@/core/renderers/UpperCanvasRenderer.ts'
-import { Emitter } from '@/core/emitter/Emitter.ts'
 import { Stage } from '../stage/Stage'
 import { ServiceManager } from '../services/ServiceManager'
 import { SelectionService } from '../services/SelectionService'
@@ -49,7 +48,7 @@ export type EngineEventsMap = {
     zoom: number
 }
 
-export class Engine extends Emitter<EngineEventsMap> {
+export class Engine {
     // TODO: remove slug and board id here for SST
     private _slugId: string
     private _boardId: number
@@ -75,9 +74,9 @@ export class Engine extends Emitter<EngineEventsMap> {
     stagesInitiated = new Signal()
     canvasInitiated = new Signal<Canvas>()
     initialized = new Signal()
+    zoomChanged = new Signal<number>()
 
     constructor(slugId: string, boardId: number, pageId: number) {
-        super()
         this._slugId = slugId
         this._boardId = boardId
         this._pageId = pageId
@@ -146,8 +145,7 @@ export class Engine extends Emitter<EngineEventsMap> {
         this.canvas.dispose()
         this.wsEngine.dispose()
         this._mouseController.dispose()
-
-        this.clear() // remove eventListeners in Emitter class
+        this.zoomChanged.removeAll()
     }
 
     zoomTo(targetZoom: number) {
@@ -165,7 +163,7 @@ export class Engine extends Emitter<EngineEventsMap> {
             centerY / newScale - centerY / oldScale + this.canvas.translateY
 
         this.canvas.requestRender()
-        this.emit('zoom', this.canvas.zoom)
+        this.zoomChanged.dispatch(this.canvas.zoom)
     }
 
     private initializeServices() {

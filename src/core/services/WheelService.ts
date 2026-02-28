@@ -55,7 +55,7 @@ export class WheelService extends Service {
             this.canvas.translateY
 
         this.canvas.requestRender()
-        this.engine.emit('zoom', this.canvas.zoom)
+        this.engine.zoomChanged.dispatch(this.canvas.zoom)
     }
 
     dispose() {
