@@ -137,12 +137,12 @@
         - [x] Tooltipprovider
         - [ ] On scroll should we fire mouse move?
         - [x] Fix browser zoom issue
-        - [ ] Line moving when all of them in multi selection
-        - [ ] Text editing undo redo
+        - [x] Line moving when all of them in multi selection
+        - [x] Text editing undo redo
         - [x] Wasm delete
         - [ ] Main color?
         - [x] Engine initilization
-        - [ ] Multi delete etc
+        - [x] Multi delete etc
         - [x] Grid color
         - [ ] Name
         - [ ] Users fix?
@@ -150,7 +150,7 @@
         - [ ] Retina display --------- LATER
         - [ ] Hypo points
         - [ ] Curved line
-        - [ ] %1 zoom level
+        - [x] %1 zoom level
 - Refactor & bug fixes
     - [ ] Fix: ShapesDropdown top position
     - [ ] Fix: sidebar menu in mobile
@@ -176,17 +176,3 @@
 #### Phase 3 -- Enhanced collaboration
 
 - CRDT
-
-time to create a new widget. it is sticky note.
-
-it will be like rectangles. we will be able to add text into it whenever we double click
-
-the corners will be rounded.
-
-we will not resize it from edges. width height should remain. but there is one catch. there will be two type of the sticky note. one square (300x310) and other one is rectangle (565x310). this is the width/height ratio. if I want to increase the width from edge and I'm on square type (width/height ratio) I can make the width 565 and the sticky note becomes a rectangle. we need to arrange this control. there will be no width/height ratio we should remain this one.
-
-there will be box shadow. it will be on the bottom mostly and blurred.
-
-users will not be able to change text color from Subtoolbar. textcolor will be automatically applied. Also for the background color, we will only show some colors (light yellow, yellow, orange, light blue, blue, dark blue, black). so there will be background color option in the subtoolbar but we will not allow customers to create a custom color (from color palatte) like they used to do with shapes.
-
-The text of the sticky note will have some char limit. and by default font size will be automatically handled. we will fit all the text into the sticky note. but customers will be able to change font size. we will only list available options for font size, (need to calculate which fontsizes causes the current text overflow) - or, since the "auto" mode will be for the biggest font size usable for the sticky note, we can just show font size options that are smaller than the calculated "auto" font size.
