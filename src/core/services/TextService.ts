@@ -288,8 +288,8 @@ export class TextService extends Service {
         const bounds = this.shape.calcTextBounds()
 
         this.textEditor.showEditor({
-            x: bounds.x + this.shape.left,
-            y: bounds.y + this.shape.top,
+            x: this.shape.left + bounds.x + bounds.width / 2,
+            y: this.shape.top + bounds.y + bounds.height / 2,
             width: bounds.width,
             height: bounds.height,
             fontSize: this.shape.textProperties?.fontSize ?? 14,
@@ -300,6 +300,7 @@ export class TextService extends Service {
             initialText: this.shape.textStr,
             textOps: this.shape?.textProperties?.textOps || [],
             maxLength: SHAPE_MAX_CHARS,
+            angle: this.shape.angle,
         })
 
         this.shape.startEditingText()
@@ -323,6 +324,7 @@ export class TextService extends Service {
             for: 'textBox',
             textAlign: 'left',
             maxLength: TEXTBOX_MAX_CHARS,
+            angle: this.textBox.angle,
         })
 
         this.activeSession = 'textBox'
@@ -360,8 +362,14 @@ export class TextService extends Service {
         )
 
         this.textEditor.showEditor({
-            x: bounds.x * contentScale + this.stickyNote.left,
-            y: bounds.y * contentScale + this.stickyNote.top,
+            x:
+                bounds.x * contentScale +
+                this.stickyNote.left +
+                (bounds.width * contentScale) / 2,
+            y:
+                bounds.y * contentScale +
+                this.stickyNote.top +
+                (bounds.height * contentScale) / 2,
             width: bounds.width,
             height: bounds.height,
             fontSize: this.stickyNote.textProperties?.fontSize ?? 18,
@@ -374,6 +382,7 @@ export class TextService extends Service {
             contentScale,
             maxLength: STICKY_NOTE_MAX_CHARS,
             textColor,
+            angle: this.stickyNote.angle,
         })
 
         this.stickyNote.startEditingText()
