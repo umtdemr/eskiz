@@ -15,7 +15,7 @@ import {
     ImageType as ImageTypeConst,
     StickyNoteType as StickyNoteTypeConst,
 } from '@/core/constants.ts'
-import { rotatePoint } from '@/core/geometry/math'
+import { rotatePoint, reverseRotatePoint } from '@/core/geometry/math'
 
 export type WidgetType = (typeof WidgetTypeConst)[keyof typeof WidgetTypeConst]
 
@@ -539,8 +539,23 @@ export abstract class Widget extends Layer {
     }
 
     getRelativeFromPoint(x: number, y: number): { rx: number; ry: number } {
-        const rx = (x - this.centerX) / (this.width / 2)
-        const ry = (y - this.centerY) / (this.height / 2)
+        let localX = x
+        let localY = y
+
+        if (this._angle !== 0) {
+            const unrotated = reverseRotatePoint(
+                x,
+                y,
+                this.centerX,
+                this.centerY,
+                this._angle,
+            )
+            localX = unrotated.x
+            localY = unrotated.y
+        }
+
+        const rx = (localX - this.centerX) / (this.width / 2)
+        const ry = (localY - this.centerY) / (this.height / 2)
         return { rx, ry }
     }
 
