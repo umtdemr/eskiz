@@ -189,33 +189,29 @@ export class SelectionLayer extends Layer {
             return
         }
 
-        // TODO: fix order of controls when I fix the widget searching algo
+        if (
+            widgets[0].widgetType !== WidgetType.IMAGE &&
+            widgets[0].widgetType !== WidgetType.STICKY_NOTE
+        ) {
+            for (const position of edgeControls) {
+                const handle = new EdgeControl(
+                    {
+                        position,
+                        x: 0,
+                        y: 0,
+                        selectionLayer: this,
+                    },
+                    this.engine,
+                    this.selectionService,
+                )
+
+                this.controls.push(handle)
+                this.addChildren(handle)
+            }
+        }
+
         for (const position of cornerControls) {
             const handle = new CornerControl(
-                {
-                    position,
-                    x: 0,
-                    y: 0,
-                    selectionLayer: this,
-                },
-                this.engine,
-                this.selectionService,
-            )
-
-            this.controls.push(handle)
-            this.addChildren(handle)
-        }
-
-        // do not show edge controls for images and sticky notes
-        if (
-            widgets[0].widgetType === WidgetType.IMAGE ||
-            widgets[0].widgetType === WidgetType.STICKY_NOTE
-        ) {
-            return
-        }
-
-        for (const position of edgeControls) {
-            const handle = new EdgeControl(
                 {
                     position,
                     x: 0,
