@@ -3,7 +3,10 @@ import { CanvasMouseEvent, Engine } from '@/core/engine/Engine.ts'
 import { SelectionService } from '@/core/services/SelectionService.ts'
 import { Widget } from '@/core/shapes/Widget.ts'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas.ts'
-import { ResizeCursors } from '@/core/services/CursorService.ts'
+import {
+    ResizeCursors,
+    getRotatedResizeCursor,
+} from '@/core/services/CursorService.ts'
 import { CURSOR_OWNERS } from '@/helpers/Constant.ts'
 import { CursorService, CursorPriority } from '@/core/services/CursorService.ts'
 import { ResizeHandler, ResizePosition } from '@/core/controls/ResizeHandler'
@@ -123,10 +126,22 @@ export class EdgeControl extends Control {
     }
 
     private getCursor(): ResizeCursors {
-        if (this.direction === 'vertical') {
-            return 'horizontal-resize'
+        let baseIndex: number
+        switch (this.position) {
+            case EdgePosition.TOP:
+                baseIndex = 0
+                break
+            case EdgePosition.RIGHT:
+                baseIndex = 2
+                break
+            case EdgePosition.BOTTOM:
+                baseIndex = 4
+                break
+            case EdgePosition.LEFT:
+                baseIndex = 6
+                break
         }
-        return 'vertical-resize'
+        return getRotatedResizeCursor(baseIndex, this.shape.angle)
     }
 
     onMouseDown(data: CanvasMouseEvent): void {
