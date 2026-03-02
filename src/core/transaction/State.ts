@@ -27,6 +27,7 @@ export type EditingMethods =
     | 'arrowPosition'
     | 'headLineBinding'
     | 'tailLineBinding'
+    | 'rotate'
 
 export type State = Record<string, unknown>
 
@@ -263,6 +264,11 @@ export function getPartialState(
                         tailBinding: widget.tailBinding,
                     }
                 }
+                break
+            case 'rotate':
+                updateState({
+                    angle: widget.angle,
+                })
                 break
         }
     }

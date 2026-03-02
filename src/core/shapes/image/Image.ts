@@ -467,6 +467,10 @@ export class Image extends Widget {
         return true
     }
 
+    canRotate(): boolean {
+        return true
+    }
+
     getSnapPoints(): { x: number; y: number }[] {
         const bounds = this.bounds
         return [

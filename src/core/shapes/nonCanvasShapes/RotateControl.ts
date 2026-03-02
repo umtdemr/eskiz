@@ -1,15 +1,17 @@
 import { Widget } from '../Widget'
 import { Control, ControlProps } from './Control'
 import { Paint } from 'canvaskit-wasm'
-import { Engine } from '@/core/engine/Engine'
+import { CanvasMouseEvent, Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
+import { RotateHandler } from '@/core/controls/RotateHandler'
 
 export interface RotateControlProps extends ControlProps {}
 
 export class RotateControl extends Control {
     private shape: Widget
     private paint: Paint
+    private rotateHandler: RotateHandler
 
     constructor(
         props: RotateControlProps,
@@ -23,6 +25,7 @@ export class RotateControl extends Control {
 
         this.paint = new canvasKit.Paint()
         this.paint.setAntiAlias(true)
+        this.rotateHandler = engine.rotateHandler
 
         this.engine.zoomChanged.add(this.onZoomChanged, this)
         this.updatePosition()
@@ -72,6 +75,18 @@ export class RotateControl extends Control {
         const point = this.shape.getPointFromRelative(-1, 1)
         this._x = point.x - offset
         this._y = point.y + offset
+    }
+
+    onMouseDown(data: CanvasMouseEvent): void {
+        this.rotateHandler.start(data, this.shape)
+    }
+
+    onMouseMove(data: CanvasMouseEvent): void {
+        this.rotateHandler.handle(data)
+    }
+
+    onMouseUp(data: CanvasMouseEvent): void {
+        this.rotateHandler.end(data)
     }
 
     destroy() {

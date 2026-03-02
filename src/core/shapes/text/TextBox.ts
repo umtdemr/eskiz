@@ -310,6 +310,10 @@ export class TextBox extends Widget {
         return true
     }
 
+    canRotate(): boolean {
+        return true
+    }
+
     changeFontStyle(style: FontStyleType, value: boolean): boolean {
         // update all textOps with the new style
         const updatedOps = this._textOps.map((op) => ({

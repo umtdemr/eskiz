@@ -368,6 +368,10 @@ export class StickyNote extends Widget {
         return this._text !== null && this._text !== undefined
     }
 
+    canRotate(): boolean {
+        return true
+    }
+
     changeFontStyle(style: FontStyleType, value: boolean): boolean {
         if (!this._text) return false
 

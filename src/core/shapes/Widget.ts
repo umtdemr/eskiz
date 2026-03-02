@@ -389,6 +389,11 @@ export abstract class Widget extends Layer {
         return false
     }
 
+    // return true when widget can be rotated
+    canRotate(): boolean {
+        return false
+    }
+
     // resizes the widget.
     // good for changing position or dimension at once since it calls `updateBounds` only once
     resize(opt: {

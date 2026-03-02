@@ -21,6 +21,7 @@ import { CursorService } from '@/core/services/CursorService.ts'
 import { DragHandler } from '@/core/controls/DragHandler'
 import { ResizeHandler } from '@/core/controls/ResizeHandler'
 import { ReshapeHandler } from '@/core/controls/ReshapeHandler'
+import { RotateHandler } from '@/core/controls/RotateHandler'
 import { TransactionHandler } from '@/core/transaction/TransactionHandler'
 import { PathToolService } from '@/core/services/PathToolService'
 import { LineToolService } from '@/core/services/LineToolService'
@@ -64,6 +65,7 @@ export class Engine {
     private _dragHandler: DragHandler
     private _resizeHandler: ResizeHandler
     private _reshapeHandler: ReshapeHandler
+    private _rotateHandler: RotateHandler
     private _transactionHandler: TransactionHandler
     private _textEditor: TextEditor
     private _commands: CommandRegistry
@@ -91,6 +93,7 @@ export class Engine {
         this._dragHandler = new DragHandler(this)
         this._resizeHandler = new ResizeHandler(this)
         this._reshapeHandler = new ReshapeHandler(this)
+        this._rotateHandler = new RotateHandler(this)
         this._mouseController = new MouseController()
         this._textEditor = new TextEditor(this)
         this.serviceManager = new ServiceManager()
@@ -295,6 +298,10 @@ export class Engine {
 
     get reshapeHandler(): ReshapeHandler {
         return this._reshapeHandler
+    }
+
+    get rotateHandler(): RotateHandler {
+        return this._rotateHandler
     }
 
     get transactionHandler(): TransactionHandler {

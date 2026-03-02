@@ -343,6 +343,10 @@ export abstract class Shape extends Widget {
         return true
     }
 
+    canRotate(): boolean {
+        return true
+    }
+
     getSnapPoints(): { x: number; y: number }[] {
         const points = [
             this.getPointFromRelative(-1, 0), // top center
