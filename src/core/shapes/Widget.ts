@@ -394,6 +394,21 @@ export abstract class Widget extends Layer {
         return false
     }
 
+    rotate(newAngle: number) {
+        if (newAngle < 0 || newAngle >= 360) {
+            newAngle = ((newAngle % 360) + 360) % 360
+        }
+        this._angle = newAngle
+        this.updateBounds()
+
+        for (const line of this.attachedLines) {
+            line.headBinding?.id === this._uuid &&
+                line.updatePointFromBinding('head')
+            line.tailBinding?.id === this._uuid &&
+                line.updatePointFromBinding('tail')
+        }
+    }
+
     // resizes the widget.
     // good for changing position or dimension at once since it calls `updateBounds` only once
     resize(opt: {

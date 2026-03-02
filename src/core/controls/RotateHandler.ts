@@ -70,7 +70,7 @@ export class RotateHandler {
 
         // if there's an actual change
         if (this.shape.angle !== newAngle) {
-            this.shape.angle = newAngle
+            this.shape.rotate(newAngle)
 
             if (this._transactionId) {
                 this.transactionHandler.update(this._transactionId)
