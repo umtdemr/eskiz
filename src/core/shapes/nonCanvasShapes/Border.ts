@@ -93,7 +93,15 @@ export class Border extends Widget {
     }
 
     private updateBbox() {
-        const boundingBox = BoundingBox.createWithMerge(...this.bindWidgets!)
+        let boundingBox
+        if (this.bindWidgets?.length === 1) {
+            boundingBox = this.bindWidgets![0]
+            this.angle = this.bindWidgets![0].angle
+        } else {
+            boundingBox = BoundingBox.createWithMerge(
+                ...this.bindWidgets!.map((w) => w.bounds),
+            )
+        }
         this.left = boundingBox.left
         this.top = boundingBox.top
         this.width = boundingBox.width
