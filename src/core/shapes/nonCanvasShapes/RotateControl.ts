@@ -71,10 +71,9 @@ export class RotateControl extends Control {
     }
 
     updatePosition() {
-        const offset = 23 / this.engine.canvas.zoom
-        const point = this.shape.getPointFromRelative(-1, 1)
-        this._x = point.x - offset
-        this._y = point.y + offset
+        const point = this.shape.getPointFromRelative(-1.2, 1.2)
+        this._x = point.x
+        this._y = point.y
     }
 
     onMouseDown(data: CanvasMouseEvent): void {
