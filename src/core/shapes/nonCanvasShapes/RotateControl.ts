@@ -5,6 +5,9 @@ import { CanvasMouseEvent, Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { RotateHandler } from '@/core/controls/RotateHandler'
+import { reverseRotatePoint } from '@/core/geometry/math'
+
+const ROTATE_CONTROL_OFFSET = 23
 
 export interface RotateControlProps extends ControlProps {}
 
@@ -71,9 +74,16 @@ export class RotateControl extends Control {
     }
 
     updatePosition() {
-        const point = this.shape.getPointFromRelative(-1.2, 1.2)
-        this._x = point.x
-        this._y = point.y
+        const point = this.shape.getPointFromRelative(-1, 1)
+        const rotatedOffset = reverseRotatePoint(
+            ROTATE_CONTROL_OFFSET,
+            ROTATE_CONTROL_OFFSET,
+            0,
+            0,
+            this.shape.angle,
+        )
+        this._x = point.x - rotatedOffset.x
+        this._y = point.y + rotatedOffset.y
     }
 
     onMouseDown(data: CanvasMouseEvent): void {
