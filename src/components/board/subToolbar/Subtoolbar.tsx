@@ -129,6 +129,8 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             engine.resizeHandler.resizeFinished.add(showSubtoolbar)
             engine.reshapeHandler.reshapeStarted.add(hideSubtoolbar)
             engine.reshapeHandler.reshapeFinished.add(showSubtoolbar)
+            engine.rotateHandler.rotateStarted.add(hideSubtoolbar)
+            engine.rotateHandler.rotateFinished.add(showSubtoolbar)
         } else {
             engine.canvas.transform.remove(onTransform)
             engine.dragHandler.moveStarted.remove(hideSubtoolbar)
@@ -137,6 +139,8 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             engine.resizeHandler.resizeFinished.remove(showSubtoolbar)
             engine.reshapeHandler.reshapeStarted.remove(hideSubtoolbar)
             engine.reshapeHandler.reshapeFinished.remove(showSubtoolbar)
+            engine.rotateHandler.rotateStarted.remove(hideSubtoolbar)
+            engine.rotateHandler.rotateFinished.remove(showSubtoolbar)
         }
 
         return () => {
@@ -147,6 +151,8 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             engine.resizeHandler.resizeFinished.remove(showSubtoolbar)
             engine.reshapeHandler.reshapeStarted.remove(hideSubtoolbar)
             engine.reshapeHandler.reshapeFinished.remove(showSubtoolbar)
+            engine.rotateHandler.rotateStarted.remove(hideSubtoolbar)
+            engine.rotateHandler.rotateFinished.remove(showSubtoolbar)
         }
     }, [state.show])
 
