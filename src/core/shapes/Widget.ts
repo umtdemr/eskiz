@@ -315,7 +315,17 @@ export abstract class Widget extends Layer {
     }
 
     contains(x: number, y: number, scale: number): boolean {
-        return this.bounds.contains(x * scale, y * scale)
+        const sx = x * scale
+        const sy = y * scale
+
+        if (this._angle === 0) {
+            return this._bounds.contains(sx, sy)
+        }
+
+        const cx = this._x + this._width / 2
+        const cy = this._y + this._height / 2
+        const local = reverseRotatePoint(sx, sy, cx, cy, this._angle)
+        return this._localBounds.contains(local.x - this._x, local.y - this._y)
     }
 
     onMouseEnter() {}
