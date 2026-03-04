@@ -134,6 +134,7 @@ export class StickyNote extends Widget {
 
         ctx.save()
         ctx.translate(this._x, this._y)
+        ctx.rotate(this._angle, this._width / 2, this._height / 2)
 
         // render the sticky note background
         this.renderContent(renderContext)
