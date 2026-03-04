@@ -150,6 +150,18 @@ export class SelectionLayer extends Layer {
         // do not show controls for path
         // TODO: need to find a better way to control this.
         if (widgets[0].widgetType === WidgetType.PATH) {
+            const rotateControl = new RotateControl(
+                {
+                    x: 0,
+                    y: 0,
+                    selectionLayer: this,
+                },
+                this.engine,
+                this.selectionService,
+            )
+
+            this.controls.push(rotateControl)
+            this.addChildren(rotateControl)
             return
         }
         if (widgets[0].isLocked) {
