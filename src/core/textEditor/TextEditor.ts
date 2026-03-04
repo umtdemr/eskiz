@@ -20,6 +20,7 @@ interface EditProps {
     contentScale?: number
     maxLength?: number
     textColor?: string
+    angle?: number
 }
 
 export interface TextOp {
@@ -54,7 +55,7 @@ export class TextEditor {
         wrapper.style.position = 'fixed'
         wrapper.style.left = '-9999px'
         wrapper.style.top = '-9999px'
-        wrapper.style.transformOrigin = 'left top'
+        wrapper.style.transformOrigin = 'center center'
 
         this._wrapperEl = wrapper
         document.body.appendChild(this._wrapperEl)
@@ -109,19 +110,18 @@ export class TextEditor {
         const scale = this.engine.canvas.zoom
         const contentScale = this._editProps.contentScale ?? 1
         const totalScale = scale * contentScale
-        this._wrapperEl.style.transform = `scale(${totalScale})`
+        const angle = this._editProps.angle ?? 0
+
+        this._wrapperEl.style.transform = `scale(${totalScale}) rotate(${angle}deg)`
         this._editorContainer.style.height = `${this._editProps.height}px`
         this._wrapperEl.style.width = `${this._editProps.width}px`
         this._wrapperEl.style.height = `${this._editProps.height}px`
 
+        this._wrapperEl.style.left = `${transformedPosition.x - this._editProps.width / 2}px`
+        this._wrapperEl.style.top = `${transformedPosition.y - this._editProps.height / 2}px`
+
         if (this._editProps.for === 'textBox') {
-            this._wrapperEl.style.left = `${transformedPosition.x - (this._editProps.width * scale) / 2}px`
-            this._wrapperEl.style.top = `${transformedPosition.y - (this._editProps.height * scale) / 2}px`
             this._quill.root.style.height = `${this._editProps.height}px`
-        } else {
-            // shapeText and stickyNote use top-left positioning
-            this._wrapperEl.style.left = `${transformedPosition.x}px`
-            this._wrapperEl.style.top = `${transformedPosition.y}px`
         }
     }
 

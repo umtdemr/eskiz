@@ -9,10 +9,40 @@ export enum CursorPriority {
 }
 
 export type ResizeCursors =
-    | typeof CursorType.HORIZONTAL_RESIZE
-    | typeof CursorType.VERTICAL_RESIZE
-    | typeof CursorType.SCALE_RESIZE_LEFT
-    | typeof CursorType.SCALE_RESIZE_RIGHT
+    | typeof CursorType.N_RESIZE
+    | typeof CursorType.NE_RESIZE
+    | typeof CursorType.E_RESIZE
+    | typeof CursorType.SE_RESIZE
+    | typeof CursorType.S_RESIZE
+    | typeof CursorType.SW_RESIZE
+    | typeof CursorType.W_RESIZE
+    | typeof CursorType.NW_RESIZE
+
+/**
+ * Ordered array of the 8 directional resize cursors, every 45 degrees
+ * starting from North (0°) going clockwise.
+ */
+const RESIZE_CURSOR_ORDER: ResizeCursors[] = [
+    'n-resize', // 0 - North
+    'ne-resize', // 1 - NorthEast
+    'e-resize', // 2 - East
+    'se-resize', // 3 - SouthEast
+    's-resize', // 4 - South
+    'sw-resize', // 5 - SouthWest
+    'w-resize', // 6 - West
+    'nw-resize', // 7 - NorthWest
+]
+
+export function getRotatedResizeCursor(
+    baseIndex: number,
+    angleDegrees: number,
+): ResizeCursors {
+    // normalize angle
+    const normalized = ((angleDegrees % 360) + 360) % 360
+    // round to nearest 45 degrees
+    const steps = Math.round(normalized / 45) % 8
+    return RESIZE_CURSOR_ORDER[(baseIndex + steps) % 8]
+}
 
 export type Cursors =
     | typeof CursorType.DEFAULT
@@ -51,10 +81,14 @@ export class CursorService extends Service {
             ['pan', 'grab'],
             ['panning', 'grabbing'],
             ['crosshair', 'crosshair'],
-            ['horizontal-resize', 'ew-resize'],
-            ['vertical-resize', 'ns-resize'],
-            ['scale-resize-left', 'nwse-resize'],
-            ['scale-resize-right', 'nesw-resize'],
+            ['n-resize', 'n-resize'],
+            ['ne-resize', 'ne-resize'],
+            ['e-resize', 'e-resize'],
+            ['se-resize', 'se-resize'],
+            ['s-resize', 's-resize'],
+            ['sw-resize', 'sw-resize'],
+            ['w-resize', 'w-resize'],
+            ['nw-resize', 'nw-resize'],
             ['text', 'text'],
             ['sticky-note', stickyNoteCursor],
         ])

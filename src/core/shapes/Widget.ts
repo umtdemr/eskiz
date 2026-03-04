@@ -15,6 +15,7 @@ import {
     ImageType as ImageTypeConst,
     StickyNoteType as StickyNoteTypeConst,
 } from '@/core/constants.ts'
+import { rotatePoint, reverseRotatePoint } from '@/core/geometry/math'
 
 export type WidgetType = (typeof WidgetTypeConst)[keyof typeof WidgetTypeConst]
 
@@ -47,6 +48,7 @@ export interface WidgetProps {
     z_index?: string
     parent_widget_id?: string
     is_locked?: boolean
+    angle?: number
 }
 
 export type WidgetJson = {
@@ -62,6 +64,7 @@ export type WidgetJson = {
     parent_widget_id?: string
     is_deleted: boolean
     is_locked: boolean
+    angle: number
 }
 
 export interface WidgetClickedSignal {
@@ -74,6 +77,7 @@ export abstract class Widget extends Layer {
     protected _y: number
     protected _width: number
     protected _height: number
+    protected _angle: number = 0
     protected _uuid?: string
     protected _parent_widget_id?: string
     protected _layer?: Layer
@@ -107,6 +111,9 @@ export abstract class Widget extends Layer {
         if (props.height !== undefined) {
             this._height = props.height
         }
+
+        this._angle = props.angle ?? 0
+
         this._layer = props.parentLayer
         this._isLayer = false
         this._bounds = new BoundingBox()
@@ -174,6 +181,7 @@ export abstract class Widget extends Layer {
 
         // Apply this widget's transform
         ctx.translate(this._x, this._y)
+        ctx.rotate(this._angle, this._width / 2, this._height / 2)
 
         // Render this widget
         this.renderContent(renderContext)
@@ -194,22 +202,49 @@ export abstract class Widget extends Layer {
         this._localBounds.width = this._width
         this._localBounds.height = this._height
 
-        // Update global bounds by starting with local bounds
-        this._bounds.x = this._localBounds.x
-        this._bounds.y = this._localBounds.y
-        this._bounds.width = this._localBounds.width
-        this._bounds.height = this._localBounds.height
+        let globalOffsetX = this._x
+        let globalOffsetY = this._y
 
-        // Transform bounds to global space
-        this._bounds.x += this._x
-        this._bounds.y += this._y
+        // calculate AABB for rotation
+        if (this._angle === 0) {
+            this._bounds.x = globalOffsetX
+            this._bounds.y = globalOffsetY
+            this._bounds.width = this._width
+            this._bounds.height = this._height
+        } else {
+            const cx = globalOffsetX + this._width / 2
+            const cy = globalOffsetY + this._height / 2
+            const hw = this._width / 2
+            const hh = this._height / 2
 
-        // Apply parent transforms
-        let currentParent = this._parent
-        while (currentParent instanceof Widget) {
-            this._bounds.x += currentParent._x
-            this._bounds.y += currentParent._y
-            currentParent = currentParent._parent
+            const corners = [
+                { x: cx - hw, y: cy - hh },
+                { x: cx + hw, y: cy - hh },
+                { x: cx + hw, y: cy + hh },
+                { x: cx - hw, y: cy + hh },
+            ]
+
+            let minX = Infinity
+            let minY = Infinity
+            let maxX = -Infinity
+            let maxY = -Infinity
+
+            for (const c of corners) {
+                // rotate corner around center
+                const rotated = rotatePoint(c.x, c.y, cx, cy, this._angle)
+                const globalX = rotated.x
+                const globalY = rotated.y
+
+                if (globalX < minX) minX = globalX
+                if (globalY < minY) minY = globalY
+                if (globalX > maxX) maxX = globalX
+                if (globalY > maxY) maxY = globalY
+            }
+
+            this._bounds.x = minX
+            this._bounds.y = minY
+            this._bounds.width = maxX - minX
+            this._bounds.height = maxY - minY
         }
 
         if (this.interactive) this.boundsChanged.dispatch()
@@ -229,25 +264,24 @@ export abstract class Widget extends Layer {
     }
 
     updateWithPartialState(json: Partial<WsWidget>) {
-        let isMoved = false
-        let isResized = false
+        let shouldUpdateLines = false
         for (const key of Object.keys(json)) {
             switch (key) {
                 case 'x':
                     this.left = json.x!
-                    isMoved = true
+                    shouldUpdateLines = true
                     break
                 case 'y':
                     this.top = json.y!
-                    isMoved = true
+                    shouldUpdateLines = true
                     break
                 case 'width':
                     this.width = json.width!
-                    isResized = true
+                    shouldUpdateLines = true
                     break
                 case 'height':
                     this.height = json.height!
-                    isResized = true
+                    shouldUpdateLines = true
                     break
                 case 'z_index':
                     this.zIndex = json.z_index!
@@ -261,6 +295,10 @@ export abstract class Widget extends Layer {
                 case 'is_locked':
                     this.isLocked = json.is_locked!
                     break
+                case 'angle':
+                    this.rotate(json.angle as number)
+                    shouldUpdateLines = true
+                    break
                 case 'properties':
                     this._properties = {
                         ...this.properties,
@@ -270,7 +308,7 @@ export abstract class Widget extends Layer {
             }
         }
 
-        if (isMoved || isResized) {
+        if (shouldUpdateLines) {
             for (const line of this.attachedLines) {
                 line.headBinding?.id === this._uuid &&
                     line.updatePointFromBinding('head')
@@ -281,7 +319,17 @@ export abstract class Widget extends Layer {
     }
 
     contains(x: number, y: number, scale: number): boolean {
-        return this.bounds.contains(x * scale, y * scale)
+        const sx = x * scale
+        const sy = y * scale
+
+        if (this._angle === 0) {
+            return this._bounds.contains(sx, sy)
+        }
+
+        const cx = this._x + this._width / 2
+        const cy = this._y + this._height / 2
+        const local = reverseRotatePoint(sx, sy, cx, cy, this._angle)
+        return this._localBounds.contains(local.x - this._x, local.y - this._y)
     }
 
     onMouseEnter() {}
@@ -353,6 +401,26 @@ export abstract class Widget extends Layer {
     // return true when changing font style is allowed
     canChangeFontStyle(): boolean {
         return false
+    }
+
+    // return true when widget can be rotated
+    canRotate(): boolean {
+        return false
+    }
+
+    rotate(newAngle: number) {
+        if (newAngle < 0 || newAngle >= 360) {
+            newAngle = ((newAngle % 360) + 360) % 360
+        }
+        this._angle = newAngle
+        this.updateBounds()
+
+        for (const line of this.attachedLines) {
+            line.headBinding?.id === this._uuid &&
+                line.updatePointFromBinding('head')
+            line.tailBinding?.id === this._uuid &&
+                line.updatePointFromBinding('tail')
+        }
     }
 
     // resizes the widget.
@@ -489,16 +557,39 @@ export abstract class Widget extends Layer {
     }
 
     getPointFromRelative(rx: number, ry: number): { x: number; y: number } {
+        // find center of the widget (unrotated)
         const cx = this.centerX
         const cy = this.centerY
-        const x = rx * (this.width / 2) + cx
-        const y = ry * (this.height / 2) + cy
-        return { x, y }
+
+        // find the unrotated point
+        const localX = cx + rx * (this.width / 2)
+        const localY = cy + ry * (this.height / 2)
+        if (this._angle === 0) {
+            return { x: localX, y: localY }
+        }
+
+        // apply rotation matrix
+        return rotatePoint(localX, localY, cx, cy, this._angle)
     }
 
     getRelativeFromPoint(x: number, y: number): { rx: number; ry: number } {
-        const rx = (x - this.centerX) / (this.width / 2)
-        const ry = (y - this.centerY) / (this.height / 2)
+        let localX = x
+        let localY = y
+
+        if (this._angle !== 0) {
+            const unrotated = reverseRotatePoint(
+                x,
+                y,
+                this.centerX,
+                this.centerY,
+                this._angle,
+            )
+            localX = unrotated.x
+            localY = unrotated.y
+        }
+
+        const rx = (localX - this.centerX) / (this.width / 2)
+        const ry = (localY - this.centerY) / (this.height / 2)
         return { rx, ry }
     }
 
@@ -577,6 +668,15 @@ export abstract class Widget extends Layer {
 
     get properties() {
         return this._properties
+    }
+
+    get angle() {
+        return this._angle
+    }
+
+    set angle(angle: number) {
+        this._angle = angle
+        this.updateBounds()
     }
 
     canSnap(): boolean {

@@ -6,6 +6,7 @@ import {
     CursorService,
     ResizeCursors,
     CursorPriority,
+    getRotatedResizeCursor,
 } from '@/core/services/CursorService'
 import { Widget } from '@/core/shapes/Widget.ts'
 import { CURSOR_OWNERS } from '@/helpers/Constant.ts'
@@ -88,13 +89,22 @@ export class CornerControl extends Control {
     }
 
     private getCursor(): ResizeCursors {
-        if (
-            this.position === CornerPosition.TOP_LEFT ||
-            this.position === CornerPosition.BOTTOM_RIGHT
-        ) {
-            return 'scale-resize-left'
+        let baseIndex: number
+        switch (this.position) {
+            case CornerPosition.TOP_LEFT:
+                baseIndex = 7 // nw-resize
+                break
+            case CornerPosition.TOP_RIGHT:
+                baseIndex = 1 // ne-resize
+                break
+            case CornerPosition.BOTTOM_RIGHT:
+                baseIndex = 3 // se-resize
+                break
+            case CornerPosition.BOTTOM_LEFT:
+                baseIndex = 5 // sw-resize
+                break
         }
-        return 'scale-resize-right'
+        return getRotatedResizeCursor(baseIndex, this.shape.angle)
     }
 
     onMouseEnter(): void {
@@ -137,24 +147,24 @@ export class CornerControl extends Control {
     }
 
     updatePosition() {
+        let point: { x: number; y: number }
         switch (this.position) {
             case CornerPosition.TOP_LEFT:
-                this._x = this.shape.left
-                this._y = this.shape.top
+                point = this.shape.getPointFromRelative(-1, -1)
                 break
             case CornerPosition.TOP_RIGHT:
-                this._x = this.shape.right
-                this._y = this.shape.top
+                point = this.shape.getPointFromRelative(1, -1)
                 break
             case CornerPosition.BOTTOM_LEFT:
-                this._x = this.shape.left
-                this._y = this.shape.bottom
+                point = this.shape.getPointFromRelative(-1, 1)
                 break
             case CornerPosition.BOTTOM_RIGHT:
-                this._x = this.shape.right
-                this._y = this.shape.bottom
+                point = this.shape.getPointFromRelative(1, 1)
                 break
         }
+
+        this._x = point.x
+        this._y = point.y
     }
 
     destroy() {

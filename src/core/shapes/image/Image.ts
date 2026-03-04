@@ -436,6 +436,7 @@ export class Image extends Widget {
             parent_widget_id: this._parent_widget_id,
             is_deleted: this._isDeleted,
             is_locked: this._isLocked,
+            angle: this._angle,
         }
     }
 
@@ -453,6 +454,7 @@ export class Image extends Widget {
                 properties: {
                     imageData: json.properties.imageData as ImageResponse,
                 },
+                angle: json.angle,
             },
             engine,
         )
@@ -464,6 +466,10 @@ export class Image extends Widget {
     }
 
     canSnap(): boolean {
+        return true
+    }
+
+    canRotate(): boolean {
         return true
     }
 

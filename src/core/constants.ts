@@ -43,10 +43,14 @@ export const CursorType = {
     PANNING: 'panning',
     CROSSHAIR: 'crosshair',
     TEXT: 'text',
-    HORIZONTAL_RESIZE: 'horizontal-resize',
-    VERTICAL_RESIZE: 'vertical-resize',
-    SCALE_RESIZE_LEFT: 'scale-resize-left',
-    SCALE_RESIZE_RIGHT: 'scale-resize-right',
+    N_RESIZE: 'n-resize',
+    NE_RESIZE: 'ne-resize',
+    E_RESIZE: 'e-resize',
+    SE_RESIZE: 'se-resize',
+    S_RESIZE: 's-resize',
+    SW_RESIZE: 'sw-resize',
+    W_RESIZE: 'w-resize',
+    NW_RESIZE: 'nw-resize',
     STICKY_NOTE: 'sticky-note',
 } as const
 

@@ -1,7 +1,6 @@
 import { Canvas, Point, setCanvasStyles } from '@/core/canvas/Canvas.ts'
 import { WsEngine } from '@/core/WsEngine.ts'
 import { UpperCanvasRenderer } from '@/core/renderers/UpperCanvasRenderer.ts'
-import { Emitter } from '@/core/emitter/Emitter.ts'
 import { Stage } from '../stage/Stage'
 import { ServiceManager } from '../services/ServiceManager'
 import { SelectionService } from '../services/SelectionService'
@@ -22,6 +21,7 @@ import { CursorService } from '@/core/services/CursorService.ts'
 import { DragHandler } from '@/core/controls/DragHandler'
 import { ResizeHandler } from '@/core/controls/ResizeHandler'
 import { ReshapeHandler } from '@/core/controls/ReshapeHandler'
+import { RotateHandler } from '@/core/controls/RotateHandler'
 import { TransactionHandler } from '@/core/transaction/TransactionHandler'
 import { PathToolService } from '@/core/services/PathToolService'
 import { LineToolService } from '@/core/services/LineToolService'
@@ -49,7 +49,7 @@ export type EngineEventsMap = {
     zoom: number
 }
 
-export class Engine extends Emitter<EngineEventsMap> {
+export class Engine {
     // TODO: remove slug and board id here for SST
     private _slugId: string
     private _boardId: number
@@ -65,6 +65,7 @@ export class Engine extends Emitter<EngineEventsMap> {
     private _dragHandler: DragHandler
     private _resizeHandler: ResizeHandler
     private _reshapeHandler: ReshapeHandler
+    private _rotateHandler: RotateHandler
     private _transactionHandler: TransactionHandler
     private _textEditor: TextEditor
     private _commands: CommandRegistry
@@ -75,9 +76,9 @@ export class Engine extends Emitter<EngineEventsMap> {
     stagesInitiated = new Signal()
     canvasInitiated = new Signal<Canvas>()
     initialized = new Signal()
+    zoomChanged = new Signal<number>()
 
     constructor(slugId: string, boardId: number, pageId: number) {
-        super()
         this._slugId = slugId
         this._boardId = boardId
         this._pageId = pageId
@@ -92,6 +93,7 @@ export class Engine extends Emitter<EngineEventsMap> {
         this._dragHandler = new DragHandler(this)
         this._resizeHandler = new ResizeHandler(this)
         this._reshapeHandler = new ReshapeHandler(this)
+        this._rotateHandler = new RotateHandler(this)
         this._mouseController = new MouseController()
         this._textEditor = new TextEditor(this)
         this.serviceManager = new ServiceManager()
@@ -146,8 +148,7 @@ export class Engine extends Emitter<EngineEventsMap> {
         this.canvas.dispose()
         this.wsEngine.dispose()
         this._mouseController.dispose()
-
-        this.clear() // remove eventListeners in Emitter class
+        this.zoomChanged.removeAll()
     }
 
     zoomTo(targetZoom: number) {
@@ -165,7 +166,7 @@ export class Engine extends Emitter<EngineEventsMap> {
             centerY / newScale - centerY / oldScale + this.canvas.translateY
 
         this.canvas.requestRender()
-        this.emit('zoom', this.canvas.zoom)
+        this.zoomChanged.dispatch(this.canvas.zoom)
     }
 
     private initializeServices() {
@@ -297,6 +298,10 @@ export class Engine extends Emitter<EngineEventsMap> {
 
     get reshapeHandler(): ReshapeHandler {
         return this._reshapeHandler
+    }
+
+    get rotateHandler(): RotateHandler {
+        return this._rotateHandler
     }
 
     get transactionHandler(): TransactionHandler {

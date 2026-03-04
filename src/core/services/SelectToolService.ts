@@ -256,7 +256,7 @@ export class SelectToolService extends Service {
                         return widget
                     }
                 } else {
-                    if (widget.bounds.contains(pointer.x, pointer.y)) {
+                    if (widget.contains(pointer.x, pointer.y, 1)) {
                         return widget
                     }
                 }

@@ -134,6 +134,7 @@ export class StickyNote extends Widget {
 
         ctx.save()
         ctx.translate(this._x, this._y)
+        ctx.rotate(this._angle, this._width / 2, this._height / 2)
 
         // render the sticky note background
         this.renderContent(renderContext)
@@ -368,6 +369,10 @@ export class StickyNote extends Widget {
         return this._text !== null && this._text !== undefined
     }
 
+    canRotate(): boolean {
+        return true
+    }
+
     changeFontStyle(style: FontStyleType, value: boolean): boolean {
         if (!this._text) return false
 
@@ -449,6 +454,7 @@ export class StickyNote extends Widget {
             properties: this.properties,
             is_deleted: this._isDeleted,
             is_locked: this._isLocked,
+            angle: this._angle,
         }
 
         if (this._parent_widget_id) {
@@ -512,6 +518,7 @@ export class StickyNote extends Widget {
                     fillColor: properties.fillColor,
                     textProperties: properties.textProperties,
                 },
+                angle: json.angle,
             },
             engine,
         )

@@ -366,6 +366,7 @@ export class Line extends Widget {
             },
             is_deleted: this._isDeleted,
             is_locked: this._isLocked,
+            angle: this._angle,
         }
 
         if (this._parent_widget_id) {

@@ -88,6 +88,7 @@ export abstract class Shape extends Widget {
             },
             is_deleted: this._isDeleted,
             is_locked: this._isLocked,
+            angle: this._angle,
         }
 
         if (this._parent_widget_id) {
@@ -343,13 +344,18 @@ export abstract class Shape extends Widget {
         return true
     }
 
+    canRotate(): boolean {
+        return true
+    }
+
     getSnapPoints(): { x: number; y: number }[] {
-        const bounds = this.bounds
-        return [
-            { x: bounds.x + bounds.width / 2, y: bounds.y }, // top center
-            { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height }, // bottom center
-            { x: bounds.x, y: bounds.y + bounds.height / 2 }, // left center
-            { x: bounds.x + bounds.width, y: bounds.y + bounds.height / 2 }, // right center
+        const points = [
+            this.getPointFromRelative(-1, 0), // top center
+            this.getPointFromRelative(1, 0), // bottom center
+            this.getPointFromRelative(0, -1), // left center
+            this.getPointFromRelative(0, 1), // right center
         ]
+
+        return points
     }
 }

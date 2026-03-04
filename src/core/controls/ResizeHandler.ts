@@ -7,6 +7,7 @@ import {
 import { EditingMethods } from '../transaction/State'
 import { Signal } from '../signal/Signal'
 import { WidgetType } from '@/core/constants.ts'
+import { rotatePoint, reverseRotatePoint } from '@/core/geometry/math'
 
 export enum ResizePosition {
     EDGE_LEFT,
@@ -17,6 +18,58 @@ export enum ResizePosition {
     CORNER_TOP_RIGHT,
     CORNER_BOTTOM_LEFT,
     CORNER_BOTTOM_RIGHT,
+}
+
+function calculateResizedBounds(
+    initialLeft: number,
+    initialTop: number,
+    initialWidth: number,
+    initialHeight: number,
+    newWidth: number,
+    newHeight: number,
+    angleDegrees: number,
+    anchorRx: number,
+    anchorRy: number,
+): { left: number; top: number } {
+    if (angleDegrees === 0 || !angleDegrees) {
+        const left =
+            initialLeft + ((anchorRx + 1) / 2) * (initialWidth - newWidth)
+        const top =
+            initialTop + ((anchorRy + 1) / 2) * (initialHeight - newHeight)
+        return { left, top }
+    }
+
+    const initialCx = initialLeft + initialWidth / 2
+    const initialCy = initialTop + initialHeight / 2
+    const initialLocalAnchorX = initialCx + anchorRx * (initialWidth / 2)
+    const initialLocalAnchorY = initialCy + anchorRy * (initialHeight / 2)
+
+    const globalAnchor = rotatePoint(
+        initialLocalAnchorX,
+        initialLocalAnchorY,
+        initialCx,
+        initialCy,
+        angleDegrees,
+    )
+
+    const localAnchorVecX = anchorRx * (newWidth / 2)
+    const localAnchorVecY = anchorRy * (newHeight / 2)
+
+    const rotAnchorVec = rotatePoint(
+        localAnchorVecX,
+        localAnchorVecY,
+        0,
+        0,
+        angleDegrees,
+    )
+
+    const newCx = globalAnchor.x - rotAnchorVec.x
+    const newCy = globalAnchor.y - rotAnchorVec.y
+
+    return {
+        left: newCx - newWidth / 2,
+        top: newCy - newHeight / 2,
+    }
 }
 
 /*
@@ -119,8 +172,20 @@ export class ResizeHandler {
     }
 
     private resizeFromEdge(data: CanvasMouseEvent): boolean {
-        const deltaX = data.pointer.x - this.initialBounds.pointerX
-        const deltaY = data.pointer.y - this.initialBounds.pointerY
+        let deltaX = data.pointer.x - this.initialBounds.pointerX
+        let deltaY = data.pointer.y - this.initialBounds.pointerY
+
+        if (this.shape.angle !== 0) {
+            const rot = reverseRotatePoint(
+                deltaX,
+                deltaY,
+                0,
+                0,
+                this.shape.angle,
+            )
+            deltaX = rot.x
+            deltaY = rot.y
+        }
 
         let isUpdated = true
 
@@ -131,130 +196,104 @@ export class ResizeHandler {
             minWidth = Math.max(minWidth, (this.shape as any).getMinWidth())
         }
 
+        let newWidth = this.initialBounds.width
+        let newHeight = this.initialBounds.height
+        let anchorRx = 0
+        let anchorRy = 0
+
         switch (this.position) {
             case ResizePosition.EDGE_LEFT:
-                // with shift
                 if (data.e.shiftKey) {
-                    const newWidth = Math.max(
+                    newWidth = Math.max(
                         minWidth,
                         this.initialBounds.width - deltaX * 2,
                     )
-                    const actualDelta =
-                        (this.initialBounds.width - newWidth) / 2
-                    this.shape.resize({
-                        width: newWidth,
-                        left: this.initialBounds.widgetX + actualDelta,
-                    })
+                    anchorRx = 0
                 } else {
-                    // standard
-                    const newWidth = Math.max(
+                    newWidth = Math.max(
                         minWidth,
                         this.initialBounds.width - deltaX,
                     )
-                    const actualDelta = this.initialBounds.width - newWidth
-                    this.shape.resize({
-                        width: newWidth,
-                        left: this.initialBounds.widgetX + actualDelta,
-                    })
-                }
-                if (
-                    isTextWidget &&
-                    (this.shape as any).createOrUpdateParagraph
-                ) {
-                    ;(this.shape as any).createOrUpdateParagraph()
+                    anchorRx = 1
                 }
                 break
             case ResizePosition.EDGE_RIGHT:
-                // with shift
                 if (data.e.shiftKey) {
-                    const newWidth = Math.max(
+                    newWidth = Math.max(
                         minWidth,
                         this.initialBounds.width + deltaX * 2,
                     )
-                    const actualDelta =
-                        (newWidth - this.initialBounds.width) / 2
-                    this.shape.resize({
-                        width: newWidth,
-                        left: this.initialBounds.widgetX - actualDelta,
-                    })
+                    anchorRx = 0
                 } else {
-                    // standard
-                    this.shape.resize({
-                        width: Math.max(
-                            minWidth,
-                            this.initialBounds.width + deltaX,
-                        ),
-                    })
-                }
-                if (
-                    isTextWidget &&
-                    (this.shape as any).createOrUpdateParagraph
-                ) {
-                    ;(this.shape as any).createOrUpdateParagraph()
+                    newWidth = Math.max(
+                        minWidth,
+                        this.initialBounds.width + deltaX,
+                    )
+                    anchorRx = -1
                 }
                 break
             case ResizePosition.EDGE_TOP:
-                // For text widgets, don't allow height resize (height is determined by content)
                 if (isTextWidget) {
                     isUpdated = false
                     break
                 }
-                // with shift
                 if (data.e.shiftKey) {
-                    const newHeight = Math.max(
+                    newHeight = Math.max(
                         ResizeHandler.MIN_DIMENSION,
                         this.initialBounds.height - deltaY * 2,
                     )
-                    const actualDelta =
-                        (this.initialBounds.height - newHeight) / 2
-                    this.shape.resize({
-                        height: newHeight,
-                        top: this.initialBounds.widgetY + actualDelta,
-                    })
+                    anchorRy = 0
                 } else {
-                    // standard
-                    const newHeight = Math.max(
+                    newHeight = Math.max(
                         ResizeHandler.MIN_DIMENSION,
                         this.initialBounds.height - deltaY,
                     )
-                    const actualDelta = this.initialBounds.height - newHeight
-                    this.shape.resize({
-                        height: newHeight,
-                        top: this.initialBounds.widgetY + actualDelta,
-                    })
+                    anchorRy = 1
                 }
                 break
             case ResizePosition.EDGE_BOTTOM:
-                // For text widgets, don't allow height resize (height is determined by content)
                 if (isTextWidget) {
                     isUpdated = false
                     break
                 }
-                // with shift
                 if (data.e.shiftKey) {
-                    const newHeight = Math.max(
+                    newHeight = Math.max(
                         ResizeHandler.MIN_DIMENSION,
                         this.initialBounds.height + deltaY * 2,
                     )
-                    const actualDelta =
-                        (newHeight - this.initialBounds.height) / 2
-                    this.shape.resize({
-                        height: newHeight,
-                        top: this.initialBounds.widgetY - actualDelta,
-                    })
+                    anchorRy = 0
                 } else {
-                    // standard
-                    this.shape.resize({
-                        height: Math.max(
-                            ResizeHandler.MIN_DIMENSION,
-                            this.initialBounds.height + deltaY,
-                        ),
-                    })
+                    newHeight = Math.max(
+                        ResizeHandler.MIN_DIMENSION,
+                        this.initialBounds.height + deltaY,
+                    )
+                    anchorRy = -1
                 }
                 break
             default:
                 isUpdated = false
                 break
+        }
+
+        if (isUpdated) {
+            const bounds = calculateResizedBounds(
+                this.initialBounds.widgetX,
+                this.initialBounds.widgetY,
+                this.initialBounds.width,
+                this.initialBounds.height,
+                newWidth,
+                newHeight,
+                this.shape.angle,
+                anchorRx,
+                anchorRy,
+            )
+
+            this.shape.resize({
+                width: newWidth,
+                height: newHeight,
+                left: bounds.left,
+                top: bounds.top,
+            })
         }
         return isUpdated
     }
@@ -264,30 +303,49 @@ export class ResizeHandler {
         let deltaY = data.pointer.y - this.initialBounds.pointerY
         const initial = this.initialBounds
 
+        if (this.shape.angle !== 0) {
+            const rot = reverseRotatePoint(
+                deltaX,
+                deltaY,
+                0,
+                0,
+                this.shape.angle,
+            )
+            deltaX = rot.x
+            deltaY = rot.y
+        }
+
         // Special handling for text widgets - scale font size AND resize
         if (this.shape.widgetType === WidgetType.TEXTBOX) {
-            // Calculate scale factor based on diagonal distance change
             const initialDiagonal = Math.sqrt(
                 initial.width ** 2 + initial.height ** 2,
             )
 
-            // Calculate current diagonal based on the corner being dragged
             let currentWidth = initial.width
             let currentHeight = initial.height
+            let anchorRx = 0
+            let anchorRy = 0
 
-            // Determine new dimensions based on corner
             if (this.position === ResizePosition.CORNER_BOTTOM_RIGHT) {
                 currentWidth = initial.width + deltaX
                 currentHeight = initial.height + deltaY
+                anchorRx = -1
+                anchorRy = -1
             } else if (this.position === ResizePosition.CORNER_BOTTOM_LEFT) {
                 currentWidth = initial.width - deltaX
                 currentHeight = initial.height + deltaY
+                anchorRx = 1
+                anchorRy = -1
             } else if (this.position === ResizePosition.CORNER_TOP_RIGHT) {
                 currentWidth = initial.width + deltaX
                 currentHeight = initial.height - deltaY
+                anchorRx = -1
+                anchorRy = 1
             } else if (this.position === ResizePosition.CORNER_TOP_LEFT) {
                 currentWidth = initial.width - deltaX
                 currentHeight = initial.height - deltaY
+                anchorRx = 1
+                anchorRy = 1
             }
 
             const currentDiagonal = Math.sqrt(
@@ -300,67 +358,40 @@ export class ResizeHandler {
                 Math.round(initial.fontSize * scaleFactor),
             )
 
-            // Apply font size change
             if ((this.shape as any).changeFontSize) {
                 ;(this.shape as any).changeFontSize(newFontSize)
             }
 
-            // Now we need to resize the box to match the new scale
             const newWidth = Math.max(
                 ResizeHandler.MIN_DIMENSION,
                 initial.width * scaleFactor,
             )
 
-            // Apply the resize with correct anchor logic
-            switch (this.position) {
-                case ResizePosition.CORNER_BOTTOM_RIGHT:
-                    this.shape.resize({
-                        width: newWidth,
-                    })
-                    break
-                case ResizePosition.CORNER_BOTTOM_LEFT:
-                    this.shape.resize({
-                        width: newWidth,
-                        left: initial.widgetX + (initial.width - newWidth),
-                    })
-                    break
-                case ResizePosition.CORNER_TOP_RIGHT:
-                    this.shape.resize({
-                        width: newWidth,
-                        top: initial.widgetY, // Top stays same, height auto-adjusts
-                    })
-                    break
-                case ResizePosition.CORNER_TOP_LEFT:
-                    this.shape.resize({
-                        width: newWidth,
-                        left: initial.widgetX + (initial.width - newWidth),
-                        top: initial.widgetY, // We'll adjust top after height calculation
-                    })
-                    break
-            }
+            this.shape.resize({ width: newWidth })
 
-            // Re-create paragraph to apply new dimensions and get correct height
-            if ((this.shape as any).createOrUpdateParagraph) {
-                ;(this.shape as any).createOrUpdateParagraph()
-            }
+            const newHeight = this.shape.height
 
-            // If anchoring to bottom (Top corners), we need to adjust top position based on new height
-            if (
-                this.position === ResizePosition.CORNER_TOP_RIGHT ||
-                this.position === ResizePosition.CORNER_TOP_LEFT
-            ) {
-                const newHeight = this.shape.height
-                const heightDiff = newHeight - initial.height
-                this.shape.resize({
-                    top: initial.widgetY - heightDiff,
-                })
-            }
+            const bounds = calculateResizedBounds(
+                initial.widgetX,
+                initial.widgetY,
+                initial.width,
+                initial.height,
+                newWidth,
+                newHeight,
+                this.shape.angle,
+                anchorRx,
+                anchorRy,
+            )
+
+            // apply final dimensions
+            this.shape.resize({
+                left: bounds.left,
+                top: bounds.top,
+            })
 
             return true
         }
 
-        // if shift is pressed, need to scale equally
-        // for images and sticky notes, we always want to scale equally
         const shouldLockAspectRatio =
             (data.e.shiftKey ||
                 this.shape.widgetType === WidgetType.IMAGE ||
@@ -368,7 +399,6 @@ export class ResizeHandler {
             initial.aspectRatio
 
         if (shouldLockAspectRatio) {
-            // determine the dominant axis
             if (!this._shiftDominantAxis) {
                 if (
                     Math.abs(deltaX) / initial.width >
@@ -394,79 +424,84 @@ export class ResizeHandler {
         }
 
         let isUpdated = true
+        let newWidth = initial.width
+        let newHeight = initial.height
+        let anchorRx = 0
+        let anchorRy = 0
+
         switch (this.position) {
             case ResizePosition.CORNER_BOTTOM_RIGHT:
-                this.shape.resize({
-                    width: Math.max(
-                        ResizeHandler.MIN_DIMENSION,
-                        initial.width + deltaX,
-                    ),
-                    height: Math.max(
-                        ResizeHandler.MIN_DIMENSION,
-                        initial.height + deltaY,
-                    ),
-                })
+                newWidth = Math.max(
+                    ResizeHandler.MIN_DIMENSION,
+                    initial.width + deltaX,
+                )
+                newHeight = Math.max(
+                    ResizeHandler.MIN_DIMENSION,
+                    initial.height + deltaY,
+                )
+                anchorRx = -1
+                anchorRy = -1
                 break
-
-            case ResizePosition.CORNER_BOTTOM_LEFT: // Bottom-Left: Anchor is Top-Right
-                {
-                    const newWidth = Math.max(
-                        ResizeHandler.MIN_DIMENSION,
-                        initial.width - deltaX,
-                    )
-                    const actualDeltaX = initial.width - newWidth
-                    this.shape.resize({
-                        width: newWidth,
-                        height: Math.max(
-                            ResizeHandler.MIN_DIMENSION,
-                            initial.height + deltaY,
-                        ),
-                        left: initial.widgetX + actualDeltaX,
-                    })
-                }
+            case ResizePosition.CORNER_BOTTOM_LEFT:
+                newWidth = Math.max(
+                    ResizeHandler.MIN_DIMENSION,
+                    initial.width - deltaX,
+                )
+                newHeight = Math.max(
+                    ResizeHandler.MIN_DIMENSION,
+                    initial.height + deltaY,
+                )
+                anchorRx = 1
+                anchorRy = -1
                 break
-
             case ResizePosition.CORNER_TOP_RIGHT:
-                {
-                    const newHeight = Math.max(
-                        ResizeHandler.MIN_DIMENSION,
-                        initial.height - deltaY,
-                    )
-                    const actualDeltaY = initial.height - newHeight
-                    this.shape.resize({
-                        width: Math.max(
-                            ResizeHandler.MIN_DIMENSION,
-                            initial.width + deltaX,
-                        ),
-                        height: newHeight,
-                        top: initial.widgetY + actualDeltaY,
-                    })
-                }
+                newWidth = Math.max(
+                    ResizeHandler.MIN_DIMENSION,
+                    initial.width + deltaX,
+                )
+                newHeight = Math.max(
+                    ResizeHandler.MIN_DIMENSION,
+                    initial.height - deltaY,
+                )
+                anchorRx = -1
+                anchorRy = 1
                 break
-
-            case ResizePosition.CORNER_TOP_LEFT: // Top-Left: Anchor is Bottom-Right
-                {
-                    const newWidth = Math.max(
-                        ResizeHandler.MIN_DIMENSION,
-                        initial.width - deltaX,
-                    )
-                    const newHeight = Math.max(
-                        ResizeHandler.MIN_DIMENSION,
-                        initial.height - deltaY,
-                    )
-                    const actualDeltaX = initial.width - newWidth
-                    const actualDeltaY = initial.height - newHeight
-                    this.shape.resize({
-                        width: newWidth,
-                        height: newHeight,
-                        left: initial.widgetX + actualDeltaX,
-                        top: initial.widgetY + actualDeltaY,
-                    })
-                }
+            case ResizePosition.CORNER_TOP_LEFT:
+                newWidth = Math.max(
+                    ResizeHandler.MIN_DIMENSION,
+                    initial.width - deltaX,
+                )
+                newHeight = Math.max(
+                    ResizeHandler.MIN_DIMENSION,
+                    initial.height - deltaY,
+                )
+                anchorRx = 1
+                anchorRy = 1
                 break
             default:
                 isUpdated = false
                 break
+        }
+
+        if (isUpdated) {
+            const bounds = calculateResizedBounds(
+                initial.widgetX,
+                initial.widgetY,
+                initial.width,
+                initial.height,
+                newWidth,
+                newHeight,
+                this.shape.angle,
+                anchorRx,
+                anchorRy,
+            )
+
+            this.shape.resize({
+                width: newWidth,
+                height: newHeight,
+                left: bounds.left,
+                top: bounds.top,
+            })
         }
 
         return isUpdated

@@ -22,6 +22,7 @@ import { LineBorder } from '@/core/shapes/nonCanvasShapes/LineBorder'
 import { PointControl } from '@/core/shapes/nonCanvasShapes/PointControl'
 import { Line } from '@/core/shapes/line/Line'
 import { WidgetType } from '@/core/constants.ts'
+import { RotateControl } from '../shapes/nonCanvasShapes/RotateControl'
 
 export class SelectionLayer extends Layer {
     private engine: Engine
@@ -149,6 +150,18 @@ export class SelectionLayer extends Layer {
         // do not show controls for path
         // TODO: need to find a better way to control this.
         if (widgets[0].widgetType === WidgetType.PATH) {
+            const rotateControl = new RotateControl(
+                {
+                    x: 0,
+                    y: 0,
+                    selectionLayer: this,
+                },
+                this.engine,
+                this.selectionService,
+            )
+
+            this.controls.push(rotateControl)
+            this.addChildren(rotateControl)
             return
         }
         if (widgets[0].isLocked) {
@@ -188,7 +201,27 @@ export class SelectionLayer extends Layer {
             return
         }
 
-        // TODO: fix order of controls when I fix the widget searching algo
+        if (
+            widgets[0].widgetType !== WidgetType.IMAGE &&
+            widgets[0].widgetType !== WidgetType.STICKY_NOTE
+        ) {
+            for (const position of edgeControls) {
+                const handle = new EdgeControl(
+                    {
+                        position,
+                        x: 0,
+                        y: 0,
+                        selectionLayer: this,
+                    },
+                    this.engine,
+                    this.selectionService,
+                )
+
+                this.controls.push(handle)
+                this.addChildren(handle)
+            }
+        }
+
         for (const position of cornerControls) {
             const handle = new CornerControl(
                 {
@@ -205,29 +238,18 @@ export class SelectionLayer extends Layer {
             this.addChildren(handle)
         }
 
-        // do not show edge controls for images and sticky notes
-        if (
-            widgets[0].widgetType === WidgetType.IMAGE ||
-            widgets[0].widgetType === WidgetType.STICKY_NOTE
-        ) {
-            return
-        }
+        const rotateControl = new RotateControl(
+            {
+                x: 0,
+                y: 0,
+                selectionLayer: this,
+            },
+            this.engine,
+            this.selectionService,
+        )
 
-        for (const position of edgeControls) {
-            const handle = new EdgeControl(
-                {
-                    position,
-                    x: 0,
-                    y: 0,
-                    selectionLayer: this,
-                },
-                this.engine,
-                this.selectionService,
-            )
-
-            this.controls.push(handle)
-            this.addChildren(handle)
-        }
+        this.controls.push(rotateControl)
+        this.addChildren(rotateControl)
     }
 
     /**

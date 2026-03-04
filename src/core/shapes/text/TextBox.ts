@@ -310,6 +310,10 @@ export class TextBox extends Widget {
         return true
     }
 
+    canRotate(): boolean {
+        return true
+    }
+
     changeFontStyle(style: FontStyleType, value: boolean): boolean {
         // update all textOps with the new style
         const updatedOps = this._textOps.map((op) => ({
@@ -379,10 +383,22 @@ export class TextBox extends Widget {
             properties: this.properties,
             is_deleted: this._isDeleted,
             is_locked: this._isLocked,
+            angle: this._angle,
             ...(this._parent_widget_id && {
                 parent_widget_id: this._parent_widget_id,
             }),
         }
+    }
+
+    resize(opt: {
+        left?: number
+        top?: number
+        width?: number
+        height?: number
+    }): boolean {
+        super.resize(opt)
+        this.createOrUpdateParagraph()
+        return true
     }
 
     static loadFromJson(json: WsWidget, engine: Engine): TextBox {
@@ -397,6 +413,7 @@ export class TextBox extends Widget {
                 z_index: json.z_index,
                 parent_widget_id: json.parent_widget_id,
                 is_locked: json.is_locked,
+                angle: json.angle,
             },
             engine,
         )
