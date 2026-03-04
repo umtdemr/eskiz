@@ -35,6 +35,9 @@ export interface SubtoolbarProps {
 export default function Subtoolbar({ engine }: SubtoolbarProps) {
     const [state, dispatch] = useReducer(reducer, initialSubtoolbarState)
     const selectionLayerRef = useRef<SelectionLayer | null>(null)
+    const selectionServiceRef = useRef<SelectionService>(
+        engine.getService<SelectionService>('selection'),
+    )
     const transformTimeoutRef = useRef<ReturnType<typeof setTimeout>>()
     const subtoolbarRef = useRef<HTMLDivElement>(null)
     const { closeDropdown } = useBoundStore()
@@ -52,8 +55,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
         }
 
         const command = engine.getCommand(action.btnActionProps.command)
-        const selectionService =
-            engine.getService<SelectionService>('selection')
+        const selectionService = selectionServiceRef.current
         const ctx = {
             selectionService,
             engine,
@@ -66,8 +68,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
     }
 
     useEffect(() => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
+        const selectionService = selectionServiceRef.current
 
         selectionLayerRef.current =
             engine.stage.nonCanvasDynamicContainer.selectionLayer
@@ -158,6 +159,14 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
 
     if (!selectionLayerRef.current?.selectionBorder) return null
 
+    const selectedWidgets = selectionServiceRef.current.selected
+    const singleWidget =
+        selectedWidgets.length === 1 ? selectedWidgets[0] : null
+    const widgetAngle = singleWidget?.angle ?? 0
+    const normalizedAngle = ((widgetAngle % 360) + 360) % 360
+    const rotateControlAtTop =
+        singleWidget != null && normalizedAngle > 90 && normalizedAngle < 270
+
     const position = {
         x: selectionLayerRef.current.selectionBorder.bounds.left,
         y: selectionLayerRef.current.selectionBorder.bounds.top,
@@ -178,7 +187,9 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             })}
             style={{
                 left: `${transformedPos.x}px`,
-                top: `${transformedPos.y - 70}px`,
+                top: rotateControlAtTop
+                    ? `${transformedPos.y - 100}px`
+                    : `${transformedPos.y - 70}px`,
             }}
         >
             <>
