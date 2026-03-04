@@ -88,6 +88,7 @@ export type WsWidget = {
     is_deleted: boolean
     is_locked: boolean
     widget_type: string
+    angle: number
     sub_type?: string | undefined
     parent_widget_id?: string
 }

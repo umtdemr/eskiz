@@ -85,6 +85,7 @@ export class Pen extends Path {
             ...(this._parent_widget_id && {
                 parent_widget_id: this._parent_widget_id,
             }),
+            angle: this._angle,
         }
     }
 
@@ -101,6 +102,7 @@ export class Pen extends Path {
                 z_index: json.z_index,
                 parent_widget_id: json.parent_widget_id,
                 is_locked: json.is_locked,
+                angle: json.angle,
             },
             engine,
         )

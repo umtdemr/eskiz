@@ -453,6 +453,7 @@ export class StickyNote extends Widget {
             properties: this.properties,
             is_deleted: this._isDeleted,
             is_locked: this._isLocked,
+            angle: this._angle,
         }
 
         if (this._parent_widget_id) {
@@ -516,6 +517,7 @@ export class StickyNote extends Widget {
                     fillColor: properties.fillColor,
                     textProperties: properties.textProperties,
                 },
+                angle: json.angle,
             },
             engine,
         )

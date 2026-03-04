@@ -64,6 +64,7 @@ export type WidgetJson = {
     parent_widget_id?: string
     is_deleted: boolean
     is_locked: boolean
+    angle: number
 }
 
 export interface WidgetClickedSignal {
@@ -263,25 +264,24 @@ export abstract class Widget extends Layer {
     }
 
     updateWithPartialState(json: Partial<WsWidget>) {
-        let isMoved = false
-        let isResized = false
+        let shouldUpdateLines = false
         for (const key of Object.keys(json)) {
             switch (key) {
                 case 'x':
                     this.left = json.x!
-                    isMoved = true
+                    shouldUpdateLines = true
                     break
                 case 'y':
                     this.top = json.y!
-                    isMoved = true
+                    shouldUpdateLines = true
                     break
                 case 'width':
                     this.width = json.width!
-                    isResized = true
+                    shouldUpdateLines = true
                     break
                 case 'height':
                     this.height = json.height!
-                    isResized = true
+                    shouldUpdateLines = true
                     break
                 case 'z_index':
                     this.zIndex = json.z_index!
@@ -295,6 +295,10 @@ export abstract class Widget extends Layer {
                 case 'is_locked':
                     this.isLocked = json.is_locked!
                     break
+                case 'angle':
+                    this.rotate(json.angle as number)
+                    shouldUpdateLines = true
+                    break
                 case 'properties':
                     this._properties = {
                         ...this.properties,
@@ -304,7 +308,7 @@ export abstract class Widget extends Layer {
             }
         }
 
-        if (isMoved || isResized) {
+        if (shouldUpdateLines) {
             for (const line of this.attachedLines) {
                 line.headBinding?.id === this._uuid &&
                     line.updatePointFromBinding('head')
