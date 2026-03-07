@@ -1,21 +1,21 @@
-import { useRef } from 'react'
 import {
     ColorList,
     ColorSelectSignature,
 } from '@/components/colorList/ColorList'
-import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import { ChangeBorderColor } from '@/core/command/ChangeBorderColor'
+import { Engine } from '@/core/engine/Engine'
 import { CommandCtx } from '@/core/command/Command'
+import { ChangeBorderColor } from '@/core/command/ChangeBorderColor'
+import { useRef } from 'react'
 
 export interface LineColorDropdownProps {
     engine: Engine
-    closeDropdown: () => void
+    onColorChange: (colorStr: string) => void
 }
 
 export function LineColorDropdown({
     engine,
-    closeDropdown,
+    onColorChange,
 }: LineColorDropdownProps) {
     const changeBorderColorCommandRef = useRef(
         new ChangeBorderColor('changeBorderColor'),
@@ -40,7 +40,7 @@ export function LineColorDropdown({
             },
         }
         changeBorderColorCommandRef.current?.execute(ctx)
-        closeDropdown()
+        onColorChange(`rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`)
     }
 
     return (

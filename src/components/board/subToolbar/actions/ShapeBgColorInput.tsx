@@ -10,13 +10,28 @@ import { RGBA } from '@/core/shapes/Color'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { CommandCtx } from '@/core/command/Command'
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { ChangeBgColor } from '@/core/command/ChangeBgColor'
+import { BgColorIcon } from '@/components/colorButton/BgColorIcon'
 
 export interface ShapeBgColorInputProps {
     id: string
     tooltip: string
     engine: Engine
+}
+
+function getSelectedFillColor(engine: Engine): string | null {
+    const selectionService = engine.getService<SelectionService>('selection')
+    if (selectionService.selected.length !== 1) return null
+    const widget = selectionService.selected[0]
+
+    if (widget.properties && 'fillColor' in widget.properties) {
+        const color = widget.properties.fillColor as RGBA
+        if (color) {
+            return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`
+        }
+    }
+    return null
 }
 
 export function ShapeBgColorInput({
@@ -27,6 +42,10 @@ export function ShapeBgColorInput({
     const commandRef = useRef(new ChangeBgColor('changeBgColor'))
     const { activeDropdown, toggleDropdown } = useBoundStore()
     const isActive = activeDropdown === 'shapeBgColor'
+
+    const [bgColor, setBgColor] = useState<string | null>(() =>
+        getSelectedFillColor(engine),
+    )
 
     const handleClick = () => {
         toggleDropdown('shapeBgColor')
@@ -45,6 +64,13 @@ export function ShapeBgColorInput({
             },
         }
         commandRef.current?.execute(ctx)
+
+        const c = action.color
+        setBgColor(`rgba(${c.r}, ${c.g}, ${c.b}, ${c.a})`)
+
+        if (action.isImmediate) {
+            toggleDropdown('shapeBgColor')
+        }
     }
 
     return (
@@ -57,20 +83,7 @@ export function ShapeBgColorInput({
                             onClick={handleClick}
                             data-active={isActive}
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="24"
-                                height="24"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="lucide lucide-squircle-icon lucide-squircle"
-                            >
-                                <path d="M12 3c7.2 0 9 1.8 9 9s-1.8 9-9 9-9-1.8-9-9 1.8-9 9-9" />
-                            </svg>
+                            <BgColorIcon color={bgColor || 'none'} />
                         </Button>
                     </div>
                 </TooltipTrigger>

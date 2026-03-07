@@ -25,10 +25,12 @@ import { Rectangle } from '@/core/shapes/Rectangle'
 
 export interface ShapeBorderColorDropdownProps {
     engine: Engine
+    onColorChange: (colorStr: string, isImmediate?: boolean) => void
 }
 
 export function ShapeBorderColorDropdown({
     engine,
+    onColorChange,
 }: ShapeBorderColorDropdownProps) {
     const [opacity, setOpacity] = useState(1)
     const [thickness, setThickness] = useState(DEFAULT_SHAPE_THICKNESS)
@@ -133,6 +135,8 @@ export function ShapeBorderColorDropdown({
                 ? selected.properties.color
                 : selected.properties.strokeColor
 
+        if (!colorProp) return
+
         const color = {
             ...(colorProp as RGBA),
             a: newOpacity,
@@ -148,6 +152,7 @@ export function ShapeBorderColorDropdown({
             },
         }
         changeBorderColorCommandRef.current?.execute(ctx)
+        onColorChange(`rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`)
     }
 
     const handleColorSelect = (signature: ColorSelectSignature) => {
@@ -169,6 +174,10 @@ export function ShapeBorderColorDropdown({
             },
         }
         changeBorderColorCommandRef.current?.execute(ctx)
+        onColorChange(
+            `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`,
+            signature.isImmediate,
+        )
     }
 
     const handleThicknessChange = (thicknesses: number[]) => {
