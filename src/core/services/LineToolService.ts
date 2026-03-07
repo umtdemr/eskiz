@@ -64,20 +64,23 @@ export class LineToolService extends Service {
     private onMouseDown(data: CanvasMouseEvent) {
         const { x, y } = data.pointer
 
-        this.line = new Line({
-            width: 0,
-            x: 0,
-            y: 0,
-            parentLayer: this.engine.stage.widgetsDefaultLayer,
-            properties: {
-                hasHeadArrow: true,
-                points: [
-                    [x, y],
-                    [x, y],
-                    // TODO: add stroke color and width later
-                ],
+        this.line = new Line(
+            {
+                width: 0,
+                x: 0,
+                y: 0,
+                parentLayer: this.engine.stage.widgetsDefaultLayer,
+                properties: {
+                    hasHeadArrow: true,
+                    points: [
+                        [x, y],
+                        [x, y],
+                        // TODO: add stroke color and width later
+                    ],
+                },
             },
-        })
+            this.engine,
+        )
 
         let scanResult = this.currentScanResult
 

@@ -161,7 +161,11 @@ export abstract class Widget extends Layer {
         // TODO: we should use world transform if we decide to use children
         // with current implementation, we render the widget if it has a parent
         // widget even if it is outside the viewport
-        if (renderContext.viewport && !(this._parent instanceof Widget)) {
+        if (
+            renderContext.viewport &&
+            !(this._parent instanceof Widget) &&
+            this._width > 0
+        ) {
             const vp = renderContext.viewport
             const b = this.bounds
             const padding = 5
@@ -181,7 +185,9 @@ export abstract class Widget extends Layer {
 
         // Apply this widget's transform
         ctx.translate(this._x, this._y)
-        ctx.rotate(this._angle, this._width / 2, this._height / 2)
+        if (this._angle > 0) {
+            ctx.rotate(this._angle, this._width / 2, this._height / 2)
+        }
 
         // Render this widget
         this.renderContent(renderContext)
