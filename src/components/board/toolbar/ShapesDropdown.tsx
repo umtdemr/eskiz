@@ -14,7 +14,11 @@ import {
     useState,
 } from 'react'
 import useOnClickOutside from '@/hooks/UseOutsideClick.ts'
-import { ACTION_MODES, SUB_ACTION_MODES } from '@/helpers/Constant'
+import {
+    ACTION_MODES,
+    SUB_ACTION_MODES,
+    TOOLBAR_COLORS,
+} from '@/helpers/Constant'
 
 function isSubModeForShapes(
     mode: keyof typeof SUB_ACTION_MODES | undefined,
@@ -88,16 +92,21 @@ export function ShapesDropdown({
                     <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
-                            className={clsx('px-2', {
-                                'bg-amber-500': isSubModeForShapes(
+                            className={clsx('px-2 [&_svg]:size-5', {
+                                'bg-sky-100': isSubModeForShapes(
                                     activeMode?.subMode,
                                 ),
-                                'hover:bg-amber-500': activeMode?.subMode,
                             })}
                             onClick={toggleVisibility}
                             ref={shapesBtnRef}
                         >
-                            <Shapes />
+                            <Shapes
+                                color={
+                                    isSubModeForShapes(activeMode?.subMode)
+                                        ? TOOLBAR_COLORS.SELECTED
+                                        : TOOLBAR_COLORS.DEFAULT
+                                }
+                            />
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent side={'right'}>
@@ -114,11 +123,8 @@ export function ShapesDropdown({
                                 <TooltipTrigger asChild>
                                     <Button
                                         variant="ghost"
-                                        className={clsx('px-2', {
-                                            'bg-amber-500':
-                                                activeMode?.subMode ===
-                                                shape.mode,
-                                            'hover:bg-amber-500':
+                                        className={clsx('px-2 [&_svg]:size-5', {
+                                            'bg-sky-100':
                                                 activeMode?.subMode ===
                                                 shape.mode,
                                         })}
@@ -126,7 +132,16 @@ export function ShapesDropdown({
                                             handleShapeModeChange(shape.mode)
                                         }
                                     >
-                                        {shape.icon && <shape.icon />}
+                                        {shape.icon && (
+                                            <shape.icon
+                                                color={
+                                                    activeMode?.subMode ===
+                                                    shape.mode
+                                                        ? TOOLBAR_COLORS.SELECTED
+                                                        : TOOLBAR_COLORS.DEFAULT
+                                                }
+                                            />
+                                        )}
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>
