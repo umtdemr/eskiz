@@ -256,6 +256,8 @@ export class TextService extends Service {
         this.transactionId = null
         this.isTextboxCreatedWithService = false
         this.isTextboxSavedInDb = false
+
+        this.widget.boundsChanged.remove(this.onWidgetBoundsChanged, this)
     }
 
     private onDeselected() {
@@ -283,6 +285,72 @@ export class TextService extends Service {
         ) {
             this.widget = widget
             this.widget.clicked.add(this.onWidgetClicked, this)
+        }
+    }
+
+    private onWidgetClicked(data: WidgetClickedSignal) {
+        if (data.widget instanceof Shape) {
+            this.onShapeClicked()
+        } else if (data.widget instanceof TextBox) {
+            this.onTextboxClicked()
+        } else if (data.widget instanceof StickyNote) {
+            this.onStickyNoteClicked()
+        }
+        this.initializeTransaction()
+        this.widget.boundsChanged.add(this.onWidgetBoundsChanged, this)
+    }
+
+    private onWidgetBoundsChanged() {
+        if (
+            !this.widget ||
+            (!this.activeSession && this.activeSession === '')
+        ) {
+            return
+        }
+
+        if (this.widget instanceof Shape) {
+            const bounds = this.widget.calcTextBounds()
+            const props = {
+                x: this.widget.left + bounds.x + bounds.width / 2,
+                y: this.widget.top + bounds.y + bounds.height / 2,
+                width: bounds.width,
+                height: bounds.height,
+                angle: this.widget.angle,
+            }
+            this.textEditor.updateSize(props)
+            this.textEditor.focus()
+        } else if (this.widget instanceof TextBox) {
+            const textBox = this.widget as TextBox
+            const props = {
+                x: textBox.centerX,
+                y: textBox.centerY,
+                width: textBox.width,
+                height: textBox.height,
+                fontSize: textBox.fontSize,
+                angle: textBox.angle,
+            }
+            this.textEditor.updateSize(props)
+            this.textEditor.focus()
+        } else if (this.widget instanceof StickyNote) {
+            const bounds = this.widget.calcTextBounds()
+            const contentScale = this.widget.getScaleFactor()
+
+            const props = {
+                x:
+                    bounds.x * contentScale +
+                    this.widget.left +
+                    (bounds.width * contentScale) / 2,
+                y:
+                    bounds.y * contentScale +
+                    this.widget.top +
+                    (bounds.height * contentScale) / 2,
+                width: bounds.width,
+                height: bounds.height,
+                contentScale,
+                angle: this.widget.angle,
+            }
+            this.textEditor.updateSize(props)
+            this.textEditor.focus()
         }
     }
 
@@ -336,17 +404,6 @@ export class TextService extends Service {
         textBox.deselected.addOnce(this.onDeselected, this)
         this.textEditor.textChanged.add(this.onTextChanged, this)
         this.engine.canvas.requestRender()
-    }
-
-    private onWidgetClicked(data: WidgetClickedSignal) {
-        if (data.widget instanceof Shape) {
-            this.onShapeClicked()
-        } else if (data.widget instanceof TextBox) {
-            this.onTextboxClicked()
-        } else if (data.widget instanceof StickyNote) {
-            this.onStickyNoteClicked()
-        }
-        this.initializeTransaction()
     }
 
     private onStickyNoteClicked() {
