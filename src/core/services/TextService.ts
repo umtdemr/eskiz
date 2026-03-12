@@ -35,9 +35,7 @@ export class TextService extends Service {
     private selectionService: SelectionService
     private cursorToolName = CURSOR_OWNERS.TEXT_SERVICE
     private textEditor: TextEditor
-    private textBox: TextBox
-    private shape: Shape
-    private stickyNote: StickyNote
+    private widget: Widget
     private activeSession: TextEditingSession | null
     private isTextboxCreatedWithService: boolean
     private isTextboxSavedInDb: boolean
@@ -93,17 +91,20 @@ export class TextService extends Service {
     private onMouseDown(data: CanvasMouseEvent) {}
     private onMouseMove(data: CanvasMouseEvent) {}
     private onMouseUp(data: CanvasMouseEvent) {
-        const textbox = new TextBox({
-            x: data.pointer.x,
-            y: data.pointer.y,
-            width: 200,
-            uuid: nanoid(),
-            properties: {
-                text: 'Type to something',
-                fontSize: 14,
-                isPlaceholder: true,
+        const textbox = new TextBox(
+            {
+                x: data.pointer.x,
+                y: data.pointer.y,
+                width: 200,
+                uuid: nanoid(),
+                properties: {
+                    text: 'Type to something',
+                    fontSize: 14,
+                    isPlaceholder: true,
+                },
             },
-        })
+            this.engine,
+        )
 
         this.engine.stage.addWidget(textbox)
         this.engine.historyManager.push(
@@ -126,28 +127,22 @@ export class TextService extends Service {
             maxLength: TEXTBOX_MAX_CHARS,
         })
 
-        this.textBox = textbox
+        this.widget = textbox
+        const widget = this.widget as TextBox
         this.isTextboxCreatedWithService = true // flag for identifying if the textbox is created just now
-        this.textBox.hideText() // hide text when text editor is active
-        this.textBox.deselected.addOnce(this.onDeselected, this)
+        widget.hideText() // hide text when text editor is active
+        widget.deselected.addOnce(this.onDeselected, this)
         this.textEditor.textChanged.add(this.onTextChanged, this)
 
-        this.selectionService.selectWidget(textbox)
+        this.selectionService.selectWidget(widget)
         this.activeSession = TextSessionType.TEXTBOX
         this.toolService.changeTool(ACTION_MODES.SELECT)
     }
 
     private initializeTransaction() {
         const editTable = new Map<Widget, EditingMethods[]>()
-        if (this.activeSession === TextSessionType.SHAPE_TEXT) {
-            editTable.set(this.shape, ['text'])
-        }
-        if (this.activeSession === TextSessionType.TEXTBOX) {
-            editTable.set(this.textBox, ['text'])
-        }
-        if (this.activeSession === TextSessionType.STICKY_NOTE) {
-            editTable.set(this.stickyNote, ['text'])
-        }
+
+        editTable.set(this.widget, ['text'])
 
         if (!editTable.size) return
 
@@ -163,51 +158,54 @@ export class TextService extends Service {
         // replace one \n to avoid +1 line issue
         const trimmedText = props.text.replace(/\n$/, '')
 
-        if (this.activeSession === TextSessionType.TEXTBOX && this.textBox) {
+        if (
+            this.activeSession === TextSessionType.TEXTBOX &&
+            this.widget instanceof TextBox
+        ) {
             // if textbox is newly created by this service, add it to the db
             if (this.isTextboxCreatedWithService && !this.isTextboxSavedInDb) {
                 this.isTextboxSavedInDb = true
                 const uuid = nanoid()
                 const widgetsService =
                     this.engine.getService<WidgetsService>('widgets')
-                this.textBox.uuid = uuid
+                this.widget.uuid = uuid
                 const json = {
-                    ...this.textBox?.toJson(),
+                    ...this.widget?.toJson(),
                     page_id: this.engine.pageId,
                 }
 
                 // todo (transaction): check error, if necessary delete from canvas
                 widgetsService.addWidget(json as AddWidgetPayload)
                 this.engine.historyManager.push(
-                    new CreationHistoryEntry(this.engine, this.textBox),
+                    new CreationHistoryEntry(this.engine, this.widget),
                 )
                 this.initializeTransaction()
             }
 
-            this.textBox.setTextOps(trimmedText, props.textOps)
+            this.widget.setTextOps(trimmedText, props.textOps)
 
             // sync text editor dimensions with text box
             this.textEditor.updateSize({
-                width: this.textBox.width,
-                height: this.textBox.height,
-                x: this.textBox.centerX,
-                y: this.textBox.centerY,
+                width: this.widget.width,
+                height: this.widget.height,
+                x: this.widget.centerX,
+                y: this.widget.centerY,
             })
             this.engine.canvas.requestRender()
         } else if (
             this.activeSession === TextSessionType.SHAPE_TEXT &&
-            this.shape
+            this.widget instanceof Shape
         ) {
-            this.shape.updateText(props.text, props.textOps)
+            this.widget.updateText(props.text, props.textOps)
         } else if (
             this.activeSession === TextSessionType.STICKY_NOTE &&
-            this.stickyNote
+            this.widget instanceof StickyNote
         ) {
-            this.stickyNote.updateText(props.text, props.textOps)
+            this.widget.updateText(props.text, props.textOps)
 
             // sync auto font size to the text editor
-            if (this.stickyNote.autoFontSize) {
-                const newFontSize = this.stickyNote.textProperties?.fontSize
+            if (this.widget.autoFontSize) {
+                const newFontSize = this.widget.textProperties?.fontSize
                 if (newFontSize) {
                     this.textEditor.changeFontSize(newFontSize)
                 }
@@ -226,18 +224,27 @@ export class TextService extends Service {
 
         this.textEditor.hideEditor()
 
-        if (this.activeSession === 'textBox' && this.textBox) {
+        if (
+            this.activeSession === 'textBox' &&
+            this.widget instanceof TextBox
+        ) {
             // if text is not saved in db, remove it from the canvas
             if (this.isTextboxCreatedWithService && !this.isTextboxSavedInDb) {
-                this.engine.stage.widgetsDefaultLayer.removeChild(this.textBox)
+                this.engine.stage.widgetsDefaultLayer.removeChild(this.widget)
             } else {
                 // otherwise render the actual textbox
-                this.textBox.showText()
+                this.widget.showText()
             }
-        } else if (this.activeSession === 'shapeText' && this.shape) {
-            this.shape.finishEditingText()
-        } else if (this.activeSession === 'stickyNote' && this.stickyNote) {
-            this.stickyNote.finishEditingText()
+        } else if (
+            this.activeSession === 'shapeText' &&
+            this.widget instanceof Shape
+        ) {
+            this.widget.finishEditingText()
+        } else if (
+            this.activeSession === 'stickyNote' &&
+            this.widget instanceof StickyNote
+        ) {
+            this.widget.finishEditingText()
         }
 
         this.engine.canvas.requestRender()
@@ -269,67 +276,64 @@ export class TextService extends Service {
         }
 
         const widget = props.widgets[0]
-        if (widget instanceof Shape) {
-            this.shape = widget
-
-            this.shape.clicked.add(this.onWidgetClicked, this)
-        } else if (widget instanceof TextBox) {
-            this.textBox = widget
-
-            this.textBox.clicked.add(this.onWidgetClicked, this)
-        } else if (widget instanceof StickyNote) {
-            this.stickyNote = widget
-
-            this.stickyNote.clicked.add(this.onWidgetClicked, this)
+        if (
+            widget instanceof Shape ||
+            widget instanceof TextBox ||
+            widget instanceof StickyNote
+        ) {
+            this.widget = widget
+            this.widget.clicked.add(this.onWidgetClicked, this)
         }
     }
 
     private onShapeClicked() {
-        const bounds = this.shape.calcTextBounds()
+        const shape = this.widget as Shape
+        const bounds = shape.calcTextBounds()
 
         this.textEditor.showEditor({
-            x: this.shape.left + bounds.x + bounds.width / 2,
-            y: this.shape.top + bounds.y + bounds.height / 2,
+            x: shape.left + bounds.x + bounds.width / 2,
+            y: shape.top + bounds.y + bounds.height / 2,
             width: bounds.width,
             height: bounds.height,
-            fontSize: this.shape.textProperties?.fontSize ?? 14,
-            lineHeight: this.shape.textProperties?.lineHeight ?? 1.4,
-            textAlign: this.shape.textProperties?.textAlign ?? 'center',
+            fontSize: shape.textProperties?.fontSize ?? 14,
+            lineHeight: shape.textProperties?.lineHeight ?? 1.4,
+            textAlign: shape.textProperties?.textAlign ?? 'center',
             for: 'shapeText',
             showPlaceholder: false,
-            initialText: this.shape.textStr,
-            textOps: this.shape?.textProperties?.textOps || [],
+            initialText: shape.textStr,
+            textOps: shape?.textProperties?.textOps || [],
             maxLength: SHAPE_MAX_CHARS,
-            angle: this.shape.angle,
+            angle: shape.angle,
         })
 
-        this.shape.startEditingText()
+        shape.startEditingText()
 
-        this.shape.deselected.addOnce(this.onDeselected, this)
+        shape.deselected.addOnce(this.onDeselected, this)
         this.textEditor.textChanged.add(this.onTextChanged, this)
         this.activeSession = 'shapeText'
         this.engine.canvas.requestRender()
     }
 
     private onTextboxClicked() {
+        const textBox = this.widget as TextBox
         this.textEditor.showEditor({
-            initialText: this.textBox.textStr,
-            textOps: this.textBox.textPropsJson.textOps,
-            x: this.textBox.centerX,
-            y: this.textBox.centerY,
-            width: this.textBox.width,
-            height: this.textBox.height,
-            fontSize: this.textBox.fontSize,
-            lineHeight: this.textBox.lineHeight,
+            initialText: textBox.textStr,
+            textOps: textBox.textPropsJson.textOps,
+            x: textBox.centerX,
+            y: textBox.centerY,
+            width: textBox.width,
+            height: textBox.height,
+            fontSize: textBox.fontSize,
+            lineHeight: textBox.lineHeight,
             for: 'textBox',
             textAlign: 'left',
             maxLength: TEXTBOX_MAX_CHARS,
-            angle: this.textBox.angle,
+            angle: textBox.angle,
         })
 
         this.activeSession = 'textBox'
-        this.textBox.hideText()
-        this.textBox.deselected.addOnce(this.onDeselected, this)
+        textBox.hideText()
+        textBox.deselected.addOnce(this.onDeselected, this)
         this.textEditor.textChanged.add(this.onTextChanged, this)
         this.engine.canvas.requestRender()
     }
@@ -346,12 +350,13 @@ export class TextService extends Service {
     }
 
     private onStickyNoteClicked() {
-        const bounds = this.stickyNote.calcTextBounds()
-        const contentScale = this.stickyNote.getScaleFactor()
-        const textColor = this.stickyNote.getTextColor()
+        const stickyNote = this.widget as StickyNote
+        const bounds = stickyNote.calcTextBounds()
+        const contentScale = stickyNote.getScaleFactor()
+        const textColor = stickyNote.getTextColor()
 
         // map text ops to include the correct text color for the editor overlay
-        const textOps = (this.stickyNote?.textProperties?.textOps || []).map(
+        const textOps = (stickyNote?.textProperties?.textOps || []).map(
             (op) => ({
                 ...op,
                 attributes: {
@@ -364,30 +369,30 @@ export class TextService extends Service {
         this.textEditor.showEditor({
             x:
                 bounds.x * contentScale +
-                this.stickyNote.left +
+                stickyNote.left +
                 (bounds.width * contentScale) / 2,
             y:
                 bounds.y * contentScale +
-                this.stickyNote.top +
+                stickyNote.top +
                 (bounds.height * contentScale) / 2,
             width: bounds.width,
             height: bounds.height,
-            fontSize: this.stickyNote.textProperties?.fontSize ?? 18,
-            lineHeight: this.stickyNote.textProperties?.lineHeight ?? 1.4,
-            textAlign: this.stickyNote.textProperties?.textAlign ?? 'left',
+            fontSize: stickyNote.textProperties?.fontSize ?? 18,
+            lineHeight: stickyNote.textProperties?.lineHeight ?? 1.4,
+            textAlign: stickyNote.textProperties?.textAlign ?? 'left',
             for: 'stickyNote',
             showPlaceholder: false,
-            initialText: this.stickyNote.textStr,
+            initialText: stickyNote.textStr,
             textOps,
             contentScale,
             maxLength: STICKY_NOTE_MAX_CHARS,
             textColor,
-            angle: this.stickyNote.angle,
+            angle: stickyNote.angle,
         })
 
-        this.stickyNote.startEditingText()
+        stickyNote.startEditingText()
 
-        this.stickyNote.deselected.addOnce(this.onDeselected, this)
+        stickyNote.deselected.addOnce(this.onDeselected, this)
         this.textEditor.textChanged.add(this.onTextChanged, this)
         this.activeSession = 'stickyNote'
         this.engine.canvas.requestRender()
