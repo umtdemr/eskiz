@@ -374,11 +374,11 @@ export class Line extends Widget {
         }
 
         if (this._headBinding) {
-            data.properties.headBinding = this._headBinding
+            data.properties.headBinding = { ...this._headBinding }
         }
 
         if (this._tailBinding) {
-            data.properties.tailBinding = this._tailBinding
+            data.properties.tailBinding = { ...this._tailBinding }
         }
 
         return data

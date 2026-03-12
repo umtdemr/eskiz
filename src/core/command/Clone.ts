@@ -1,4 +1,5 @@
 import { DuplicationService } from '../services/DuplicationService'
+import { Widget } from '../shapes/Widget'
 import { Command, CommandCtx, Commands } from './Command'
 
 export class CloneCommand extends Command {
@@ -7,10 +8,11 @@ export class CloneCommand extends Command {
     }
 
     canExecute(ctx: CommandCtx): boolean {
-        if (!ctx.selectionService.selected?.length) {
+        if (!ctx.params?.widgets?.length) {
             return false
         }
-        if (ctx.selectionService.isThereLockedWidget()) {
+
+        if (ctx.params?.widgets?.some((widget: Widget) => widget?.isLocked)) {
             return false
         }
 
@@ -25,7 +27,7 @@ export class CloneCommand extends Command {
         const duplicationService =
             ctx.engine.getService<DuplicationService>('duplication')
         const addedWidgets = duplicationService.duplicateWidgets(
-            ctx.selectionService.selected,
+            ctx.params!.widgets,
         )
 
         ctx.selectionService.selectWidgets(addedWidgets)
