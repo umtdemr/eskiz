@@ -42,7 +42,7 @@ export class MouseController extends Emitter<EngineEventsMap> {
         this.canvas.tick.add(this.onTick, this)
 
         this.upperCanvasEl.addEventListener('mousedown', this.onMouseDown)
-        this.upperCanvasEl.addEventListener('mouseup', this.onMouseUp)
+        document.addEventListener('mouseup', this.onMouseUp)
         document.addEventListener('mousemove', this.onMouseMove)
     }
 
@@ -86,6 +86,9 @@ export class MouseController extends Emitter<EngineEventsMap> {
     }
 
     private onMouseUp(e: MouseEvent) {
+        if (!this._isMouseDown) {
+            return
+        }
         const wrappedMouseEvent = this.wrapMouseEvent(e)
         const currentTime = Date.now()
 
@@ -115,7 +118,7 @@ export class MouseController extends Emitter<EngineEventsMap> {
     dispose() {
         this.upperCanvasEl.removeEventListener('mousedown', this.onMouseDown)
         document.removeEventListener('mousemove', this.onMouseMove)
-        this.upperCanvasEl.removeEventListener('mouseup', this.onMouseUp)
+        document.removeEventListener('mouseup', this.onMouseUp)
     }
 
     get isMouseDown(): boolean {
