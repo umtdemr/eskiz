@@ -8,7 +8,6 @@ import { RGBA } from '@/core/shapes/Color'
 import { ColorButton } from '../colorButton/ColorButton'
 import { ColorPalette } from './ColorPalette'
 import { RgbColor } from 'react-colorful'
-import { useShallow } from 'zustand/react/shallow'
 import { useBoundStore } from '@/store/store'
 import { TransparentColorButton } from '../colorButton/TransparentColorButton'
 
@@ -32,7 +31,7 @@ export function ColorList({
     perColumn = 4,
     shouldHideTransparentColor = false,
 }: ColorListProps) {
-    const colors = useBoundStore(useShallow((state) => state.colors))
+    const colors = useBoundStore((state) => state.colors)
     const addNewColor = useBoundStore((state) => state.addNewColor)
     const removeColor = useBoundStore((state) => state.removeColor)
 

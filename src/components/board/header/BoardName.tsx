@@ -1,5 +1,4 @@
 import React, { KeyboardEvent, useRef, useState } from 'react'
-import { useShallow } from 'zustand/react/shallow'
 import { useBoundStore } from '@/store/store.ts'
 import { Link } from 'react-router-dom'
 import { Button } from '@/components/ui/button.tsx'
@@ -19,13 +18,11 @@ import { BoardSettingsMenu } from './BoardSettingsMenu'
 export function BoardName({ engine }: { engine: Engine }) {
     const [isEditing, setIsEditing] = useState(false)
     const [isEditingDisabled, setIsEditingDisabled] = useState(false)
-    const board = useBoundStore(useShallow((state) => state.boardData))
+    const board = useBoundStore((state) => state.boardData)
     const [value, setValue] = useState(board?.name || '')
-    const user = useBoundStore(useShallow((state) => state.userData))
+    const user = useBoundStore((state) => state.userData)
     const inputRef = useRef<HTMLInputElement>(null)
-    const isDisconnected = useBoundStore(
-        useShallow((state) => state.isDisconnected),
-    )
+    const isDisconnected = useBoundStore((state) => state.isDisconnected)
 
     const nameBtnClickHandler = () => {
         if (isEditing) {

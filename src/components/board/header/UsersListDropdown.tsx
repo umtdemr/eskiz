@@ -1,4 +1,3 @@
-import { useShallow } from 'zustand/react/shallow'
 import { useCallback } from 'react'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.tsx'
 import { ChevronDown, UserRoundPlus } from 'lucide-react'
@@ -7,14 +6,11 @@ import { useBoundStore } from '@/store/store.ts'
 
 export function UsersListDropdown() {
     const isUsersListCardActive =
-        useBoundStore(useShallow((state) => state.activeWindow)) ===
-        'online_users_list'
-    const openNewWindow = useBoundStore(useShallow((state) => state.openWindow))
-    const closeAllWindows = useBoundStore(
-        useShallow((state) => state.closeAllWindows),
-    )
+        useBoundStore((state) => state.activeWindow) === 'online_users_list'
+    const openNewWindow = useBoundStore((state) => state.openWindow)
+    const closeAllWindows = useBoundStore((state) => state.closeAllWindows)
     const collaborators = useBoundStore(
-        useShallow((state) => state.collaboratorsList),
+        (state) => state.collaboratorsList,
     ).filter((_, i) => i < 3)
 
     const toggleUsersCardList = useCallback(() => {

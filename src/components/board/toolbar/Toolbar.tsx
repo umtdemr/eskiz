@@ -18,7 +18,6 @@ import { useCallback, useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import { ShapesDropdown } from '@/components/board/toolbar/ShapesDropdown.tsx'
 import { useBoundStore } from '@/store/store'
-import { useShallow } from 'zustand/react/shallow'
 import {
     ACTION_MODES,
     SUB_ACTION_MODES,
@@ -52,13 +51,11 @@ export default function Toolbar({ engine }: ToolbarProps) {
     }, [engine])
 
     const activeMode = {
-        mainMode: useBoundStore(useShallow((state) => state.mainMode)),
-        subMode: useBoundStore(useShallow((state) => state.subMode)),
+        mainMode: useBoundStore((state) => state.mainMode),
+        subMode: useBoundStore((state) => state.subMode),
     }
 
-    const changeActiveMode = useBoundStore(
-        useShallow((state) => state.changeActiveMode),
-    )
+    const changeActiveMode = useBoundStore((state) => state.changeActiveMode)
 
     const handleShapeModeChange = useCallback(
         (newMode: keyof typeof SUB_ACTION_MODES) => {

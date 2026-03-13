@@ -2,14 +2,11 @@ import { Outlet, useNavigate } from 'react-router-dom'
 import useAuth from '@/hooks/UseAuth.tsx'
 import { useEffect } from 'react'
 import { useBoundStore } from '@/store/store.ts'
-import { useShallow } from 'zustand/react/shallow'
 
 export default function Auth() {
     const { isLoggedIn, tryLoginWithCookie, isTokenExist, isLoginFailed } =
         useAuth()
-    const isNavigatedToLogin = useBoundStore(
-        useShallow((state) => state.navigatedToLogin),
-    )
+    const isNavigatedToLogin = useBoundStore((state) => state.navigatedToLogin)
     const navigate = useNavigate()
 
     useEffect(() => {

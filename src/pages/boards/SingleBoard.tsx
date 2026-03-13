@@ -4,7 +4,6 @@ import Header from '@/components/board/header/Header.tsx'
 import { useQuery } from '@tanstack/react-query'
 import { API_ENDPOINTS } from '@/helpers/Constant.ts'
 import { useBoundStore } from '@/store/store.ts'
-import { useShallow } from 'zustand/react/shallow'
 import SkeletonHeader from '@/components/board/header/SkeletonHeader.tsx'
 import Toolbar from '@/components/board/toolbar/Toolbar.tsx'
 import Subtoolbar from '@/components/board/subToolbar/Subtoolbar'
@@ -41,21 +40,13 @@ export default function SingleBoard() {
     const disconnectionToastId = useRef('')
     const whiteboardRef = useRef<HTMLDivElement>(null)
 
-    const token = useBoundStore(useShallow((state) => state.token))
-    const userData = useBoundStore(useShallow((state) => state.userData))
-    const setBoardData = useBoundStore(
-        useShallow((state) => state.setBoardData),
-    )
-    const setCollaborators = useBoundStore(
-        useShallow((state) => state.setCollaborators),
-    )
-    const addToUsers = useBoundStore(useShallow((state) => state.addToUsers))
-    const setIsDisconnected = useBoundStore(
-        useShallow((state) => state.setIsDisconnected),
-    )
-    const isDisconnected = useBoundStore(
-        useShallow((state) => state.isDisconnected),
-    )
+    const token = useBoundStore((state) => state.token)
+    const userData = useBoundStore((state) => state.userData)
+    const setBoardData = useBoundStore((state) => state.setBoardData)
+    const setCollaborators = useBoundStore((state) => state.setCollaborators)
+    const addToUsers = useBoundStore((state) => state.addToUsers)
+    const setIsDisconnected = useBoundStore((state) => state.setIsDisconnected)
+    const isDisconnected = useBoundStore((state) => state.isDisconnected)
 
     const navigate = useNavigate()
 

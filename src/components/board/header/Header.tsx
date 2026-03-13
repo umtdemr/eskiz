@@ -1,22 +1,17 @@
 import { UsersListDropdown } from '@/components/board/header/UsersListDropdown.tsx'
 import { UsersListCard } from '@/components/board/header/UsersListCard.tsx'
 import { useBoundStore } from '@/store/store.ts'
-import { useShallow } from 'zustand/react/shallow'
 import { InviteModal } from '@/components/modals/inviteModal/InviteModal.tsx'
 import { useCallback } from 'react'
 import { BoardName } from '@/components/board/header/BoardName.tsx'
 import { Engine } from '@/core/engine/Engine.ts'
 
 export default function Header({ engine }: { engine: Engine }) {
-    const activeWindow = useBoundStore(
-        useShallow((state) => state.activeWindow),
-    )
-    const openWindow = useBoundStore(useShallow((state) => state.openWindow))
+    const activeWindow = useBoundStore((state) => state.activeWindow)
+    const openWindow = useBoundStore((state) => state.openWindow)
     const isUsersListCardActive = activeWindow === 'online_users_list'
     const isInviteModalActive = activeWindow === 'invite'
-    const isDisconnected = useBoundStore(
-        useShallow((state) => state.isDisconnected),
-    )
+    const isDisconnected = useBoundStore((state) => state.isDisconnected)
 
     const closeInviteModal = useCallback(() => {
         if (!isInviteModalActive) {

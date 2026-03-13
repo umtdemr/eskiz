@@ -23,7 +23,6 @@ import useOnClickOutside from '@/hooks/UseOutsideClick'
 import { ColorButton } from '@/components/colorButton/ColorButton'
 import { PenColorDropdown } from './PenColorDropdown'
 import { useBoundStore } from '@/store/store'
-import { useShallow } from 'zustand/react/shallow'
 import { closeColorPalette } from '@/components/colorList/colorListUtils'
 
 const tools: {
@@ -57,8 +56,8 @@ export function PenDropdown({
     const [showColorDropdown, setShowColorDropdown] = useState(false)
     const menuRef = useRef(null)
     const buttonRef = useRef<HTMLButtonElement>(null)
-    const thickness = useBoundStore(useShallow((state) => state.pen.thickness))
-    const selectedColor = useBoundStore(useShallow((state) => state.pen.color))
+    const thickness = useBoundStore((state) => state.pen.thickness)
+    const selectedColor = useBoundStore((state) => state.pen.color)
 
     const onClickOutsideHandler = (event: MouseEvent) => {
         if (buttonRef.current!.contains(event.target as Node)) {

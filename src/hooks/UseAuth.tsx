@@ -9,25 +9,15 @@ import {
 } from '@/helpers/AuthHelper.ts'
 import { API_ENDPOINTS } from '@/helpers/Constant.ts'
 import { useBoundStore } from '@/store/store.ts'
-import { useShallow } from 'zustand/react/shallow'
 import { useNavigate } from 'react-router-dom'
 import { initialUserData } from '@/store/userSlice.ts'
 
 export default function useAuth() {
-    const data = useBoundStore()
-    const setUserData = useBoundStore(
-        useShallow((state) => state.changeUserData),
-    )
-    const setLoginFailed = useBoundStore(
-        useShallow((state) => state.setLoginFailed),
-    )
-    const isLoggedIn = useBoundStore(
-        useShallow((state) => state.userData.email.length > 0),
-    )
-    const isLoginFailed = useBoundStore(
-        useShallow((state) => state.loginFailed),
-    )
-    const setToken = useBoundStore(useShallow((state) => state.setToken))
+    const setUserData = useBoundStore((state) => state.changeUserData)
+    const setLoginFailed = useBoundStore((state) => state.setLoginFailed)
+    const isLoggedIn = useBoundStore((state) => state.userData.email.length > 0)
+    const isLoginFailed = useBoundStore((state) => state.loginFailed)
+    const setToken = useBoundStore((state) => state.setToken)
 
     const navigate = useNavigate()
 

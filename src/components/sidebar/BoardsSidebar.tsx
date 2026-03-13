@@ -21,7 +21,6 @@ import { DropdownMenuTrigger } from '@radix-ui/react-dropdown-menu'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar.tsx'
 import { LogOut, PresentationIcon, Search, Trash, User } from 'lucide-react'
 import { useBoundStore } from '@/store/store.ts'
-import { useShallow } from 'zustand/react/shallow'
 import useAuth from '@/hooks/UseAuth.tsx'
 
 const sidebarItems = [
@@ -46,7 +45,7 @@ const sidebarItems = [
 ]
 
 export default function BoardsSidebar() {
-    const userData = useBoundStore(useShallow((state) => state.userData))
+    const userData = useBoundStore((state) => state.userData)
     const { logout } = useAuth()
 
     return (

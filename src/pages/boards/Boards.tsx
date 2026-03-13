@@ -3,7 +3,6 @@ import { LoaderCircle, Plus } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
 import { API_ENDPOINTS } from '@/helpers/Constant.ts'
 import { useBoundStore } from '@/store/store.ts'
-import { useShallow } from 'zustand/react/shallow'
 import { toast } from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import { SortByFilter, useBoards } from '@/hooks/UseBoards'
@@ -19,7 +18,7 @@ export default function BoardsPage() {
     const [ownedByFilter, setOwnedByFilter] = useState<OwnedByFilter>({})
     const [sortByFilter, setSortByFilter] =
         useState<SortByFilter>('-created_at')
-    const token = useBoundStore(useShallow((state) => state.token))
+    const token = useBoundStore((state) => state.token)
     const nextPageLoaderRef = useRef<HTMLDivElement>(null)
     const navigate = useNavigate()
 

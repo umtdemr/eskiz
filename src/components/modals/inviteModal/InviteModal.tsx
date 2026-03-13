@@ -26,7 +26,6 @@ import { DefaultError, useMutation } from '@tanstack/react-query'
 import { API_ENDPOINTS } from '@/helpers/Constant.ts'
 import { InviteRequest } from '@/types/Board.ts'
 import { useBoundStore } from '@/store/store.ts'
-import { useShallow } from 'zustand/react/shallow'
 import { toast } from 'react-hot-toast'
 import { BoardUser } from '@/store/boards.ts'
 import { getAvatar } from '@/helpers/AuthHelper.ts'
@@ -39,14 +38,14 @@ export function InviteModal({
     isOpen = false,
     closeModal,
 }: {
-    isOpen: true
+    isOpen: boolean
     closeModal: () => void
 }) {
-    const thisUser = useBoundStore(useShallow((state) => state.userData))
-    const boardData = useBoundStore(useShallow((state) => state.boardData))
-    const users = useBoundStore(useShallow((state) => state.users))
-    const token = useBoundStore(useShallow((state) => state.token))
-    const addToUsers = useBoundStore(useShallow((state) => state.addToUsers))
+    const thisUser = useBoundStore((state) => state.userData)
+    const boardData = useBoundStore((state) => state.boardData)
+    const users = useBoundStore((state) => state.users)
+    const token = useBoundStore((state) => state.token)
+    const addToUsers = useBoundStore((state) => state.addToUsers)
 
     const mutation = useMutation<unknown, DefaultError, InviteRequest>({
         mutationFn: (formData) => {
