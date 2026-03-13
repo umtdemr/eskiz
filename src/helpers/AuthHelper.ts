@@ -9,7 +9,7 @@ export function removeTokenFromCookies() {
 }
 
 export function getAvatar(name: string) {
-    let nameArr = name.trim().split(' ')
+    const nameArr = name.trim().split(' ')
     if (nameArr.length < 2) {
         return nameArr[0][0].toUpperCase()
     }

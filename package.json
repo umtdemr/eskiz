@@ -55,6 +55,7 @@
         "eslint": "^9.9.0",
         "eslint-plugin-react-hooks": "^5.1.0-rc.0",
         "eslint-plugin-react-refresh": "^0.4.9",
+        "eslint-plugin-unused-imports": "^4.4.1",
         "globals": "^15.9.0",
         "init": "^0.1.2",
         "npx": "^10.2.2",

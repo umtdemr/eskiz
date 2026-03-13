@@ -1,4 +1,3 @@
-import { Canvas as SkiaCanvas } from 'canvaskit-wasm'
 import { STAGE_LAYERS } from '@/helpers/Constant.ts'
 import { Layer } from './Layer.ts'
 import { Widget } from '../shapes/Widget.ts'

@@ -208,8 +208,8 @@ export abstract class Widget extends Layer {
         this._localBounds.width = this._width
         this._localBounds.height = this._height
 
-        let globalOffsetX = this._x
-        let globalOffsetY = this._y
+        const globalOffsetX = this._x
+        const globalOffsetY = this._y
 
         // calculate AABB for rotation
         if (this._angle === 0) {
