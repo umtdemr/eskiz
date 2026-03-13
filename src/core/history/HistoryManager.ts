@@ -1,6 +1,7 @@
 import { Engine } from '@/core/engine/Engine'
 import { HistoryEntry, TransactionData } from './HistoryEntry'
 import { Widget } from '@/core/shapes/Widget'
+import { WsWidget } from '@/types/Websocket'
 import { EditingMethods, State } from '@/core/transaction/State'
 import { SelectionService } from '../services/SelectionService'
 import { Signal } from '../signal/Signal'
@@ -77,10 +78,12 @@ export class TransactionHistoryEntry implements HistoryEntry {
         const editTable = new Map<Widget, EditingMethods[]>()
 
         for (const [widget, state] of stateMap.entries()) {
-            widget.updateWithPartialState(state as any)
+            widget.updateWithPartialState(state as Partial<WsWidget>)
 
             if (widget instanceof Line) {
-                const props = state.properties as any
+                const props = state.properties as
+                    | Record<string, unknown>
+                    | undefined
                 if (
                     props &&
                     (props.headBinding !== undefined ||

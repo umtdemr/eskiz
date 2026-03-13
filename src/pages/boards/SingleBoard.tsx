@@ -166,8 +166,8 @@ export default function SingleBoard() {
             try {
                 engineRef.current = new Engine(
                     slugId!,
-                    boardQuery.data?.id!,
-                    boardQuery.data?.pages[0].id!,
+                    boardQuery.data!.id,
+                    boardQuery.data!.pages[0].id,
                 )
                 await engineRef.current?.initialize()
                 canvasRef.current = engineRef.current?.canvas

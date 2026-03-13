@@ -32,7 +32,7 @@ export default function Footer({ engine }: { engine: Engine }) {
         return () => {
             engine.zoomChanged.remove(zoomChangeHandler)
         }
-    }, [])
+    }, [engine.zoomChanged])
 
     const handleZoomOut = () => {
         const currentZoom = zoom / 100

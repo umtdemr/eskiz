@@ -271,7 +271,7 @@ export class ImageUploadService extends Service {
                         })
 
                         addedImages.push(widget)
-                    } catch (e: any) {
+                    } catch (e: unknown) {
                         console.error('Upload failed', e)
                         errorCounts['upload_failed']++
                         // on fail, remove widget
@@ -340,7 +340,9 @@ export class ImageUploadService extends Service {
             try {
                 const errData = await response.json()
                 errMsg = errData.error || errMsg
-            } catch {}
+            } catch {
+                // ignore JSON parse errors
+            }
             throw new Error(errMsg)
         }
 

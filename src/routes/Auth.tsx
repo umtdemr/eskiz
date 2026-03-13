@@ -13,13 +13,13 @@ export default function Auth() {
         if (isLoggedIn) {
             navigate('/boards')
         }
-    }, [isLoggedIn])
+    }, [isLoggedIn, navigate])
 
     useEffect(() => {
         if (!isNavigatedToLogin && !isLoginFailed && isTokenExist()) {
             tryLoginWithCookie()
         }
-    }, [isLoginFailed, isNavigatedToLogin])
+    }, [isLoginFailed, isNavigatedToLogin, isTokenExist, tryLoginWithCookie])
 
     return (
         <div className="container relative hidden h-screen flex-col items-center justify-center md:grid lg:max-w-none lg:grid-cols-2 lg:px-0">

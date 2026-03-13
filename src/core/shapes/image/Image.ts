@@ -310,7 +310,7 @@ export class Image extends Widget {
                 }
                 this.engine.canvas.requestRender()
             }
-        } catch (error) {
+        } catch {
             this.setState('error')
         } finally {
             if (this._loadingVariationType === targetVariationType) {

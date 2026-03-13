@@ -165,8 +165,11 @@ export function InviteModal({
                         All members
                     </h2>
                     <div className="grid gap-5 mt-5 max-h-60 overflow-y-auto">
-                        {users.map((user, i) => (
-                            <div className="flex justify-between items-center">
+                        {users.map((user) => (
+                            <div
+                                key={user.id}
+                                className="flex justify-between items-center"
+                            >
                                 <div className="flex gap-2">
                                     <Avatar>
                                         <AvatarFallback>

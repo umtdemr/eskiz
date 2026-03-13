@@ -88,8 +88,8 @@ export class TextService extends Service {
         this.mouseController.off('mouseUp', this.onMouseUp, this)
     }
 
-    private onMouseDown(data: CanvasMouseEvent) {}
-    private onMouseMove(data: CanvasMouseEvent) {}
+    private onMouseDown(_data: CanvasMouseEvent) {}
+    private onMouseMove(_data: CanvasMouseEvent) {}
     private onMouseUp(data: CanvasMouseEvent) {
         const textbox = new TextBox(
             {

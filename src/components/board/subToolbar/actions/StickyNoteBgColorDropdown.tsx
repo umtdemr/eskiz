@@ -13,7 +13,7 @@ interface StickyNoteColor {
     color: string
 }
 
-export const STICKY_NOTE_COLORS: StickyNoteColor[] = [
+const STICKY_NOTE_COLORS: StickyNoteColor[] = [
     {
         name: 'Light Yellow',
         rgba: { ...DEFAULT_FILL_COLOR },

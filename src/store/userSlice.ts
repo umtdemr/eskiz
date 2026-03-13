@@ -27,10 +27,10 @@ export const createUserSlice: StateCreator<UserSlice, [], [], UserSlice> = (
     loginFailed: false,
     navigatedToLogin: false,
     changeUserData: (val: UserPublicData) =>
-        set((state) => ({ userData: val })),
-    setLoginFailed: (val: boolean) => set((state) => ({ loginFailed: val })),
+        set((_state) => ({ userData: val })),
+    setLoginFailed: (val: boolean) => set((_state) => ({ loginFailed: val })),
     setNavigatedToLogin: (val: boolean) =>
-        set((state) => ({ navigatedToLogin: val })),
+        set((_state) => ({ navigatedToLogin: val })),
     token: '',
-    setToken: (val: string) => set((state) => ({ token: val })),
+    setToken: (val: string) => set((_state) => ({ token: val })),
 })

@@ -184,7 +184,7 @@ export class StickyNote extends Widget {
         ctx.drawRRect(rrect, paint)
     }
 
-    private drawShadow(ctx: CanvasRenderingContext2D | any, scale: number) {
+    private drawShadow(ctx: RenderContext['ctx'], scale: number) {
         const scaledBlur = SHADOW_BLUR * scale
         const scaledOffsetY = SHADOW_OFFSET_Y * scale
         const scaledCornerRadius = CORNER_RADIUS * scale
@@ -271,7 +271,7 @@ export class StickyNote extends Widget {
 
         // strip color from textOps
         const cleanOps = textOps.map((op) => {
-            const { color, ...rest } = op.attributes || {}
+            const { color: _color, ...rest } = op.attributes || {}
             return { ...op, attributes: rest }
         })
 

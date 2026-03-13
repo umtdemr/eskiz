@@ -51,17 +51,17 @@ export class Control extends Widget {
         ctx.restore()
     }
 
-    protected renderContent(renderContext: RenderContext) {}
+    protected renderContent(_renderContext: RenderContext) {}
 
     onMouseEnter(): void {}
 
     onMouseLeave(): void {}
 
-    onMouseDown(data: CanvasMouseEvent): void {}
+    onMouseDown(_data: CanvasMouseEvent): void {}
 
-    onMouseMove(data: CanvasMouseEvent): void {}
+    onMouseMove(_data: CanvasMouseEvent): void {}
 
-    onMouseUp(data: CanvasMouseEvent): void {}
+    onMouseUp(_data: CanvasMouseEvent): void {}
 
     contains(pointX: number, pointY: number, scale: number): boolean {
         const worldWidth = this.width / scale

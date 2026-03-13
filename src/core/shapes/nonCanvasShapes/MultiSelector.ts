@@ -70,7 +70,7 @@ export class MultiSelector extends Widget {
         }
     }
 
-    onMouseUp(data: CanvasMouseEvent) {
+    onMouseUp(_data: CanvasMouseEvent) {
         this.visible = false
     }
 

@@ -42,7 +42,7 @@ path1?.delete()
 path2?.delete()
 recorder.delete()
 
-export interface RotateControlProps extends ControlProps {}
+export type RotateControlProps = ControlProps
 
 export class RotateControl extends Control {
     private shape: Widget

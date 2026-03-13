@@ -197,8 +197,6 @@ export default function Toolbar({ engine }: ToolbarProps) {
                         variant="ghost"
                         className="px-2 [&_svg]:size-5"
                         onClick={() => {
-                            const boardId =
-                                useBoundStore.getState().boardData.id
                             engine
                                 .getService<ImageUploadService>('imageUpload')
                                 .pickAndUpload()

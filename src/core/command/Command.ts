@@ -22,7 +22,7 @@ export type CommandCtx = {
     selectionService: SelectionService
     engine: Engine
     isContinuous?: boolean
-    params?: Record<string, any>
+    params?: Record<string, unknown>
 }
 
 export abstract class Command {

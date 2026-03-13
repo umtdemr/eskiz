@@ -20,7 +20,7 @@ export const createCollaboratorsSlice: StateCreator<
 > = (set) => ({
     collaboratorsList: [],
     setCollaborators: (data: CollaboratorUser[]) =>
-        set((state) => ({ collaboratorsList: data })),
+        set((_state) => ({ collaboratorsList: data })),
     addToCollaborators: (data: CollaboratorUser) =>
         set((state) => ({
             collaboratorsList: [data, ...state.collaboratorsList],

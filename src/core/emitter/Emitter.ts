@@ -1,12 +1,13 @@
 type Listener<T> = (data: T) => void | boolean
 
-export class Emitter<EventMap extends Record<string, any>> {
+export class Emitter<EventMap extends Record<string, unknown>> {
     private listeners = new Map<
         keyof EventMap,
         Array<{
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             fn: Listener<any>
             once?: boolean
-            context?: any
+            context?: unknown
             removed?: boolean
         }>
     >()
@@ -17,7 +18,7 @@ export class Emitter<EventMap extends Record<string, any>> {
     on<K extends keyof EventMap>(
         event: K,
         listener: Listener<EventMap[K]>,
-        context?: any,
+        context?: unknown,
     ): () => void {
         return this._addListener(event, listener, false, context)
     }
@@ -25,7 +26,7 @@ export class Emitter<EventMap extends Record<string, any>> {
     once<K extends keyof EventMap>(
         event: K,
         listener: Listener<EventMap[K]>,
-        context?: any,
+        context?: unknown,
     ): () => void {
         return this._addListener(event, listener, true, context)
     }
@@ -34,7 +35,7 @@ export class Emitter<EventMap extends Record<string, any>> {
         event: K,
         listener: Listener<EventMap[K]>,
         once: boolean,
-        context?: any,
+        context?: unknown,
     ): () => void {
         const entry = { fn: listener, once, context, removed: false }
         const entries = this.listeners.get(event) || []
@@ -47,7 +48,7 @@ export class Emitter<EventMap extends Record<string, any>> {
     off<K extends keyof EventMap>(
         event: K,
         listener?: Listener<EventMap[K]>,
-        context?: any,
+        context?: unknown,
     ): void {
         const entries = this.listeners.get(event)
         if (!entries) return

@@ -9,6 +9,12 @@ import { Signal } from '../signal/Signal'
 import { WidgetType } from '@/core/constants.ts'
 import { rotatePoint, reverseRotatePoint } from '@/core/geometry/math'
 
+interface ResizableTextWidget extends Widget {
+    fontSize: number
+    getMinWidth?: () => number
+    changeFontSize?: (size: number) => boolean
+}
+
 export enum ResizePosition {
     EDGE_LEFT,
     EDGE_TOP,
@@ -113,7 +119,7 @@ export class ResizeHandler {
             width: shape.width,
             height: shape.height,
             aspectRatio: shape.width / shape.height,
-            fontSize: (shape as any).fontSize || 0,
+            fontSize: (shape as ResizableTextWidget).fontSize || 0,
         }
 
         this.position = position
@@ -161,7 +167,7 @@ export class ResizeHandler {
         return false
     }
 
-    end(data: CanvasMouseEvent) {
+    end(_data: CanvasMouseEvent) {
         if (this._transactionId) {
             this.transactionHandler.commit(this._transactionId)
         }
@@ -192,8 +198,9 @@ export class ResizeHandler {
         // Special handling for text widgets - prevent width from going below minimum
         let minWidth = ResizeHandler.MIN_DIMENSION
         const isTextWidget = this.shape.widgetType === WidgetType.TEXTBOX
-        if (isTextWidget && (this.shape as any).getMinWidth) {
-            minWidth = Math.max(minWidth, (this.shape as any).getMinWidth())
+        const textWidget = this.shape as ResizableTextWidget
+        if (isTextWidget && textWidget.getMinWidth) {
+            minWidth = Math.max(minWidth, textWidget.getMinWidth())
         }
 
         let newWidth = this.initialBounds.width
@@ -358,8 +365,9 @@ export class ResizeHandler {
                 Math.round(initial.fontSize * scaleFactor),
             )
 
-            if ((this.shape as any).changeFontSize) {
-                ;(this.shape as any).changeFontSize(newFontSize)
+            const resizableText = this.shape as ResizableTextWidget
+            if (resizableText.changeFontSize) {
+                resizableText.changeFontSize(newFontSize)
             }
 
             const newWidth = Math.max(

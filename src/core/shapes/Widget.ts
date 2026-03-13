@@ -316,10 +316,12 @@ export abstract class Widget extends Layer {
 
         if (shouldUpdateLines) {
             for (const line of this.attachedLines) {
-                line.headBinding?.id === this._uuid &&
+                if (line.headBinding?.id === this._uuid) {
                     line.updatePointFromBinding('head')
-                line.tailBinding?.id === this._uuid &&
+                }
+                if (line.tailBinding?.id === this._uuid) {
                     line.updatePointFromBinding('tail')
+                }
             }
         }
     }
@@ -353,7 +355,7 @@ export abstract class Widget extends Layer {
         this.destroy()
     }
 
-    static loadFromJson(json: WsWidget, engine: Engine): Widget {
+    static loadFromJson(json: WsWidget, _engine: Engine): Widget {
         throw new Error(
             `loadFromJson is not implemented for ${json.widget_type}_${json.sub_type}`,
         )
@@ -422,10 +424,12 @@ export abstract class Widget extends Layer {
         this.updateBounds()
 
         for (const line of this.attachedLines) {
-            line.headBinding?.id === this._uuid &&
+            if (line.headBinding?.id === this._uuid) {
                 line.updatePointFromBinding('head')
-            line.tailBinding?.id === this._uuid &&
+            }
+            if (line.tailBinding?.id === this._uuid) {
                 line.updatePointFromBinding('tail')
+            }
         }
     }
 
@@ -458,10 +462,12 @@ export abstract class Widget extends Layer {
         if (resized) {
             this.updateBounds()
             for (const line of this.attachedLines) {
-                line.headBinding?.id === this._uuid &&
+                if (line.headBinding?.id === this._uuid) {
                     line.updatePointFromBinding('head')
-                line.tailBinding?.id === this._uuid &&
+                }
+                if (line.tailBinding?.id === this._uuid) {
                     line.updatePointFromBinding('tail')
+                }
             }
         }
         return resized
@@ -541,10 +547,12 @@ export abstract class Widget extends Layer {
                 console.log('continue')
                 continue
             }
-            line.headBinding?.id === this._uuid &&
+            if (line.headBinding?.id === this._uuid) {
                 line.updatePointFromBinding('head')
-            line.tailBinding?.id === this._uuid &&
+            }
+            if (line.tailBinding?.id === this._uuid) {
                 line.updatePointFromBinding('tail')
+            }
         }
     }
 

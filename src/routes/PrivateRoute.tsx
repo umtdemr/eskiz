@@ -4,7 +4,11 @@ import { useEffect, useRef } from 'react'
 import { toast } from 'react-hot-toast'
 import { useBoundStore } from '@/store/store.ts'
 
-export default function PrivateRoute({ children }) {
+export default function PrivateRoute({
+    children,
+}: {
+    children: React.ReactNode
+}) {
     const { tryLoginWithCookie, isLoggedIn, isLoginFailed } = useAuth()
     const setNavigatedToLogin = useBoundStore(
         (state) => state.setNavigatedToLogin,
@@ -21,7 +25,7 @@ export default function PrivateRoute({ children }) {
                 id: 'loginErr',
             })
         }
-    }, [isLoginFailed])
+    }, [isLoginFailed, isLoggedIn, navigate, setNavigatedToLogin])
 
     if (!isLoggedIn) {
         isLoggingTried.current = true

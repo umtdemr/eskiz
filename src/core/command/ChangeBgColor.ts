@@ -60,13 +60,11 @@ export class ChangeBgColor extends Command {
             // TODO: phase 2 - check error
             ctx.engine.transactionHandler.update(this.transactionId)
 
-            const thisCtx = this
-
             // after some time, commit the changes
             this.continuousTimeoutId = setTimeout(() => {
-                if (thisCtx.transactionId) {
-                    ctx.engine.transactionHandler.commit(thisCtx.transactionId)
-                    thisCtx.transactionId = undefined
+                if (this.transactionId) {
+                    ctx.engine.transactionHandler.commit(this.transactionId)
+                    this.transactionId = undefined
                 }
             }, CONTINUOUS_THROTTLE_DELAY)
         } else {

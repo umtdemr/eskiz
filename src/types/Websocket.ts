@@ -32,7 +32,7 @@ type CommandBasePayload = {
 export type WsErrorMessage = {
     code: number
     message: string
-    fields?: any
+    fields?: Record<string, unknown>
 }
 
 // defines response
@@ -94,7 +94,7 @@ export type WsWidget = {
 }
 
 export type AddWidgetResponse = {
-    widget: any
+    widget: WsWidget
 }
 
 export type FetchPageDetailsPayload = {
@@ -108,7 +108,7 @@ export type FetchPageDetailsResponse = {
 export type WsMessage = {
     reply_to?: string
     event?: string
-    data: any
+    data: Record<string, unknown>
 }
 
 export type EventUserJoined = {
