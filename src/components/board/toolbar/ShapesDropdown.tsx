@@ -45,7 +45,7 @@ export function ShapesDropdown({
     const menuRef = useRef(null)
     const shapesBtnRef = useRef<HTMLButtonElement>(null)
 
-    const onClickOutsideHandler = (event: MouseEvent) => {
+    const onClickOutsideHandler = (event: Event) => {
         if (shapesBtnRef.current!.contains(event.target as Node)) {
             return
         }

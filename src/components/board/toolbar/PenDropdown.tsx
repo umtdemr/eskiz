@@ -59,7 +59,7 @@ export function PenDropdown({
     const thickness = useBoundStore((state) => state.pen.thickness)
     const selectedColor = useBoundStore((state) => state.pen.color)
 
-    const onClickOutsideHandler = (event: MouseEvent) => {
+    const onClickOutsideHandler = (event: Event) => {
         if (buttonRef.current!.contains(event.target as Node)) {
             return
         }

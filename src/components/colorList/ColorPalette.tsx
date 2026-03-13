@@ -23,7 +23,7 @@ export function ColorPalette({ size, onAdd, onChange }: ColorPaletteProps) {
         setColor(undefined)
     }, [color, onAdd])
 
-    const onClickOutsideHandler = (event: MouseEvent) => {
+    const onClickOutsideHandler = (event: Event) => {
         if (!showColorPalette) return
         if (btnRef.current!.contains(event.target as Node)) {
             return
