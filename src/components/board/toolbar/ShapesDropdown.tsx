@@ -92,7 +92,7 @@ export function ShapesDropdown({
                     <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
-                            className={clsx('px-2 [&_svg]:size-5', {
+                            className={clsx('px-2 [&_svg]:size-5 relative', {
                                 'bg-sky-100': isSubModeForShapes(
                                     activeMode?.subMode,
                                 ),
@@ -115,7 +115,7 @@ export function ShapesDropdown({
                 </Tooltip>
                 {isOpen ? (
                     <div
-                        className="absolute flex gap-2 left-14 top-0 bg-white shadow-2xl p-1 rounded-lg z-50"
+                        className="absolute flex gap-2 left-14 top-[50%] translate-y-[-50%] bg-white shadow-2xl p-1 rounded-lg z-50"
                         ref={menuRef}
                     >
                         {shapes.map((shape) => (
