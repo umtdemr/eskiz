@@ -11,8 +11,10 @@ import { rotatePoint, reverseRotatePoint } from '@/core/geometry/math'
 
 interface ResizableTextWidget extends Widget {
     fontSize: number
+    scale?: number
     getMinWidth?: () => number
     changeFontSize?: (size: number) => boolean
+    changeScale?: (scale: number) => boolean
 }
 
 export enum ResizePosition {
@@ -91,7 +93,9 @@ export class ResizeHandler {
         width: 0,
         height: 0,
         aspectRatio: 1,
-        fontSize: 0,
+        angle: 0,
+        fontSize: 16,
+        scale: 1,
     }
     private transactionHandler: TransactionHandler
     private _transactionId: TransactionId
@@ -119,7 +123,9 @@ export class ResizeHandler {
             width: shape.width,
             height: shape.height,
             aspectRatio: shape.width / shape.height,
-            fontSize: (shape as ResizableTextWidget).fontSize || 0,
+            angle: shape.angle,
+            fontSize: (shape as ResizableTextWidget).fontSize || 14,
+            scale: (shape as ResizableTextWidget).scale || 1,
         }
 
         this.position = position
@@ -324,9 +330,10 @@ export class ResizeHandler {
 
         // Special handling for text widgets - scale font size AND resize
         if (this.shape.widgetType === WidgetType.TEXTBOX) {
-            const initialDiagonal = Math.sqrt(
-                initial.width ** 2 + initial.height ** 2,
-            )
+            const resizableText = this.shape as ResizableTextWidget
+            const initialDiagonal =
+                Math.sqrt(initial.width ** 2 + initial.height ** 2) *
+                (resizableText.scale ?? 1)
 
             let currentWidth = initial.width
             let currentHeight = initial.height
@@ -355,18 +362,20 @@ export class ResizeHandler {
                 anchorRy = 1
             }
 
-            const currentDiagonal = Math.sqrt(
-                currentWidth ** 2 + currentHeight ** 2,
-            )
+            const currentDiagonal =
+                Math.sqrt(currentWidth ** 2 + currentHeight ** 2) *
+                (resizableText.scale ?? 1)
 
             const scaleFactor = currentDiagonal / initialDiagonal
-            const newFontSize = Math.max(
-                1,
-                Math.round(initial.fontSize * scaleFactor),
-            )
 
-            const resizableText = this.shape as ResizableTextWidget
-            if (resizableText.changeFontSize) {
+            if (resizableText.changeScale) {
+                const newScale = Math.max(0.1, initial.scale * scaleFactor)
+                resizableText.changeScale(newScale)
+            } else if (resizableText.changeFontSize) {
+                const newFontSize = Math.max(
+                    1,
+                    Math.round(initial.fontSize * scaleFactor),
+                )
                 resizableText.changeFontSize(newFontSize)
             }
 
@@ -403,7 +412,8 @@ export class ResizeHandler {
         const shouldLockAspectRatio =
             (data.e.shiftKey ||
                 this.shape.widgetType === WidgetType.IMAGE ||
-                this.shape.widgetType === WidgetType.STICKY_NOTE) &&
+                this.shape.widgetType === WidgetType.STICKY_NOTE ||
+                this.shape.widgetType === WidgetType.PATH) &&
             initial.aspectRatio
 
         if (shouldLockAspectRatio) {

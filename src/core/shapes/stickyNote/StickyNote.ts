@@ -99,10 +99,7 @@ export class StickyNote extends Widget {
     }
 
     getScaleFactor(): number {
-        return Math.min(
-            this._width / DEFAULT_WIDTH,
-            this._height / DEFAULT_HEIGHT,
-        )
+        return this._width / DEFAULT_WIDTH
     }
 
     render(renderContext: RenderContext) {

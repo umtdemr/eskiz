@@ -186,10 +186,12 @@ export class TextService extends Service {
 
             // sync text editor dimensions with text box
             this.textEditor.updateSize({
-                width: this.widget.width,
-                height: this.widget.height,
+                width: this.widget.width / this.widget.scale,
+                height: this.widget.height / this.widget.scale,
                 x: this.widget.centerX,
                 y: this.widget.centerY,
+                fontSize: this.widget.fontSize,
+                contentScale: this.widget.scale,
             })
             this.engine.canvas.requestRender()
         } else if (
@@ -324,10 +326,11 @@ export class TextService extends Service {
             const props = {
                 x: textBox.centerX,
                 y: textBox.centerY,
-                width: textBox.width,
-                height: textBox.height,
+                width: textBox.width / textBox.scale,
+                height: textBox.height / textBox.scale,
                 fontSize: textBox.fontSize,
                 angle: textBox.angle,
+                contentScale: textBox.scale,
             }
             this.textEditor.updateSize(props)
             this.textEditor.focus()
@@ -389,14 +392,15 @@ export class TextService extends Service {
             textOps: textBox.textPropsJson.textOps,
             x: textBox.centerX,
             y: textBox.centerY,
-            width: textBox.width,
-            height: textBox.height,
+            width: textBox.width / textBox.scale,
+            height: textBox.height / textBox.scale,
             fontSize: textBox.fontSize,
             lineHeight: textBox.lineHeight,
             for: 'textBox',
             textAlign: 'left',
             maxLength: TEXTBOX_MAX_CHARS,
             angle: textBox.angle,
+            contentScale: textBox.scale,
         })
 
         this.activeSession = 'textBox'

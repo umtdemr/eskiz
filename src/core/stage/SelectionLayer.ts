@@ -147,23 +147,6 @@ export class SelectionLayer extends Layer {
             return
         }
 
-        // do not show controls for path
-        // TODO: need to find a better way to control this.
-        if (widgets[0].widgetType === WidgetType.PATH) {
-            const rotateControl = new RotateControl(
-                {
-                    x: 0,
-                    y: 0,
-                    selectionLayer: this,
-                },
-                this.engine,
-                this.selectionService,
-            )
-
-            this.controls.push(rotateControl)
-            this.addChildren(rotateControl)
-            return
-        }
         if (widgets[0].isLocked) {
             return
         }
@@ -203,7 +186,8 @@ export class SelectionLayer extends Layer {
 
         if (
             widgets[0].widgetType !== WidgetType.IMAGE &&
-            widgets[0].widgetType !== WidgetType.STICKY_NOTE
+            widgets[0].widgetType !== WidgetType.STICKY_NOTE &&
+            widgets[0].widgetType !== WidgetType.PATH
         ) {
             for (const position of edgeControls) {
                 const handle = new EdgeControl(

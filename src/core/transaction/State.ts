@@ -62,6 +62,13 @@ export function getPartialState(
                     width: widget.width,
                     height: widget.height,
                 })
+
+                if (widget instanceof TextBox) {
+                    state.properties = {
+                        ...(state.properties ? state.properties : undefined),
+                        scale: widget.scale,
+                    }
+                }
                 break
             case 'text':
                 if (widget instanceof Shape || widget instanceof StickyNote) {
