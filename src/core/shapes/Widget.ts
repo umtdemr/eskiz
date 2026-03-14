@@ -161,7 +161,11 @@ export abstract class Widget extends Layer {
         // TODO: we should use world transform if we decide to use children
         // with current implementation, we render the widget if it has a parent
         // widget even if it is outside the viewport
-        if (renderContext.viewport && !(this._parent instanceof Widget)) {
+        if (
+            renderContext.viewport &&
+            !(this._parent instanceof Widget) &&
+            this._width > 0
+        ) {
             const vp = renderContext.viewport
             const b = this.bounds
             const padding = 5
@@ -181,7 +185,9 @@ export abstract class Widget extends Layer {
 
         // Apply this widget's transform
         ctx.translate(this._x, this._y)
-        ctx.rotate(this._angle, this._width / 2, this._height / 2)
+        if (this._angle > 0) {
+            ctx.rotate(this._angle, this._width / 2, this._height / 2)
+        }
 
         // Render this widget
         this.renderContent(renderContext)
@@ -202,8 +208,8 @@ export abstract class Widget extends Layer {
         this._localBounds.width = this._width
         this._localBounds.height = this._height
 
-        let globalOffsetX = this._x
-        let globalOffsetY = this._y
+        const globalOffsetX = this._x
+        const globalOffsetY = this._y
 
         // calculate AABB for rotation
         if (this._angle === 0) {
@@ -310,10 +316,12 @@ export abstract class Widget extends Layer {
 
         if (shouldUpdateLines) {
             for (const line of this.attachedLines) {
-                line.headBinding?.id === this._uuid &&
+                if (line.headBinding?.id === this._uuid) {
                     line.updatePointFromBinding('head')
-                line.tailBinding?.id === this._uuid &&
+                }
+                if (line.tailBinding?.id === this._uuid) {
                     line.updatePointFromBinding('tail')
+                }
             }
         }
     }
@@ -347,7 +355,7 @@ export abstract class Widget extends Layer {
         this.destroy()
     }
 
-    static loadFromJson(json: WsWidget, engine: Engine): Widget {
+    static loadFromJson(json: WsWidget, _engine: Engine): Widget {
         throw new Error(
             `loadFromJson is not implemented for ${json.widget_type}_${json.sub_type}`,
         )
@@ -416,10 +424,12 @@ export abstract class Widget extends Layer {
         this.updateBounds()
 
         for (const line of this.attachedLines) {
-            line.headBinding?.id === this._uuid &&
+            if (line.headBinding?.id === this._uuid) {
                 line.updatePointFromBinding('head')
-            line.tailBinding?.id === this._uuid &&
+            }
+            if (line.tailBinding?.id === this._uuid) {
                 line.updatePointFromBinding('tail')
+            }
         }
     }
 
@@ -452,10 +462,12 @@ export abstract class Widget extends Layer {
         if (resized) {
             this.updateBounds()
             for (const line of this.attachedLines) {
-                line.headBinding?.id === this._uuid &&
+                if (line.headBinding?.id === this._uuid) {
                     line.updatePointFromBinding('head')
-                line.tailBinding?.id === this._uuid &&
+                }
+                if (line.tailBinding?.id === this._uuid) {
                     line.updatePointFromBinding('tail')
+                }
             }
         }
         return resized
@@ -535,10 +547,12 @@ export abstract class Widget extends Layer {
                 console.log('continue')
                 continue
             }
-            line.headBinding?.id === this._uuid &&
+            if (line.headBinding?.id === this._uuid) {
                 line.updatePointFromBinding('head')
-            line.tailBinding?.id === this._uuid &&
+            }
+            if (line.tailBinding?.id === this._uuid) {
                 line.updatePointFromBinding('tail')
+            }
         }
     }
 

@@ -104,7 +104,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
         return () => {
             selectionService.selectionChanged.remove(onSelectionChanged)
         }
-    }, [])
+    }, [engine, closeDropdown])
 
     useEffect(() => {
         const onTransform = () => {
@@ -155,7 +155,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             engine.rotateHandler.rotateStarted.remove(hideSubtoolbar)
             engine.rotateHandler.rotateFinished.remove(showSubtoolbar)
         }
-    }, [state.show])
+    }, [state.show, engine])
 
     if (!selectionLayerRef.current?.selectionBorder) return null
 

@@ -11,6 +11,7 @@ import { Control } from '@/core/shapes/nonCanvasShapes/Control.ts'
 import { Line } from '@/core/shapes/line/Line'
 import { CursorService } from '@/core/services/CursorService.ts'
 import { DragHandler } from '@/core/controls/DragHandler'
+import { SelectionLayer } from '../stage/SelectionLayer'
 
 export class SelectToolService extends Service {
     private mouseController: MouseController
@@ -19,6 +20,7 @@ export class SelectToolService extends Service {
     private isDrawing: boolean = false
 
     private selectionService: SelectionService
+    private selectionLayer: SelectionLayer
     private controlOwned: Control | null = null
     private cursorService: CursorService
     private isStageInitated: boolean = false
@@ -71,6 +73,8 @@ export class SelectToolService extends Service {
         this.cursorService.setCursor(this.cursorToolName, 'default')
 
         this.selectionService = this.engine.getService('selection')
+        this.selectionLayer =
+            this.engine.stage.nonCanvasDynamicContainer.selectionLayer
 
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
@@ -80,7 +84,7 @@ export class SelectToolService extends Service {
     onMouseDown(data: CanvasMouseEvent): void {
         this.isObjectAlreadySelected = false
 
-        const selectionBound = this.selectionService.bounds
+        const selectionBorder = this.selectionLayer.selectionBorder
         this.mouseDownWidget = this.checksObjectsInLayer(data)
 
         // if there is control, control instance should own the mouse down, move and up events
@@ -89,8 +93,8 @@ export class SelectToolService extends Service {
             this.controlOwned = this.mouseDownWidget
             this.controlOwned.onMouseDown(data)
         } else if (
-            selectionBound.isFinite() &&
-            selectionBound.contains(data.pointer.x, data.pointer.y)
+            selectionBorder &&
+            selectionBorder.contains(data.pointer.x, data.pointer.y, 1)
         ) {
             this.isObjectAlreadySelected = true
             this.isDrawing = false

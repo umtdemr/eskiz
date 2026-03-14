@@ -2,7 +2,6 @@ import { useEffect, RefObject } from 'react'
 import { API_ENDPOINTS } from '@/helpers/Constant'
 import { useBoundStore } from '@/store/store'
 import { useInfiniteQuery } from '@tanstack/react-query'
-import { useShallow } from 'zustand/react/shallow'
 import { BoardsWithPagination } from '@/types/Board.ts'
 
 export type SortByFilter = '-created_at' | 'name'
@@ -18,7 +17,7 @@ export function useBoards(
     props: BoardsApiQuery,
     nextPageLoaderRef: RefObject<HTMLDivElement>,
 ) {
-    const token = useBoundStore(useShallow((state) => state.token))
+    const token = useBoundStore((state) => state.token)
     const boardsQuery = useInfiniteQuery<BoardsWithPagination>({
         queryKey: ['board_results', token, props],
         queryFn: async ({ pageParam }) => {

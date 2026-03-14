@@ -112,6 +112,13 @@ export class TextEditor {
         const totalScale = scale * contentScale
         const angle = this._editProps.angle ?? 0
 
+        this.addStyle(
+            this._editorContainer,
+            'width',
+            `${this._editProps.width}px`,
+        )
+        this.addStyle(this._quill.root, 'width', `${this._editProps.width}px`)
+
         this._wrapperEl.style.transform = `scale(${totalScale}) rotate(${angle}deg)`
         this._editorContainer.style.height = `${this._editProps.height}px`
         this._wrapperEl.style.width = `${this._editProps.width}px`
@@ -239,12 +246,39 @@ export class TextEditor {
         this._initialStylesHTML = []
     }
 
-    updateSize(props: Pick<EditProps, 'width' | 'height' | 'x' | 'y'>) {
-        if (this._editProps.for === 'shapeText') return
+    updateSize(props: {
+        x: number
+        y: number
+        width: number
+        height: number
+        angle?: number
+        contentScale?: number
+        fontSize?: number
+    }) {
+        if (!props) return
+
+        if (
+            this._editProps.x === props.x &&
+            this._editProps.y === props.y &&
+            this._editProps.width === props.width &&
+            this._editProps.height === props.height
+        )
+            return
+
         this._editProps.x = props.x
         this._editProps.y = props.y
         this._editProps.width = props.width
         this._editProps.height = props.height
+
+        if (typeof props.angle === 'number') {
+            this._editProps.angle = props.angle
+        }
+        if (typeof props.contentScale === 'number') {
+            this._editProps.contentScale = props.contentScale
+        }
+        if (typeof props.fontSize === 'number') {
+            this.changeFontSize(props.fontSize)
+        }
         this.setPosition()
     }
 
@@ -334,6 +368,10 @@ export class TextEditor {
         this._quill.formatText(0, length, 'color', color, 'silent')
         // update the current text color
         this._quill.format('color', color)
+    }
+
+    focus() {
+        this._quill.focus()
     }
 
     get isActive(): boolean {

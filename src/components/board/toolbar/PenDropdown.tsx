@@ -17,12 +17,12 @@ import {
     ACTION_MODES,
     PEN_CONSTANTS,
     SUB_ACTION_MODES,
+    TOOLBAR_COLORS,
 } from '@/helpers/Constant'
 import useOnClickOutside from '@/hooks/UseOutsideClick'
 import { ColorButton } from '@/components/colorButton/ColorButton'
 import { PenColorDropdown } from './PenColorDropdown'
 import { useBoundStore } from '@/store/store'
-import { useShallow } from 'zustand/react/shallow'
 import { closeColorPalette } from '@/components/colorList/colorListUtils'
 
 const tools: {
@@ -56,10 +56,10 @@ export function PenDropdown({
     const [showColorDropdown, setShowColorDropdown] = useState(false)
     const menuRef = useRef(null)
     const buttonRef = useRef<HTMLButtonElement>(null)
-    const thickness = useBoundStore(useShallow((state) => state.pen.thickness))
-    const selectedColor = useBoundStore(useShallow((state) => state.pen.color))
+    const thickness = useBoundStore((state) => state.pen.thickness)
+    const selectedColor = useBoundStore((state) => state.pen.color)
 
-    const onClickOutsideHandler = (event: MouseEvent) => {
+    const onClickOutsideHandler = (event: Event) => {
         if (buttonRef.current!.contains(event.target as Node)) {
             return
         }
@@ -93,16 +93,20 @@ export function PenDropdown({
                     <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
-                            className={clsx('px-2', {
-                                'bg-amber-500':
-                                    activeMode?.mainMode === ACTION_MODES.PATH,
-                                'hover:bg-amber-500':
+                            className={clsx('px-2 [&_svg]:size-5', {
+                                'bg-sky-100':
                                     activeMode?.mainMode === ACTION_MODES.PATH,
                             })}
                             onClick={handleClick}
                             ref={buttonRef}
                         >
-                            <Brush />
+                            <Brush
+                                color={
+                                    activeMode?.mainMode === ACTION_MODES.PATH
+                                        ? TOOLBAR_COLORS.SELECTED
+                                        : TOOLBAR_COLORS.DEFAULT
+                                }
+                            />
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent side={'right'}>
@@ -121,11 +125,8 @@ export function PenDropdown({
                                 <TooltipTrigger asChild>
                                     <Button
                                         variant="ghost"
-                                        className={clsx('px-2', {
-                                            'bg-amber-500':
-                                                activeMode?.subMode ===
-                                                tool.mode,
-                                            'hover:bg-amber-500':
+                                        className={clsx('px-2 [&_svg]:size-5', {
+                                            'bg-sky-100':
                                                 activeMode?.subMode ===
                                                 tool.mode,
                                         })}
@@ -133,7 +134,16 @@ export function PenDropdown({
                                             handlePathModeChange(tool.mode)
                                         }
                                     >
-                                        {tool.icon && <tool.icon />}
+                                        {tool.icon && (
+                                            <tool.icon
+                                                color={
+                                                    activeMode?.subMode ===
+                                                    tool.mode
+                                                        ? TOOLBAR_COLORS.SELECTED
+                                                        : TOOLBAR_COLORS.DEFAULT
+                                                }
+                                            />
+                                        )}
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>

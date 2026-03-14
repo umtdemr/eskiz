@@ -325,12 +325,11 @@ export function reducer(state: SubtoolbarState, action: Actions) {
                 actions: [],
             }
         case ActionKind.SHOW:
-            const actions = generateActions(action.engine)
             return {
                 ...state,
                 show: true,
                 visible: true,
-                actions: actions,
+                actions: generateActions(action.engine),
             }
         case ActionKind.TEMP_HIDE:
             return {

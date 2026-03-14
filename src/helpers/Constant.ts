@@ -151,3 +151,8 @@ export enum BorderStyle {
 export type FontStyleType = 'bold' | 'italic' | 'underline' | 'strike'
 
 export const DEFAULT_SHAPE_THICKNESS = 2
+
+export const TOOLBAR_COLORS = {
+    SELECTED: 'oklch(42.4% 0.199 265.638)',
+    DEFAULT: '#000',
+}

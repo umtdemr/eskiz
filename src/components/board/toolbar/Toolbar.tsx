@@ -18,8 +18,11 @@ import { useCallback, useEffect, useState } from 'react'
 import { clsx } from 'clsx'
 import { ShapesDropdown } from '@/components/board/toolbar/ShapesDropdown.tsx'
 import { useBoundStore } from '@/store/store'
-import { useShallow } from 'zustand/react/shallow'
-import { ACTION_MODES, SUB_ACTION_MODES } from '@/helpers/Constant'
+import {
+    ACTION_MODES,
+    SUB_ACTION_MODES,
+    TOOLBAR_COLORS,
+} from '@/helpers/Constant'
 import { PenDropdown } from '@/components/board/toolbar/PenDropdown'
 import { Engine } from '@/core/engine/Engine'
 import { ImageUploadService } from '@/core/services/ImageUploadService'
@@ -48,13 +51,11 @@ export default function Toolbar({ engine }: ToolbarProps) {
     }, [engine])
 
     const activeMode = {
-        mainMode: useBoundStore(useShallow((state) => state.mainMode)),
-        subMode: useBoundStore(useShallow((state) => state.subMode)),
+        mainMode: useBoundStore((state) => state.mainMode),
+        subMode: useBoundStore((state) => state.subMode),
     }
 
-    const changeActiveMode = useBoundStore(
-        useShallow((state) => state.changeActiveMode),
-    )
+    const changeActiveMode = useBoundStore((state) => state.changeActiveMode)
 
     const handleShapeModeChange = useCallback(
         (newMode: keyof typeof SUB_ACTION_MODES) => {
@@ -86,15 +87,30 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className={clsx('px-2', {
-                            'bg-amber-500':
-                                activeMode?.mainMode === ACTION_MODES.SELECT,
-                            'hover:bg-amber-500':
+                        className={clsx('px-2 [&_svg]:size-5', {
+                            'bg-sky-100':
                                 activeMode?.mainMode === ACTION_MODES.SELECT,
                         })}
                         onClick={() => changeActiveMode(ACTION_MODES.SELECT)}
                     >
-                        <MousePointer2 />
+                        <MousePointer2
+                            size={64}
+                            color={
+                                activeMode?.mainMode === ACTION_MODES.SELECT
+                                    ? TOOLBAR_COLORS.SELECTED
+                                    : TOOLBAR_COLORS.DEFAULT
+                            }
+                            stroke={
+                                activeMode?.mainMode === ACTION_MODES.SELECT
+                                    ? TOOLBAR_COLORS.SELECTED
+                                    : TOOLBAR_COLORS.DEFAULT
+                            }
+                            fill={
+                                activeMode?.mainMode === ACTION_MODES.SELECT
+                                    ? TOOLBAR_COLORS.SELECTED
+                                    : TOOLBAR_COLORS.DEFAULT
+                            }
+                        />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent side={'right'}>
@@ -105,15 +121,19 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className={clsx('px-2', {
-                            'bg-amber-500':
-                                activeMode?.mainMode === ACTION_MODES.PAN,
-                            'hover:bg-amber-500':
+                        className={clsx('px-2 [&_svg]:size-5', {
+                            'bg-sky-100':
                                 activeMode?.mainMode === ACTION_MODES.PAN,
                         })}
                         onClick={() => changeActiveMode(ACTION_MODES.PAN)}
                     >
-                        <Hand />
+                        <Hand
+                            color={
+                                activeMode?.mainMode === ACTION_MODES.PAN
+                                    ? TOOLBAR_COLORS.SELECTED
+                                    : TOOLBAR_COLORS.DEFAULT
+                            }
+                        />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent side={'right'}>
@@ -125,15 +145,19 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className={clsx('px-2', {
-                            'bg-amber-500':
-                                activeMode?.mainMode === ACTION_MODES.TEXT,
-                            'hover:bg-amber-500':
+                        className={clsx('px-2 [&_svg]:size-5', {
+                            'bg-sky-100':
                                 activeMode?.mainMode === ACTION_MODES.TEXT,
                         })}
                         onClick={() => changeActiveMode(ACTION_MODES.TEXT)}
                     >
-                        <Type />
+                        <Type
+                            color={
+                                activeMode?.mainMode === ACTION_MODES.TEXT
+                                    ? TOOLBAR_COLORS.SELECTED
+                                    : TOOLBAR_COLORS.DEFAULT
+                            }
+                        />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent side={'right'}>
@@ -148,15 +172,19 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className={clsx('px-2', {
-                            'bg-amber-500':
-                                activeMode?.mainMode === ACTION_MODES.LINE,
-                            'hover:bg-amber-500':
+                        className={clsx('px-2 [&_svg]:size-5', {
+                            'bg-sky-100':
                                 activeMode?.mainMode === ACTION_MODES.LINE,
                         })}
                         onClick={handleLineModeChange}
                     >
-                        <MoveUpRight />
+                        <MoveUpRight
+                            color={
+                                activeMode?.mainMode === ACTION_MODES.LINE
+                                    ? TOOLBAR_COLORS.SELECTED
+                                    : TOOLBAR_COLORS.DEFAULT
+                            }
+                        />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent side={'right'}>
@@ -167,10 +195,8 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className="px-2"
+                        className="px-2 [&_svg]:size-5"
                         onClick={() => {
-                            const boardId =
-                                useBoundStore.getState().boardData.id
                             engine
                                 .getService<ImageUploadService>('imageUpload')
                                 .pickAndUpload()
@@ -191,11 +217,8 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className={clsx('px-2', {
-                            'bg-amber-500':
-                                activeMode?.mainMode ===
-                                ACTION_MODES.STICKY_NOTE,
-                            'hover:bg-amber-500':
+                        className={clsx('px-2 [&_svg]:size-5', {
+                            'bg-sky-100':
                                 activeMode?.mainMode ===
                                 ACTION_MODES.STICKY_NOTE,
                         })}
@@ -203,7 +226,14 @@ export default function Toolbar({ engine }: ToolbarProps) {
                             changeActiveMode(ACTION_MODES.STICKY_NOTE)
                         }
                     >
-                        <StickyNote />
+                        <StickyNote
+                            color={
+                                activeMode?.mainMode ===
+                                ACTION_MODES.STICKY_NOTE
+                                    ? TOOLBAR_COLORS.SELECTED
+                                    : TOOLBAR_COLORS.DEFAULT
+                            }
+                        />
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent side={'right'}>
@@ -215,7 +245,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className="px-2"
+                        className="px-2 [&_svg]:size-5"
                         onClick={() => engine.historyManager.undo()}
                         disabled={!historyState.canUndo}
                     >
@@ -230,7 +260,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className="px-2"
+                        className="px-2 [&_svg]:size-5"
                         onClick={() => engine.historyManager.redo()}
                         disabled={!historyState.canRedo}
                     >

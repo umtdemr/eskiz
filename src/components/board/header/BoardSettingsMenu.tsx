@@ -11,7 +11,6 @@ import {
 import { Button } from '@/components/ui/button'
 import { Settings, Grid3X3, Check } from 'lucide-react'
 import { useBoundStore } from '@/store/store'
-import { useShallow } from 'zustand/react/shallow'
 import { Engine } from '@/core/engine/Engine'
 import { GridType } from '@/core/canvas/Canvas'
 import { BoardGridType } from '@/core/constants'
@@ -21,12 +20,8 @@ interface BoardSettingsMenuProps {
 }
 
 export function BoardSettingsMenu({ engine }: BoardSettingsMenuProps) {
-    const { gridType, setGridType } = useBoundStore(
-        useShallow((state) => ({
-            gridType: state.gridType,
-            setGridType: state.setGridType,
-        })),
-    )
+    const gridType = useBoundStore((state) => state.gridType)
+    const setGridType = useBoundStore((state) => state.setGridType)
 
     const handleChangeGridType = (newType: GridType) => {
         if (engine && engine.canvas) {

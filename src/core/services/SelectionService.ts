@@ -60,7 +60,7 @@ export class SelectionService extends Service {
         const deletedInSelection: Widget[] = []
         props.widgets.forEach((widget) => {
             if (this.isWidgetInSelection(widget))
-                [deletedInSelection.push(widget)]
+                deletedInSelection.push(widget)
         })
 
         if (!deletedInSelection.length) {
@@ -75,7 +75,7 @@ export class SelectionService extends Service {
         const lockStateChangedInSelection: Widget[] = []
         props.widgets.forEach((widget) => {
             if (this.isWidgetInSelection(widget))
-                [lockStateChangedInSelection.push(widget)]
+                lockStateChangedInSelection.push(widget)
         })
 
         if (!lockStateChangedInSelection.length) {
@@ -291,15 +291,5 @@ export class SelectionService extends Service {
 
     get selectedDuringDrawing() {
         return this._selectedDuringDrawing
-    }
-
-    get bounds(): BoundingBox {
-        if (!this.selected.length) {
-            return BoundingBox.createIndefinite()
-        }
-        if (this.selected.length === 1) {
-            return this.selected[0].bounds
-        }
-        return BoundingBox.createWithMerge(...this._selected)
     }
 }

@@ -98,7 +98,7 @@ export abstract class Shape extends Widget {
         return data
     }
 
-    static loadFromJson(json: WsWidget, engine: Engine): Shape {
+    static loadFromJson(json: WsWidget, _engine: Engine): Shape {
         throw new Error(`Shape (${json.sub_type}) be implemented by subclass`)
     }
 

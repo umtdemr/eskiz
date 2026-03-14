@@ -4,7 +4,6 @@ import {
 } from 'canvaskit-wasm'
 import { Widget, WidgetProps } from '@/core/shapes/Widget.ts'
 import { Engine } from '@/core/engine/Engine'
-import { RGBA } from '@/core/shapes/Color.ts'
 import { canvasKit, fontManager, RenderContext } from '@/core/canvas/Canvas.ts'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
 import { createTextOpsFromString, TextOp } from '@/core/textEditor/TextEditor'

@@ -3,6 +3,7 @@ import { Widget } from '@/core/shapes/Widget'
 import { Line } from '@/core/shapes/line/Line'
 import { Signal } from '@/core/signal/Signal'
 import { EditTable, TransactionId } from '@/core/transaction/TransactionHandler'
+import { State } from '@/core/transaction/State'
 import { MagnetService } from '../services/MagnetService'
 
 export class ReshapeHandler {
@@ -216,9 +217,10 @@ export class ReshapeHandler {
             // check for binding changes and update existing transaction
             if (this.transactionId) {
                 if (this.shape.headBinding !== this.initialHeadBinding) {
-                    const initialBindingState = {} as any
-                    initialBindingState.properties = {
-                        headBinding: this.initialHeadBinding ?? null,
+                    const initialBindingState: State = {
+                        properties: {
+                            headBinding: this.initialHeadBinding ?? null,
+                        },
                     }
 
                     this.engine.transactionHandler.addEditingMethod(
@@ -230,9 +232,10 @@ export class ReshapeHandler {
                 }
 
                 if (this.shape.tailBinding !== this.initialTailBinding) {
-                    const initialBindingState = {} as any
-                    initialBindingState.properties = {
-                        tailBinding: this.initialTailBinding ?? null,
+                    const initialBindingState: State = {
+                        properties: {
+                            tailBinding: this.initialTailBinding ?? null,
+                        },
                     }
 
                     this.engine.transactionHandler.addEditingMethod(

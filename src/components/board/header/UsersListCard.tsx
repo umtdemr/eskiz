@@ -1,4 +1,3 @@
-import { useShallow } from 'zustand/react/shallow'
 import {
     Card,
     CardContent,
@@ -12,12 +11,10 @@ import { Badge } from '@/components/ui/badge.tsx'
 import { useBoundStore } from '@/store/store.ts'
 
 export function UsersListCard() {
-    const closeAllWindows = useBoundStore(
-        useShallow((state) => state.closeAllWindows),
-    )
-    const userData = useBoundStore(useShallow((state) => state.userData))
+    const closeAllWindows = useBoundStore((state) => state.closeAllWindows)
+    const userData = useBoundStore((state) => state.userData)
     const collaborators = useBoundStore(
-        useShallow((state) => state.collaboratorsList),
+        (state) => state.collaboratorsList,
     ).filter((_, i) => i < 3)
 
     return (

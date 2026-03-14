@@ -14,7 +14,11 @@ import {
     useState,
 } from 'react'
 import useOnClickOutside from '@/hooks/UseOutsideClick.ts'
-import { ACTION_MODES, SUB_ACTION_MODES } from '@/helpers/Constant'
+import {
+    ACTION_MODES,
+    SUB_ACTION_MODES,
+    TOOLBAR_COLORS,
+} from '@/helpers/Constant'
 
 function isSubModeForShapes(
     mode: keyof typeof SUB_ACTION_MODES | undefined,
@@ -41,7 +45,7 @@ export function ShapesDropdown({
     const menuRef = useRef(null)
     const shapesBtnRef = useRef<HTMLButtonElement>(null)
 
-    const onClickOutsideHandler = (event: MouseEvent) => {
+    const onClickOutsideHandler = (event: Event) => {
         if (shapesBtnRef.current!.contains(event.target as Node)) {
             return
         }
@@ -88,16 +92,21 @@ export function ShapesDropdown({
                     <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
-                            className={clsx('px-2', {
-                                'bg-amber-500': isSubModeForShapes(
+                            className={clsx('px-2 [&_svg]:size-5 relative', {
+                                'bg-sky-100': isSubModeForShapes(
                                     activeMode?.subMode,
                                 ),
-                                'hover:bg-amber-500': activeMode?.subMode,
                             })}
                             onClick={toggleVisibility}
                             ref={shapesBtnRef}
                         >
-                            <Shapes />
+                            <Shapes
+                                color={
+                                    isSubModeForShapes(activeMode?.subMode)
+                                        ? TOOLBAR_COLORS.SELECTED
+                                        : TOOLBAR_COLORS.DEFAULT
+                                }
+                            />
                         </Button>
                     </TooltipTrigger>
                     <TooltipContent side={'right'}>
@@ -106,7 +115,7 @@ export function ShapesDropdown({
                 </Tooltip>
                 {isOpen ? (
                     <div
-                        className="absolute flex gap-2 left-14 top-0 bg-white shadow-2xl p-1 rounded-lg z-50"
+                        className="absolute flex gap-2 left-14 top-[50%] translate-y-[-50%] bg-white shadow-2xl p-1 rounded-lg z-50"
                         ref={menuRef}
                     >
                         {shapes.map((shape) => (
@@ -114,11 +123,8 @@ export function ShapesDropdown({
                                 <TooltipTrigger asChild>
                                     <Button
                                         variant="ghost"
-                                        className={clsx('px-2', {
-                                            'bg-amber-500':
-                                                activeMode?.subMode ===
-                                                shape.mode,
-                                            'hover:bg-amber-500':
+                                        className={clsx('px-2 [&_svg]:size-5', {
+                                            'bg-sky-100':
                                                 activeMode?.subMode ===
                                                 shape.mode,
                                         })}
@@ -126,7 +132,16 @@ export function ShapesDropdown({
                                             handleShapeModeChange(shape.mode)
                                         }
                                     >
-                                        {shape.icon && <shape.icon />}
+                                        {shape.icon && (
+                                            <shape.icon
+                                                color={
+                                                    activeMode?.subMode ===
+                                                    shape.mode
+                                                        ? TOOLBAR_COLORS.SELECTED
+                                                        : TOOLBAR_COLORS.DEFAULT
+                                                }
+                                            />
+                                        )}
                                     </Button>
                                 </TooltipTrigger>
                                 <TooltipContent>

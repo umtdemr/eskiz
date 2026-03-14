@@ -1,7 +1,6 @@
 import { useRef } from 'react'
 import { Slider } from '@/components/ui/slider'
 import { useBoundStore } from '@/store/store'
-import { useShallow } from 'zustand/react/shallow'
 import { PEN_CONSTANTS } from '@/helpers/Constant'
 import { ColorList } from '@/components/colorList/ColorList'
 
@@ -9,7 +8,7 @@ export function PenColorDropdown() {
     const thicknessUpdateTimeout = useRef<ReturnType<typeof setTimeout> | null>(
         null,
     )
-    const thickness = useBoundStore(useShallow((state) => state.pen.thickness))
+    const thickness = useBoundStore((state) => state.pen.thickness)
     const setThickness = useBoundStore((state) => state.changePenThickness)
     const setPenColor = useBoundStore((state) => state.changePenColor)
 

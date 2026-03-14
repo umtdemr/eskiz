@@ -39,7 +39,7 @@ export function ShapeBgColorDropdown({
         } else {
             setOpacity(color.a)
         }
-    }, [])
+    }, [engine])
 
     const handleOpacityChange = (newOpacityArr: number[]) => {
         const selectionService =

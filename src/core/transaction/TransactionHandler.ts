@@ -1,6 +1,5 @@
 import { nanoid } from 'nanoid'
 import { Widget } from '@/core/shapes/Widget'
-import { WsEngine } from '@/core/WsEngine'
 import { Engine } from '@/core/engine/Engine'
 import { TransactionHistoryEntry } from '@/core/history/HistoryManager'
 import {
