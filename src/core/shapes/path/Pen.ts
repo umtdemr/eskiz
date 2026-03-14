@@ -191,8 +191,8 @@ export class Pen extends Path {
 
         this.left = newBounds[0] + dx
         this.top = newBounds[1] + dy
-        this.width = newBounds[2] - newBounds[0]
-        this.height = newBounds[3] - newBounds[1]
+        this.width = (newBounds[2] - newBounds[0]) * this._scale
+        this.height = (newBounds[3] - newBounds[1]) * this._scale
 
         this.replacePath(pathFromSvg, points)
 
