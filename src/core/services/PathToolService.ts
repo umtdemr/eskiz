@@ -92,18 +92,21 @@ export class PathToolService extends Service {
         this.penState.thickness = thickness
         this.penState.color = color
 
-        this.path = new Pen({
-            x: data.pointer.x,
-            y: data.pointer.y,
-            width: 1,
-            height: 1,
-            parentLayer: this.engine.stage.widgetsDefaultLayer,
-            properties: {
-                color: color!,
-                points: [[data.pointer.x, data.pointer.y]],
-                strokeWidth: thickness,
+        this.path = new Pen(
+            {
+                x: data.pointer.x,
+                y: data.pointer.y,
+                width: 1,
+                height: 1,
+                parentLayer: this.engine.stage.widgetsDefaultLayer,
+                properties: {
+                    color: color!,
+                    points: [[data.pointer.x, data.pointer.y]],
+                    strokeWidth: thickness,
+                },
             },
-        })
+            this.engine,
+        )
         this.points[0] = [data.pointer.x, data.pointer.y]
         this.engine.stage.addWidget(this.path!)
     }

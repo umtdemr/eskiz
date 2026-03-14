@@ -1,4 +1,5 @@
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
+import { Path as CkPath } from 'canvaskit-wasm'
 import { Engine } from '@/core/engine/Engine'
 import { Path, PathProps, PathProperties } from '@/core/shapes/path/Path'
 import { RGBA } from '@/core/shapes/Color'
@@ -10,6 +11,8 @@ import { Paint } from 'canvaskit-wasm'
 
 export class Pen extends Path {
     private _paint: Paint | null = null
+    private _scale: number = 1
+    protected _baseWidth: number = 0
 
     constructor(props: PathProps, engine: Engine) {
         super(PathType.PEN, props, engine)
@@ -22,6 +25,12 @@ export class Pen extends Path {
             )
             if (path) {
                 this._path = path
+                const bounds = path.getBounds()
+                this._baseWidth = bounds[2] - bounds[0]
+
+                if (this._baseWidth > 0) {
+                    this._scale = this._width / this._baseWidth
+                }
             }
         }
     }
@@ -60,7 +69,16 @@ export class Pen extends Path {
         )
         paint.setColor(color)
 
+        renderContext.ctx.save()
+        renderContext.ctx.scale(this._scale, this._scale)
         renderContext.ctx.drawPath(this._path, paint)
+        renderContext.ctx.restore()
+    }
+
+    replacePath(newPath: CkPath, newPoints: number[][]) {
+        super.replacePath(newPath, newPoints)
+        const bounds = newPath.getBounds()
+        this._baseWidth = bounds[2] - bounds[0]
     }
 
     destroy() {
@@ -110,6 +128,10 @@ export class Pen extends Path {
 
     updateWithPartialState(json: Partial<WsWidget>) {
         super.updateWithPartialState(json)
+
+        if (json.width !== undefined && this._baseWidth > 0) {
+            this._scale = this._width / this._baseWidth
+        }
 
         if (json.properties) {
             const props = json.properties as Partial<PathProperties>
@@ -169,11 +191,31 @@ export class Pen extends Path {
 
         this.left = newBounds[0] + dx
         this.top = newBounds[1] + dy
-        this.width = newBounds[2] - newBounds[0]
-        this.height = newBounds[3] - newBounds[1]
+        this.width = (newBounds[2] - newBounds[0]) * this._scale
+        this.height = (newBounds[3] - newBounds[1]) * this._scale
 
         this.replacePath(pathFromSvg, points)
 
         return true
+    }
+
+    resize(opt: {
+        left?: number
+        top?: number
+        width?: number
+        height?: number
+    }): boolean {
+        const resized = super.resize(opt)
+
+        const _baseWidth = this._baseWidth > 0 ? this._baseWidth : this._width
+        if (resized) {
+            this._scale = this._width / _baseWidth
+        }
+
+        return resized
+    }
+
+    get scale(): number {
+        return this._scale
     }
 }

@@ -20,6 +20,7 @@ export interface TextBoxProperties {
     isPlaceholder?: boolean
     lineHeight?: number
     fillColor?: RGBA
+    scale?: number
 }
 
 export type TEXT_ALIGN = (typeof TextAlign)[keyof typeof TextAlign]
@@ -34,8 +35,9 @@ export class TextBox extends Widget {
     private _paragraph: CkParagraph
     private _isPlaceholder: boolean
     private _shouldRender = true
-    private _lineHeight: number
-    private _fillColor: null | RGBA
+    protected _lineHeight: number
+    protected _fillColor: null | RGBA
+    protected _scale: number = 1
     private _fillPaint: Paint | null = null
 
     constructor(props: TextBoxProps, engine: Engine) {
@@ -56,6 +58,7 @@ export class TextBox extends Widget {
             ? props.properties.fillColor
             : null
         this._lineHeight = props.properties.lineHeight || 1.4
+        this._scale = props.properties.scale ?? 1
 
         this.createOrUpdateParagraph()
         this._interactive = true
@@ -92,7 +95,7 @@ export class TextBox extends Widget {
             const style = new canvasKit.TextStyle({
                 color,
                 fontFamilies: ['Open-Sans'],
-                fontSize: this._fontSize,
+                fontSize: this._fontSize * this._scale,
                 heightMultiplier: this._lineHeight,
                 fontStyle: {
                     weight: op.attributes?.bold
@@ -136,7 +139,7 @@ export class TextBox extends Widget {
     }
 
     getMinWidth(): number {
-        return Math.max(10, this._fontSize)
+        return Math.max(10, this._fontSize * this._scale)
     }
 
     private getParagraphStyle() {
@@ -216,6 +219,10 @@ export class TextBox extends Widget {
             if (props.fillColor !== undefined) {
                 this._fillColor = props.fillColor
             }
+            if (props.scale !== undefined) {
+                this._scale = props.scale
+            }
+            this.createOrUpdateParagraph()
         }
     }
 
@@ -306,6 +313,13 @@ export class TextBox extends Widget {
         return true
     }
 
+    changeScale(newScale: number): boolean {
+        if (this._scale === newScale) return false
+        this._scale = newScale
+        this.createOrUpdateParagraph()
+        return true
+    }
+
     canChangeFontStyle(): boolean {
         return true
     }
@@ -354,6 +368,7 @@ export class TextBox extends Widget {
             fontSize: this._fontSize,
             textAlign: this._textAlign,
             lineHeight: this._lineHeight,
+            scale: this._scale,
         }
     }
 
@@ -364,10 +379,15 @@ export class TextBox extends Widget {
             fontSize: this._fontSize,
             textAlign: this._textAlign,
             lineHeight: this._lineHeight,
+            scale: this._scale,
             ...(this._fillColor && {
                 fillColor: this._fillColor,
             }),
         }
+    }
+
+    get scale(): number {
+        return this._scale
     }
 
     toJson() {
