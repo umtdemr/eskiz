@@ -53,7 +53,7 @@ export function BoardItem({ board }: { board: BoardResult }) {
                 }}
             >
                 <div
-                    className="absolute left-0 top-0 w-full h-full blurred_bg variant-3 overflow-hidden opacity-55 backdrop-filter backdrop-blur-md"
+                    className="absolute left-0 top-0 w-full h-full blurred_bg variant-3 overflow-hidden opacity-15 backdrop-filter backdrop-blur-md"
                     ref={gradientRef}
                 ></div>
                 <div className="absolute right-2 top-2">
@@ -77,9 +77,7 @@ export function BoardItem({ board }: { board: BoardResult }) {
                         <Badge className="select-none">owner</Badge>
                     ) : null}
                 </div>
-                <span className="text-sm tracking-widest font-black font-mono border-2 rounded-xl bg-yellow-100 p-5">
-                    WB
-                </span>
+                <span className="text-sm tracking-widest font-black font-mono border-2 rounded-xl bg-yellow-100 p-5"></span>
             </div>
             <div className="p-5">
                 <h2 className="text-md font-bold">{board.name}</h2>
