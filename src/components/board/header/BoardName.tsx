@@ -129,7 +129,7 @@ export function BoardName({ engine }: { engine: Engine }) {
                         className="text-base font-bold"
                         disabled={isDisconnected}
                     >
-                        <Link to={'/boards'}>WB</Link>
+                        <Link to={'/boards'}>eskiz</Link>
                     </Button>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" sideOffset={10}>

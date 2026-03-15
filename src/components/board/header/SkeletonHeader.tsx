@@ -20,7 +20,7 @@ export default function SkeletonHeader() {
                                 size="sm"
                                 className="text-base font-bold"
                             >
-                                <Link to={'/boards'}>WB</Link>
+                                <Link to={'/boards'}>eskiz</Link>
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent side="bottom" sideOffset={10}>
