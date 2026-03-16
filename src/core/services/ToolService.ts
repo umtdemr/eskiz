@@ -30,7 +30,7 @@ export class ToolService extends Service {
         this._storeListener = useBoundStore.subscribe(
             this.onStateChange.bind(this),
         )
-        this.engine.wsEngine.disconnected.add(this.onDisconnected, this)
+        this.engine.wsEngine?.disconnected.add(this.onDisconnected, this)
     }
 
     private onStateChange(state: ZState, prevState: ZState) {

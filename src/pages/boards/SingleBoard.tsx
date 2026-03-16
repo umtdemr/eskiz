@@ -138,9 +138,7 @@ export default function SingleBoard() {
                 const pageDetails = await pageService!.fetchPageDetails(
                     boardQuery.data?.pages[0].id,
                 )
-                pageService?.addWidgetsToCanvas(
-                    pageDetails.fetchPageDetails?.widgets ?? [],
-                )
+                pageService?.addWidgetsToCanvas(pageDetails.widgets ?? [])
             }
 
             if (engineRef.current) {
@@ -172,7 +170,7 @@ export default function SingleBoard() {
                 await engineRef.current?.initialize()
                 canvasRef.current = engineRef.current?.canvas
                 const connectResp =
-                    await engineRef.current?.wsEngine.connect(token)
+                    await engineRef.current?.wsEngine!.connect(token)
                 await processSuccessfulJoin(connectResp)
             } catch (err) {
                 console.error(err)
@@ -204,7 +202,8 @@ export default function SingleBoard() {
         }
 
         const reconnectListener = async () => {
-            const connectResp = await engineRef.current?.wsEngine.connect(token)
+            const connectResp =
+                await engineRef.current?.wsEngine!.connect(token)
             await processSuccessfulJoin(connectResp!)
             setIsDisconnected(false)
             toast.success('Reconnected.', {
@@ -228,14 +227,14 @@ export default function SingleBoard() {
             navigate('/boards')
         }
 
-        engineRef.current?.wsEngine.reconnected.add(reconnectListener)
-        engineRef.current?.wsEngine.disconnected.add(disconnectListener)
-        engineRef.current?.wsEngine.gaveUp.add(gaveUpListener)
+        engineRef.current?.wsEngine?.reconnected.add(reconnectListener)
+        engineRef.current?.wsEngine?.disconnected.add(disconnectListener)
+        engineRef.current?.wsEngine?.gaveUp.add(gaveUpListener)
 
         return () => {
-            engineRef.current?.wsEngine.reconnected.remove(reconnectListener)
-            engineRef.current?.wsEngine.disconnected.remove(disconnectListener)
-            engineRef.current?.wsEngine.gaveUp.remove(gaveUpListener)
+            engineRef.current?.wsEngine?.reconnected.remove(reconnectListener)
+            engineRef.current?.wsEngine?.disconnected.remove(disconnectListener)
+            engineRef.current?.wsEngine?.gaveUp.remove(gaveUpListener)
         }
     }, [
         isInitialized,

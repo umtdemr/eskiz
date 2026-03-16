@@ -217,7 +217,9 @@ export class Image extends Widget {
         )
 
         if (target && target.file_path) {
-            url = `${import.meta.env.VITE_BACKEND_URL}v1/images/${target.file_path}`
+            url = target.file_path.startsWith('idb://')
+                ? target.file_path
+                : `${import.meta.env.VITE_BACKEND_URL}v1/images/${target.file_path}`
             variationWidth = target.width
             variationHeight = target.height
             targetIsSvg = target.mime_type?.includes('svg') ?? false
@@ -227,7 +229,9 @@ export class Image extends Widget {
                 (v) => v.variation_type === 'original',
             )
             if (original && original.file_path) {
-                url = `${import.meta.env.VITE_BACKEND_URL}v1/images/${original.file_path}`
+                url = original.file_path.startsWith('idb://')
+                    ? original.file_path
+                    : `${import.meta.env.VITE_BACKEND_URL}v1/images/${original.file_path}`
                 variationWidth = original.width
                 variationHeight = original.height
                 targetIsSvg = original.mime_type?.includes('svg') ?? false

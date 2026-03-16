@@ -33,10 +33,7 @@ export class WidgetsService extends Service {
     }
 
     async addWidget(params: AddWidgetPayload) {
-        return await this.engine.wsEngine.sendAsyncMessage<'addWidget'>({
-            type: 'addWidget',
-            data: params,
-        })
+        return await this.engine.syncAdapter.addWidget(params)
     }
 
     private onWidgetAdded(event: WsEvents) {

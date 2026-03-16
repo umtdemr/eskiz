@@ -71,21 +71,16 @@ export function BoardName({ engine }: { engine: Engine }) {
                     board.id,
                 )
 
-                if (message.error) {
-                    toast.error(`Failed to saved: ${message.error.message}`, {
+                if (!message) {
+                    toast.error('Failed to save board name', {
                         id: toastId,
                     })
-                    console.error(
-                        '[changeBoardName] Failed to save',
-                        message.error,
-                        message.error.code,
-                    )
                 } else {
                     toast.success('Saved', { id: toastId })
                     useBoundStore.setState({
                         boardData: {
                             ...board,
-                            name: message.changeBoardName?.name || value,
+                            name: message.name || value,
                         },
                     })
                 }
@@ -121,23 +116,31 @@ export function BoardName({ engine }: { engine: Engine }) {
 
     return (
         <div className="flex px-5 py-1 rounded-lg gap-1 items-center select-none bg-white shadow">
-            <Tooltip delayDuration={0}>
-                <TooltipTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        className="text-base font-bold"
-                        disabled={isDisconnected}
-                    >
-                        <Link to={'/boards'}>eskiz</Link>
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" sideOffset={10}>
-                    Home
-                </TooltipContent>
-            </Tooltip>
+            {engine.isStandalone ? (
+                <span className="text-base font-bold h-8 px-3 flex justify-center items-center">
+                    eskiz
+                </span>
+            ) : (
+                <Tooltip delayDuration={0}>
+                    <TooltipTrigger asChild>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-base font-bold"
+                            disabled={isDisconnected}
+                        >
+                            <Link to={'/boards'}>eskiz</Link>
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" sideOffset={10}>
+                        Home
+                    </TooltipContent>
+                </Tooltip>
+            )}
 
-            {board.owner_id === user.id && !isDisconnected ? (
+            {!engine.isStandalone &&
+            board.owner_id === user.id &&
+            !isDisconnected ? (
                 <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>
                         <Button
@@ -171,10 +174,13 @@ export function BoardName({ engine }: { engine: Engine }) {
                         {isEditing ? 'Press enter to save' : 'Click to edit'}
                     </TooltipContent>
                 </Tooltip>
-            ) : (
+            ) : !engine.isStandalone ? (
                 <span className="text-sm px-3">{board.name}</span>
-            )}
-            {board.owner_id === user.id && isEditing && !isDisconnected ? (
+            ) : null}
+            {!engine.isStandalone &&
+            board.owner_id === user.id &&
+            isEditing &&
+            !isDisconnected ? (
                 <Tooltip delayDuration={0}>
                     <TooltipTrigger asChild>
                         <Button
@@ -191,7 +197,9 @@ export function BoardName({ engine }: { engine: Engine }) {
                     </TooltipContent>
                 </Tooltip>
             ) : null}
-            <BoardSettingsMenu engine={engine} />
+            {!engine.isStandalone ? (
+                <BoardSettingsMenu engine={engine} />
+            ) : null}
         </div>
     )
 }

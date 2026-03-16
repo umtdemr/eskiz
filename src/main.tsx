@@ -16,8 +16,11 @@ import SingleBoard from '@/pages/boards/SingleBoard.tsx'
 import Search from './pages/boards/Search'
 import { Deleted } from '@/pages/boards/Deleted.tsx'
 import { initializeAllWidgets } from '@/core/initializers/registerWidgets.ts'
+import StandaloneBoard from '@/pages/boards/StandaloneBoard.tsx'
 
-const router = createBrowserRouter([
+const isStandalone = import.meta.env.VITE_APP_MODE === 'standalone'
+
+const backendRoutes = [
     {
         path: '/',
         element: <Auth />,
@@ -66,7 +69,18 @@ const router = createBrowserRouter([
             </PrivateRoute>
         ),
     },
-])
+]
+
+const standaloneRoutes = [
+    {
+        path: '/',
+        element: <StandaloneBoard />,
+    },
+]
+
+const router = createBrowserRouter(
+    isStandalone ? standaloneRoutes : backendRoutes,
+)
 
 const queryClient = new QueryClient()
 

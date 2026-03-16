@@ -36,16 +36,12 @@ export class BoardNameService extends Service {
         board_id: number,
         shouldDispatch = true,
     ) {
-        const response =
-            await this.engine.wsEngine.sendAsyncMessage<'changeBoardName'>({
-                type: 'changeBoardName',
-                data: {
-                    name,
-                    board_id,
-                },
-            })
+        const response = await this.engine.syncAdapter.changeBoardName(
+            name,
+            board_id,
+        )
 
-        if (shouldDispatch && !response.error) {
+        if (shouldDispatch && response) {
             this.boardNameChanged.dispatch(name)
         }
         return response

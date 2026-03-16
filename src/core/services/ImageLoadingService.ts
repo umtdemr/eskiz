@@ -1,4 +1,5 @@
 import { Service } from './Service'
+import { LocalAdapter } from '@/core/sync/LocalAdapter'
 
 export interface ImageLoadResult {
     data: ArrayBuffer | string // ArrayBuffer for raster, string for SVG
@@ -17,6 +18,11 @@ export class ImageLoadingService extends Service {
     private cache: Cache | null = null
     private cacheInitialized = false
     private cacheInitPromise: Promise<void> | null = null
+    private localAdapter: LocalAdapter | null = null
+
+    setLocalAdapter(adapter: LocalAdapter): void {
+        this.localAdapter = adapter
+    }
 
     private async ensureCacheInitialized(): Promise<void> {
         if (this.cacheInitialized) return
@@ -62,6 +68,25 @@ export class ImageLoadingService extends Service {
         resolve: (result: ImageLoadResult | null) => void
     }) {
         try {
+            // handle idb:// URLs: load from IndexedDB
+            if (request.url.startsWith('idb://')) {
+                const uuid = request.url.slice('idb://'.length)
+                if (!this.localAdapter) {
+                    console.error('idb:// URL but no LocalAdapter available')
+                    request.resolve(null)
+                    return
+                }
+                const stored = await this.localAdapter.getImage(uuid)
+                if (!stored) {
+                    console.error(`image not found in IndexedDB: ${uuid}`)
+                    request.resolve(null)
+                    return
+                }
+                const isSvg = stored.mimeType.includes('svg')
+                request.resolve({ data: stored.data, isSvg })
+                return
+            }
+
             // check cache first
             let response: Response | undefined
 

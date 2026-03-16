@@ -26,7 +26,7 @@ export default function Header({ engine }: { engine: Engine }) {
             <div className="fixed top-5 left-5" id="header_left">
                 <BoardName engine={engine} />
             </div>
-            {!isDisconnected ? (
+            {!isDisconnected && !engine.isStandalone ? (
                 <>
                     <div className="fixed top-5 right-5 flex bg-white shadow px-2 py-2 rounded-xl h-12 items-center gap-2">
                         <UsersListDropdown />

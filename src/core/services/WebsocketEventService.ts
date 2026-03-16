@@ -19,7 +19,7 @@ export class WebsocketEventService extends Service {
                 new Signal<WsEvents>(),
             )
         }
-        this.engine.wsEngine.eventReceived.add(this.onEventReceived, this)
+        this.engine.wsEngine?.eventReceived.add(this.onEventReceived, this)
     }
 
     private onEventReceived(event: WsEvents) {
