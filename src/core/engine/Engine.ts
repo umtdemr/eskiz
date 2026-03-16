@@ -265,6 +265,11 @@ export class Engine {
         this.serviceManager.register('page', new PageService(this))
         this.serviceManager.register('magnet', new MagnetService(this))
         const imageLoadingService = new ImageLoadingService(this)
+        if (this.isStandalone) {
+            imageLoadingService.setLocalAdapter(
+                this._syncAdapter as LocalAdapter,
+            )
+        }
         this.serviceManager.register('imageLoadingService', imageLoadingService)
         this.serviceManager.register(
             'textureManager',

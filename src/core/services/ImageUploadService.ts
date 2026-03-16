@@ -7,6 +7,7 @@ import { WidgetsService } from '@/core/services/WidgetsService'
 import { nanoid } from 'nanoid'
 import { AddWidgetPayload } from '@/types/Websocket'
 import { CreationHistoryEntry } from '@/core/history/HistoryManager'
+import { LocalAdapter } from '@/core/sync/LocalAdapter'
 
 export class ImageUploadService extends Service {
     private readonly MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -50,8 +51,12 @@ export class ImageUploadService extends Service {
         const fileWidgetMap = this.createWidgetsInLayout(finalFiles)
         if (!fileWidgetMap) return
 
-        // upload images
-        await this.uploadImages(fileWidgetMap, boardId, errorCounts)
+        // upload images — standalone or backend
+        if (this.engine.isStandalone) {
+            await this.saveImagesLocally(fileWidgetMap, errorCounts)
+        } else {
+            await this.uploadImages(fileWidgetMap, boardId, errorCounts)
+        }
 
         this.showErrors(errorCounts)
     }
@@ -276,6 +281,86 @@ export class ImageUploadService extends Service {
                         errorCounts['upload_failed']++
                         // on fail, remove widget
                         // TODO: remove
+                        if (widgetsService) {
+                            widgetsService.deleteWidget(widget)
+                        } else {
+                            widget.delete()
+                        }
+                    }
+                })(),
+            )
+        })
+
+        // add to history
+        this.engine.historyManager.push(
+            new CreationHistoryEntry(this.engine, addedImages),
+        )
+
+        await Promise.all(promises)
+    }
+
+    private async saveImagesLocally(
+        fileWidgetMap: Map<File, ImageWidget>,
+        errorCounts: Record<string, number>,
+    ) {
+        const adapter = this.engine.syncAdapter as LocalAdapter
+        const widgetsService = this.engine.getService<WidgetsService>('widgets')
+        const addedImages: ImageWidget[] = []
+        const promises: Promise<void>[] = []
+
+        fileWidgetMap.forEach((widget, file) => {
+            promises.push(
+                (async () => {
+                    try {
+                        const isSvg = file.type === 'image/svg+xml'
+                        const data: ArrayBuffer | string = isSvg
+                            ? await file.text()
+                            : await file.arrayBuffer()
+
+                        const imgUUID = nanoid()
+
+                        // save to IndexedDB
+                        await adapter.saveImage(imgUUID, data, file.type)
+
+                        // build synthetic ImageResponse (single "original" variation)
+                        const syntheticResponse: ImageResponse = {
+                            image: {
+                                id: 0,
+                                user_id: 0,
+                                board_id: 0,
+                                uuid: imgUUID,
+                                original_name: file.name,
+                                created_at: new Date().toISOString(),
+                            },
+                            variations: [
+                                {
+                                    id: 0,
+                                    image_id: 0,
+                                    variation_type: 'original',
+                                    file_path: `idb://${imgUUID}`,
+                                    mime_type: file.type,
+                                    size_bytes: isSvg
+                                        ? (data as string).length
+                                        : (data as ArrayBuffer).byteLength,
+                                    width: widget.width,
+                                    height: widget.height,
+                                    created_at: new Date().toISOString(),
+                                },
+                            ],
+                        }
+
+                        widget.onUploadSuccess(syntheticResponse)
+
+                        // persist widget to IndexedDB
+                        widgetsService.addWidget({
+                            ...(widget.toJson() as AddWidgetPayload),
+                            page_id: this.engine.pageId,
+                        })
+
+                        addedImages.push(widget)
+                    } catch (e: unknown) {
+                        console.error('local save failed', e)
+                        errorCounts['upload_failed']++
                         if (widgetsService) {
                             widgetsService.deleteWidget(widget)
                         } else {

@@ -9,8 +9,15 @@ import {
 } from '@/types/Websocket.ts'
 
 const DB_NAME = 'whiteboardDB'
-const DB_VERSION = 1
+const DB_VERSION = 2
 const WIDGETS_STORE = 'widgets'
+const IMAGES_STORE = 'images'
+
+export interface StoredImage {
+    uuid: string
+    data: ArrayBuffer | string // ArrayBuffer for raster, string for SVG
+    mimeType: string
+}
 
 /**
  * LocalAdapter implements ISyncAdapter using IndexedDB for standalone mode.
@@ -26,6 +33,9 @@ export class LocalAdapter implements ISyncAdapter {
                         keyPath: 'uuid',
                     })
                     store.createIndex('pageId', 'page_id')
+                }
+                if (!db.objectStoreNames.contains(IMAGES_STORE)) {
+                    db.createObjectStore(IMAGES_STORE, { keyPath: 'uuid' })
                 }
             },
         })
@@ -108,5 +118,20 @@ export class LocalAdapter implements ISyncAdapter {
     async changeBoardName(): Promise<undefined> {
         // board name changes are not supported in standalone mode
         return undefined
+    }
+
+    async saveImage(
+        uuid: string,
+        data: ArrayBuffer | string,
+        mimeType: string,
+    ): Promise<void> {
+        const db = await this.dbPromise
+        const record: StoredImage = { uuid, data, mimeType }
+        await db.put(IMAGES_STORE, record)
+    }
+
+    async getImage(uuid: string): Promise<StoredImage | undefined> {
+        const db = await this.dbPromise
+        return (await db.get(IMAGES_STORE, uuid)) as StoredImage | undefined
     }
 }
