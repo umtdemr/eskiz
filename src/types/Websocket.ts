@@ -7,6 +7,7 @@ export type WsCommand =
     | 'changeBoardName'
     | 'addWidget'
     | 'fetchPageDetails'
+    | 'updateWidget'
     | 'other'
 
 // defines responses for each request

@@ -1,5 +1,8 @@
 import { Canvas, Point, setCanvasStyles } from '@/core/canvas/Canvas.ts'
 import { WsEngine } from '@/core/WsEngine.ts'
+import { ISyncAdapter } from '@/core/sync/ISyncAdapter.ts'
+import { WsAdapter } from '@/core/sync/WsAdapter.ts'
+import { LocalAdapter } from '@/core/sync/LocalAdapter.ts'
 import { UpperCanvasRenderer } from '@/core/renderers/UpperCanvasRenderer.ts'
 import { Stage } from '../stage/Stage'
 import { ServiceManager } from '../services/ServiceManager'
@@ -50,16 +53,15 @@ export type EngineEventsMap = {
 }
 
 export class Engine {
-    // TODO: remove slug and board id here for SST
     private _slugId: string
     private _boardId: number
     private _pageId: number
-    private: string
     private _mouseController: MouseController
     private _upperCanvasEl: HTMLCanvasElement
     private _stage: Stage
     canvas: Canvas
-    wsEngine: WsEngine
+    wsEngine: WsEngine | null = null
+    readonly isStandalone: boolean
     private serviceManager: ServiceManager
     private _isRunning = false
     private _dragHandler: DragHandler
@@ -70,6 +72,7 @@ export class Engine {
     private _textEditor: TextEditor
     private _commands: CommandRegistry
     private _historyManager: HistoryManager
+    private _syncAdapter: ISyncAdapter
 
     upperCanvasRenderer: UpperCanvasRenderer
 
@@ -82,12 +85,19 @@ export class Engine {
         this._slugId = slugId
         this._boardId = boardId
         this._pageId = pageId
-        this.wsEngine = new WsEngine(
-            import.meta.env.VITE_WS_URL,
-            this._slugId,
-            this._boardId,
-            this._pageId,
-        )
+        this.isStandalone = import.meta.env.VITE_APP_MODE === 'standalone'
+
+        if (this.isStandalone) {
+            this._syncAdapter = new LocalAdapter()
+        } else {
+            this.wsEngine = new WsEngine(
+                import.meta.env.VITE_WS_URL,
+                this._slugId,
+                this._boardId,
+                this._pageId,
+            )
+            this._syncAdapter = new WsAdapter(this.wsEngine)
+        }
 
         this._transactionHandler = new TransactionHandler(this)
         this._dragHandler = new DragHandler(this)
@@ -111,7 +121,10 @@ export class Engine {
 
     async initialize() {
         await this.canvas.initialize()
-        await this.wsEngine.initialize()
+
+        if (this.wsEngine) {
+            await this.wsEngine.initialize()
+        }
 
         // create upper canvas
         const upperCanvasEl = document.createElement('canvas')
@@ -146,7 +159,7 @@ export class Engine {
 
     dispose() {
         this.canvas.dispose()
-        this.wsEngine.dispose()
+        this.wsEngine?.dispose()
         this._mouseController.dispose()
         this.zoomChanged.removeAll()
     }
@@ -228,20 +241,27 @@ export class Engine {
                 selectionService,
             ),
         )
-        // cursorSender service sends user's cursor position to the server
-        this.serviceManager.register(
-            'cursorSender',
-            new CursorSenderService(this, this.wsEngine, this._mouseController),
-        )
         this.serviceManager.register('shortcut', new ShortcutService(this))
-        this.serviceManager.register(
-            'boardName',
-            new BoardNameService(this, wsEventService),
-        )
-        this.serviceManager.register(
-            'collaborators',
-            new CollaboratorsService(this, wsEventService),
-        )
+
+        // collaborative-only services — skip in standalone mode
+        if (!this.isStandalone && this.wsEngine) {
+            this.serviceManager.register(
+                'cursorSender',
+                new CursorSenderService(
+                    this,
+                    this.wsEngine,
+                    this._mouseController,
+                ),
+            )
+            this.serviceManager.register(
+                'boardName',
+                new BoardNameService(this, wsEventService),
+            )
+            this.serviceManager.register(
+                'collaborators',
+                new CollaboratorsService(this, wsEventService),
+            )
+        }
         this.serviceManager.register('page', new PageService(this))
         this.serviceManager.register('magnet', new MagnetService(this))
         const imageLoadingService = new ImageLoadingService(this)
@@ -318,6 +338,10 @@ export class Engine {
 
     get pageId(): number {
         return this._pageId
+    }
+
+    get syncAdapter(): ISyncAdapter {
+        return this._syncAdapter
     }
 
     get boardId(): number {

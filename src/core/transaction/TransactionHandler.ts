@@ -7,6 +7,7 @@ import {
     getPartialState,
     State,
 } from '@/core/transaction/State'
+import { UpdateWidgetPayload } from '@/types/Websocket'
 
 export type TransactionType = 'immediate' | 'continuous'
 export type TransactionId = string
@@ -163,23 +164,23 @@ export class TransactionHandler {
     }
 
     private sendChanges(transaction: Transaction) {
-        const widgetStates: State[] = []
+        const widgetStates: UpdateWidgetPayload['shapes'] = []
         for (const [widget, editMethods] of transaction.editTable.entries()) {
             widgetStates.push({
-                uuid: widget.uuid,
-                data: getPartialState(widget, editMethods),
+                uuid: widget.uuid!,
+                data: getPartialState(widget, editMethods) as Record<
+                    string,
+                    unknown
+                >,
             })
         }
-        const sendingData = {
+        const sendingData: UpdateWidgetPayload = {
             transaction_id: transaction.id,
             is_committed: transaction.isCommitted,
             shapes: widgetStates,
         }
 
-        this.engine.wsEngine.sendAsyncMessage<'updateWidget'>({
-            type: 'updateWidget',
-            data: sendingData,
-        })
+        this.engine.syncAdapter.syncTransaction(sendingData)
 
         console.log(sendingData)
     }

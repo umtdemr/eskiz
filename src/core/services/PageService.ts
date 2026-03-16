@@ -6,12 +6,7 @@ import { Line } from '@/core/shapes/line/Line'
 
 export class PageService extends Service {
     async fetchPageDetails(page_id: number) {
-        return await this.engine.wsEngine.sendAsyncMessage<'fetchPageDetails'>({
-            type: 'fetchPageDetails',
-            data: {
-                page_id,
-            },
-        })
+        return await this.engine.syncAdapter.fetchPageDetails(page_id)
     }
 
     /**
