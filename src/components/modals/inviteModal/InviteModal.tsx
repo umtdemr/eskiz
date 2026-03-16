@@ -45,7 +45,7 @@ export function InviteModal({
     const token = useBoundStore((state) => state.token)
     const addToUsers = useBoundStore((state) => state.addToUsers)
 
-    const mutation = useMutation<unknown, DefaultError, InviteRequest>({
+    const mutation = useMutation<Response, DefaultError, InviteRequest>({
         mutationFn: (formData) => {
             return fetch(API_ENDPOINTS.INVITE_TO_BOARD, {
                 method: 'POST',
@@ -62,7 +62,7 @@ export function InviteModal({
                 return Promise.reject('could not invite the user')
             }
             const data = await resp.json()
-            if (!data.user || !data.user?.id < 0) {
+            if (!data.user || data.user?.id < 0) {
                 return Promise.reject('cold not invite the user')
             }
 

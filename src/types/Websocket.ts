@@ -4,6 +4,7 @@ import { WidgetJson } from '@/core/shapes/Widget.ts'
 
 export type WsCommand =
     | 'join'
+    | 'cursor'
     | 'changeBoardName'
     | 'addWidget'
     | 'fetchPageDetails'

@@ -7,7 +7,7 @@ import {
     SelectItem,
 } from '@/components/ui/select'
 import { SortByFilter } from '@/hooks/UseBoards'
-import { OwnedByFilter } from '@/pages/Boards'
+import { OwnedByFilter } from '@/pages/boards/Boards'
 
 const validSortByFilterObject: Record<SortByFilter, true> = {
     '-created_at': true,

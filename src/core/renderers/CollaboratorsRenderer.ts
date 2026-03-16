@@ -21,6 +21,7 @@ export class CollaboratorsRenderer {
         collaborators: collaboratorCursor[],
     ) {
         const ctx = canvasEl.getContext('2d')
+        if (!ctx) return
         // clear the upper canvas
         ctx.clearRect(0, 0, canvasEl.width, canvasEl.height)
         for (const collaborator of collaborators) {

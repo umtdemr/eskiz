@@ -30,7 +30,7 @@ export default function Login() {
     const { login } = useAuth()
     const navigate = useNavigate()
 
-    const mutation = useMutation<unknown, DefaultError, LoginRequest>({
+    const mutation = useMutation<Response, DefaultError, LoginRequest>({
         mutationFn: (formData) => {
             return fetch(API_ENDPOINTS.LOGIN, {
                 method: 'POST',
@@ -129,7 +129,7 @@ export default function Login() {
 
                             {form.formState.errors.api ? (
                                 <p className="text-[0.8rem] font-medium text-destructive">
-                                    {form.formState.errors.api.message}
+                                    {String(form.formState.errors.api.message)}
                                 </p>
                             ) : null}
 

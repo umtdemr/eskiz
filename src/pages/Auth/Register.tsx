@@ -39,7 +39,7 @@ const formSchema = z.object({
 export default function Register() {
     const navigate = useNavigate()
 
-    const mutation = useMutation<unknown, DefaultError, RegisterRequest>({
+    const mutation = useMutation<Response, DefaultError, RegisterRequest>({
         mutationFn: (formData) => {
             return fetch(API_ENDPOINTS.REGISTER, {
                 method: 'POST',
@@ -190,7 +190,7 @@ export default function Register() {
 
                             {form.formState.errors.api ? (
                                 <p className="text-[0.8rem] font-medium text-destructive">
-                                    {form.formState.errors.api.message}
+                                    {String(form.formState.errors.api.message)}
                                 </p>
                             ) : null}
 

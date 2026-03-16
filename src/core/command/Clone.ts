@@ -8,11 +8,12 @@ export class CloneCommand extends Command {
     }
 
     canExecute(ctx: CommandCtx): boolean {
-        if (!ctx.params?.widgets?.length) {
+        const widgets = ctx.params?.widgets as Widget[] | undefined
+        if (!widgets?.length) {
             return false
         }
 
-        if (ctx.params?.widgets?.some((widget: Widget) => widget?.isLocked)) {
+        if (widgets.some((widget: Widget) => widget?.isLocked)) {
             return false
         }
 
@@ -27,7 +28,7 @@ export class CloneCommand extends Command {
         const duplicationService =
             ctx.engine.getService<DuplicationService>('duplication')
         const addedWidgets = duplicationService.duplicateWidgets(
-            ctx.params!.widgets,
+            ctx.params!.widgets as Widget[],
         )
 
         ctx.selectionService.selectWidgets(addedWidgets)

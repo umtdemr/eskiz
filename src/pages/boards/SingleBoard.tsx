@@ -36,7 +36,8 @@ export default function SingleBoard() {
     const slugId = params?.id
     const canvasRef = useRef<Canvas | null>(null)
     const engineRef = useRef<Engine | null>(null)
-    const [connectionError, setConnectionError] = useState<WsErrorMessage>(null)
+    const [connectionError, setConnectionError] =
+        useState<WsErrorMessage | null>(null)
     const disconnectionToastId = useRef('')
     const whiteboardRef = useRef<HTMLDivElement>(null)
 
