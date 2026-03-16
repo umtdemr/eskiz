@@ -25,7 +25,7 @@ export class TrailLayer extends Layer {
                 y: 0,
                 width: 0,
                 height: 0,
-                properties: {},
+                properties: { points: [] },
             },
             engine,
         )
@@ -61,7 +61,7 @@ export class TrailLayer extends Layer {
                 (p) => Math.abs(p.x - this.mouseTarget.x) < 0.1,
             )
         ) {
-            this._trailWidget.replacePath(new canvasKit.Path())
+            this._trailWidget.replacePath(new canvasKit.Path(), [])
             this.engine.canvas.requestRender()
             return
         }
@@ -79,7 +79,10 @@ export class TrailLayer extends Layer {
             newCkPath.lineTo(this.trailPoints[i].x, this.trailPoints[i].y)
         }
 
-        this._trailWidget.replacePath(newCkPath)
+        this._trailWidget.replacePath(
+            newCkPath,
+            this.trailPoints.map((p) => [p.x, p.y]),
+        )
 
         this.engine.canvas.requestRender()
 

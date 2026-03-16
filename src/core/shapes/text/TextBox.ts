@@ -33,7 +33,6 @@ export class TextBox extends Widget {
     private _fontSize: number
     private _textAlign: TEXT_ALIGN
     private _paragraph: CkParagraph
-    private _isPlaceholder: boolean
     private _shouldRender = true
     protected _lineHeight: number
     protected _fillColor: null | RGBA
@@ -50,10 +49,6 @@ export class TextBox extends Widget {
         }
         this._fontSize = props.properties.fontSize
         this._textAlign = props.properties.textAlign || TextAlign.LEFT
-        this._isPlaceholder =
-            props.properties.isPlaceholder !== undefined
-                ? props.properties.isPlaceholder
-                : false
         this._fillColor = props.properties.fillColor
             ? props.properties.fillColor
             : null

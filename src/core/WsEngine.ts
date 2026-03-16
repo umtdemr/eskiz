@@ -143,9 +143,7 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
     private async onMessage(message: MessageEvent) {
         this.resetServerPingTimeout() // Reset ping timeout on ANY message from server
 
-        const data = JSON.parse(
-            Pako.inflate(message.data, { to: 'string', encoding: 'utf8' }),
-        )
+        const data = JSON.parse(Pako.inflate(message.data, { to: 'string' }))
         if (data.reply_to) {
             if (this.messageCallbacks.has(data.reply_to)) {
                 this.messageCallbacks.get(data.reply_to)!(data)
@@ -296,7 +294,10 @@ export class WsEngine extends Emitter<WsEngineEventMap> {
             page_id: this._pageId,
         }
         if (cb) {
-            this.messageCallbacks.set(sendingData.id, cb!)
+            this.messageCallbacks.set(
+                sendingData.id,
+                cb as (data: MsgCallback<WsCommand>) => void,
+            )
         }
         const compressed = Pako.deflate(JSON.stringify(sendingData))
         this.websocket!.send(compressed)

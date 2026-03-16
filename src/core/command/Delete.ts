@@ -9,7 +9,10 @@ export class DeleteCommand extends Command {
     }
 
     canExecute(ctx: CommandCtx): boolean {
-        if (!ctx.params || !ctx.params?.widgets?.length) {
+        if (
+            !ctx.params ||
+            !(ctx.params?.widgets as Widget[] | undefined)?.length
+        ) {
             return false
         }
 

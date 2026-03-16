@@ -3,7 +3,6 @@ import {
     SelectionChangedProps,
     SelectionService,
 } from '@/core/services/SelectionService'
-import { SelectToolService } from '@/core/services/SelectToolService'
 import { Border } from '../shapes/nonCanvasShapes/Border'
 import { Widget } from '../shapes/Widget'
 import { Layer } from './Layer'
@@ -30,7 +29,6 @@ export class SelectionLayer extends Layer {
     private _selected: Widget[]
     private _selectionBorder: Border | null = null
     private controls: Control[] = []
-    private selectToolService: SelectToolService
     private dragHandler: DragHandler
 
     constructor(engine: Engine, selectionService: SelectionService) {
@@ -48,8 +46,6 @@ export class SelectionLayer extends Layer {
             this,
         )
 
-        this.selectToolService =
-            this.engine.getService<SelectToolService>('selectTool')
         this.dragHandler.moveStarted.add(this.onMoveStarted, this)
         this.dragHandler.moveFinished.add(this.onMoveFinished, this)
         this.dragHandler.tempMoveStarted.add(this.onTempMoveStarted, this)

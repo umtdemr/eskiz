@@ -70,7 +70,7 @@ export default function BoardsSidebar() {
             <SidebarFooter>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <DropdownMenu state={open}>
+                        <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <SidebarMenuButton className="py-5">
                                     <div className="flex items-center gap-2 px-1 text-left text-sm">

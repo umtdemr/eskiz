@@ -84,7 +84,6 @@ function calculateResizedBounds(
  * Handles resizing from corners or edges.
  */
 export class ResizeHandler {
-    private engine: Engine
     private initialBounds = {
         pointerX: 0,
         pointerY: 0,
@@ -107,7 +106,6 @@ export class ResizeHandler {
     private static readonly MIN_DIMENSION = 1 // Minimum width/height in pixels
 
     constructor(engine: Engine) {
-        this.engine = engine
         this.transactionHandler = engine.transactionHandler
     }
 
