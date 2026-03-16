@@ -51,7 +51,7 @@ export class ImageUploadService extends Service {
         const fileWidgetMap = this.createWidgetsInLayout(finalFiles)
         if (!fileWidgetMap) return
 
-        // upload images — standalone or backend
+        // upload images
         if (this.engine.isStandalone) {
             await this.saveImagesLocally(fileWidgetMap, errorCounts)
         } else {

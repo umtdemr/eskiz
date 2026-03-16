@@ -8,7 +8,8 @@ import {
 
 /**
  * ISyncAdapter defines actions for synchronizing board state.
- * Implementations can be backed by WebSockets or IndexedDB.
+ * Implementations can be backed by a backend server via a WebSocket connection
+ * or locally via IndexedDB.
  */
 export interface ISyncAdapter {
     syncTransaction(data: UpdateWidgetPayload): Promise<void>

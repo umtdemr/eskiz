@@ -243,7 +243,7 @@ export class Engine {
         )
         this.serviceManager.register('shortcut', new ShortcutService(this))
 
-        // collaborative-only services — skip in standalone mode
+        // skip collaborative-only services in standalone mode
         if (!this.isStandalone && this.wsEngine) {
             this.serviceManager.register(
                 'cursorSender',
