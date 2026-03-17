@@ -6,6 +6,7 @@ import CanvasKitInit, {
     Paint,
     Path,
 } from 'canvaskit-wasm'
+import canvaskitWasmUrl from 'canvaskit-wasm/bin/canvaskit.wasm?url'
 import { ZOOM_LEVELS } from '@/helpers/Constant.ts'
 import { Stage } from '../stage/Stage'
 import { Signal } from '../signal/Signal'
@@ -341,8 +342,7 @@ export class CanvasKitSingleton {
     public static async getInstance(): Promise<CanvasKit> {
         if (!CanvasKitSingleton.instance) {
             CanvasKitSingleton.instance = await CanvasKitInit({
-                locateFile: (file: string) =>
-                    '/node_modules/canvaskit-wasm/bin/' + file,
+                locateFile: () => canvaskitWasmUrl,
             })
         }
         return CanvasKitSingleton.instance
