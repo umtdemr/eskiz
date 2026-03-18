@@ -74,10 +74,6 @@ export default function StandaloneBoard() {
         if (engineRef.current?.canvas.initialized) return
 
         initializeApp()
-
-        return () => {
-            console.log('hello')
-        }
     }, [setBoardData])
 
     return (
