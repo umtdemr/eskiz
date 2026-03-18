@@ -9,38 +9,48 @@ import { reverseRotatePoint } from '@/core/geometry/math'
 
 const ROTATE_CONTROL_OFFSET = 23
 
-const recorder = new canvasKit.PictureRecorder()
-const recordingCanvas = recorder.beginRecording(
-    canvasKit.LTRBRect(0, 0, 24, 24),
-)
+import type { SkPicture } from 'canvaskit-wasm'
 
-const paint = new canvasKit.Paint()
-paint.setStyle(canvasKit.PaintStyle.Stroke)
-paint.setAntiAlias(true)
-paint.setStrokeWidth(1)
-paint.setColor(canvasKit.BLACK)
-paint.setStrokeCap(canvasKit.StrokeCap.Round)
-paint.setStrokeJoin(canvasKit.StrokeJoin.Round)
+let rotateIconPicture: SkPicture | null = null
 
-const path1 = canvasKit.Path.MakeFromSVGString(
-    'M21 12C21 10.22 20.4722 8.47991 19.4832 6.99987C18.4943 5.51983 17.0887 4.36627 15.4442 3.68508C13.7996 3.00389 11.99 2.82566 10.2442 3.17293C8.49836 3.5202 6.89472 4.37737 5.63604 5.63604C4.37737 6.89471 3.5202 8.49836 3.17294 10.2442C2.82567 11.99 3.0039 13.7996 3.68509 15.4442C4.36628 17.0887 5.51983 18.4943 6.99987 19.4832C8.47991 20.4722 10.22 21 12 21C14.52 21 16.93 20 18.74 18.26L21 16',
-)
-const path2 = canvasKit.Path.MakeFromSVGString('M21 21V16H16')
+function getRotateIconPicture(): SkPicture {
+    if (rotateIconPicture) return rotateIconPicture
 
-const scale = 20 / 24
-const matrix = canvasKit.Matrix.scaled(scale, scale)
-path1!.transform(matrix)
-path2!.transform(matrix)
+    const recorder = new canvasKit.PictureRecorder()
+    const recordingCanvas = recorder.beginRecording(
+        canvasKit.LTRBRect(0, 0, 24, 24),
+    )
 
-recordingCanvas.drawPath(path1!, paint)
-recordingCanvas.drawPath(path2!, paint)
+    const paint = new canvasKit.Paint()
+    paint.setStyle(canvasKit.PaintStyle.Stroke)
+    paint.setAntiAlias(true)
+    paint.setStrokeWidth(1)
+    paint.setColor(canvasKit.BLACK)
+    paint.setStrokeCap(canvasKit.StrokeCap.Round)
+    paint.setStrokeJoin(canvasKit.StrokeJoin.Round)
 
-const rotateIconPicture = recorder.finishRecordingAsPicture()
+    const path1 = canvasKit.Path.MakeFromSVGString(
+        'M21 12C21 10.22 20.4722 8.47991 19.4832 6.99987C18.4943 5.51983 17.0887 4.36627 15.4442 3.68508C13.7996 3.00389 11.99 2.82566 10.2442 3.17293C8.49836 3.5202 6.89472 4.37737 5.63604 5.63604C4.37737 6.89471 3.5202 8.49836 3.17294 10.2442C2.82567 11.99 3.0039 13.7996 3.68509 15.4442C4.36628 17.0887 5.51983 18.4943 6.99987 19.4832C8.47991 20.4722 10.22 21 12 21C14.52 21 16.93 20 18.74 18.26L21 16',
+    )
+    const path2 = canvasKit.Path.MakeFromSVGString('M21 21V16H16')
 
-paint.delete()
-path1?.delete()
-path2?.delete()
-recorder.delete()
+    const scale = 20 / 24
+    const matrix = canvasKit.Matrix.scaled(scale, scale)
+    path1!.transform(matrix)
+    path2!.transform(matrix)
+
+    recordingCanvas.drawPath(path1!, paint)
+    recordingCanvas.drawPath(path2!, paint)
+
+    rotateIconPicture = recorder.finishRecordingAsPicture()
+
+    paint.delete()
+    path1?.delete()
+    path2?.delete()
+    recorder.delete()
+
+    return rotateIconPicture
+}
 
 export type RotateControlProps = ControlProps
 
@@ -83,7 +93,7 @@ export class RotateControl extends Control {
         const iconScale = 1 / renderContext.scale
         renderContext.ctx.scale(iconScale, iconScale)
         renderContext.ctx.translate(-this.width / 2, -this.height / 2)
-        renderContext.ctx.drawPicture(rotateIconPicture)
+        renderContext.ctx.drawPicture(getRotateIconPicture())
         renderContext.ctx.restore()
     }
 

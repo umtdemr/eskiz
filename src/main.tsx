@@ -1,22 +1,24 @@
-import { StrictMode } from 'react'
+import { StrictMode, lazy, Suspense } from 'react'
 import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import './index.css'
 
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
-import Auth from '@/routes/Auth.tsx'
-import Login from '@/pages/Auth/Login.tsx'
-import Register from '@/pages/Auth/Register.tsx'
 import { Toaster } from 'react-hot-toast'
-import PrivateRoute from '@/routes/PrivateRoute.tsx'
-import BoardsRoute from '@/routes/Boards.tsx'
-import BoardsPage from '@/pages/boards/Boards.tsx'
-import SingleBoard from '@/pages/boards/SingleBoard.tsx'
-import Search from './pages/boards/Search'
-import { Deleted } from '@/pages/boards/Deleted.tsx'
-import { initializeAllWidgets } from '@/core/initializers/registerWidgets.ts'
-import StandaloneBoard from '@/pages/boards/StandaloneBoard.tsx'
+
+const Auth = lazy(() => import('@/routes/Auth.tsx'))
+const Login = lazy(() => import('@/pages/Auth/Login.tsx'))
+const Register = lazy(() => import('@/pages/Auth/Register.tsx'))
+const PrivateRoute = lazy(() => import('@/routes/PrivateRoute.tsx'))
+const BoardsRoute = lazy(() => import('@/routes/Boards.tsx'))
+const BoardsPage = lazy(() => import('@/pages/boards/Boards.tsx'))
+const Search = lazy(() => import('./pages/boards/Search'))
+const Deleted = lazy(() =>
+    import('@/pages/boards/Deleted.tsx').then((m) => ({ default: m.Deleted })),
+)
+const SingleBoard = lazy(() => import('@/pages/boards/SingleBoard.tsx'))
+const StandaloneBoard = lazy(() => import('@/pages/boards/StandaloneBoard.tsx'))
 
 const isStandalone = import.meta.env.VITE_APP_MODE === 'standalone'
 
@@ -88,10 +90,10 @@ createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <QueryClientProvider client={queryClient}>
             <Toaster position="bottom-center" reverseOrder={false} />
-            <RouterProvider router={router} />
+            <Suspense fallback={null}>
+                <RouterProvider router={router} />
+            </Suspense>
             <ReactQueryDevtools />
         </QueryClientProvider>
     </StrictMode>,
 )
-
-initializeAllWidgets()

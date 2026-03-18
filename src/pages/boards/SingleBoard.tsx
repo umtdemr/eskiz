@@ -10,7 +10,7 @@ import Subtoolbar from '@/components/board/subToolbar/Subtoolbar'
 import SkeletonToolbar from '@/components/board/toolbar/SkeletonToolbar.tsx'
 import Footer from '@/components/board/footer/Footer.tsx'
 import SkeletonFooter from '@/components/board/footer/SkeletonFooter.tsx'
-import { Canvas } from '@/core/canvas/Canvas.ts'
+import { Canvas, initCanvasKit } from '@/core/canvas/Canvas.ts'
 import { Engine } from '@/core/engine/Engine.ts'
 import { toast } from 'react-hot-toast'
 import {
@@ -29,6 +29,7 @@ import { getAvatar } from '@/helpers/AuthHelper.ts'
 import { CollaboratorUser } from '@/store/collaborators.ts'
 import { PageService } from '@/core/services/PageService.ts'
 import { TooltipProvider } from '@/components/ui/tooltip'
+import { initializeAllWidgets } from '@/core/initializers/registerWidgets.ts'
 
 export default function SingleBoard() {
     const [isInitialized, setIsInitialized] = useState(false)
@@ -163,6 +164,8 @@ export default function SingleBoard() {
 
         const initializeApp = async () => {
             try {
+                initializeAllWidgets()
+                await initCanvasKit()
                 engineRef.current = new Engine(
                     slugId!,
                     boardQuery.data!.id,
