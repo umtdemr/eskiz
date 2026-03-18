@@ -349,18 +349,16 @@ export class CanvasKitSingleton {
     }
 }
 
-export const canvasKit = await CanvasKitSingleton.getInstance()
-
 export class FontManagerSingleton {
     private static instance: FontMgr
 
     private constructor() {}
 
-    public static async getInstance(canvasKit: CanvasKit): Promise<FontMgr> {
+    public static async getInstance(ck: CanvasKit): Promise<FontMgr> {
         if (!FontManagerSingleton.instance) {
             const fontUrl = '/fonts/OpenSans-Regular.ttf'
             const loadFontPromise = await fetch(fontUrl)
-            FontManagerSingleton.instance = canvasKit.FontMgr.FromData(
+            FontManagerSingleton.instance = ck.FontMgr.FromData(
                 await loadFontPromise.arrayBuffer(),
             )!
         }
@@ -368,4 +366,11 @@ export class FontManagerSingleton {
     }
 }
 
-export const fontManager = await FontManagerSingleton.getInstance(canvasKit)
+export let canvasKit: CanvasKit
+export let fontManager: FontMgr
+
+export async function initCanvasKit() {
+    if (canvasKit) return
+    canvasKit = await CanvasKitSingleton.getInstance()
+    fontManager = await FontManagerSingleton.getInstance(canvasKit)
+}

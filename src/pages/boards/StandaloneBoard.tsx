@@ -7,9 +7,11 @@ import SkeletonHeader from '@/components/board/header/SkeletonHeader.tsx'
 import SkeletonToolbar from '@/components/board/toolbar/SkeletonToolbar.tsx'
 import SkeletonFooter from '@/components/board/footer/SkeletonFooter.tsx'
 import { Engine } from '@/core/engine/Engine.ts'
+import { initCanvasKit } from '@/core/canvas/Canvas.ts'
 import { PageService } from '@/core/services/PageService.ts'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useBoundStore } from '@/store/store.ts'
+import { initializeAllWidgets } from '@/core/initializers/registerWidgets.ts'
 
 const DEFAULT_SLUG = 'local'
 const DEFAULT_BOARD_ID = 1
@@ -37,6 +39,8 @@ export default function StandaloneBoard() {
     useEffect(() => {
         const initializeApp = async () => {
             try {
+                initializeAllWidgets()
+                await initCanvasKit()
                 engineRef.current = new Engine(
                     DEFAULT_SLUG,
                     DEFAULT_BOARD_ID,
