@@ -43,6 +43,9 @@ export class ChangeZIndex extends Command {
                 ? sortedWidgets
                 : sortedWidgets.reverse()
 
+        const initialZIndexes = new Map<string, string>()
+        processOrder.forEach((w) => initialZIndexes.set(w.uuid!, w.zIndex))
+
         for (const widget of processOrder) {
             let moved = false
 
@@ -97,14 +100,20 @@ export class ChangeZIndex extends Command {
             engine.canvas.requestRender()
 
             const editTable = new Map<Widget, EditingMethods[]>()
-            affectedWidgets.forEach((widget) => {
-                editTable.set(widget, ['zIndex'])
-            })
-
             const { transactionId } = engine.transactionHandler.begin(
                 'immediate',
                 { editTable },
             )
+
+            affectedWidgets.forEach((widget) => {
+                engine.transactionHandler.addEditingMethod(
+                    transactionId,
+                    widget,
+                    'zIndex',
+                    { z_index: initialZIndexes.get(widget.uuid!) },
+                )
+            })
+
             engine.transactionHandler.commit(transactionId)
         }
     }

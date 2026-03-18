@@ -56,6 +56,9 @@ export class MagnetLayer extends Layer {
     }
 
     clear() {
+        for (const child of this._children) {
+            child.destroy()
+        }
         this._children.clear()
     }
 }

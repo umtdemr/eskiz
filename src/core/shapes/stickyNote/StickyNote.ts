@@ -429,12 +429,11 @@ export class StickyNote extends Widget {
     }
 
     getSnapPoints(): { x: number; y: number }[] {
-        const bounds = this.bounds
         return [
-            { x: bounds.x + bounds.width / 2, y: bounds.y }, // top center
-            { x: bounds.x + bounds.width / 2, y: bounds.y + bounds.height }, // bottom center
-            { x: bounds.x, y: bounds.y + bounds.height / 2 }, // left center
-            { x: bounds.x + bounds.width, y: bounds.y + bounds.height / 2 }, // right center
+            this.getPointFromRelative(0, -1), // top center
+            this.getPointFromRelative(0, 1), // bottom center
+            this.getPointFromRelative(-1, 0), // left center
+            this.getPointFromRelative(1, 0), // right center
         ]
     }
 

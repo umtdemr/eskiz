@@ -336,14 +336,17 @@ export class Canvas {
 
 export class CanvasKitSingleton {
     private static instance: CanvasKit
+    private static loading: boolean = false
 
     private constructor() {}
 
     public static async getInstance(): Promise<CanvasKit> {
-        if (!CanvasKitSingleton.instance) {
+        if (!CanvasKitSingleton.instance && !CanvasKitSingleton.loading) {
+            CanvasKitSingleton.loading = true
             CanvasKitSingleton.instance = await CanvasKitInit({
                 locateFile: () => canvaskitWasmUrl,
             })
+            CanvasKitSingleton.loading = false
         }
         return CanvasKitSingleton.instance
     }

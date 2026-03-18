@@ -15,8 +15,14 @@ export class DuplicationService extends Service {
 
         const oldToNewIdMap = new Map<string, string>()
 
+        const sorted = [...widgets].sort((a, b) =>
+            (a.zIndex ?? '').localeCompare(b.zIndex ?? ''),
+        )
+
+        let currentZIndex: string | null = null
+
         // generate new JSONs and collect ID mappings
-        const clonedJsons = widgets.map((widget) => {
+        const clonedJsons = sorted.map((widget) => {
             const json = widget.toJson()
             const newId = nanoid()
             if (json.uuid) {
@@ -28,10 +34,17 @@ export class DuplicationService extends Service {
             json.y += 20
 
             // assign new z_index and id
-            json.z_index = this.engine.stage.indexer.generateIndexForWidget(
-                this.engine.stage.widgetsDefaultLayer,
-                null,
-            )
+            if (!currentZIndex) {
+                currentZIndex =
+                    this.engine.stage.indexer.generateIndexForWidget(
+                        this.engine.stage.widgetsDefaultLayer,
+                        null,
+                    )
+            } else {
+                currentZIndex =
+                    this.engine.stage.indexer.generateIndexAfter(currentZIndex)
+            }
+            json.z_index = currentZIndex as string
             json.uuid = newId
 
             return json

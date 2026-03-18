@@ -42,6 +42,13 @@ export class Indexer {
     }
 
     /**
+     * Generates a zIndex strictly after the given zIndex.
+     */
+    generateIndexAfter(zIndex: string): string {
+        return generateKeyBetween(zIndex, null)
+    }
+
+    /**
      * Generates a fractional index for a new child in a parent layer.
      * @param parentLayer The parent layer containing the children.
      * @returns A fractional index as a string.

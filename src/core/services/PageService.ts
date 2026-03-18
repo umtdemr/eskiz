@@ -14,9 +14,14 @@ export class PageService extends Service {
      * @param widgets - Widgets to add.
      */
     addWidgetsToCanvas(widgets: WsWidget[]): Widget[] {
+        // sort by z_index
+        const sorted = [...widgets].sort((a, b) =>
+            (a.z_index ?? 0) < (b.z_index ?? 0) ? -1 : 1,
+        )
+
         const addedWidgets = []
         const widgetLayer = this.engine.stage.widgetsDefaultLayer
-        for (const widget of widgets) {
+        for (const widget of sorted) {
             if (widget.is_deleted) continue
             const widgetClass = WidgetFactory.loadFromJson(widget, this.engine)
             if (!widgetClass) {
