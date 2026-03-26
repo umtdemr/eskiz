@@ -1,178 +1,60 @@
-# WB
+# eskiz
 
-## TODO
+A whiteboard app built with **Skia CanvasKit**.
 
-- [ ] Auth
-    - [ ] Store token
-    - [ ] Redirect on getUser true
-    - [ ] Activate page
-- [ ] Canvas
-    - [x] Wheel
-        - [x] Panning
-            - [x] Pan with pan tool
-            - [x] Pan with mouse wheel
-        - [x] Zooming
-        - [x] Restrict wheel on mouse down
-    - [x] Modes - select, pan
-    - [x] Grid
-    - [x] Zoom event listeners
-    - [x] Collaboration list
-        - [x] Set on join
-        - [x] Handle user left and join events
-    - [x] Collab cursors
-        - [x] Websocket connection
-        - [x] Handling events - sending them to the other classes like event dispatcher.
-    - [x] Adding rect.
-    - [x] Refactor -> use `ctx` instead of `canvas`
-    - [x] Create base class & Render with render methods
-        - [x] Allow props (width, height, x, y, bg color, stroke color, or even rx ry)
-    - [x] Rendering shapes
-        - [x] Layering
-        - [x] Handling zIndexes
-        - [x] Handling multiple objects
-            - [x] Create local and world bounds
-            - [x] Implement left, top based rendering
-            - [x] Handle drawing borders correctly
-                - [x] Draw borders on multi selection
-                - [x] Remove borders on empty select
-    - [x] Selecting.
-        - [x] Selecting.
-        - [x] Adding multi selector
-            - [x] Adding multi selector
-        - [x] Deselect on tool change
-        - [x] Auto select on new shape added
-    - [ ] Controls
-        - [ ] Handle changing width, height by controls
-    - [x] Movable objects
-        - [x] Single movable objects
-        - [x] Multiple movable objects
-            - [x] Implement moving
-            - [x] Fix: bounding box updating
-    - [x] Mid way refactor
-        - [x] Better event emitter
-        - [x] Canvas mouse controller service
-            - [x] Use it in select tool
-            - [x] Use it in shape drawer
-            - [x] Use it in cursor sender
-        - [x] Wheel service
-    - [ ] Pagination and search
-    - [x] Create better signal system
-    - [x] Adding pen tool
-    - [x] Adding ERASER
-        - [ ] Make it work when removing is there. Note: add a seperate class to search widgets
-    - [x] Adding text
-        - [x] UpdateSize
-        - [x] Double click to edit texts
-        - [x] Save shapeText in db
-        - [ ] Save textboxes in db
-    - [x] Adding text to shapes
-        - [ ] Add text as soon as shape is created
-    - [ ] Sticky note
-    - [ ] Undo redo
-    - [ ] Sub toolbar
-        - [x] Add sub toolbar component
-        - [ ] Generate toolbar actions based on selected widget(s)
-        - [ ] Subtoolbar multi actions
-            - [ ] Remove
-            - [ ] Clone
-            - [ ] Lock
-    - [ ] Delete
-        - [x] Remove selection
-            - [x] Add update selection method
-            - [x] Remove border
-        - [x] Destroy widgets
-        - [ ] Multiplayer
-            - [ ] Delete when a shape is deleted by other user
-                - [ ] Delete from canvas
-                - [ ] Delete from selection
-                - [ ] Destroy
-    - [x] Lock
-        - [x] Add isLocked prop
-        - [x] Subtoolbar actions restriction if widget is locked
-        - [x] Prevent drag
-        - [x] Prevent resize handler - No need to
-        - [x] Prevent commands
-        - [x] Change border color
-        - [x] Disallow selecting multiple widgets if widgets are locked
-    - [ ] Rich text support
-        - [x] Add rich text support
-        - [ ] Initialize text editor with ops
-        - [ ] Handle already implemented changes - color change, background change
-        - [ ] Handle text style (bold, italic, underline, strike)
-    - [ ] Lines
-        - [x] Can relative path save us with extraordinary long points?
-        - [ ] Line selecting
-            - [x] Disable line selecting from bbox
-            - [x] Select lines from the actual path -- apply contains
-            - [ ] Deselect even if line is selected on clicking to the outside of line's path
-        - [x] Fix stroke width
-            - [x] Make stroke width mutable
-        - [x] Line border -- lines should not have rectangular border
-        - [x] Line controls
-            - [x] Add controls
-            - [x] Make controls mutate line points
-        - [ ] Line attaching
-            - [x] Attaching
-            - [x] Detaching
-            - [x] Updating db
-        - [ ] Line bugs
-            - [x] Modify line points on resizing
-                - [x] Check collaboration
-            - [x] Line should not be moved if it has headBindingWidget or tailBindingWidget
-            - [x] Line should not be moved if one of the attached shapes is outside of the selection
-            - [x] Check is detaching working on reshape handler or toolservice
-            - [x] Fix undo redo issue
-            - [x] Check if middle points are attaching. if yes fix
-            - [x] Line point controls are laggy with collaboration
-        - [ ] Images
-            - [ ] Select on add
-                - [ ] Navigation animation
-            - [ ] On multiple adding, history.
-                - [x] Multiple history is done
-            - [x] Render placeholder
-            - [x] Fix resizing. width and height ratio should be protected.
-            - [x] Should we use exact same width and height for the imported image or should we scale down? - yes
-            - [ ] Image caching on browser?
-    - [ ] Bug fixes and things to implement
-        - [x] Tooltipprovider
-        - [ ] On scroll should we fire mouse move?
-        - [x] Fix browser zoom issue
-        - [x] Line moving when all of them in multi selection
-        - [x] Text editing undo redo
-        - [x] Wasm delete
-        - [ ] Main color?
-        - [x] Engine initilization
-        - [x] Multi delete etc
-        - [x] Grid color
-        - [ ] Name
-        - [ ] Users fix?
-        - [ ] Collab list
-        - [ ] Retina display --------- LATER
-        - [ ] Hypo points
-        - [ ] Curved line
-        - [x] %1 zoom level
-- Refactor & bug fixes
-    - [ ] Fix: ShapesDropdown top position
-    - [ ] Fix: sidebar menu in mobile
-    - [ ] useShallows...
-    - [ ] A component to handle boards list
-        - [ ] Change error messages on boards list (user) or make it dynamic. Change colors.
+**Try it now:** [eskiz.io](https://eskiz.io)
 
-## Road map
+---
 
-### Phase 1 -- Make it work!
+## What is eskiz?
 
-- Finalize subtoolbar.
-- Add shortcuts
-- Add history
-- Add sticky note shape
-- Add lines
+eskiz is a whiteboard app that runs in your browser. You can draw shapes, write text, sketch with a pen, add sticky notes, drop images, connect things with lines. Basically, everything you'd expect from a modern whiteboard tool.
 
-#### Phase 2 -- Saving!
+It started as a backend project (yes, really) and slowly evolved into a whiteboard application. The whole story is a journey of curiosity, and I'm honestly pretty happy with how it turned out. If you want to learn more about the story, I wrote a blog post about it: [read the story](https://umitde.com/blog/i-built-a-whiteboard-accidentally)
 
-- Add versions to prevent race conditions.
-- Save storage???
+## Features
 
-#### Phase 3 -- Enhanced collaboration
+- **Shapes** - Rectangle, Ellipse, Triangle, Sticky Notes
+- **Freehand Drawing** - Natural pen tool thanks to [perfect-freehand](https://github.com/steveruizok/perfect-freehand)
+- **Rich Text** - Full rich text editing with [Quill](https://quilljs.com/), including text inside shapes
+- **Lines & Connectors** - Attachable lines with head/tail binding to shapes
+- **Images** - Upload and place images on the canvas
+- **Real-time Collaboration** - See other people's cursors, edits, and changes live via WebSocket - Not in standalone mode
+- **Selection & Manipulation** - Select, move, resize, rotate, lock, duplicate, and delete widgets
+- **Sub-toolbar** - Context-aware toolbar for modifying colors, borders, text styles, etc.
+- **Undo / Redo** - Full history support
+- **Standalone Mode** - No backend needed! Uses browser's IndexedDB for local storage
 
-- CRDT
+## Getting Started
+
+If you want to try the app you can visit [eskiz.io](https://eskiz.io).
+
+If you want to run this project locally, you can use the following commands:
+
+### Prerequisites
+
+- [Node.js](https://nodejs.org/) (v18+)
+- [pnpm](https://pnpm.io/)
+
+### Installation
+
+```bash
+# Clone the repo
+git clone https://github.com/umtdemr/eskiz.git
+cd eskiz
+
+# Create .env file
+cp .env.example .env
+
+# Install dependencies
+pnpm install
+
+# Start the dev server
+pnpm dev
+```
+
+The app will be available at `http://localhost:5173`.
+
+## License
+
+This project is currently under **All rights reserved**. This may change in the future as I haven't decided on a permanent license yet.
