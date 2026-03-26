@@ -152,7 +152,6 @@ export class PathToolService extends Service {
         this.engine.canvas.requestRender()
     }
     private onMouseUp() {
-        console.log('uppp')
         if (this.activePathTool === 'eraser') {
             this.trailLayer.finish()
             // if there are widgets deleted by eraser tool, send them to db
@@ -175,6 +174,8 @@ export class PathToolService extends Service {
                         widgets,
                     },
                 })
+
+                this.deletedShapesWithEraser.clear()
             }
             return
         }
@@ -221,6 +222,7 @@ export class PathToolService extends Service {
         for (const widget of layer.children) {
             if (!(widget instanceof Pen)) continue
             if (!widget.uuid) continue
+            if (widget.isDeleted) continue
 
             // if already deleted, skip
             if (this.deletedShapesWithEraser.has(widget.uuid)) continue

@@ -42,7 +42,6 @@ export class ChangeFontStyle extends Command {
             ) {
                 changed = widget.changeFontStyle(style, value)
             }
-            console.log(changed)
 
             if (changed) {
                 affectedWidgets.push(widget)

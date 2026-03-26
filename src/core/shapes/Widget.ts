@@ -544,7 +544,6 @@ export abstract class Widget extends Layer {
 
         for (const line of this.attachedLines) {
             if (ctx?.lines?.has(line._uuid!)) {
-                console.log('continue')
                 continue
             }
             if (line.headBinding?.id === this._uuid) {

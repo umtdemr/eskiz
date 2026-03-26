@@ -181,8 +181,6 @@ export class TransactionHandler {
         }
 
         this.engine.syncAdapter.syncTransaction(sendingData)
-
-        console.log(sendingData)
     }
 
     /**
