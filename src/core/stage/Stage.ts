@@ -15,9 +15,7 @@ export class Stage {
     private _canvasContainer: Layer
     private _canvasStaticContainer: Layer
     private _widgetsDefaultLayer: Layer
-    private _canvasDynamicContainer: Layer
     private _nonCanvasContainer: Layer
-    private _nonCanvasStaticContainer: Layer
     private _nonCanvasDynamicContainer: NonCanvasDynamicContainer
 
     private _indexer: Indexer
@@ -45,14 +43,8 @@ export class Stage {
         this._widgetsDefaultLayer = new Layer({
             name: STAGE_LAYERS.WIDGETS_DEFAULT_LAYER,
         })
-        this._canvasDynamicContainer = new Layer({
-            name: STAGE_LAYERS.CANVAS_CONTAINER_DYNAMIC,
-        })
         this._nonCanvasContainer = new Layer({
             name: STAGE_LAYERS.NON_CANVAS_CONTAINER,
-        })
-        this._nonCanvasStaticContainer = new Layer({
-            name: STAGE_LAYERS.NON_CANVAS_CONTAINER_STATIC,
         })
 
         this._nonCanvasDynamicContainer = new NonCanvasDynamicContainer(
@@ -64,14 +56,10 @@ export class Stage {
         this.addChildToParent(this._root, this._canvasContainer)
         this.addChildToParent(this._root, this._nonCanvasContainer)
 
-        // add static and dynamic containers to canvas container
+        // add static container to canvas container
         this.addChildToParent(
             this._canvasContainer,
             this._canvasStaticContainer,
-        )
-        this.addChildToParent(
-            this._canvasContainer,
-            this._canvasDynamicContainer,
         )
 
         // add default widget layer to static canvas container
@@ -80,11 +68,6 @@ export class Stage {
             this.widgetsDefaultLayer,
         )
 
-        // add static and dynamic containers to non canvas container
-        this.addChildToParent(
-            this._nonCanvasContainer,
-            this._nonCanvasStaticContainer,
-        )
         this.addChildToParent(
             this._nonCanvasContainer,
             this._nonCanvasDynamicContainer,
