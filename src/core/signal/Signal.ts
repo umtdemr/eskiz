@@ -87,10 +87,6 @@ export class Signal<T = void> {
         isOnce: boolean,
         context?: unknown,
     ): void {
-        if (context !== undefined && !this.storage.supportsContext) {
-            throw new Error("Current signal storage doesn't support context")
-        }
-
         let listener = this.storage.get(callback, context)
 
         if (listener !== undefined) {

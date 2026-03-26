@@ -7,8 +7,6 @@ interface SignalListener<T> {
 
 export class SignalStorage<T> {
     protected listeners: Set<SignalListener<T>> = new Set()
-    readonly supportsContext: boolean = true
-    readonly supportsPriority: boolean = false
 
     add(listener: SignalListener<T>): void {
         this.listeners.add(listener)
