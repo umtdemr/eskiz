@@ -97,7 +97,7 @@ export class BoundingBox {
     }
 
     set top(val: number) {
-        this.height = val - this.y
+        this.height += this.y - val
         this.y = val
         if (!isFinite(this.height)) this.height = -Infinity
     }
