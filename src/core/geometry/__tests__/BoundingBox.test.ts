@@ -35,12 +35,12 @@ describe('BoundingBox', () => {
             expect(bb.centerY).toBe(45)
         })
 
-        it('calculates min/max', () => {
+        it('min/max are aliases of left/top/right/bottom', () => {
             const bb = new BoundingBox(10, 20, 100, 50)
-            expect(bb.minX).toBe(10)
-            expect(bb.minY).toBe(20)
-            expect(bb.maxX).toBe(110)
-            expect(bb.maxY).toBe(70)
+            expect(bb.minX).toBe(bb.left)
+            expect(bb.minY).toBe(bb.top)
+            expect(bb.maxX).toBe(bb.right)
+            expect(bb.maxY).toBe(bb.bottom)
         })
     })
 

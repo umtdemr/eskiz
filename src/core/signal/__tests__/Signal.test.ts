@@ -172,14 +172,13 @@ describe('Signal', () => {
         it('calls listener with correct context', () => {
             const signal = new Signal<void>()
             const context = { value: 'test' }
-            let capturedThis: unknown
+            const listener = vi.fn()
 
-            signal.add(function (this: unknown) {
-                capturedThis = this
-            }, context)
-
+            signal.add(listener, context)
             signal.dispatch()
-            expect(capturedThis).toBe(context)
+
+            // the listener must receive the registered object itself as `this`
+            expect(listener.mock.contexts[0]).toBe(context)
         })
     })
 

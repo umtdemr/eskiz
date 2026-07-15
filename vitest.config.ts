@@ -1,20 +1,19 @@
 /// <reference types="vitest" />
-import path from 'path'
-import { defineConfig } from 'vitest/config'
+import { defineConfig, mergeConfig } from 'vitest/config'
+import viteConfig from './vite.config'
 
-export default defineConfig({
-    resolve: {
-        alias: {
-            '@': path.resolve(__dirname, './src'),
+export default mergeConfig(
+    viteConfig,
+    defineConfig({
+        test: {
+            globals: true,
+            environment: 'node',
+            include: ['src/**/*.test.ts'],
+            setupFiles: ['src/test/setupTests.ts'],
+            coverage: {
+                provider: 'v8',
+                include: ['src/core/**'],
+            },
         },
-    },
-    test: {
-        globals: true,
-        environment: 'node',
-        include: ['src/**/*.test.ts'],
-        coverage: {
-            provider: 'v8',
-            include: ['src/core/**'],
-        },
-    },
-})
+    }),
+)
