@@ -26,3 +26,7 @@ dist-ssr
 coverage/
 tsconfig.app.tsbuildinfo
 tsconfig.node.tsbuildinfo
+
+# graphify
+graphify-out/
+CLAUDE.local.md
