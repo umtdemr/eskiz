@@ -1,6 +1,7 @@
 import { vi } from 'vitest'
 import { SelectionService } from '@/core/services/SelectionService'
 import { Signal } from '@/core/signal/Signal'
+import { ContinuousEdits } from '@/core/command/ContinuousEdits'
 import { Rectangle } from '@/core/shapes/Rectangle'
 import { Line } from '@/core/shapes/line/Line'
 import { Pen } from '@/core/shapes/path/Pen'
@@ -54,7 +55,11 @@ export function createEngineMock(services: Record<string, unknown> = {}) {
         }),
     }
 
-    return mock as typeof mock & Engine
+    const engine = mock as typeof mock & Engine
+    // real one, so continuous edits run against the mocked transactions
+    Object.assign(mock, { continuousEdits: new ContinuousEdits(engine) })
+
+    return engine
 }
 
 export type EngineMock = ReturnType<typeof createEngineMock>
