@@ -155,6 +155,22 @@ describe('ChangeRoundness', () => {
             )
         })
 
+        it('shares the edit between command instances', () => {
+            const rect = makeRect(engine)
+
+            // the slider used to build a new command on every tick
+            new ChangeRoundness('changeRoundness').execute(
+                makeCtx([rect], 4, true),
+            )
+            new ChangeRoundness('changeRoundness').execute(
+                makeCtx([rect], 8, true),
+            )
+            vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
+
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
+            expect(engine.transactionHandler.commit).toHaveBeenCalledOnce()
+        })
+
         it('an immediate change commits the pending continuous transaction first', () => {
             const rect = makeRect(engine)
 

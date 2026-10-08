@@ -6,6 +6,7 @@ import { ToggleLockCommand } from '../ToggleLock'
 import { ChangeZIndex } from '../ChangeZIndex'
 import { ChangeBgColor } from '../ChangeBgColor'
 import { ChangeBorderColor } from '../ChangeBorderColor'
+import { ChangeRoundness } from '../ChangeRoundness'
 
 describe('CommandRegistry', () => {
     it('registers the default commands', () => {
@@ -16,6 +17,7 @@ describe('CommandRegistry', () => {
         expect(registry.get('toggleLock')).toBeInstanceOf(ToggleLockCommand)
         expect(registry.get('changeZIndex')).toBeInstanceOf(ChangeZIndex)
         expect(registry.get('changeBgColor')).toBeInstanceOf(ChangeBgColor)
+        expect(registry.get('changeRoundness')).toBeInstanceOf(ChangeRoundness)
     })
 
     it('returns undefined for unregistered commands', () => {

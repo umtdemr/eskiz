@@ -19,7 +19,6 @@ import { RGBA } from '@/core/shapes/Color'
 import { ChangeThickness } from '@/core/command/ChangeThickness'
 import { ChangeBorderColor } from '@/core/command/ChangeBorderColor'
 import { ChangeBorderStyle } from '@/core/command/ChangeBorderStyle'
-import { ChangeRoundness } from '@/core/command/ChangeRoundness'
 import { CommandCtx } from '@/core/command/Command'
 import { Rectangle } from '@/core/shapes/Rectangle'
 
@@ -231,7 +230,6 @@ export function ShapeBorderColorDropdown({
             return
 
         setRoundness(roundness)
-        const command = new ChangeRoundness('changeRoundness')
         const ctx: CommandCtx = {
             selectionService,
             engine,
@@ -242,7 +240,7 @@ export function ShapeBorderColorDropdown({
             },
         }
 
-        command.execute(ctx)
+        engine.getCommand('changeRoundness').execute(ctx)
     }
 
     return (
