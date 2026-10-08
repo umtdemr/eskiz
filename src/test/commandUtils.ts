@@ -1,6 +1,11 @@
 import { vi } from 'vitest'
 import { SelectionService } from '@/core/services/SelectionService'
 import { Signal } from '@/core/signal/Signal'
+import { Rectangle } from '@/core/shapes/Rectangle'
+import { Line } from '@/core/shapes/line/Line'
+import { Pen } from '@/core/shapes/path/Pen'
+import { TextBox } from '@/core/shapes/text/TextBox'
+import { TextAlign } from '@/core/constants'
 import type { CommandCtx } from '@/core/command/Command'
 import type { Engine } from '@/core/engine/Engine'
 import type { ToolService } from '@/core/services/ToolService'
@@ -32,6 +37,14 @@ export function createEngineMock(services: Record<string, unknown> = {}) {
             ),
             update: vi.fn((_id: string) => {}),
             commit: vi.fn((_id: string, _addToHistory?: boolean) => {}),
+            addEditingMethod: vi.fn(
+                (
+                    _id: string,
+                    _widget: Widget,
+                    _method: string,
+                    _initial?: Record<string, unknown>,
+                ) => {},
+            ),
         },
         getService: vi.fn((name: string) => {
             if (!(name in services)) {
@@ -91,3 +104,99 @@ export function createCommandCtx(
         params,
     }
 }
+
+export interface MakeWidgetOptions {
+    locked?: boolean
+    zIndex?: string
+}
+
+/** Rectangle without text unless `text` is given. */
+export const makeRect = (
+    engine: Engine,
+    {
+        locked = false,
+        zIndex,
+        text,
+    }: MakeWidgetOptions & { text?: string } = {},
+) =>
+    new Rectangle(
+        {
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 50,
+            is_locked: locked,
+            z_index: zIndex,
+            properties: text
+                ? {
+                      textProperties: {
+                          text,
+                          textOps: [{ text, attributes: {} }],
+                          fontSize: 14,
+                          lineHeight: 1.4,
+                          textAlign: TextAlign.CENTER,
+                      },
+                  }
+                : {},
+        },
+        engine,
+    )
+
+export const makeLine = (
+    engine: Engine,
+    { locked = false }: MakeWidgetOptions = {},
+) =>
+    new Line(
+        {
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            is_locked: locked,
+            properties: {
+                points: [
+                    [0, 0],
+                    [100, 100],
+                ],
+            },
+        },
+        engine,
+    )
+
+export const makePen = (
+    engine: Engine,
+    { locked = false }: MakeWidgetOptions = {},
+) =>
+    new Pen(
+        {
+            x: 0,
+            y: 0,
+            width: 100,
+            height: 100,
+            is_locked: locked,
+            properties: {
+                points: [
+                    [0, 0],
+                    [50, 50],
+                    [100, 100],
+                ],
+                strokeWidth: 2,
+            },
+        },
+        engine,
+    )
+
+export const makeTextBox = (
+    engine: Engine,
+    { locked = false }: MakeWidgetOptions = {},
+) =>
+    new TextBox(
+        {
+            x: 0,
+            y: 0,
+            width: 200,
+            is_locked: locked,
+            properties: { text: 'hello', fontSize: 16 },
+        },
+        engine,
+    )
