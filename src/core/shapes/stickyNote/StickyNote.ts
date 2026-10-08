@@ -373,7 +373,7 @@ export class StickyNote extends Widget {
     changeFontStyle(style: FontStyleType, value: boolean): boolean {
         if (!this._text) return false
 
-        const textOps = this._textProperties.textOps || []
+        const textOps = this._textProperties.textOps || this._text.textOps
         const updatedOps = textOps.map((op) => ({
             ...op,
             attributes: {

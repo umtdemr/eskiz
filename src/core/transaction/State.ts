@@ -168,7 +168,7 @@ export function getPartialState(
                 if (widget instanceof Shape) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        textProperties: widget.textProperties,
+                        textProperties: structuredClone(widget.textProperties),
                     }
                 }
                 if (widget instanceof TextBox) {
@@ -182,7 +182,7 @@ export function getPartialState(
                 if (widget instanceof Shape) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        textProperties: widget.textProperties,
+                        textProperties: structuredClone(widget.textProperties),
                     }
                 }
                 if (widget instanceof TextBox) {
@@ -196,7 +196,7 @@ export function getPartialState(
                 if (widget instanceof Shape) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        textProperties: widget.textProperties,
+                        textProperties: structuredClone(widget.textProperties),
                     }
                 }
                 if (widget instanceof TextBox) {
@@ -210,7 +210,7 @@ export function getPartialState(
                 if (widget instanceof Shape) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        textProperties: widget.textProperties,
+                        textProperties: structuredClone(widget.textProperties),
                     }
                 }
                 if (widget instanceof TextBox) {
@@ -224,7 +224,7 @@ export function getPartialState(
                 if (widget instanceof Shape || widget instanceof StickyNote) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        textProperties: widget.textProperties,
+                        textProperties: structuredClone(widget.textProperties),
                     }
                 }
                 if (widget instanceof TextBox) {

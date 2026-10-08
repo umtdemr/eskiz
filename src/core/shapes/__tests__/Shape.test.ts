@@ -74,6 +74,17 @@ describe('Shape text', () => {
             expect(shape.canChangeFontSize()).toBe(true)
         })
 
+        it('changeFontStyle keeps the text when no ops were saved', () => {
+            const shape = makeShapeWithText('hello')
+
+            shape.changeFontStyle('bold', true)
+
+            expect(shape.textProperties.textOps).toEqual([
+                { text: 'hello', attributes: { bold: true } },
+            ])
+            expect(shape.textStr).toBe('hello')
+        })
+
         it('updates text and keeps it in the json properties', () => {
             const shape = makeShapeWithText('hello')
 
