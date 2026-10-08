@@ -34,29 +34,17 @@ export class ChangeBorderColor extends Command {
 
         if (!widgets?.length || !color) return
 
-        const affectedWidgets = []
-        for (const widget of widgets) {
-            if (!widget.canChangeBorderColor()) continue
-
-            let changed = false
-            if (
-                widget instanceof Shape ||
-                widget instanceof Path ||
-                widget instanceof Line
-            ) {
-                changed = widget.changeBorderColor(color)
-            }
-
-            if (changed) {
-                affectedWidgets.push(widget)
-            }
-        }
-        if (affectedWidgets.length) {
-            ctx.engine.canvas.requestRender()
-        }
+        const targets = widgets.filter(
+            (widget): widget is Shape | Path | Line =>
+                widget.canChangeBorderColor() &&
+                (widget instanceof Shape ||
+                    widget instanceof Path ||
+                    widget instanceof Line),
+        )
+        if (!targets.length) return
 
         const editTable = new Map<Widget, EditingMethods[]>()
-        affectedWidgets.forEach((widget) => {
+        targets.forEach((widget) => {
             editTable.set(widget, ['borderColor'])
         })
 
@@ -70,12 +58,17 @@ export class ChangeBorderColor extends Command {
                     },
                 )
                 this.transactionId = transactionId
-            } else {
-                // if a transaction already exists, update it
-                clearTimeout(this.continuousTimeoutId)
-                // TODO: phase 2 - check error
-                ctx.engine.transactionHandler.update(this.transactionId)
             }
+
+            if (this.apply(targets, color)) {
+                ctx.engine.canvas.requestRender()
+            }
+
+            // if a transaction already exists, update it
+            clearTimeout(this.continuousTimeoutId)
+            // TODO: phase 2 - check error
+            ctx.engine.transactionHandler.update(this.transactionId)
+
             // after some time, commit the changes
             this.continuousTimeoutId = setTimeout(() => {
                 if (this.transactionId) {
@@ -96,9 +89,22 @@ export class ChangeBorderColor extends Command {
                 },
             )
 
+            const changed = this.apply(targets, color)
+            if (changed) {
+                ctx.engine.canvas.requestRender()
+            }
+
             // add to db
             // TODO: phase 2 - check error
-            ctx.engine.transactionHandler.commit(transactionId)
+            ctx.engine.transactionHandler.commit(transactionId, changed)
         }
+    }
+
+    private apply(widgets: (Shape | Path | Line)[], color: RGBA) {
+        let changed = false
+        for (const widget of widgets) {
+            if (widget.changeBorderColor(color)) changed = true
+        }
+        return changed
     }
 }

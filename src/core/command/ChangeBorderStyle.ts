@@ -31,24 +31,15 @@ export class ChangeBorderStyle extends Command {
 
         if (!widgets?.length || !border) return
 
-        const affectedWidgets = []
-        for (const widget of widgets) {
-            if (
-                !widget.canChangeBorderStyle() ||
-                (!(widget instanceof Shape) && !(widget instanceof Line))
-            )
-                continue
-
-            if (widget.changeBorderStyle(border)) {
-                affectedWidgets.push(widget)
-            }
-        }
-        if (affectedWidgets.length) {
-            ctx.engine.canvas.requestRender()
-        }
+        const targets = widgets.filter(
+            (widget): widget is Shape | Line =>
+                widget.canChangeBorderStyle() &&
+                (widget instanceof Shape || widget instanceof Line),
+        )
+        if (!targets.length) return
 
         const editTable = new Map<Widget, EditingMethods[]>()
-        affectedWidgets.forEach((widget) => {
+        targets.forEach((widget) => {
             editTable.set(widget, ['borderStyle'])
         })
 
@@ -59,8 +50,16 @@ export class ChangeBorderStyle extends Command {
             },
         )
 
+        let changed = false
+        for (const widget of targets) {
+            if (widget.changeBorderStyle(border)) changed = true
+        }
+        if (changed) {
+            ctx.engine.canvas.requestRender()
+        }
+
         // add to db
         // TODO: phase 2 - check error
-        ctx.engine.transactionHandler.commit(transactionId)
+        ctx.engine.transactionHandler.commit(transactionId, changed)
     }
 }

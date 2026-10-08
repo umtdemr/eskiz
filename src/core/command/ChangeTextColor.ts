@@ -32,26 +32,15 @@ export class ChangeTextColor extends Command {
 
         if (!widgets?.length || !color) return
 
-        const affectedWidgets = []
-        for (const widget of widgets) {
-            if (!widget.canChangeTextColor()) continue
-
-            if (widget instanceof TextBox) {
-                if (widget.changeTextColor(color)) {
-                    affectedWidgets.push(widget)
-                }
-            } else if (widget instanceof Shape) {
-                if (widget.changeTextColor(color)) {
-                    affectedWidgets.push(widget)
-                }
-            }
-        }
-        if (affectedWidgets.length) {
-            ctx.engine.canvas.requestRender()
-        }
+        const targets = widgets.filter(
+            (widget): widget is TextBox | Shape =>
+                widget.canChangeTextColor() &&
+                (widget instanceof TextBox || widget instanceof Shape),
+        )
+        if (!targets.length) return
 
         const editTable = new Map<Widget, EditingMethods[]>()
-        affectedWidgets.forEach((widget) => {
+        targets.forEach((widget) => {
             editTable.set(widget, ['textColor'])
         })
 
@@ -65,12 +54,17 @@ export class ChangeTextColor extends Command {
                     },
                 )
                 this.transactionId = transactionId
-            } else {
-                // if a transaction already exists, update it
-                clearTimeout(this.continuousTimeoutId)
-                // TODO: phase 2 - check error
-                ctx.engine.transactionHandler.update(this.transactionId)
             }
+
+            if (this.apply(targets, color)) {
+                ctx.engine.canvas.requestRender()
+            }
+
+            // if a transaction already exists, update it
+            clearTimeout(this.continuousTimeoutId)
+            // TODO: phase 2 - check error
+            ctx.engine.transactionHandler.update(this.transactionId)
+
             // after some time, commit the changes
             this.continuousTimeoutId = setTimeout(() => {
                 if (this.transactionId) {
@@ -91,9 +85,22 @@ export class ChangeTextColor extends Command {
                 },
             )
 
+            const changed = this.apply(targets, color)
+            if (changed) {
+                ctx.engine.canvas.requestRender()
+            }
+
             // add to db
             // TODO: phase 2 - check error
-            ctx.engine.transactionHandler.commit(transactionId)
+            ctx.engine.transactionHandler.commit(transactionId, changed)
         }
+    }
+
+    private apply(widgets: (TextBox | Shape)[], color: string) {
+        let changed = false
+        for (const widget of widgets) {
+            if (widget.changeTextColor(color)) changed = true
+        }
+        return changed
     }
 }
