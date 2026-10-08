@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button'
 import { AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import { ChangeTextAlign } from '@/core/command/ChangeTextAlign'
 import { CommandCtx } from '@/core/command/Command'
 import { TEXT_ALIGN } from '@/core/shapes/text/TextBox'
 
@@ -23,7 +22,7 @@ export function TextAlignDropdown({
         if (!widgets.length) return
         if (!selectionService.canAllChangeTextAlign()) return
 
-        const command = new ChangeTextAlign('changeTextAlign')
+        const command = engine.getCommand('changeTextAlign')
         const ctx: CommandCtx = {
             selectionService,
             engine,

@@ -43,23 +43,12 @@ export class ChangeFontStyle extends Command {
             editTable.set(widget, ['fontStyle'])
         })
 
-        const { transactionId } = ctx.engine.transactionHandler.begin(
-            'immediate',
-            {
-                editTable,
-            },
-        )
-
-        let changed = false
-        for (const widget of targets) {
-            if (widget.changeFontStyle(style, value)) changed = true
-        }
-        if (changed) {
-            ctx.engine.canvas.requestRender()
-        }
-
-        // add to db
-        // TODO: phase 2 - check error
-        ctx.engine.transactionHandler.commit(transactionId, changed)
+        this.edit(ctx, editTable, () => {
+            let changed = false
+            for (const widget of targets) {
+                if (widget.changeFontStyle(style, value)) changed = true
+            }
+            return changed
+        })
     }
 }

@@ -70,6 +70,7 @@ describe('ChangeLineArrow', () => {
             ])
             expect(engine.transactionHandler.commit).toHaveBeenCalledWith(
                 'tx-1',
+                true,
             )
         })
 

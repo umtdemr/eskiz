@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import './ShapeBorderColorDropdown.scss'
 import {
@@ -11,9 +11,6 @@ import { BorderStyle, DEFAULT_SHAPE_THICKNESS } from '@/helpers/Constant'
 import clsx from 'clsx'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import { ChangeThickness } from '@/core/command/ChangeThickness'
-import { ChangeBorderStyle } from '@/core/command/ChangeBorderStyle'
-import { ChangeLineArrow } from '@/core/command/ChangeLineArrow'
 import { CommandCtx } from '@/core/command/Command'
 import { Line } from '@/core/shapes/line/Line'
 import { MoveRight, MoveLeft, MoveHorizontal, Minus } from 'lucide-react'
@@ -29,10 +26,6 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
     )
     const [hasHeadArrow, setHasHeadArrow] = useState(false)
     const [hasTailArrow, setHasTailArrow] = useState(false)
-
-    const changeLineArrowCommandRef = useRef(
-        new ChangeLineArrow('changeLineArrow'),
-    )
 
     useEffect(() => {
         const selectionService =
@@ -75,7 +68,7 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
             return
         }
 
-        const command = new ChangeBorderStyle('changeBorderStyle')
+        const command = engine.getCommand('changeBorderStyle')
         const ctx: CommandCtx = {
             selectionService,
             engine,
@@ -112,7 +105,7 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
         }
 
         setThickness(thickness)
-        const command = new ChangeThickness('changeThickness')
+        const command = engine.getCommand('changeThickness')
         const ctx = {
             selectionService,
             engine,
@@ -148,7 +141,7 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
             },
         }
 
-        changeLineArrowCommandRef.current.execute(ctx)
+        engine.getCommand('changeLineArrow').execute(ctx)
     }
 
     return (

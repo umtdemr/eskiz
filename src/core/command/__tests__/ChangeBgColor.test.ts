@@ -81,6 +81,7 @@ describe('ChangeBgColor', () => {
             expect(engine.transactionHandler.commit).toHaveBeenCalledOnce()
             expect(engine.transactionHandler.commit).toHaveBeenCalledWith(
                 'tx-1',
+                true,
             )
             expect(engine.transactionHandler.update).not.toHaveBeenCalled()
         })
@@ -229,7 +230,7 @@ describe('ChangeBgColor', () => {
 
             expect(engine.transactionHandler.commit.mock.calls).toEqual([
                 ['tx-1'],
-                ['tx-2'],
+                ['tx-2', true],
             ])
             expect(rect.properties.fillColor).toEqual(CANVAS_COLORS.GREEN)
 

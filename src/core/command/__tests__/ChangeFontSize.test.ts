@@ -66,6 +66,7 @@ describe('ChangeFontSize', () => {
             expect([...editTable.entries()]).toEqual([[box, ['fontSize']]])
             expect(engine.transactionHandler.commit).toHaveBeenCalledWith(
                 'tx-1',
+                true,
             )
         })
 
@@ -143,7 +144,7 @@ describe('ChangeFontSize', () => {
 
             expect(engine.transactionHandler.commit.mock.calls).toEqual([
                 ['tx-1'],
-                ['tx-2'],
+                ['tx-2', true],
             ])
         })
     })

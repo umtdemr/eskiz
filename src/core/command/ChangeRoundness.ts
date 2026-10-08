@@ -38,36 +38,12 @@ export class ChangeRoundness extends Command {
             editTable.set(widget, ['roundness'])
         })
 
-        const change = () => {
+        this.edit(ctx, editTable, () => {
             let changed = false
             for (const widget of targets) {
                 if (widget.changeRoundness(roundness)) changed = true
             }
             return changed
-        }
-
-        const edits = ctx.engine.continuousEdits
-        if (ctx.isContinuous) {
-            edits.apply(this._name, editTable, change)
-            return
-        }
-
-        // an immediate change closes the running drag on these widgets first
-        edits.end(this._name, targets)
-
-        const { transactionId } = ctx.engine.transactionHandler.begin(
-            'immediate',
-            {
-                editTable,
-            },
-        )
-
-        if (change()) {
-            ctx.engine.canvas.requestRender()
-        }
-
-        // add to db
-        // TODO: phase 2 - check error
-        ctx.engine.transactionHandler.commit(transactionId)
+        })
     }
 }

@@ -41,23 +41,12 @@ export class ChangeTextAlign extends Command {
             editTable.set(widget, ['textAlign'])
         })
 
-        const { transactionId } = ctx.engine.transactionHandler.begin(
-            'immediate',
-            {
-                editTable,
-            },
-        )
-
-        let changed = false
-        for (const widget of targets) {
-            if (widget.changeTextAlign(textAlign)) changed = true
-        }
-        if (changed) {
-            ctx.engine.canvas.requestRender()
-        }
-
-        // add to db
-        // TODO: phase 2 - check error
-        ctx.engine.transactionHandler.commit(transactionId, changed)
+        this.edit(ctx, editTable, () => {
+            let changed = false
+            for (const widget of targets) {
+                if (widget.changeTextAlign(textAlign)) changed = true
+            }
+            return changed
+        })
     }
 }

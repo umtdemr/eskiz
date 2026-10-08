@@ -4,13 +4,9 @@ import { Widget } from '../shapes/Widget'
 import { Path } from '../shapes/path/Path'
 import { Line } from '@/core/shapes/line/Line'
 import { EditingMethods } from '../transaction/State'
-import { CONTINUOUS_THROTTLE_DELAY } from '../transaction/TransactionHandler'
 import { Command, CommandCtx, Commands } from './Command'
 
 export class ChangeBorderColor extends Command {
-    private transactionId?: string
-    private continuousTimeoutId?: ReturnType<typeof setTimeout>
-
     constructor(name: Commands) {
         super(name)
     }
@@ -48,63 +44,12 @@ export class ChangeBorderColor extends Command {
             editTable.set(widget, ['borderColor'])
         })
 
-        if (ctx.isContinuous) {
-            // start a new transaction
-            if (!this.transactionId) {
-                const { transactionId } = ctx.engine.transactionHandler.begin(
-                    'continuous',
-                    {
-                        editTable,
-                    },
-                )
-                this.transactionId = transactionId
+        this.edit(ctx, editTable, () => {
+            let changed = false
+            for (const widget of targets) {
+                if (widget.changeBorderColor(color)) changed = true
             }
-
-            if (this.apply(targets, color)) {
-                ctx.engine.canvas.requestRender()
-            }
-
-            // if a transaction already exists, update it
-            clearTimeout(this.continuousTimeoutId)
-            // TODO: phase 2 - check error
-            ctx.engine.transactionHandler.update(this.transactionId)
-
-            // after some time, commit the changes
-            this.continuousTimeoutId = setTimeout(() => {
-                if (this.transactionId) {
-                    ctx.engine.transactionHandler.commit(this.transactionId)
-                    this.transactionId = undefined
-                }
-            }, CONTINUOUS_THROTTLE_DELAY)
-        } else {
-            // immediate
-            if (this.transactionId) {
-                ctx.engine.transactionHandler.commit(this.transactionId)
-                this.transactionId = undefined
-            }
-            const { transactionId } = ctx.engine.transactionHandler.begin(
-                'immediate',
-                {
-                    editTable,
-                },
-            )
-
-            const changed = this.apply(targets, color)
-            if (changed) {
-                ctx.engine.canvas.requestRender()
-            }
-
-            // add to db
-            // TODO: phase 2 - check error
-            ctx.engine.transactionHandler.commit(transactionId, changed)
-        }
-    }
-
-    private apply(widgets: (Shape | Path | Line)[], color: RGBA) {
-        let changed = false
-        for (const widget of widgets) {
-            if (widget.changeBorderColor(color)) changed = true
-        }
-        return changed
+            return changed
+        })
     }
 }

@@ -43,23 +43,12 @@ export class ChangeBorderStyle extends Command {
             editTable.set(widget, ['borderStyle'])
         })
 
-        const { transactionId } = ctx.engine.transactionHandler.begin(
-            'immediate',
-            {
-                editTable,
-            },
-        )
-
-        let changed = false
-        for (const widget of targets) {
-            if (widget.changeBorderStyle(border)) changed = true
-        }
-        if (changed) {
-            ctx.engine.canvas.requestRender()
-        }
-
-        // add to db
-        // TODO: phase 2 - check error
-        ctx.engine.transactionHandler.commit(transactionId, changed)
+        this.edit(ctx, editTable, () => {
+            let changed = false
+            for (const widget of targets) {
+                if (widget.changeBorderStyle(border)) changed = true
+            }
+            return changed
+        })
     }
 }

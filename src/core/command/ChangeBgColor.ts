@@ -35,30 +35,6 @@ export class ChangeBgColor extends Command {
         const editTable = new Map<Widget, EditingMethods[]>()
         editTable.set(widget, ['backgroundColor'])
 
-        const edits = ctx.engine.continuousEdits
-        if (ctx.isContinuous) {
-            edits.apply(this._name, editTable, () =>
-                widget.changeBgColor(color),
-            )
-            return
-        }
-
-        // an immediate change closes the running drag on this widget first
-        edits.end(this._name, [widget])
-
-        const { transactionId } = ctx.engine.transactionHandler.begin(
-            'immediate',
-            {
-                editTable,
-            },
-        )
-
-        if (widget.changeBgColor(color)) {
-            ctx.engine.canvas.requestRender()
-        }
-
-        // add to db
-        // TODO: phase 2 - check error
-        ctx.engine.transactionHandler.commit(transactionId)
+        this.edit(ctx, editTable, () => widget.changeBgColor(color))
     }
 }
