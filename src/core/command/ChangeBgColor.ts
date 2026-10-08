@@ -4,13 +4,9 @@ import { StickyNote } from '../shapes/stickyNote/StickyNote'
 import { TextBox } from '../shapes/text/TextBox'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
-import { CONTINUOUS_THROTTLE_DELAY } from '../transaction/TransactionHandler'
 import { Command, CommandCtx, Commands } from './Command'
 
 export class ChangeBgColor extends Command {
-    private transactionId?: string
-    private continuousTimeoutId?: ReturnType<typeof setTimeout>
-
     constructor(name: Commands) {
         super(name)
     }
@@ -37,56 +33,32 @@ export class ChangeBgColor extends Command {
             return
 
         const editTable = new Map<Widget, EditingMethods[]>()
-        editTable.set(ctx.selectionService.selected[0], ['backgroundColor'])
+        editTable.set(widget, ['backgroundColor'])
 
+        const edits = ctx.engine.continuousEdits
         if (ctx.isContinuous) {
-            // start a new transaction
-            if (!this.transactionId) {
-                const { transactionId } = ctx.engine.transactionHandler.begin(
-                    'continuous',
-                    {
-                        editTable,
-                    },
-                )
-                this.transactionId = transactionId
-            }
-
-            if (widget.changeBgColor(color)) {
-                ctx.engine.canvas.requestRender()
-            }
-
-            // if a transaction already exists, update it
-            clearTimeout(this.continuousTimeoutId)
-            // TODO: phase 2 - check error
-            ctx.engine.transactionHandler.update(this.transactionId)
-
-            // after some time, commit the changes
-            this.continuousTimeoutId = setTimeout(() => {
-                if (this.transactionId) {
-                    ctx.engine.transactionHandler.commit(this.transactionId)
-                    this.transactionId = undefined
-                }
-            }, CONTINUOUS_THROTTLE_DELAY)
-        } else {
-            // immediate
-            if (this.transactionId) {
-                ctx.engine.transactionHandler.commit(this.transactionId)
-                this.transactionId = undefined
-            }
-            const { transactionId } = ctx.engine.transactionHandler.begin(
-                'immediate',
-                {
-                    editTable,
-                },
+            edits.apply(this._name, editTable, () =>
+                widget.changeBgColor(color),
             )
-
-            if (widget.changeBgColor(color)) {
-                ctx.engine.canvas.requestRender()
-            }
-
-            // add to db
-            // TODO: phase 2 - check error
-            ctx.engine.transactionHandler.commit(transactionId)
+            return
         }
+
+        // an immediate change closes the running drag on this widget first
+        edits.end(this._name, [widget])
+
+        const { transactionId } = ctx.engine.transactionHandler.begin(
+            'immediate',
+            {
+                editTable,
+            },
+        )
+
+        if (widget.changeBgColor(color)) {
+            ctx.engine.canvas.requestRender()
+        }
+
+        // add to db
+        // TODO: phase 2 - check error
+        ctx.engine.transactionHandler.commit(transactionId)
     }
 }

@@ -5,6 +5,7 @@ import { CloneCommand } from '../Clone'
 import { ToggleLockCommand } from '../ToggleLock'
 import { ChangeZIndex } from '../ChangeZIndex'
 import { ChangeBgColor } from '../ChangeBgColor'
+import { ChangeBorderColor } from '../ChangeBorderColor'
 
 describe('CommandRegistry', () => {
     it('registers the default commands', () => {
@@ -14,18 +15,19 @@ describe('CommandRegistry', () => {
         expect(registry.get('clone')).toBeInstanceOf(CloneCommand)
         expect(registry.get('toggleLock')).toBeInstanceOf(ToggleLockCommand)
         expect(registry.get('changeZIndex')).toBeInstanceOf(ChangeZIndex)
+        expect(registry.get('changeBgColor')).toBeInstanceOf(ChangeBgColor)
     })
 
     it('returns undefined for unregistered commands', () => {
-        expect(new CommandRegistry().get('changeBgColor')).toBeUndefined()
+        expect(new CommandRegistry().get('changeBorderColor')).toBeUndefined()
     })
 
     it('registers a command under a name', () => {
         const registry = new CommandRegistry()
-        const command = new ChangeBgColor('changeBgColor')
+        const command = new ChangeBorderColor('changeBorderColor')
 
-        registry.registerCommand('changeBgColor', command)
+        registry.registerCommand('changeBorderColor', command)
 
-        expect(registry.get('changeBgColor')).toBe(command)
+        expect(registry.get('changeBorderColor')).toBe(command)
     })
 })

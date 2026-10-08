@@ -237,5 +237,43 @@ describe('ChangeBgColor', () => {
             vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
             expect(engine.transactionHandler.commit).toHaveBeenCalledTimes(2)
         })
+
+        it('keeps edits on different widgets apart', () => {
+            const a = makeRect()
+            const b = makeRect()
+
+            command.execute(makeCtx([a], CANVAS_COLORS.RED, true))
+            command.execute(makeCtx([b], CANVAS_COLORS.GREEN, true))
+            command.execute(makeCtx([a], CANVAS_COLORS.BLACK, true))
+
+            const tables = engine.transactionHandler.begin.mock.calls.map(
+                ([, { editTable }]) => [...editTable.keys()],
+            )
+            expect(tables).toEqual([[a], [b]])
+            expect(engine.transactionHandler.update.mock.calls).toEqual([
+                ['tx-1'],
+                ['tx-2'],
+                ['tx-1'],
+            ])
+
+            vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
+
+            expect(engine.transactionHandler.commit.mock.calls).toEqual([
+                ['tx-2'],
+                ['tx-1'],
+            ])
+        })
+
+        it('shares the edit between command instances', () => {
+            const rect = makeRect()
+            const other = new ChangeBgColor('changeBgColor')
+
+            command.execute(makeCtx([rect], CANVAS_COLORS.RED, true))
+            other.execute(makeCtx([rect], CANVAS_COLORS.GREEN, true))
+            vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
+
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
+            expect(engine.transactionHandler.commit).toHaveBeenCalledOnce()
+        })
     })
 })

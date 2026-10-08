@@ -3,6 +3,7 @@ import { Command, Commands } from './Command'
 import { DeleteCommand } from './Delete'
 import { ToggleLockCommand } from './ToggleLock'
 import { ChangeZIndex } from './ChangeZIndex'
+import { ChangeBgColor } from './ChangeBgColor'
 
 export class CommandRegistry {
     private _commands = new Map<Commands, Command>()
@@ -15,6 +16,10 @@ export class CommandRegistry {
         this.registerCommand('clone', new CloneCommand('clone'))
         this.registerCommand('toggleLock', new ToggleLockCommand('toggleLock'))
         this.registerCommand('changeZIndex', new ChangeZIndex('changeZIndex'))
+        this.registerCommand(
+            'changeBgColor',
+            new ChangeBgColor('changeBgColor'),
+        )
     }
 
     get(name: Commands): Command {
