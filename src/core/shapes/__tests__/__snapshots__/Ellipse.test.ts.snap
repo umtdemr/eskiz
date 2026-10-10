@@ -1,0 +1,34 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Ellipse > serialization > json matches snapshot 1`] = `
+{
+  "angle": 0,
+  "height": 40,
+  "is_deleted": false,
+  "is_locked": false,
+  "properties": {
+    "borderStyle": "SOLID",
+    "fillColor": {
+      "a": 1,
+      "b": 74,
+      "g": 163,
+      "r": 22,
+    },
+    "strokeColor": {
+      "a": 1,
+      "b": 0,
+      "g": 0,
+      "r": 0,
+    },
+    "strokeWidth": 3,
+    "textProperties": undefined,
+  },
+  "sub_type": "ellipse",
+  "uuid": "ellipse-uuid",
+  "widget_type": "shape",
+  "width": 80,
+  "x": 15,
+  "y": 25,
+  "z_index": "a2",
+}
+`;

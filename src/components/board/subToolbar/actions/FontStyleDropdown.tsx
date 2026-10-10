@@ -3,9 +3,7 @@ import { Button } from '@/components/ui/button'
 import { Bold, Italic, Underline, Strikethrough } from 'lucide-react'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import { ChangeFontStyle } from '@/core/command/ChangeFontStyle'
 import { CommandCtx } from '@/core/command/Command'
-import { useRef } from 'react'
 import { TextEditor } from '@/core/textEditor/TextEditor'
 import { FontStyleType } from '@/helpers/Constant'
 import { TextBox } from '@/core/shapes/text/TextBox'
@@ -17,10 +15,6 @@ export interface FontStyleDropdownProps {
 }
 
 export function FontStyleDropdown({ engine }: FontStyleDropdownProps) {
-    const changeFontStyleCommandRef = useRef(
-        new ChangeFontStyle('changeFontStyle'),
-    )
-
     const handleStyleToggle = (style: FontStyleType) => {
         const textEditor = engine.textEditor
         if (textEditor.isActive) {
@@ -56,7 +50,7 @@ export function FontStyleDropdown({ engine }: FontStyleDropdownProps) {
                 widgets,
             },
         }
-        changeFontStyleCommandRef.current?.execute(ctx)
+        engine.getCommand('changeFontStyle').execute(ctx)
     }
 
     const styleToggleInEditingMode = (

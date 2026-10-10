@@ -1,0 +1,34 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Triangle > serialization > json matches snapshot 1`] = `
+{
+  "angle": 0,
+  "height": 60,
+  "is_deleted": false,
+  "is_locked": false,
+  "properties": {
+    "borderStyle": "SOLID",
+    "fillColor": {
+      "a": 1,
+      "b": 246,
+      "g": 130,
+      "r": 59,
+    },
+    "strokeColor": {
+      "a": 1,
+      "b": 0,
+      "g": 0,
+      "r": 0,
+    },
+    "strokeWidth": 2,
+    "textProperties": undefined,
+  },
+  "sub_type": "triangle",
+  "uuid": "triangle-uuid",
+  "widget_type": "shape",
+  "width": 80,
+  "x": 5,
+  "y": 15,
+  "z_index": "a3",
+}
+`;

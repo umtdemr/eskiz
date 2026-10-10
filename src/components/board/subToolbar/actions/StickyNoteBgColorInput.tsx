@@ -10,8 +10,7 @@ import { RGBA } from '@/core/shapes/Color'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { CommandCtx } from '@/core/command/Command'
-import { useRef, useState } from 'react'
-import { ChangeBgColor } from '@/core/command/ChangeBgColor'
+import { useState } from 'react'
 import { StickyNote } from '@/core/shapes/stickyNote/StickyNote'
 
 export interface StickyNoteBgColorInputProps {
@@ -36,7 +35,6 @@ export function StickyNoteBgColorInput({
     id,
     engine,
 }: StickyNoteBgColorInputProps) {
-    const commandRef = useRef(new ChangeBgColor('changeBgColor'))
     const { activeDropdown, toggleDropdown } = useBoundStore()
     const isActive = activeDropdown === 'stickyNoteBgColor'
 
@@ -60,7 +58,7 @@ export function StickyNoteBgColorInput({
                 color,
             },
         }
-        commandRef.current?.execute(ctx)
+        engine.getCommand('changeBgColor').execute(ctx)
         setFillColor(`rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`)
     }
 

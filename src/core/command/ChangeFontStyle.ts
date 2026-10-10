@@ -29,43 +29,26 @@ export class ChangeFontStyle extends Command {
 
         if (!widgets?.length || !style) return
 
-        const affectedWidgets = []
-        for (const widget of widgets) {
-            if (!widget.canChangeFontStyle()) continue
-
-            let changed = false
-
-            if (
-                widget instanceof TextBox ||
-                widget instanceof Shape ||
-                widget instanceof StickyNote
-            ) {
-                changed = widget.changeFontStyle(style, value)
-            }
-
-            if (changed) {
-                affectedWidgets.push(widget)
-            }
-        }
-
-        if (affectedWidgets.length) {
-            ctx.engine.canvas.requestRender()
-        }
+        const targets = widgets.filter(
+            (widget): widget is TextBox | Shape | StickyNote =>
+                widget.canChangeFontStyle() &&
+                (widget instanceof TextBox ||
+                    widget instanceof Shape ||
+                    widget instanceof StickyNote),
+        )
+        if (!targets.length) return
 
         const editTable = new Map<Widget, EditingMethods[]>()
-        affectedWidgets.forEach((widget) => {
+        targets.forEach((widget) => {
             editTable.set(widget, ['fontStyle'])
         })
 
-        const { transactionId } = ctx.engine.transactionHandler.begin(
-            'immediate',
-            {
-                editTable,
-            },
-        )
-
-        // add to db
-        // TODO: phase 2 - check error
-        ctx.engine.transactionHandler.commit(transactionId)
+        this.edit(ctx, editTable, () => {
+            let changed = false
+            for (const widget of targets) {
+                if (widget.changeFontStyle(style, value)) changed = true
+            }
+            return changed
+        })
     }
 }
