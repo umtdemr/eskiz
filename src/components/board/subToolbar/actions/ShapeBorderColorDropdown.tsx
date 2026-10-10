@@ -194,9 +194,10 @@ export function ShapeBorderColorDropdown({
 
         setThickness(thickness)
         const command = engine.getCommand('changeThickness')
-        const ctx = {
+        const ctx: CommandCtx = {
             selectionService,
             engine,
+            isContinuous: true,
             params: {
                 widgets,
                 thickness,
