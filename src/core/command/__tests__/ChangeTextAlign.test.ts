@@ -13,10 +13,10 @@ import type { Widget } from '@/core/shapes/Widget'
 
 let engine: EngineMock
 
-const makeCtx = (selected: Widget[], textAlign?: TEXT_ALIGN) =>
+const makeCtx = (selected: Widget[], textAlign: TEXT_ALIGN = 'left') =>
     createCommandCtx(engine, {
         selected,
-        params: { textAlign, widgets: selected },
+        params: { textAlign },
     })
 
 describe('ChangeTextAlign', () => {
@@ -24,7 +24,7 @@ describe('ChangeTextAlign', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeTextAlign('changeTextAlign')
+        command = new ChangeTextAlign()
     })
 
     describe('canExecute', () => {
@@ -101,21 +101,15 @@ describe('ChangeTextAlign', () => {
             expect(engine.canvas.requestRender).not.toHaveBeenCalled()
         })
 
-        it('does nothing without an alignment', () => {
-            command.execute(makeCtx([makeTextBox(engine)]))
+        it('changes every selected widget in one transaction', () => {
+            const a = makeTextBox(engine)
+            const b = makeTextBox(engine)
 
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
-        })
+            command.execute(makeCtx([a, b], TextAlign.RIGHT))
 
-        it('does nothing when more than one widget is selected', () => {
-            const box = makeTextBox(engine)
-
-            command.execute(
-                makeCtx([box, makeTextBox(engine)], TextAlign.RIGHT),
-            )
-
-            expect(box.properties.textAlign).toBe(TextAlign.LEFT)
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+            expect(a.properties.textAlign).toBe(TextAlign.RIGHT)
+            expect(b.properties.textAlign).toBe(TextAlign.RIGHT)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
     })
 })

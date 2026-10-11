@@ -2,7 +2,7 @@ import { Engine } from '../engine/Engine'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
 import { CONTINUOUS_THROTTLE_DELAY } from '../transaction/TransactionHandler'
-import { Commands } from './Command'
+import type { Commands } from './CommandRegistry'
 
 interface OpenEdit {
     name: Commands

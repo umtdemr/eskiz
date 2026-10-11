@@ -17,7 +17,7 @@ const makeCtx = (selected: Widget[], fontSize = 24, isContinuous = false) =>
     createCommandCtx(engine, {
         selected,
         isContinuous,
-        params: { fontSize, widgets: selected },
+        params: { fontSize },
     })
 
 describe('ChangeFontSize', () => {
@@ -25,7 +25,7 @@ describe('ChangeFontSize', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeFontSize('changeFontSize')
+        command = new ChangeFontSize()
     })
 
     describe('canExecute', () => {
@@ -97,13 +97,15 @@ describe('ChangeFontSize', () => {
             expect(engine.canvas.requestRender).not.toHaveBeenCalled()
         })
 
-        it('does nothing when more than one widget is selected', () => {
-            const box = makeTextBox(engine)
+        it('changes every selected widget in one transaction', () => {
+            const a = makeTextBox(engine)
+            const b = makeTextBox(engine)
 
-            command.execute(makeCtx([box, makeTextBox(engine)]))
+            command.execute(makeCtx([a, b]))
 
-            expect(box.fontSize).toBe(16)
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+            expect(a.fontSize).toBe(24)
+            expect(b.fontSize).toBe(24)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
     })
 

@@ -14,7 +14,6 @@ let duplication: { duplicateWidgets: ReturnType<typeof vi.fn> }
 const makeCtx = (list?: Widget[]) =>
     createCommandCtx(engine, {
         selected: list,
-        params: list ? { widgets: list } : undefined,
     })
 
 describe('CloneCommand', () => {
@@ -23,7 +22,7 @@ describe('CloneCommand', () => {
     beforeEach(() => {
         duplication = { duplicateWidgets: vi.fn(() => []) }
         engine = createEngineMock({ duplication })
-        command = new CloneCommand('clone')
+        command = new CloneCommand()
     })
 
     describe('canExecute', () => {

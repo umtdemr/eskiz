@@ -13,10 +13,14 @@ import type { Widget } from '@/core/shapes/Widget'
 
 let engine: EngineMock
 
-const makeCtx = (selected: Widget[], style?: FontStyleType, value = true) =>
+const makeCtx = (
+    selected: Widget[],
+    style: FontStyleType = 'bold',
+    value = true,
+) =>
     createCommandCtx(engine, {
         selected,
-        params: { style, value, widgets: selected },
+        params: { style, value },
     })
 
 describe('ChangeFontStyle', () => {
@@ -24,7 +28,7 @@ describe('ChangeFontStyle', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeFontStyle('changeFontStyle')
+        command = new ChangeFontStyle()
     })
 
     describe('canExecute', () => {
@@ -135,12 +139,6 @@ describe('ChangeFontStyle', () => {
 
             expect(a.properties.textOps[0].attributes.bold).toBe(true)
             expect(b.properties.textOps[0].attributes.bold).toBe(true)
-        })
-
-        it('does nothing without a style', () => {
-            command.execute(makeCtx([makeTextBox(engine)]))
-
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
         })
     })
 })

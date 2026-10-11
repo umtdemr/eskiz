@@ -1,5 +1,5 @@
 import { Widget } from '../shapes/Widget'
-import { Command, CommandCtx, Commands } from './Command'
+import { Command, CommandCtx } from './Command'
 import { EditingMethods } from '../transaction/State'
 
 export type ZIndexAction =
@@ -8,23 +8,20 @@ export type ZIndexAction =
     | 'sendBackward'
     | 'sendToBack'
 
-export class ChangeZIndex extends Command {
-    constructor(name: Commands) {
-        super(name)
+type Params = { action: ZIndexAction }
+
+export class ChangeZIndex extends Command<Params> {
+    readonly name = 'changeZIndex'
+
+    canExecute(ctx: CommandCtx<Params>): boolean {
+        return ctx.widgets.length > 0
     }
 
-    canExecute(ctx: CommandCtx): boolean {
-        return ctx.selectionService.selected.length > 0
-    }
-
-    execute(ctx: CommandCtx): void {
+    execute(ctx: CommandCtx<Params>): void {
         if (!this.canExecute(ctx)) return
 
-        const { selectionService, engine, params } = ctx
-        const action = params?.action as ZIndexAction
-        const widgets = selectionService.selected
-
-        if (!action) return
+        const { engine, params, widgets } = ctx
+        const { action } = params
 
         const affectedWidgets: Widget[] = []
         const parentLayer = engine.stage.widgetsDefaultLayer

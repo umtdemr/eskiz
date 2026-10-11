@@ -14,7 +14,6 @@ let widgets: { deleteWidget: ReturnType<typeof vi.fn> }
 const makeCtx = (list?: Widget[]) =>
     createCommandCtx(engine, {
         selected: list,
-        params: list ? { widgets: list } : undefined,
     })
 
 describe('DeleteCommand', () => {
@@ -23,14 +22,10 @@ describe('DeleteCommand', () => {
     beforeEach(() => {
         widgets = { deleteWidget: vi.fn() }
         engine = createEngineMock({ widgets })
-        command = new DeleteCommand('delete')
+        command = new DeleteCommand()
     })
 
     describe('canExecute', () => {
-        it('returns false without params', () => {
-            expect(command.canExecute(makeCtx())).toBe(false)
-        })
-
         it('returns false for an empty list', () => {
             expect(command.canExecute(makeCtx([]))).toBe(false)
         })
@@ -87,9 +82,7 @@ describe('DeleteCommand', () => {
                 list.splice(list.indexOf(w), 1)
             })
 
-            command.execute(
-                createCommandCtx(engine, { params: { widgets: list } }),
-            )
+            command.execute(createCommandCtx(engine, { widgets: list }))
 
             expect(widgets.deleteWidget).toHaveBeenCalledTimes(2)
         })

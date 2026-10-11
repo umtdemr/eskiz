@@ -9,7 +9,6 @@ import { useBoundStore } from '@/store/store'
 import { RGBA } from '@/core/shapes/Color'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import { CommandCtx } from '@/core/command/Command'
 import { useState } from 'react'
 import { BgColorIcon } from '@/components/colorButton/BgColorIcon'
 
@@ -50,18 +49,11 @@ export function ShapeBgColorInput({
     }
 
     const onColorSelect = (action: { color: RGBA; isImmediate: boolean }) => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            isContinuous: !action.isImmediate,
-            params: {
-                color: action.color,
-            },
-        }
-        engine.getCommand('changeBgColor').execute(ctx)
+        engine.execute(
+            'changeBgColor',
+            { color: action.color },
+            { continuous: !action.isImmediate },
+        )
 
         const c = action.color
         setBgColor(`rgba(${c.r}, ${c.g}, ${c.b}, ${c.a})`)

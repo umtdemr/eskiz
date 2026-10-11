@@ -3,31 +3,23 @@ import { Widget } from '../shapes/Widget'
 import { Path } from '../shapes/path/Path'
 import { Line } from '../shapes/line/Line'
 import { EditingMethods } from '../transaction/State'
-import { Command, CommandCtx, Commands } from './Command'
+import { Command, CommandCtx } from './Command'
 
-export class ChangeThickness extends Command {
-    constructor(name: Commands) {
-        super(name)
+type Params = { thickness: number }
+
+export class ChangeThickness extends Command<Params> {
+    readonly name = 'changeThickness'
+
+    canExecute(ctx: CommandCtx<Params>): boolean {
+        return this.canEdit(ctx, (widget) => widget.canChangeThickness())
     }
 
-    canExecute(ctx: CommandCtx): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeThickness()) return false
-
-        return true
-    }
-
-    execute(ctx: CommandCtx) {
+    execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
-        if (ctx.selectionService.selected.length !== 1) return
 
-        const thickness = ctx.params?.thickness as number
-        const widgets = ctx.params?.widgets
-            ? (ctx.params.widgets as Widget[])
-            : []
-
-        if (!widgets?.length || !thickness) return
+        const { thickness } = ctx.params
+        const { widgets } = ctx
+        if (!thickness) return
 
         const targets = widgets.filter(
             (widget): widget is Shape | Path | Line =>

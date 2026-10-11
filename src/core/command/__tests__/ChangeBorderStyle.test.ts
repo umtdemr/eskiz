@@ -19,7 +19,7 @@ const makeCtx = (
 ) =>
     createCommandCtx(engine, {
         selected,
-        params: { border, widgets: selected },
+        params: { border },
     })
 
 describe('ChangeBorderStyle', () => {
@@ -27,7 +27,7 @@ describe('ChangeBorderStyle', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeBorderStyle('changeBorderStyle')
+        command = new ChangeBorderStyle()
     })
 
     describe('canExecute', () => {
@@ -99,26 +99,15 @@ describe('ChangeBorderStyle', () => {
             expect(engine.canvas.requestRender).not.toHaveBeenCalled()
         })
 
-        it('does nothing without a border style', () => {
-            const rect = makeRect(engine)
-
-            command.execute(
-                createCommandCtx(engine, {
-                    selected: [rect],
-                    params: { widgets: [rect] },
-                }),
-            )
-
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
-        })
-
-        it('does nothing when more than one widget is selected', () => {
+        it('changes every selected widget in one transaction', () => {
             const a = makeRect(engine)
+            const b = makeRect(engine)
 
-            command.execute(makeCtx([a, makeRect(engine)]))
+            command.execute(makeCtx([a, b]))
 
-            expect(a.properties.borderStyle).toBe(BorderStyle.SOLID)
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+            expect(a.properties.borderStyle).toBe(BorderStyle.DASHED)
+            expect(b.properties.borderStyle).toBe(BorderStyle.DASHED)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
     })
 })

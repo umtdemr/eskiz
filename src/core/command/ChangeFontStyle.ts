@@ -2,32 +2,23 @@ import { TextBox } from '../shapes/text/TextBox'
 import { Shape } from '../shapes/Shape'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
-import { Command, CommandCtx, Commands } from './Command'
+import { Command, CommandCtx } from './Command'
 import { FontStyleType } from '@/helpers/Constant'
 import { StickyNote } from '../shapes/stickyNote/StickyNote'
 
-export class ChangeFontStyle extends Command {
-    constructor(name: Commands) {
-        super(name)
+type Params = { style: FontStyleType; value: boolean }
+
+export class ChangeFontStyle extends Command<Params> {
+    readonly name = 'changeFontStyle'
+
+    canExecute(ctx: CommandCtx<Params>): boolean {
+        return this.canEdit(ctx, (widget) => widget.canChangeFontStyle())
     }
 
-    canExecute(ctx: CommandCtx): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeFontStyle()) return false
-
-        return true
-    }
-
-    execute(ctx: CommandCtx) {
+    execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
-        const style = ctx.params?.style as FontStyleType
-        const value = ctx.params?.value as boolean
-        const widgets = ctx.params?.widgets
-            ? (ctx.params.widgets as Widget[])
-            : []
-
-        if (!widgets?.length || !style) return
+        const { style, value } = ctx.params
+        const { widgets } = ctx
 
         const targets = widgets.filter(
             (widget): widget is TextBox | Shape | StickyNote =>

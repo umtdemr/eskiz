@@ -16,7 +16,6 @@ import clsx from 'clsx'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { RGBA } from '@/core/shapes/Color'
-import { CommandCtx } from '@/core/command/Command'
 import { Rectangle } from '@/core/shapes/Rectangle'
 
 export interface ShapeBorderColorDropdownProps {
@@ -87,8 +86,6 @@ export function ShapeBorderColorDropdown({
         const selectionService =
             engine.getService<SelectionService>('selection')
         const widgets = selectionService.selected
-        if (!widgets.length) return
-        if (!selectionService.canAllChangeBorderStyle()) return
 
         // if the style is not changed
         if (
@@ -98,18 +95,9 @@ export function ShapeBorderColorDropdown({
         )
             return
 
-        const command = engine.getCommand('changeBorderStyle')
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            params: {
-                widgets,
-                border: newStyle,
-            },
+        if (engine.execute('changeBorderStyle', { border: newStyle })) {
+            setBorderStyle(newStyle)
         }
-
-        setBorderStyle(newStyle)
-        command.execute(ctx)
     }
 
     const handleOpacityChange = (newOpacityArr: number[]) => {
@@ -134,38 +122,24 @@ export function ShapeBorderColorDropdown({
             a: newOpacity,
         }
 
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            isContinuous: true,
-            params: {
-                color,
-                widgets: [selected],
-            },
-        }
-        engine.getCommand('changeBorderColor').execute(ctx)
+        engine.execute(
+            'changeBorderColor',
+            { color },
+            { continuous: true, widgets: [selected] },
+        )
         onColorChange(`rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`)
     }
 
     const handleColorSelect = (signature: ColorSelectSignature) => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-        const widgets = selectionService.selected
-        if (!widgets.length) return
-        if (!selectionService.canAllChangeBorderColor()) return
-
         const color = { ...signature.color, a: opacity }
 
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            isContinuous: !signature.isImmediate,
-            params: {
-                color,
-                widgets,
-            },
-        }
-        engine.getCommand('changeBorderColor').execute(ctx)
+        const executed = engine.execute(
+            'changeBorderColor',
+            { color },
+            { continuous: !signature.isImmediate },
+        )
+        if (!executed) return
+
         onColorChange(
             `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`,
             signature.isImmediate,
@@ -176,12 +150,6 @@ export function ShapeBorderColorDropdown({
         const selectionService =
             engine.getService<SelectionService>('selection')
         const widgets = selectionService.selected
-        if (!widgets.length) {
-            return
-        }
-        if (!selectionService.canAllChangeThickness()) {
-            return
-        }
         const thickness = thicknesses[0]
 
         // if the width is not changed
@@ -192,49 +160,36 @@ export function ShapeBorderColorDropdown({
         )
             return
 
-        setThickness(thickness)
-        const command = engine.getCommand('changeThickness')
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            isContinuous: true,
-            params: {
-                widgets,
-                thickness,
-            },
+        if (
+            engine.execute(
+                'changeThickness',
+                { thickness },
+                { continuous: true },
+            )
+        ) {
+            setThickness(thickness)
         }
-
-        command.execute(ctx)
     }
 
     const handleRoundnessChange = (roundnessArr: number[]) => {
         const selectionService =
             engine.getService<SelectionService>('selection')
         const widgets = selectionService.selected
-        if (!widgets.length) {
-            return
-        }
-        if (!selectionService.canAllChangeRoundness()) {
-            return
-        }
         const roundness = roundnessArr[0]
 
         // if the roundness is not changed
         if (widgets.every((widget) => widget.properties.radius === roundness))
             return
 
-        setRoundness(roundness)
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            isContinuous: true,
-            params: {
-                widgets,
-                roundness,
-            },
+        if (
+            engine.execute(
+                'changeRoundness',
+                { roundness },
+                { continuous: true },
+            )
+        ) {
+            setRoundness(roundness)
         }
-
-        engine.getCommand('changeRoundness').execute(ctx)
     }
 
     return (

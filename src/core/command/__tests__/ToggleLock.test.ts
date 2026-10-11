@@ -23,7 +23,7 @@ describe('ToggleLockCommand', () => {
             }),
         }
         engine = createEngineMock({ widgets })
-        command = new ToggleLockCommand('toggleLock')
+        command = new ToggleLockCommand()
     })
 
     it('cannot execute without a selection', () => {

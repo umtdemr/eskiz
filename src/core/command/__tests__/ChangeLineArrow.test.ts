@@ -18,7 +18,7 @@ const makeCtx = (
 ) =>
     createCommandCtx(engine, {
         selected,
-        params: { hasHeadArrow, hasTailArrow, widgets: selected },
+        params: { hasHeadArrow, hasTailArrow },
     })
 
 describe('ChangeLineArrow', () => {
@@ -26,7 +26,7 @@ describe('ChangeLineArrow', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeLineArrow('changeLineArrow')
+        command = new ChangeLineArrow()
     })
 
     describe('canExecute', () => {
@@ -107,7 +107,8 @@ describe('ChangeLineArrow', () => {
             command.execute(
                 createCommandCtx(engine, {
                     selected: [makeLine(engine)],
-                    params: { hasHeadArrow: true, widgets: [] },
+                    widgets: [],
+                    params: { hasHeadArrow: true, hasTailArrow: false },
                 }),
             )
 

@@ -1,29 +1,13 @@
 import { WidgetsService } from '../services/WidgetsService'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
-import { Command, CommandCtx, Commands } from './Command'
+import { Command, CommandCtx } from './Command'
 
 export class DeleteCommand extends Command {
-    constructor(name: Commands) {
-        super(name)
-    }
+    readonly name = 'delete'
 
     canExecute(ctx: CommandCtx): boolean {
-        if (
-            !ctx.params ||
-            !(ctx.params?.widgets as Widget[] | undefined)?.length
-        ) {
-            return false
-        }
-
-        // if there is any locked widget
-        if (
-            (ctx.params.widgets as Widget[]).some((widget) => widget.isLocked)
-        ) {
-            return false
-        }
-
-        return true
+        return this.canEdit(ctx)
     }
 
     execute(ctx: CommandCtx) {
@@ -34,7 +18,7 @@ export class DeleteCommand extends Command {
         const widgetService = ctx.engine.getService<WidgetsService>('widgets')
         const editTable = new Map<Widget, EditingMethods[]>()
 
-        const widgets = [...((ctx.params?.widgets as Widget[]) || [])]
+        const widgets = [...ctx.widgets]
         widgets.forEach((widget) => {
             editTable.set(widget, ['delete'])
         })

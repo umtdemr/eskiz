@@ -16,7 +16,7 @@ const makeCtx = (selected: Widget[], rgba = '#ff0000', isContinuous = false) =>
     createCommandCtx(engine, {
         selected,
         isContinuous,
-        params: { rgba, widgets: selected },
+        params: { rgba },
     })
 
 describe('ChangeTextColor', () => {
@@ -24,7 +24,7 @@ describe('ChangeTextColor', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeTextColor('changeTextColor')
+        command = new ChangeTextColor()
     })
 
     describe('canExecute', () => {
@@ -97,10 +97,15 @@ describe('ChangeTextColor', () => {
             expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
         })
 
-        it('does nothing when more than one widget is selected', () => {
-            command.execute(makeCtx([makeTextBox(engine), makeTextBox(engine)]))
+        it('changes every selected widget in one transaction', () => {
+            const a = makeTextBox(engine)
+            const b = makeTextBox(engine)
 
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+            command.execute(makeCtx([a, b]))
+
+            expect(a.properties.textOps[0].attributes.color).toBe('#ff0000')
+            expect(b.properties.textOps[0].attributes.color).toBe('#ff0000')
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
     })
 

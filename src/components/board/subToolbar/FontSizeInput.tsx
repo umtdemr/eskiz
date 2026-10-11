@@ -5,7 +5,6 @@ import { useEffect, useRef, useState } from 'react'
 import { useBoundStore } from '@/store/store'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import { CommandCtx } from '@/core/command/Command'
 import { TextBox } from '@/core/shapes/text/TextBox'
 import { Shape } from '@/core/shapes/Shape'
 
@@ -70,23 +69,12 @@ export function FontSizeInput({ id, inputId, engine }: FontSizeInputProps) {
     }
 
     const executeFontSizeChange = (size: number, isContinuous: boolean) => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-        const widgets = selectionService.selected
-        if (!widgets.length) return
-        if (!selectionService.canAllChangeFontSize()) return
-
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            isContinuous,
-            params: {
-                fontSize: size,
-                widgets,
-            },
-        }
-
-        engine.getCommand('changeFontSize').execute(ctx)
+        const executed = engine.execute(
+            'changeFontSize',
+            { fontSize: size },
+            { continuous: isContinuous },
+        )
+        if (!executed) return
 
         if (engine.textEditor?.isActive) {
             engine.textEditor.changeFontSize(size)

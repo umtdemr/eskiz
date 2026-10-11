@@ -2,31 +2,23 @@ import { TextBox } from '../shapes/text/TextBox'
 import { Shape } from '../shapes/Shape'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
-import { Command, CommandCtx, Commands } from './Command'
+import { Command, CommandCtx } from './Command'
 
-export class ChangeHighlightColor extends Command {
-    constructor(name: Commands) {
-        super(name)
+type Params = { rgba: string }
+
+export class ChangeHighlightColor extends Command<Params> {
+    readonly name = 'changeHighlightColor'
+
+    canExecute(ctx: CommandCtx<Params>): boolean {
+        return this.canEdit(ctx, (widget) => widget.canChangeHighlightColor())
     }
 
-    canExecute(ctx: CommandCtx): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeHighlightColor()) return false
-
-        return true
-    }
-
-    execute(ctx: CommandCtx) {
+    execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
-        if (ctx.selectionService.selected.length !== 1) return
 
-        const color = ctx.params?.rgba as string
-        const widgets = ctx.params?.widgets
-            ? (ctx.params.widgets as Widget[])
-            : []
-
-        if (!widgets?.length || !color) return
+        const { rgba: color } = ctx.params
+        const { widgets } = ctx
+        if (!color) return
 
         const targets = widgets.filter(
             (widget): widget is TextBox | Shape =>

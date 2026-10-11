@@ -2,32 +2,23 @@ import { TextBox } from '../shapes/text/TextBox'
 import { Shape } from '../shapes/Shape'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
-import { Command, CommandCtx, Commands } from './Command'
+import { Command, CommandCtx } from './Command'
 import { TEXT_ALIGN } from '../shapes/text/TextBox'
 
-export class ChangeTextAlign extends Command {
-    constructor(name: Commands) {
-        super(name)
+type Params = { textAlign: TEXT_ALIGN }
+
+export class ChangeTextAlign extends Command<Params> {
+    readonly name = 'changeTextAlign'
+
+    canExecute(ctx: CommandCtx<Params>): boolean {
+        return this.canEdit(ctx, (widget) => widget.canChangeTextAlign())
     }
 
-    canExecute(ctx: CommandCtx): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeTextAlign()) return false
-
-        return true
-    }
-
-    execute(ctx: CommandCtx) {
+    execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
-        if (ctx.selectionService.selected.length !== 1) return
 
-        const textAlign = ctx.params?.textAlign as TEXT_ALIGN
-        const widgets = ctx.params?.widgets
-            ? (ctx.params.widgets as Widget[])
-            : []
-
-        if (!widgets?.length || !textAlign) return
+        const { textAlign } = ctx.params
+        const { widgets } = ctx
 
         const targets = widgets.filter(
             (widget): widget is TextBox | Shape =>

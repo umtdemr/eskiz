@@ -23,7 +23,7 @@ const makeCtx = (
     createCommandCtx(engine, {
         selected,
         isContinuous,
-        params: { thickness, widgets: selected },
+        params: { thickness },
     })
 
 describe('ChangeThickness', () => {
@@ -31,7 +31,7 @@ describe('ChangeThickness', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeThickness('changeThickness')
+        command = new ChangeThickness()
     })
 
     describe('canExecute', () => {
@@ -116,13 +116,15 @@ describe('ChangeThickness', () => {
             expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
         })
 
-        it('does nothing when more than one widget is selected', () => {
+        it('changes every selected widget in one transaction', () => {
             const a = makeRect(engine)
+            const b = makeRect(engine)
 
-            command.execute(makeCtx([a, makeRect(engine)]))
+            command.execute(makeCtx([a, b]))
 
-            expect(a.properties.strokeWidth).toBe(DEFAULT_SHAPE_THICKNESS)
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+            expect(a.properties.strokeWidth).toBe(8)
+            expect(b.properties.strokeWidth).toBe(8)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
     })
 

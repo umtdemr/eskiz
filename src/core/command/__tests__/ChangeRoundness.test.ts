@@ -20,7 +20,7 @@ const makeCtx = (
     createCommandCtx(engine, {
         selected,
         isContinuous,
-        params: { roundness, widgets: selected },
+        params: { roundness },
     })
 
 describe('ChangeRoundness', () => {
@@ -28,7 +28,7 @@ describe('ChangeRoundness', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeRoundness('changeRoundness')
+        command = new ChangeRoundness()
     })
 
     describe('canExecute', () => {
@@ -101,26 +101,15 @@ describe('ChangeRoundness', () => {
             expect(engine.canvas.requestRender).not.toHaveBeenCalled()
         })
 
-        it('does nothing without a radius', () => {
-            const rect = makeRect(engine)
-
-            command.execute(
-                createCommandCtx(engine, {
-                    selected: [rect],
-                    params: { widgets: [rect] },
-                }),
-            )
-
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
-        })
-
-        it('does nothing when more than one widget is selected', () => {
+        it('changes every selected widget in one transaction', () => {
             const a = makeRect(engine)
+            const b = makeRect(engine)
 
-            command.execute(makeCtx([a, makeRect(engine)]))
+            command.execute(makeCtx([a, b]))
 
-            expect(a.properties.radius).toBeUndefined()
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+            expect(a.properties.radius).toBe(12)
+            expect(b.properties.radius).toBe(12)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
     })
 
@@ -174,12 +163,8 @@ describe('ChangeRoundness', () => {
             const rect = makeRect(engine)
 
             // the slider used to build a new command on every tick
-            new ChangeRoundness('changeRoundness').execute(
-                makeCtx([rect], 4, true),
-            )
-            new ChangeRoundness('changeRoundness').execute(
-                makeCtx([rect], 8, true),
-            )
+            new ChangeRoundness().execute(makeCtx([rect], 4, true))
+            new ChangeRoundness().execute(makeCtx([rect], 8, true))
             vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
 
             expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()

@@ -24,7 +24,7 @@ const makeCtx = (
     createCommandCtx(engine, {
         selected,
         isContinuous,
-        params: { color, widgets: selected },
+        params: { color },
     })
 
 describe('ChangeBorderColor', () => {
@@ -32,7 +32,7 @@ describe('ChangeBorderColor', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeBorderColor('changeBorderColor')
+        command = new ChangeBorderColor()
     })
 
     describe('canExecute', () => {
@@ -108,28 +108,15 @@ describe('ChangeBorderColor', () => {
             expect(pen.properties.color).toEqual(CANVAS_COLORS.RED)
         })
 
-        it('does nothing without a color', () => {
-            const rect = makeRect(engine)
-
-            command.execute(
-                createCommandCtx(engine, {
-                    selected: [rect],
-                    params: { widgets: [rect] },
-                }),
-            )
-
-            expect(rect.properties.strokeColor).toEqual(CANVAS_COLORS.BLACK)
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
-        })
-
-        it('does nothing when more than one widget is selected', () => {
+        it('changes every selected widget in one transaction', () => {
             const a = makeRect(engine)
             const b = makeRect(engine)
 
             command.execute(makeCtx([a, b]))
 
-            expect(a.properties.strokeColor).toEqual(CANVAS_COLORS.BLACK)
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+            expect(a.properties.strokeColor).toEqual(CANVAS_COLORS.RED)
+            expect(b.properties.strokeColor).toEqual(CANVAS_COLORS.RED)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
     })
 

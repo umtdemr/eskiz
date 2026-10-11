@@ -9,7 +9,7 @@ import { Line } from '@/core/shapes/line/Line'
 import { Pen } from '@/core/shapes/path/Pen'
 import { TextBox } from '@/core/shapes/text/TextBox'
 import { TextAlign } from '@/core/constants'
-import type { CommandCtx } from '@/core/command/Command'
+import type { CommandCtx, NoParams } from '@/core/command/Command'
 import type { Engine } from '@/core/engine/Engine'
 import type { ToolService } from '@/core/services/ToolService'
 import type { WidgetsService } from '@/core/services/WidgetsService'
@@ -128,22 +128,31 @@ export function createSelectionService(
     return selection
 }
 
-export interface CommandCtxOptions {
+export interface CommandCtxOptions<P> {
     selected?: Widget[]
+    // defaults to `selected`
+    widgets?: Widget[]
     isContinuous?: boolean
-    params?: Record<string, unknown>
+    params?: P
 }
 
 /** Builds a CommandCtx around the given engine mock and selection. */
-export function createCommandCtx(
+export function createCommandCtx<P = NoParams>(
     engine: TestEngine,
-    { selected = [], isContinuous = false, params }: CommandCtxOptions = {},
-): CommandCtx {
+    {
+        selected = [],
+        widgets = selected,
+        isContinuous = false,
+        params,
+    }: CommandCtxOptions<P> = {},
+): CommandCtx<P> {
     return {
         engine,
         selectionService: createSelectionService(engine, selected),
+        widgets,
         isContinuous,
-        params,
+        // commands without params get an empty object
+        params: params ?? ({} as P),
     }
 }
 

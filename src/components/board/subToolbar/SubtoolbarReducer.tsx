@@ -1,4 +1,4 @@
-import { Commands } from '@/core/command/Command'
+import { Commands } from '@/core/command/CommandRegistry'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { Copy, LockKeyholeOpen, Trash2, LockKeyhole } from 'lucide-react'

@@ -1,23 +1,11 @@
 import { DuplicationService } from '../services/DuplicationService'
-import { Widget } from '../shapes/Widget'
-import { Command, CommandCtx, Commands } from './Command'
+import { Command, CommandCtx } from './Command'
 
 export class CloneCommand extends Command {
-    constructor(name: Commands) {
-        super(name)
-    }
+    readonly name = 'clone'
 
     canExecute(ctx: CommandCtx): boolean {
-        const widgets = ctx.params?.widgets as Widget[] | undefined
-        if (!widgets?.length) {
-            return false
-        }
-
-        if (widgets.some((widget: Widget) => widget?.isLocked)) {
-            return false
-        }
-
-        return true
+        return this.canEdit(ctx)
     }
 
     execute(ctx: CommandCtx) {
@@ -27,9 +15,7 @@ export class CloneCommand extends Command {
 
         const duplicationService =
             ctx.engine.getService<DuplicationService>('duplication')
-        const addedWidgets = duplicationService.duplicateWidgets(
-            ctx.params!.widgets as Widget[],
-        )
+        const addedWidgets = duplicationService.duplicateWidgets(ctx.widgets)
 
         ctx.selectionService.selectWidgets(addedWidgets)
         ctx.engine.canvas.requestRender()

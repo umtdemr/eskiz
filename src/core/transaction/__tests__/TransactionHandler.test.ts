@@ -14,11 +14,11 @@ import type { EditingMethods } from '../State'
 let engine: ReturnType<typeof createHistoryEngine>
 
 const thicken = (widget: Widget, thickness: number) =>
-    new ChangeThickness('changeThickness').execute(
+    new ChangeThickness().execute(
         createCommandCtx(engine, {
             selected: [widget],
             isContinuous: true,
-            params: { thickness, widgets: [widget] },
+            params: { thickness },
         }),
     )
 
@@ -80,10 +80,10 @@ describe('TransactionHandler', () => {
 
     it('syncs only the font size', () => {
         const rect = makeRect(engine, { text: 'hi' })
-        new ChangeFontSize('changeFontSize').execute(
+        new ChangeFontSize().execute(
             createCommandCtx(engine, {
                 selected: [rect],
-                params: { fontSize: 18, widgets: [rect] },
+                params: { fontSize: 18 },
             }),
         )
 

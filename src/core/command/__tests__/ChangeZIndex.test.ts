@@ -16,8 +16,10 @@ let a: Rectangle
 let b: Rectangle
 let c: Rectangle
 
-const makeCtx = (selected: Rectangle[], action?: ZIndexAction) =>
-    createCommandCtx(engine, { selected, params: { action } })
+const makeCtx = (
+    selected: Rectangle[],
+    action: ZIndexAction = 'bringToFront',
+) => createCommandCtx(engine, { selected, params: { action } })
 
 const order = () => layer.childrenArray
 const sortedByZIndex = () =>
@@ -41,7 +43,7 @@ describe('ChangeZIndex', () => {
         c.uuid = 'c'
         layer.addChildren(a, b, c)
 
-        command = new ChangeZIndex('changeZIndex')
+        command = new ChangeZIndex()
     })
 
     it('cannot execute without a selection', () => {
@@ -120,12 +122,5 @@ describe('ChangeZIndex', () => {
         expect(c.zIndex).toBe('a3')
         expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
         expect(engine.canvas.requestRender).not.toHaveBeenCalled()
-    })
-
-    it('does nothing without an action', () => {
-        command.execute(makeCtx([a]))
-
-        expect(order()).toEqual([a, b, c])
-        expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
     })
 })

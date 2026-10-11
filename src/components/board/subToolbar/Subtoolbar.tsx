@@ -54,17 +54,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             return
         }
 
-        const command = engine.getCommand(action.btnActionProps.command)
-        const selectionService = selectionServiceRef.current
-        const ctx = {
-            selectionService,
-            engine,
-            params: {
-                widgets: selectionService.selected,
-            },
-        }
-
-        command.execute(ctx)
+        engine.execute(action.btnActionProps.command, {})
     }
 
     useEffect(() => {
