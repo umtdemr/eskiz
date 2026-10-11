@@ -27,7 +27,6 @@ export class HistoryManager {
     }
 
     push(entry: HistoryEntry) {
-        console.log('Pushing history entry:', entry)
         this.undoStack.push(entry)
         this.redoStack = [] // clear redo stack on new action
         this.emitHistoryChanged()
