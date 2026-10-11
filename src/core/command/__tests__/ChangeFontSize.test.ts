@@ -17,7 +17,7 @@ const makeCtx = (selected: Widget[], fontSize = 24, isContinuous = false) =>
     createCommandCtx(engine, {
         selected,
         isContinuous,
-        params: { fontSize, widgets: selected },
+        params: { fontSize },
     })
 
 describe('ChangeFontSize', () => {
@@ -25,7 +25,7 @@ describe('ChangeFontSize', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeFontSize('changeFontSize')
+        command = new ChangeFontSize()
     })
 
     describe('canExecute', () => {

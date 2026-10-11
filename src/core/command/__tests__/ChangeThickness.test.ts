@@ -23,7 +23,7 @@ const makeCtx = (
     createCommandCtx(engine, {
         selected,
         isContinuous,
-        params: { thickness, widgets: selected },
+        params: { thickness },
     })
 
 describe('ChangeThickness', () => {
@@ -31,7 +31,7 @@ describe('ChangeThickness', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeThickness('changeThickness')
+        command = new ChangeThickness()
     })
 
     describe('canExecute', () => {

@@ -30,14 +30,13 @@ import { PathToolService } from '@/core/services/PathToolService'
 import { LineToolService } from '@/core/services/LineToolService'
 import { TextService } from '../services/TextService'
 import { TextEditor } from '../textEditor/TextEditor'
-import { CommandRegistry } from '../command/CommandRegistry'
-import { ContinuousEdits } from '../command/ContinuousEdits'
 import {
-    Command,
     CommandParams,
+    CommandRegistry,
     Commands,
-    ExecuteOptions,
-} from '../command/Command'
+} from '../command/CommandRegistry'
+import { ContinuousEdits } from '../command/ContinuousEdits'
+import { ExecuteOptions } from '../command/Command'
 import { HistoryManager } from '../history/HistoryManager'
 import { ShortcutService } from '../services/ShortcutService'
 import { MagnetService } from '../services/MagnetService'
@@ -306,7 +305,7 @@ export class Engine {
         return this.serviceManager.get<T>(name)
     }
 
-    getCommand(cmd: Commands): Command {
+    getCommand<K extends Commands>(cmd: K) {
         return this._commands.get(cmd)
     }
 

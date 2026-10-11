@@ -2,33 +2,9 @@ import { Engine } from '../engine/Engine'
 import { SelectionService } from '../services/SelectionService'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
-import type { RGBA } from '../shapes/Color'
-import type { TEXT_ALIGN } from '../shapes/text/TextBox'
-import type { BorderStyle, FontStyleType } from '@/helpers/Constant'
-import type { ZIndexAction } from './ChangeZIndex'
+import type { Commands } from './CommandRegistry'
 
-type NoParams = Record<string, never>
-
-// what each command takes besides the widgets
-export type CommandParams = {
-    delete: NoParams
-    clone: NoParams
-    toggleLock: NoParams
-    changeBgColor: { color: RGBA }
-    changeBorderColor: { color: RGBA }
-    changeBorderStyle: { border: BorderStyle }
-    changeThickness: { thickness: number }
-    changeRoundness: { roundness: number }
-    changeTextColor: { rgba: string }
-    changeHighlightColor: { rgba: string }
-    changeTextAlign: { textAlign: TEXT_ALIGN }
-    changeFontSize: { fontSize: number }
-    changeFontStyle: { style: FontStyleType; value: boolean }
-    changeZIndex: { action: ZIndexAction }
-    changeLineArrow: { hasHeadArrow: boolean; hasTailArrow: boolean }
-}
-
-export type Commands = keyof CommandParams
+export type NoParams = Record<string, never>
 
 export type ExecuteOptions = {
     continuous?: boolean
@@ -36,33 +12,31 @@ export type ExecuteOptions = {
     widgets?: Widget[]
 }
 
-export type CommandCtx = {
+export type CommandCtx<P = NoParams> = {
     selectionService: SelectionService
     engine: Engine
+    widgets: Widget[]
     isContinuous?: boolean
-    params?: Record<string, unknown>
+    params: P
 }
 
-export abstract class Command {
-    protected _name: Commands
+// P is what the command takes besides the widgets
+export abstract class Command<P = NoParams> {
+    abstract readonly name: Commands
 
-    constructor(name: Commands) {
-        this._name = name
-    }
-
-    abstract canExecute(ctx: CommandCtx): boolean
-    abstract execute(ctx: CommandCtx): void
+    abstract canExecute(ctx: CommandCtx<P>): boolean
+    abstract execute(ctx: CommandCtx<P>): void
 
     // runs `change` inside a transaction. continuous calls join the open edit
     // on the same widgets, immediate ones get their own transaction
     protected edit(
-        ctx: CommandCtx,
+        ctx: CommandCtx<P>,
         editTable: Map<Widget, EditingMethods[]>,
         change: () => boolean,
     ) {
         const edits = ctx.engine.continuousEdits
         if (ctx.isContinuous) {
-            edits.apply(this._name, editTable, change)
+            edits.apply(this.name, editTable, change)
             return
         }
 

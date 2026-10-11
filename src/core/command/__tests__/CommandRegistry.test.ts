@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { CommandRegistry } from '../CommandRegistry'
-import { Command, Commands } from '../Command'
+import { CommandRegistry, Commands } from '../CommandRegistry'
+import { Command } from '../Command'
 import { ChangeBgColor } from '../ChangeBgColor'
 import {
     createEngineMock,
@@ -45,9 +45,9 @@ describe('CommandRegistry', () => {
 
     it('replaces a command under the same name', () => {
         const registry = new CommandRegistry()
-        const command = new ChangeBgColor('changeBgColor')
+        const command = new ChangeBgColor()
 
-        registry.registerCommand('changeBgColor', command)
+        registry.registerCommand(command)
 
         expect(registry.get('changeBgColor')).toBe(command)
     })

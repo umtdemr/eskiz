@@ -38,7 +38,7 @@ describe('ChangeBgColor', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeBgColor('changeBgColor')
+        command = new ChangeBgColor()
     })
 
     describe('canExecute', () => {
@@ -268,7 +268,7 @@ describe('ChangeBgColor', () => {
 
         it('shares the edit between command instances', () => {
             const rect = makeRect()
-            const other = new ChangeBgColor('changeBgColor')
+            const other = new ChangeBgColor()
 
             command.execute(makeCtx([rect], CANVAS_COLORS.RED, true))
             other.execute(makeCtx([rect], CANVAS_COLORS.GREEN, true))

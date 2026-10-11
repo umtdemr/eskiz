@@ -12,29 +12,26 @@ import {
     makeRect,
 } from '@/test/commandUtils'
 import type { Widget } from '@/core/shapes/Widget'
+import type { Command } from '@/core/command/Command'
 import type { WsWidget } from '@/types/Websocket'
 
 let engine: ReturnType<typeof createHistoryEngine>
 
-const run = (
-    command: { execute: (ctx: ReturnType<typeof createCommandCtx>) => void },
+const run = <P>(
+    command: Command<P>,
     widget: Widget,
-    params: Record<string, unknown>,
+    params: P,
     isContinuous = false,
 ) =>
     command.execute(
-        createCommandCtx(engine, {
-            selected: [widget],
-            isContinuous,
-            params: { ...params, widgets: [widget] },
-        }),
+        createCommandCtx(engine, { selected: [widget], isContinuous, params }),
     )
 
 describe('HistoryManager', () => {
-    const borderStyle = new ChangeBorderStyle('changeBorderStyle')
-    const thickness = new ChangeThickness('changeThickness')
-    const fontSize = new ChangeFontSize('changeFontSize')
-    const fontStyle = new ChangeFontStyle('changeFontStyle')
+    const borderStyle = new ChangeBorderStyle()
+    const thickness = new ChangeThickness()
+    const fontSize = new ChangeFontSize()
+    const fontStyle = new ChangeFontStyle()
 
     beforeEach(() => {
         vi.useFakeTimers()

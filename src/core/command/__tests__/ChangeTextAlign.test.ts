@@ -13,10 +13,10 @@ import type { Widget } from '@/core/shapes/Widget'
 
 let engine: EngineMock
 
-const makeCtx = (selected: Widget[], textAlign?: TEXT_ALIGN) =>
+const makeCtx = (selected: Widget[], textAlign: TEXT_ALIGN = 'left') =>
     createCommandCtx(engine, {
         selected,
-        params: { textAlign, widgets: selected },
+        params: { textAlign },
     })
 
 describe('ChangeTextAlign', () => {
@@ -24,7 +24,7 @@ describe('ChangeTextAlign', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeTextAlign('changeTextAlign')
+        command = new ChangeTextAlign()
     })
 
     describe('canExecute', () => {
@@ -99,12 +99,6 @@ describe('ChangeTextAlign', () => {
                 false,
             )
             expect(engine.canvas.requestRender).not.toHaveBeenCalled()
-        })
-
-        it('does nothing without an alignment', () => {
-            command.execute(makeCtx([makeTextBox(engine)]))
-
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
         })
 
         it('does nothing when more than one widget is selected', () => {

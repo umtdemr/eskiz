@@ -1,11 +1,5 @@
 import { CloneCommand } from './Clone'
-import {
-    Command,
-    CommandCtx,
-    CommandParams,
-    Commands,
-    ExecuteOptions,
-} from './Command'
+import { Command, CommandCtx, ExecuteOptions } from './Command'
 import type { Engine } from '../engine/Engine'
 import type { SelectionService } from '../services/SelectionService'
 import { DeleteCommand } from './Delete'
@@ -23,65 +17,41 @@ import { ChangeFontSize } from './ChangeFontSize'
 import { ChangeFontStyle } from './ChangeFontStyle'
 import { ChangeLineArrow } from './ChangeLineArrow'
 
+const createCommands = () => [
+    new DeleteCommand(),
+    new CloneCommand(),
+    new ToggleLockCommand(),
+    new ChangeZIndex(),
+    new ChangeBgColor(),
+    new ChangeRoundness(),
+    new ChangeBorderColor(),
+    new ChangeBorderStyle(),
+    new ChangeThickness(),
+    new ChangeTextColor(),
+    new ChangeHighlightColor(),
+    new ChangeTextAlign(),
+    new ChangeFontSize(),
+    new ChangeFontStyle(),
+    new ChangeLineArrow(),
+]
+
+type Registered = ReturnType<typeof createCommands>[number]
+
+// command name -> its params, read from the commands above
+export type CommandParams = {
+    [C in Registered as C['name']]: C extends Command<infer P> ? P : never
+}
+
+export type Commands = keyof CommandParams
+
 export class CommandRegistry {
-    private _commands = new Map<Commands, Command>()
+    private _commands = new Map<string, Registered>()
     constructor() {
-        this.registerAllCommands()
+        createCommands().forEach((cmd) => this.registerCommand(cmd))
     }
 
-    registerAllCommands() {
-        this.registerCommand('delete', new DeleteCommand('delete'))
-        this.registerCommand('clone', new CloneCommand('clone'))
-        this.registerCommand('toggleLock', new ToggleLockCommand('toggleLock'))
-        this.registerCommand('changeZIndex', new ChangeZIndex('changeZIndex'))
-        this.registerCommand(
-            'changeBgColor',
-            new ChangeBgColor('changeBgColor'),
-        )
-        this.registerCommand(
-            'changeRoundness',
-            new ChangeRoundness('changeRoundness'),
-        )
-        this.registerCommand(
-            'changeBorderColor',
-            new ChangeBorderColor('changeBorderColor'),
-        )
-        this.registerCommand(
-            'changeBorderStyle',
-            new ChangeBorderStyle('changeBorderStyle'),
-        )
-        this.registerCommand(
-            'changeThickness',
-            new ChangeThickness('changeThickness'),
-        )
-        this.registerCommand(
-            'changeTextColor',
-            new ChangeTextColor('changeTextColor'),
-        )
-        this.registerCommand(
-            'changeHighlightColor',
-            new ChangeHighlightColor('changeHighlightColor'),
-        )
-        this.registerCommand(
-            'changeTextAlign',
-            new ChangeTextAlign('changeTextAlign'),
-        )
-        this.registerCommand(
-            'changeFontSize',
-            new ChangeFontSize('changeFontSize'),
-        )
-        this.registerCommand(
-            'changeFontStyle',
-            new ChangeFontStyle('changeFontStyle'),
-        )
-        this.registerCommand(
-            'changeLineArrow',
-            new ChangeLineArrow('changeLineArrow'),
-        )
-    }
-
-    get(name: Commands): Command {
-        return this._commands.get(name)!
+    get<K extends Commands>(name: K) {
+        return this._commands.get(name) as Command<CommandParams[K]>
     }
 
     // returns false when the command can't run on the targets
@@ -93,14 +63,12 @@ export class CommandRegistry {
     ): boolean {
         const selectionService =
             engine.getService<SelectionService>('selection')
-        const ctx: CommandCtx = {
+        const ctx: CommandCtx<CommandParams[K]> = {
             selectionService,
             engine,
+            widgets: widgets ?? selectionService.selected,
             isContinuous: continuous,
-            params: {
-                ...params,
-                widgets: widgets ?? selectionService.selected,
-            },
+            params,
         }
 
         const command = this.get(name)
@@ -110,7 +78,7 @@ export class CommandRegistry {
         return true
     }
 
-    registerCommand(name: Commands, cmd: Command) {
-        this._commands.set(name, cmd)
+    registerCommand(cmd: Registered) {
+        this._commands.set(cmd.name, cmd)
     }
 }

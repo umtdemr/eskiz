@@ -4,14 +4,14 @@ import { StickyNote } from '../shapes/stickyNote/StickyNote'
 import { TextBox } from '../shapes/text/TextBox'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
-import { Command, CommandCtx, Commands } from './Command'
+import { Command, CommandCtx } from './Command'
 
-export class ChangeBgColor extends Command {
-    constructor(name: Commands) {
-        super(name)
-    }
+type Params = { color: RGBA }
 
-    canExecute(ctx: CommandCtx): boolean {
+export class ChangeBgColor extends Command<Params> {
+    readonly name = 'changeBgColor'
+
+    canExecute(ctx: CommandCtx<Params>): boolean {
         if (!ctx.selectionService.selected?.length) return false
         if (ctx.selectionService.isThereLockedWidget()) return false
         if (!ctx.selectionService.canAllChangeBgColor()) return false
@@ -19,11 +19,11 @@ export class ChangeBgColor extends Command {
         return true
     }
 
-    execute(ctx: CommandCtx) {
+    execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
         if (ctx.selectionService.selected.length !== 1) return
 
-        const color = ctx.params?.color as RGBA
+        const { color } = ctx.params
         const widget = ctx.selectionService.selected[0]
         if (
             !(widget instanceof Shape) &&

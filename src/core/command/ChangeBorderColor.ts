@@ -4,14 +4,14 @@ import { Widget } from '../shapes/Widget'
 import { Path } from '../shapes/path/Path'
 import { Line } from '@/core/shapes/line/Line'
 import { EditingMethods } from '../transaction/State'
-import { Command, CommandCtx, Commands } from './Command'
+import { Command, CommandCtx } from './Command'
 
-export class ChangeBorderColor extends Command {
-    constructor(name: Commands) {
-        super(name)
-    }
+type Params = { color: RGBA }
 
-    canExecute(ctx: CommandCtx): boolean {
+export class ChangeBorderColor extends Command<Params> {
+    readonly name = 'changeBorderColor'
+
+    canExecute(ctx: CommandCtx<Params>): boolean {
         if (!ctx.selectionService.selected?.length) return false
         if (ctx.selectionService.isThereLockedWidget()) return false
         if (!ctx.selectionService.canAllChangeBorderColor()) return false
@@ -19,16 +19,12 @@ export class ChangeBorderColor extends Command {
         return true
     }
 
-    execute(ctx: CommandCtx) {
+    execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
         if (ctx.selectionService.selected.length !== 1) return
 
-        const color = ctx.params?.color as RGBA
-        const widgets = ctx.params?.widgets
-            ? (ctx.params.widgets as Widget[])
-            : []
-
-        if (!widgets?.length || !color) return
+        const { color } = ctx.params
+        const { widgets } = ctx
 
         const targets = widgets.filter(
             (widget): widget is Shape | Path | Line =>

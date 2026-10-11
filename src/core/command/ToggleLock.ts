@@ -1,12 +1,10 @@
 import { WidgetsService } from '../services/WidgetsService'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
-import { Command, CommandCtx, Commands } from './Command'
+import { Command, CommandCtx } from './Command'
 
 export class ToggleLockCommand extends Command {
-    constructor(name: Commands) {
-        super(name)
-    }
+    readonly name = 'toggleLock'
 
     canExecute(ctx: CommandCtx): boolean {
         if (!ctx.selectionService.selected?.length) {

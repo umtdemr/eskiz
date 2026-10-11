@@ -16,7 +16,7 @@ const makeCtx = (selected: Widget[], rgba = '#ff0000', isContinuous = false) =>
     createCommandCtx(engine, {
         selected,
         isContinuous,
-        params: { rgba, widgets: selected },
+        params: { rgba },
     })
 
 describe('ChangeTextColor', () => {
@@ -24,7 +24,7 @@ describe('ChangeTextColor', () => {
 
     beforeEach(() => {
         engine = createEngineMock()
-        command = new ChangeTextColor('changeTextColor')
+        command = new ChangeTextColor()
     })
 
     describe('canExecute', () => {

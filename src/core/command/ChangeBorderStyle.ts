@@ -2,15 +2,15 @@ import { BorderStyle } from '@/helpers/Constant'
 import { Shape } from '../shapes/Shape'
 import { Widget } from '../shapes/Widget'
 import { Line } from '../shapes/line/Line'
-import { Command, CommandCtx, Commands } from './Command'
+import { Command, CommandCtx } from './Command'
 import { EditingMethods } from '../transaction/State'
 
-export class ChangeBorderStyle extends Command {
-    constructor(name: Commands) {
-        super(name)
-    }
+type Params = { border: BorderStyle }
 
-    canExecute(ctx: CommandCtx): boolean {
+export class ChangeBorderStyle extends Command<Params> {
+    readonly name = 'changeBorderStyle'
+
+    canExecute(ctx: CommandCtx<Params>): boolean {
         if (!ctx.selectionService.selected?.length) return false
         if (ctx.selectionService.isThereLockedWidget()) return false
         if (!ctx.selectionService.canAllChangeBorderStyle()) return false
@@ -18,18 +18,12 @@ export class ChangeBorderStyle extends Command {
         return true
     }
 
-    execute(ctx: CommandCtx) {
+    execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
         if (ctx.selectionService.selected.length !== 1) return
 
-        const widgets = ctx.params?.widgets
-            ? (ctx.params.widgets as Widget[])
-            : []
-        const border = ctx.params?.border
-            ? (ctx.params.border as BorderStyle)
-            : undefined
-
-        if (!widgets?.length || !border) return
+        const { widgets } = ctx
+        const { border } = ctx.params
 
         const targets = widgets.filter(
             (widget): widget is Shape | Line =>
