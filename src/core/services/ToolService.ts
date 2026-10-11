@@ -76,6 +76,10 @@ export class ToolService extends Service {
         }))
     }
 
+    get tool() {
+        return useBoundStore.getState().mainMode
+    }
+
     dispose(): void {
         this._storeListener() // unsubscribe to store
     }

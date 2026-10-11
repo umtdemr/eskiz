@@ -1,8 +1,9 @@
 import { DuplicationService } from '../services/DuplicationService'
-import { Command, CommandCtx } from './Command'
+import { Command, CommandCtx, Shortcut } from './Command'
 
 export class CloneCommand extends Command {
     readonly name = 'clone'
+    readonly shortcuts: Shortcut[] = [{ key: 'd', mod: true }]
 
     canExecute(ctx: CommandCtx): boolean {
         return this.canEdit(ctx)

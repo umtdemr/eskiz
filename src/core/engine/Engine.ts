@@ -36,7 +36,7 @@ import {
     Commands,
 } from '../command/CommandRegistry'
 import { ContinuousEdits } from '../command/ContinuousEdits'
-import { ExecuteOptions } from '../command/Command'
+import { ExecuteOptions, KeyInput } from '../command/Command'
 import { HistoryManager } from '../history/HistoryManager'
 import { ShortcutService } from '../services/ShortcutService'
 import { MagnetService } from '../services/MagnetService'
@@ -167,6 +167,7 @@ export class Engine {
     dispose() {
         this.canvas.dispose()
         this.wsEngine?.dispose()
+        this.getService<ShortcutService>('shortcut').dispose()
         this._mouseController.dispose()
         this.zoomChanged.removeAll()
     }
@@ -248,7 +249,10 @@ export class Engine {
                 selectionService,
             ),
         )
-        this.serviceManager.register('shortcut', new ShortcutService(this))
+        this.serviceManager.register(
+            'shortcut',
+            new ShortcutService(this, this._mouseController),
+        )
 
         // skip collaborative-only services in standalone mode
         if (!this.isStandalone && this.wsEngine) {
@@ -315,6 +319,15 @@ export class Engine {
         options?: ExecuteOptions,
     ): boolean {
         return this._commands.execute(this, name, params, options)
+    }
+
+    // true when a command is bound to the keys
+    executeShortcut(input: KeyInput): boolean {
+        return this._commands.executeShortcut(this, input)
+    }
+
+    get commandExecuted() {
+        return this._commands.executed
     }
 
     get upperCanvasEl() {

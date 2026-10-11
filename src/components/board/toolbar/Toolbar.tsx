@@ -246,7 +246,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                     <Button
                         variant="ghost"
                         className="px-2 [&_svg]:size-5"
-                        onClick={() => engine.historyManager.undo()}
+                        onClick={() => engine.execute('undo', {})}
                         disabled={!historyState.canUndo}
                     >
                         <Undo />
@@ -261,7 +261,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                     <Button
                         variant="ghost"
                         className="px-2 [&_svg]:size-5"
-                        onClick={() => engine.historyManager.redo()}
+                        onClick={() => engine.execute('redo', {})}
                         disabled={!historyState.canRedo}
                     >
                         <Redo />

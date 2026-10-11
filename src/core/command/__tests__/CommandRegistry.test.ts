@@ -1,7 +1,8 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { CommandRegistry, Commands } from '../CommandRegistry'
-import { Command } from '../Command'
+import { Command, KeyInput, Shortcut } from '../Command'
 import { ChangeBgColor } from '../ChangeBgColor'
+import { ChangeTool } from '../ChangeTool'
 import {
     createEngineMock,
     createSelectionService,
@@ -13,12 +14,23 @@ import type { Engine } from '@/core/engine/Engine'
 
 // engine whose selection service has `selected` selected
 const setup = (makeSelected: (engine: Engine) => Widget[]) => {
-    const services: Record<string, unknown> = {}
+    const toolService = { changeTool: vi.fn() }
+    const services: Record<string, unknown> = { toolService }
     const engine = createEngineMock(services)
     const selected = makeSelected(engine)
     services.selection = createSelectionService(engine, selected)
-    return { engine, selected }
+    return { engine, selected, toolService }
 }
+
+const keys = (key: string, rest: Partial<KeyInput> = {}): KeyInput => ({
+    key,
+    code: '',
+    ctrlKey: false,
+    metaKey: false,
+    shiftKey: false,
+    altKey: false,
+    ...rest,
+})
 
 const names: Commands[] = [
     'delete',
@@ -36,6 +48,12 @@ const names: Commands[] = [
     'changeFontStyle',
     'changeZIndex',
     'changeLineArrow',
+    'undo',
+    'redo',
+    'selectAll',
+    'clearSelection',
+    'move',
+    'changeTool',
 ]
 
 describe('CommandRegistry', () => {
@@ -127,6 +145,93 @@ describe('CommandRegistry', () => {
             })
 
             expect(selected.map((w) => w.properties.radius)).toEqual([12, 12])
+        })
+    })
+
+    describe('executeShortcut', () => {
+        it('runs the command bound to the keys', () => {
+            const { engine, selected } = setup((e) => [makeRect(e)])
+
+            const bound = new CommandRegistry().executeShortcut(
+                engine,
+                keys('ArrowRight'),
+            )
+
+            expect(bound).toBe(true)
+            expect(selected[0].left).toBe(1)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledWith(
+                'continuous',
+                expect.anything(),
+            )
+        })
+
+        it('passes the params of the binding', () => {
+            const { engine, selected } = setup((e) => [makeRect(e)])
+
+            new CommandRegistry().executeShortcut(
+                engine,
+                keys('ArrowDown', { shiftKey: true }),
+            )
+
+            expect(selected[0].top).toBe(10)
+        })
+
+        it('returns false when nothing is bound to the keys', () => {
+            const { engine } = setup(() => [])
+
+            expect(
+                new CommandRegistry().executeShortcut(engine, keys('q')),
+            ).toBe(false)
+        })
+
+        it('returns true when the bound command cannot run', () => {
+            const { engine } = setup(() => [])
+
+            const bound = new CommandRegistry().executeShortcut(
+                engine,
+                keys('Delete'),
+            )
+
+            expect(bound).toBe(true)
+            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+        })
+
+        it('falls through to the next command bound to the keys', () => {
+            class EscapeToSelect extends ChangeTool {
+                readonly shortcuts: Shortcut<{ tool: 'SELECT' }>[] = [
+                    { key: 'Escape', params: { tool: 'SELECT' } },
+                ]
+            }
+            const registry = new CommandRegistry()
+            registry.registerCommand(new EscapeToSelect())
+
+            // clear selection comes first and takes it
+            const withSelection = setup((e) => [makeRect(e)])
+            registry.executeShortcut(withSelection.engine, keys('Escape'))
+            expect(withSelection.toolService.changeTool).not.toHaveBeenCalled()
+
+            // nothing to clear
+            const empty = setup(() => [])
+            registry.executeShortcut(empty.engine, keys('Escape'))
+            expect(empty.toolService.changeTool).toHaveBeenCalledWith(
+                'SELECT',
+                undefined,
+            )
+        })
+    })
+
+    describe('executed', () => {
+        it('dispatches the name of the command that ran', () => {
+            const { engine } = setup((e) => [makeRect(e)])
+            const registry = new CommandRegistry()
+            const listener = vi.fn()
+            registry.executed.add(listener)
+
+            registry.execute(engine, 'move', { dx: 1, dy: 0 })
+            // no targets, can't run
+            registry.execute(engine, 'delete', {}, { widgets: [] })
+
+            expect(listener.mock.calls).toEqual([['move']])
         })
     })
 })
