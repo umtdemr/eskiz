@@ -243,48 +243,6 @@ export class SelectionService extends Service {
         return this._selected.some((widget) => widget.isLocked)
     }
 
-    canAllChangeBgColor(): boolean {
-        return this._selected.every((widget) => widget.canChangeBgColor())
-    }
-
-    canAllChangeBorderColor(): boolean {
-        return this._selected.every((widget) => widget.canChangeBorderColor())
-    }
-
-    canAllChangeBorderStyle(): boolean {
-        return this._selected.every((widget) => widget.canChangeBorderStyle())
-    }
-
-    canAllChangeThickness(): boolean {
-        return this._selected.every((widget) => widget.canChangeThickness())
-    }
-
-    canAllChangeRoundness(): boolean {
-        return this._selected.every((widget) => widget.canChangeRoundness())
-    }
-
-    canAllChangeTextColor(): boolean {
-        return this._selected.every((widget) => widget.canChangeTextColor())
-    }
-
-    canAllChangeHighlightColor(): boolean {
-        return this._selected.every((widget) =>
-            widget.canChangeHighlightColor(),
-        )
-    }
-
-    canAllChangeTextAlign(): boolean {
-        return this._selected.every((widget) => widget.canChangeTextAlign())
-    }
-
-    canAllChangeFontSize(): boolean {
-        return this._selected.every((widget) => widget.canChangeFontSize())
-    }
-
-    canAllChangeFontStyle(): boolean {
-        return this._selected.every((widget) => widget.canChangeFontStyle())
-    }
-
     get selected() {
         return this._selected
     }

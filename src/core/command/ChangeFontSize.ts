@@ -10,16 +10,11 @@ export class ChangeFontSize extends Command<Params> {
     readonly name = 'changeFontSize'
 
     canExecute(ctx: CommandCtx<Params>): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeFontSize()) return false
-
-        return true
+        return this.canEdit(ctx, (widget) => widget.canChangeFontSize())
     }
 
     execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
-        if (ctx.selectionService.selected.length !== 1) return
 
         const { fontSize } = ctx.params
         const { widgets } = ctx

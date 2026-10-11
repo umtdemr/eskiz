@@ -5,10 +5,7 @@ export class CloneCommand extends Command {
     readonly name = 'clone'
 
     canExecute(ctx: CommandCtx): boolean {
-        if (!ctx.widgets.length) return false
-        if (ctx.widgets.some((widget) => widget.isLocked)) return false
-
-        return true
+        return this.canEdit(ctx)
     }
 
     execute(ctx: CommandCtx) {

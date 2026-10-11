@@ -7,12 +7,7 @@ export class DeleteCommand extends Command {
     readonly name = 'delete'
 
     canExecute(ctx: CommandCtx): boolean {
-        if (!ctx.widgets.length) return false
-
-        // if there is any locked widget
-        if (ctx.widgets.some((widget) => widget.isLocked)) return false
-
-        return true
+        return this.canEdit(ctx)
     }
 
     execute(ctx: CommandCtx) {

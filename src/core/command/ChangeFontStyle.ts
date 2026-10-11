@@ -12,11 +12,7 @@ export class ChangeFontStyle extends Command<Params> {
     readonly name = 'changeFontStyle'
 
     canExecute(ctx: CommandCtx<Params>): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeFontStyle()) return false
-
-        return true
+        return this.canEdit(ctx, (widget) => widget.canChangeFontStyle())
     }
 
     execute(ctx: CommandCtx<Params>) {

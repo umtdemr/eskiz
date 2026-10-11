@@ -11,16 +11,11 @@ export class ChangeTextAlign extends Command<Params> {
     readonly name = 'changeTextAlign'
 
     canExecute(ctx: CommandCtx<Params>): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeTextAlign()) return false
-
-        return true
+        return this.canEdit(ctx, (widget) => widget.canChangeTextAlign())
     }
 
     execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
-        if (ctx.selectionService.selected.length !== 1) return
 
         const { textAlign } = ctx.params
         const { widgets } = ctx

@@ -12,29 +12,32 @@ export class ChangeBgColor extends Command<Params> {
     readonly name = 'changeBgColor'
 
     canExecute(ctx: CommandCtx<Params>): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeBgColor()) return false
-
-        return true
+        return this.canEdit(ctx, (widget) => widget.canChangeBgColor())
     }
 
     execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
-        if (ctx.selectionService.selected.length !== 1) return
 
         const { color } = ctx.params
-        const widget = ctx.selectionService.selected[0]
-        if (
-            !(widget instanceof Shape) &&
-            !(widget instanceof TextBox) &&
-            !(widget instanceof StickyNote)
+        const targets = ctx.widgets.filter(
+            (widget): widget is Shape | TextBox | StickyNote =>
+                widget instanceof Shape ||
+                widget instanceof TextBox ||
+                widget instanceof StickyNote,
         )
-            return
+        if (!targets.length) return
 
         const editTable = new Map<Widget, EditingMethods[]>()
-        editTable.set(widget, ['backgroundColor'])
+        targets.forEach((widget) => {
+            editTable.set(widget, ['backgroundColor'])
+        })
 
-        this.edit(ctx, editTable, () => widget.changeBgColor(color))
+        this.edit(ctx, editTable, () => {
+            let changed = false
+            for (const widget of targets) {
+                if (widget.changeBgColor(color)) changed = true
+            }
+            return changed
+        })
     }
 }

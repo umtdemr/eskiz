@@ -101,18 +101,32 @@ describe('CommandRegistry', () => {
         })
 
         it('uses the given widgets instead of the selection', () => {
-            const { engine, selected } = setup((e) => [makeRect(e)])
-            const other = makeRect(engine)
+            // a line can't be rounded, so only the given rect is checked
+            const { engine } = setup((e) => [makeLine(e)])
+            const rect = makeRect(engine)
 
-            new CommandRegistry().execute(
+            const executed = new CommandRegistry().execute(
                 engine,
                 'changeRoundness',
                 { roundness: 12 },
-                { widgets: [other] },
+                { widgets: [rect] },
             )
 
-            expect(other.properties.radius).toBe(12)
-            expect(selected[0].properties.radius).toBeUndefined()
+            expect(executed).toBe(true)
+            expect(rect.properties.radius).toBe(12)
+        })
+
+        it('works on more than one selected widget', () => {
+            const { engine, selected } = setup((e) => [
+                makeRect(e),
+                makeRect(e),
+            ])
+
+            new CommandRegistry().execute(engine, 'changeRoundness', {
+                roundness: 12,
+            })
+
+            expect(selected.map((w) => w.properties.radius)).toEqual([12, 12])
         })
     })
 })

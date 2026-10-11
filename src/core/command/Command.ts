@@ -27,6 +27,18 @@ export abstract class Command<P = NoParams> {
     abstract canExecute(ctx: CommandCtx<P>): boolean
     abstract execute(ctx: CommandCtx<P>): void
 
+    // there are targets, none is locked and all pass `check`
+    protected canEdit(
+        ctx: CommandCtx<P>,
+        check: (widget: Widget) => boolean = () => true,
+    ) {
+        const { widgets } = ctx
+        if (!widgets.length) return false
+        if (widgets.some((widget) => widget.isLocked)) return false
+
+        return widgets.every(check)
+    }
+
     // runs `change` inside a transaction. continuous calls join the open edit
     // on the same widgets, immediate ones get their own transaction
     protected edit(

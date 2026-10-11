@@ -14,15 +14,14 @@ export class ChangeZIndex extends Command<Params> {
     readonly name = 'changeZIndex'
 
     canExecute(ctx: CommandCtx<Params>): boolean {
-        return ctx.selectionService.selected.length > 0
+        return ctx.widgets.length > 0
     }
 
     execute(ctx: CommandCtx<Params>): void {
         if (!this.canExecute(ctx)) return
 
-        const { selectionService, engine, params } = ctx
+        const { engine, params, widgets } = ctx
         const { action } = params
-        const widgets = selectionService.selected
 
         const affectedWidgets: Widget[] = []
         const parentLayer = engine.stage.widgetsDefaultLayer

@@ -66,7 +66,7 @@ export class CommandRegistry {
         const ctx: CommandCtx<CommandParams[K]> = {
             selectionService,
             engine,
-            widgets: widgets ?? selectionService.selected,
+            widgets: widgets ?? [...selectionService.selected],
             isContinuous: continuous,
             params,
         }

@@ -12,16 +12,11 @@ export class ChangeBorderColor extends Command<Params> {
     readonly name = 'changeBorderColor'
 
     canExecute(ctx: CommandCtx<Params>): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeBorderColor()) return false
-
-        return true
+        return this.canEdit(ctx, (widget) => widget.canChangeBorderColor())
     }
 
     execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
-        if (ctx.selectionService.selected.length !== 1) return
 
         const { color } = ctx.params
         const { widgets } = ctx

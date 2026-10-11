@@ -9,11 +9,7 @@ export class ChangeLineArrow extends Command<Params> {
     readonly name = 'changeLineArrow'
 
     canExecute(ctx: CommandCtx<Params>): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-        return ctx.selectionService.selected.every(
-            (widget) => widget instanceof Line,
-        )
+        return this.canEdit(ctx, (widget) => widget instanceof Line)
     }
 
     execute(ctx: CommandCtx<Params>) {

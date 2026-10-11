@@ -101,10 +101,19 @@ describe('ChangeHighlightColor', () => {
             expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
         })
 
-        it('does nothing when more than one widget is selected', () => {
-            command.execute(makeCtx([makeTextBox(engine), makeTextBox(engine)]))
+        it('changes every selected widget in one transaction', () => {
+            const a = makeTextBox(engine)
+            const b = makeTextBox(engine)
 
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+            command.execute(makeCtx([a, b]))
+
+            expect(a.properties.textOps[0].attributes.background).toBe(
+                '#ff0000',
+            )
+            expect(b.properties.textOps[0].attributes.background).toBe(
+                '#ff0000',
+            )
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
     })
 

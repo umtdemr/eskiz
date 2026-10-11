@@ -101,15 +101,15 @@ describe('ChangeTextAlign', () => {
             expect(engine.canvas.requestRender).not.toHaveBeenCalled()
         })
 
-        it('does nothing when more than one widget is selected', () => {
-            const box = makeTextBox(engine)
+        it('changes every selected widget in one transaction', () => {
+            const a = makeTextBox(engine)
+            const b = makeTextBox(engine)
 
-            command.execute(
-                makeCtx([box, makeTextBox(engine)], TextAlign.RIGHT),
-            )
+            command.execute(makeCtx([a, b], TextAlign.RIGHT))
 
-            expect(box.properties.textAlign).toBe(TextAlign.LEFT)
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+            expect(a.properties.textAlign).toBe(TextAlign.RIGHT)
+            expect(b.properties.textAlign).toBe(TextAlign.RIGHT)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
     })
 })

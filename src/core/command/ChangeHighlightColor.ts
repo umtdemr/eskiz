@@ -10,16 +10,11 @@ export class ChangeHighlightColor extends Command<Params> {
     readonly name = 'changeHighlightColor'
 
     canExecute(ctx: CommandCtx<Params>): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-        if (!ctx.selectionService.canAllChangeHighlightColor()) return false
-
-        return true
+        return this.canEdit(ctx, (widget) => widget.canChangeHighlightColor())
     }
 
     execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
-        if (ctx.selectionService.selected.length !== 1) return
 
         const { rgba: color } = ctx.params
         const { widgets } = ctx

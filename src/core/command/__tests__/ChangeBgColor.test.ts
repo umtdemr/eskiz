@@ -125,15 +125,15 @@ describe('ChangeBgColor', () => {
             expect(engine.transactionHandler.commit).toHaveBeenCalledOnce()
         })
 
-        it('does nothing when more than one widget is selected', () => {
+        it('changes every selected widget in one transaction', () => {
             const a = makeRect()
             const b = makeRect()
 
             command.execute(makeCtx([a, b]))
 
-            expect(a.properties.fillColor).toEqual(CANVAS_COLORS.TRANSPARENT)
-            expect(b.properties.fillColor).toEqual(CANVAS_COLORS.TRANSPARENT)
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+            expect(a.properties.fillColor).toEqual(CANVAS_COLORS.RED)
+            expect(b.properties.fillColor).toEqual(CANVAS_COLORS.RED)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
 
         it('does nothing when the widget is locked', () => {

@@ -101,13 +101,15 @@ describe('ChangeRoundness', () => {
             expect(engine.canvas.requestRender).not.toHaveBeenCalled()
         })
 
-        it('does nothing when more than one widget is selected', () => {
+        it('changes every selected widget in one transaction', () => {
             const a = makeRect(engine)
+            const b = makeRect(engine)
 
-            command.execute(makeCtx([a, makeRect(engine)]))
+            command.execute(makeCtx([a, b]))
 
-            expect(a.properties.radius).toBeUndefined()
-            expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+            expect(a.properties.radius).toBe(12)
+            expect(b.properties.radius).toBe(12)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
     })
 

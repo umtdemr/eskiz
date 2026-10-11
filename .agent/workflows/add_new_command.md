@@ -17,7 +17,7 @@ The examples use a made-up `changeOpacity` command that would fade a whole widge
 
 ## 1. Create the Command Class
 
-Create `src/core/command/ChangeOpacity.ts`. The class owns its name and its params: `name` is what `engine.execute` calls it by, and `Params` is what it takes besides the widgets. Leave the type argument out (`extends Command`) when it takes nothing. Most property changes follow this shape:
+Create `src/core/command/ChangeOpacity.ts`. The class owns its name and its params: `name` is what `engine.execute` calls it by, and `Params` is what it takes besides the widgets. Leave the type argument out (`extends Command`) when it takes nothing. Commands work on `ctx.widgets` only, both in `canExecute` and `execute`. `engine.execute` fills it from the selection unless the caller passes `widgets`, so a command never reads the selection itself. `this.canEdit(ctx, check)` returns true when there are widgets, none is locked and all pass `check`. Most property changes follow this shape:
 
 ```typescript
 import { Shape } from '../shapes/Shape'
@@ -31,10 +31,7 @@ export class ChangeOpacity extends Command<Params> {
     readonly name = 'changeOpacity'
 
     canExecute(ctx: CommandCtx<Params>): boolean {
-        if (!ctx.selectionService.selected?.length) return false
-        if (ctx.selectionService.isThereLockedWidget()) return false
-
-        return true
+        return this.canEdit(ctx, (widget) => widget instanceof Shape)
     }
 
     execute(ctx: CommandCtx<Params>) {
