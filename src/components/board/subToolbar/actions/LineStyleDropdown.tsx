@@ -11,7 +11,6 @@ import { BorderStyle, DEFAULT_SHAPE_THICKNESS } from '@/helpers/Constant'
 import clsx from 'clsx'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import { CommandCtx } from '@/core/command/Command'
 import { Line } from '@/core/shapes/line/Line'
 import { MoveRight, MoveLeft, MoveHorizontal, Minus } from 'lucide-react'
 
@@ -55,8 +54,6 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
         const selectionService =
             engine.getService<SelectionService>('selection')
         const widgets = selectionService.selected
-        if (!widgets.length) return
-        if (!selectionService.canAllChangeBorderStyle()) return
 
         // if the style is not changed
         if (
@@ -68,30 +65,15 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
             return
         }
 
-        const command = engine.getCommand('changeBorderStyle')
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            params: {
-                widgets,
-                border: newStyle,
-            },
+        if (engine.execute('changeBorderStyle', { border: newStyle })) {
+            setBorderStyle(newStyle)
         }
-
-        setBorderStyle(newStyle)
-        command.execute(ctx)
     }
 
     const handleThicknessChange = (thicknesses: number[]) => {
         const selectionService =
             engine.getService<SelectionService>('selection')
         const widgets = selectionService.selected
-        if (!widgets.length) {
-            return
-        }
-        if (!selectionService.canAllChangeThickness()) {
-            return
-        }
         const thickness = thicknesses[0]
 
         // if the width is not changed
@@ -104,45 +86,28 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
             return
         }
 
-        setThickness(thickness)
-        const command = engine.getCommand('changeThickness')
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            isContinuous: true,
-            params: {
-                widgets,
-                thickness,
-            },
+        if (
+            engine.execute(
+                'changeThickness',
+                { thickness },
+                { continuous: true },
+            )
+        ) {
+            setThickness(thickness)
         }
-
-        command.execute(ctx)
     }
 
     const changeArrowPoisition = (head: boolean, tail: boolean) => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-        const widgets = selectionService.selected
-        if (!widgets.length) return
-        // Check if all are lines
-        if (!widgets.every((w) => w instanceof Line)) return
-
         if (hasHeadArrow === head && hasTailArrow === tail) return
+
+        const executed = engine.execute('changeLineArrow', {
+            hasHeadArrow: head,
+            hasTailArrow: tail,
+        })
+        if (!executed) return
 
         setHasHeadArrow(head)
         setHasTailArrow(tail)
-
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            params: {
-                widgets,
-                hasHeadArrow: head,
-                hasTailArrow: tail,
-            },
-        }
-
-        engine.getCommand('changeLineArrow').execute(ctx)
     }
 
     return (

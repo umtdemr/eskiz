@@ -10,12 +10,10 @@ This workflow explains the steps to add a new button or input to the subtoolbar,
 2. Export it as a default component that receives `engine` and any needed props.
    ```tsx
    import { Button } from '@/components/ui/button';
-   import { Commands } from '@/core/command/Command';
 
    export const MyActionButton = ({ engine }: { engine: Engine }) => {
        const handleClick = () => {
-           const cmd = engine.getCommand(Commands.MY_NEW_COMMAND);
-           cmd.execute({ engine, params: {} });
+           engine.execute('myNewCommand', {});
        };
        return <Button onClick={handleClick}>My Action</Button>;
    };
@@ -23,9 +21,8 @@ This workflow explains the steps to add a new button or input to the subtoolbar,
 
 ## 2. Add an Action Entry in `SubtoolbarReducer`
 1. Open `src/components/board/subToolbar/SubtoolbarReducer.tsx`.
-2. Import the command enum and any icons you need:
+2. Import any icons you need:
    ```typescript
-   import { Commands } from '@/core/command/Command';
    import { MyIcon } from '@/components/icons/MyIcon';
    ```
 3. Create a helper function similar to the existing ones:
@@ -37,7 +34,7 @@ This workflow explains the steps to add a new button or input to the subtoolbar,
                tooltip: 'My Action',
                type: 'btnAction',
                btnActionProps: {
-                   command: Commands.MY_NEW_COMMAND,
+                   command: 'myNewCommand',
                    icon: <MyIcon />, // replace with your icon component
                },
            },
@@ -53,7 +50,7 @@ This workflow explains the steps to add a new button or input to the subtoolbar,
    If the action should be available for multiple widget types, add it to each relevant case or to the common section.
 
 ## 3. Register the Command (if not already done)
-Ensure the command referenced (`Commands.MY_NEW_COMMAND`) exists and is registered in `CommandRegistry`.
+Ensure the command referenced (`myNewCommand`) exists and is registered in `CommandRegistry`.
 
 ## 4. Update the UI Import
 If you created a custom component (e.g., `MyActionButton`), import it at the top of `Subtoolbar.tsx` and add a rendering branch:

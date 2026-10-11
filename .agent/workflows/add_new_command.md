@@ -15,15 +15,16 @@ The examples use a made-up `changeOpacity` command that would fade a whole widge
 - **Begin before you change.** If the widget changes before `begin()`, the "before" state is already the new value and undo does nothing. `this.edit()` handles this ordering for you.
 - **Continuous edits go through `ContinuousEdits`.** Slider and color picker drags call the command many times. `this.edit()` groups those calls into one transaction per command + widget set and commits after `CONTINUOUS_THROTTLE_DELAY`, or right away when undo/redo runs or another transaction begins on the same widgets. Don't keep your own timer.
 
-## 1. Add the Name
+## 1. Add the Name and Params
 
-Add the command name to the `Commands` union in `src/core/command/Command.ts`:
+Add the command to `CommandParams` in `src/core/command/Command.ts`. The key is the command name (`Commands` is derived from it) and the value is what the command takes besides the widgets. Use `NoParams` when it takes nothing.
 
 ```typescript
-export type Commands =
-    | 'delete'
+export type CommandParams = {
+    delete: NoParams
     // ...
-    | 'changeOpacity'
+    changeOpacity: { opacity: number }
+}
 ```
 
 ## 2. Create the Command Class
@@ -108,24 +109,22 @@ this.registerCommand('changeOpacity', new ChangeOpacity('changeOpacity'))
 
 ## 5. Call It from the UI
 
-Get the shared instance from the engine. Don't create the command with `new` or keep it in a `useRef`.
+Call it through `engine.execute`. It builds the ctx, targets the current selection, and returns `false` when `canExecute` fails, so the UI doesn't need its own `canAllChangeX()` check:
 
 ```typescript
-const selectionService = engine.getService<SelectionService>('selection')
-const ctx: CommandCtx = {
-    selectionService,
-    engine,
-    isContinuous: true, // while dragging a slider, false for a single click
-    params: {
-        widgets: selectionService.selected,
-        opacity,
-    },
-}
+const executed = engine.execute(
+    'changeOpacity',
+    { opacity },
+    { continuous: true }, // while dragging a slider, leave out for a single click
+)
+if (!executed) return
 
-engine.getCommand('changeOpacity').execute(ctx)
+// UI side effects (preview color, closing the dropdown) go after this
 ```
 
-For a plain button in the sub-toolbar, add a `btnAction` entry instead (see `add_subtoolbar_action.md`). `Subtoolbar.tsx` calls `engine.getCommand(...)` with the selected widgets.
+Pass `widgets` in the options to target something other than the selection, e.g. `engine.execute('delete', {}, { widgets })` for widgets removed by the eraser.
+
+For a plain button in the sub-toolbar, add a `btnAction` entry instead (see `add_subtoolbar_action.md`). `Subtoolbar.tsx` runs it with `engine.execute`.
 
 ## 6. Test It
 

@@ -4,8 +4,6 @@ import {
     ColorSelectSignature,
 } from '@/components/colorList/ColorList'
 import { Engine } from '@/core/engine/Engine'
-import { SelectionService } from '@/core/services/SelectionService'
-import { CommandCtx } from '@/core/command/Command'
 import { TextEditor } from '@/core/textEditor/TextEditor'
 
 export interface HighlightColorDropdownProps {
@@ -24,25 +22,13 @@ export function HighlightColorDropdown({
             return
         }
 
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-        const widgets = selectionService.selected
-        if (!widgets.length) return
-        if (!selectionService.canAllChangeHighlightColor()) return
+        const executed = engine.execute(
+            'changeHighlightColor',
+            { rgba: signature.rgba },
+            { continuous: !signature.isImmediate },
+        )
+        if (!executed) return
 
-        const color = signature.color
-
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            isContinuous: !signature.isImmediate,
-            params: {
-                color,
-                rgba: signature.rgba,
-                widgets,
-            },
-        }
-        engine.getCommand('changeHighlightColor').execute(ctx)
         closeDropdown()
     }
 

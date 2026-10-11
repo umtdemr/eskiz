@@ -3,7 +3,6 @@ import { Button } from '@/components/ui/button'
 import { Bold, Italic, Underline, Strikethrough } from 'lucide-react'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import { CommandCtx } from '@/core/command/Command'
 import { TextEditor } from '@/core/textEditor/TextEditor'
 import { FontStyleType } from '@/helpers/Constant'
 import { TextBox } from '@/core/shapes/text/TextBox'
@@ -40,17 +39,7 @@ export function FontStyleDropdown({ engine }: FontStyleDropdownProps) {
             currentValue = firstWidget.hasFontStyle(style)
         }
 
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            isContinuous: false,
-            params: {
-                style,
-                value: !currentValue, // toggle
-                widgets,
-            },
-        }
-        engine.getCommand('changeFontStyle').execute(ctx)
+        engine.execute('changeFontStyle', { style, value: !currentValue })
     }
 
     const styleToggleInEditingMode = (

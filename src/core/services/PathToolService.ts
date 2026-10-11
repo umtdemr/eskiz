@@ -15,7 +15,6 @@ import { nanoid } from 'nanoid'
 import { WidgetsService } from './WidgetsService'
 import { AddWidgetPayload } from '@/types/Websocket'
 import { getSvgPathFromStroke } from '../shapes/path/pathUtils'
-import { SelectionService } from './SelectionService'
 import { CursorType, PathToolType } from '@/core/constants.ts'
 import { CreationHistoryEntry } from '@/core/history/HistoryManager'
 
@@ -164,16 +163,7 @@ export class PathToolService extends Service {
                 for (const widget of widgets) {
                     widget.visible = true
                 }
-                const selectionService =
-                    this.engine.getService<SelectionService>('selection')
-                const command = this.engine.getCommand('delete')
-                command.execute({
-                    selectionService,
-                    engine: this.engine,
-                    params: {
-                        widgets,
-                    },
-                })
+                this.engine.execute('delete', {}, { widgets })
 
                 this.deletedShapesWithEraser.clear()
             }

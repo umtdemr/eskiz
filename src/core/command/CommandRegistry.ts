@@ -1,5 +1,13 @@
 import { CloneCommand } from './Clone'
-import { Command, Commands } from './Command'
+import {
+    Command,
+    CommandCtx,
+    CommandParams,
+    Commands,
+    ExecuteOptions,
+} from './Command'
+import type { Engine } from '../engine/Engine'
+import type { SelectionService } from '../services/SelectionService'
 import { DeleteCommand } from './Delete'
 import { ToggleLockCommand } from './ToggleLock'
 import { ChangeZIndex } from './ChangeZIndex'
@@ -74,6 +82,32 @@ export class CommandRegistry {
 
     get(name: Commands): Command {
         return this._commands.get(name)!
+    }
+
+    // returns false when the command can't run on the targets
+    execute<K extends Commands>(
+        engine: Engine,
+        name: K,
+        params: CommandParams[K],
+        { continuous = false, widgets }: ExecuteOptions = {},
+    ): boolean {
+        const selectionService =
+            engine.getService<SelectionService>('selection')
+        const ctx: CommandCtx = {
+            selectionService,
+            engine,
+            isContinuous: continuous,
+            params: {
+                ...params,
+                widgets: widgets ?? selectionService.selected,
+            },
+        }
+
+        const command = this.get(name)
+        if (!command.canExecute(ctx)) return false
+
+        command.execute(ctx)
+        return true
     }
 
     registerCommand(name: Commands, cmd: Command) {

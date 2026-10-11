@@ -9,7 +9,6 @@ import { useBoundStore } from '@/store/store'
 import { RGBA } from '@/core/shapes/Color'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import { CommandCtx } from '@/core/command/Command'
 import { useState } from 'react'
 import { StickyNote } from '@/core/shapes/stickyNote/StickyNote'
 
@@ -47,18 +46,7 @@ export function StickyNoteBgColorInput({
     }
 
     const onColorSelect = (color: RGBA) => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-
-        const ctx: CommandCtx = {
-            selectionService,
-            engine,
-            isContinuous: false,
-            params: {
-                color,
-            },
-        }
-        engine.getCommand('changeBgColor').execute(ctx)
+        engine.execute('changeBgColor', { color })
         setFillColor(`rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`)
     }
 

@@ -2,23 +2,39 @@ import { Engine } from '../engine/Engine'
 import { SelectionService } from '../services/SelectionService'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
+import type { RGBA } from '../shapes/Color'
+import type { TEXT_ALIGN } from '../shapes/text/TextBox'
+import type { BorderStyle, FontStyleType } from '@/helpers/Constant'
+import type { ZIndexAction } from './ChangeZIndex'
 
-export type Commands =
-    | 'delete'
-    | 'clone'
-    | 'toggleLock'
-    | 'changeBgColor'
-    | 'changeBorderColor'
-    | 'changeBorderStyle'
-    | 'changeThickness'
-    | 'changeRoundness'
-    | 'changeTextColor'
-    | 'changeHighlightColor'
-    | 'changeTextAlign'
-    | 'changeFontSize'
-    | 'changeFontStyle'
-    | 'changeZIndex'
-    | 'changeLineArrow'
+type NoParams = Record<string, never>
+
+// what each command takes besides the widgets
+export type CommandParams = {
+    delete: NoParams
+    clone: NoParams
+    toggleLock: NoParams
+    changeBgColor: { color: RGBA }
+    changeBorderColor: { color: RGBA }
+    changeBorderStyle: { border: BorderStyle }
+    changeThickness: { thickness: number }
+    changeRoundness: { roundness: number }
+    changeTextColor: { rgba: string }
+    changeHighlightColor: { rgba: string }
+    changeTextAlign: { textAlign: TEXT_ALIGN }
+    changeFontSize: { fontSize: number }
+    changeFontStyle: { style: FontStyleType; value: boolean }
+    changeZIndex: { action: ZIndexAction }
+    changeLineArrow: { hasHeadArrow: boolean; hasTailArrow: boolean }
+}
+
+export type Commands = keyof CommandParams
+
+export type ExecuteOptions = {
+    continuous?: boolean
+    // defaults to the selection
+    widgets?: Widget[]
+}
 
 export type CommandCtx = {
     selectionService: SelectionService

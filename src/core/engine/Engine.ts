@@ -32,7 +32,12 @@ import { TextService } from '../services/TextService'
 import { TextEditor } from '../textEditor/TextEditor'
 import { CommandRegistry } from '../command/CommandRegistry'
 import { ContinuousEdits } from '../command/ContinuousEdits'
-import { Command, Commands } from '../command/Command'
+import {
+    Command,
+    CommandParams,
+    Commands,
+    ExecuteOptions,
+} from '../command/Command'
 import { HistoryManager } from '../history/HistoryManager'
 import { ShortcutService } from '../services/ShortcutService'
 import { MagnetService } from '../services/MagnetService'
@@ -303,6 +308,14 @@ export class Engine {
 
     getCommand(cmd: Commands): Command {
         return this._commands.get(cmd)
+    }
+
+    execute<K extends Commands>(
+        name: K,
+        params: CommandParams[K],
+        options?: ExecuteOptions,
+    ): boolean {
+        return this._commands.execute(this, name, params, options)
     }
 
     get upperCanvasEl() {
