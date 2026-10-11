@@ -1,0 +1,35 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`Rectangle > serialization > json matches snapshot 1`] = `
+{
+  "angle": 0,
+  "height": 50,
+  "is_deleted": false,
+  "is_locked": false,
+  "properties": {
+    "borderStyle": "DOTTED",
+    "fillColor": {
+      "a": 1,
+      "b": 38,
+      "g": 38,
+      "r": 220,
+    },
+    "radius": 8,
+    "strokeColor": {
+      "a": 1,
+      "b": 0,
+      "g": 0,
+      "r": 0,
+    },
+    "strokeWidth": 4,
+    "textProperties": undefined,
+  },
+  "sub_type": "rectangle",
+  "uuid": "rect-uuid",
+  "widget_type": "shape",
+  "width": 100,
+  "x": 10,
+  "y": 20,
+  "z_index": "a1",
+}
+`;

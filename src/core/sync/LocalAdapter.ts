@@ -19,6 +19,40 @@ export interface StoredImage {
     mimeType: string
 }
 
+type Json = Record<string, unknown>
+
+const isObject = (value: unknown): value is Json =>
+    typeof value === 'object' && value !== null && !Array.isArray(value)
+
+export function mergeWidgetData(widget: Json, data: Json): Json {
+    const updated = { ...widget }
+
+    for (const [key, value] of Object.entries(data)) {
+        if (key !== 'properties' || !isObject(value)) {
+            updated[key] = value
+            continue
+        }
+
+        const current = isObject(updated.properties) ? updated.properties : {}
+        const properties = { ...current, ...value }
+
+        // shape text comes in partially, keep the fields it doesn't have
+        if (
+            isObject(current.textProperties) &&
+            isObject(value.textProperties)
+        ) {
+            properties.textProperties = {
+                ...current.textProperties,
+                ...value.textProperties,
+            }
+        }
+
+        updated.properties = properties
+    }
+
+    return updated
+}
+
 /**
  * LocalAdapter implements ISyncAdapter using IndexedDB for standalone mode.
  */
@@ -50,24 +84,9 @@ export class LocalAdapter implements ISyncAdapter {
             const existing = await store.get(shape.uuid)
             if (existing) {
                 // merge partial update into existing widget
-                const updated = { ...existing }
-                if (shape.data) {
-                    // merge top-level fields from data
-                    for (const [key, value] of Object.entries(shape.data)) {
-                        if (
-                            key === 'properties' &&
-                            typeof value === 'object' &&
-                            value !== null
-                        ) {
-                            updated.properties = {
-                                ...updated.properties,
-                                ...(value as Record<string, unknown>),
-                            }
-                        } else {
-                            updated[key] = value
-                        }
-                    }
-                }
+                const updated = shape.data
+                    ? mergeWidgetData(existing, shape.data)
+                    : { ...existing }
                 if (shape.is_deleted !== undefined) {
                     updated.is_deleted = shape.is_deleted
                 }

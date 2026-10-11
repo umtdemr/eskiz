@@ -48,4 +48,3 @@ export function TextColorInput({ tooltip, id, engine }: TextColorInputProps) {
         </div>
     )
 }
-

@@ -29,38 +29,24 @@ export class ChangeTextAlign extends Command {
 
         if (!widgets?.length || !textAlign) return
 
-        const affectedWidgets = []
-        for (const widget of widgets) {
-            if (!widget.canChangeTextAlign()) continue
-
-            if (widget instanceof TextBox) {
-                if (widget.changeTextAlign(textAlign)) {
-                    affectedWidgets.push(widget)
-                }
-            } else if (widget instanceof Shape) {
-                if (widget.changeTextAlign(textAlign)) {
-                    affectedWidgets.push(widget)
-                }
-            }
-        }
-        if (affectedWidgets.length) {
-            ctx.engine.canvas.requestRender()
-        }
+        const targets = widgets.filter(
+            (widget): widget is TextBox | Shape =>
+                widget.canChangeTextAlign() &&
+                (widget instanceof TextBox || widget instanceof Shape),
+        )
+        if (!targets.length) return
 
         const editTable = new Map<Widget, EditingMethods[]>()
-        affectedWidgets.forEach((widget) => {
+        targets.forEach((widget) => {
             editTable.set(widget, ['textAlign'])
         })
 
-        const { transactionId } = ctx.engine.transactionHandler.begin(
-            'immediate',
-            {
-                editTable,
-            },
-        )
-
-        // add to db
-        // TODO: phase 2 - check error
-        ctx.engine.transactionHandler.commit(transactionId)
+        this.edit(ctx, editTable, () => {
+            let changed = false
+            for (const widget of targets) {
+                if (widget.changeTextAlign(textAlign)) changed = true
+            }
+            return changed
+        })
     }
 }

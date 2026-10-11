@@ -33,6 +33,9 @@ export class HistoryManager {
     }
 
     undo() {
+        // a running continuous edit is the latest action
+        this.engine.continuousEdits.flush()
+
         const entry = this.undoStack.pop()
         if (entry) {
             entry.undo()
@@ -43,6 +46,8 @@ export class HistoryManager {
     }
 
     redo() {
+        this.engine.continuousEdits.flush()
+
         const entry = this.redoStack.pop()
         if (entry) {
             entry.redo()

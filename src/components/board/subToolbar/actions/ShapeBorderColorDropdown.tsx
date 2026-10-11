@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import './ShapeBorderColorDropdown.scss'
 import {
@@ -16,10 +16,6 @@ import clsx from 'clsx'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { RGBA } from '@/core/shapes/Color'
-import { ChangeThickness } from '@/core/command/ChangeThickness'
-import { ChangeBorderColor } from '@/core/command/ChangeBorderColor'
-import { ChangeBorderStyle } from '@/core/command/ChangeBorderStyle'
-import { ChangeRoundness } from '@/core/command/ChangeRoundness'
 import { CommandCtx } from '@/core/command/Command'
 import { Rectangle } from '@/core/shapes/Rectangle'
 
@@ -40,10 +36,6 @@ export function ShapeBorderColorDropdown({
         BorderStyle.SOLID,
     )
     const [showBorderStyle, setShowBorderStyle] = useState(false)
-
-    const changeBorderColorCommandRef = useRef(
-        new ChangeBorderColor('changeBorderColor'),
-    )
 
     useEffect(() => {
         const selectionService =
@@ -106,7 +98,7 @@ export function ShapeBorderColorDropdown({
         )
             return
 
-        const command = new ChangeBorderStyle('changeBorderStyle')
+        const command = engine.getCommand('changeBorderStyle')
         const ctx: CommandCtx = {
             selectionService,
             engine,
@@ -151,7 +143,7 @@ export function ShapeBorderColorDropdown({
                 widgets: [selected],
             },
         }
-        changeBorderColorCommandRef.current?.execute(ctx)
+        engine.getCommand('changeBorderColor').execute(ctx)
         onColorChange(`rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`)
     }
 
@@ -173,7 +165,7 @@ export function ShapeBorderColorDropdown({
                 widgets,
             },
         }
-        changeBorderColorCommandRef.current?.execute(ctx)
+        engine.getCommand('changeBorderColor').execute(ctx)
         onColorChange(
             `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`,
             signature.isImmediate,
@@ -201,10 +193,11 @@ export function ShapeBorderColorDropdown({
             return
 
         setThickness(thickness)
-        const command = new ChangeThickness('changeThickness')
-        const ctx = {
+        const command = engine.getCommand('changeThickness')
+        const ctx: CommandCtx = {
             selectionService,
             engine,
+            isContinuous: true,
             params: {
                 widgets,
                 thickness,
@@ -231,7 +224,6 @@ export function ShapeBorderColorDropdown({
             return
 
         setRoundness(roundness)
-        const command = new ChangeRoundness('changeRoundness')
         const ctx: CommandCtx = {
             selectionService,
             engine,
@@ -242,7 +234,7 @@ export function ShapeBorderColorDropdown({
             },
         }
 
-        command.execute(ctx)
+        engine.getCommand('changeRoundness').execute(ctx)
     }
 
     return (

@@ -5,9 +5,7 @@ import {
 } from '@/components/colorList/ColorList'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import { ChangeTextColor } from '@/core/command/ChangeTextColor'
 import { CommandCtx } from '@/core/command/Command'
-import { useRef } from 'react'
 import { TextEditor } from '@/core/textEditor/TextEditor'
 
 export interface TextColorDropdownProps {
@@ -19,10 +17,6 @@ export function TextColorDropdown({
     engine,
     closeDropdown,
 }: TextColorDropdownProps) {
-    const changeTextColorCommandRef = useRef(
-        new ChangeTextColor('changeTextColor'),
-    )
-
     const handleColorSelect = (signature: ColorSelectSignature) => {
         const textEditor = engine.textEditor
         if (textEditor.isActive) {
@@ -49,7 +43,7 @@ export function TextColorDropdown({
                 widgets,
             },
         }
-        changeTextColorCommandRef.current?.execute(ctx)
+        engine.getCommand('changeTextColor').execute(ctx)
         closeDropdown()
     }
 

@@ -8,6 +8,7 @@ import {
     State,
 } from '@/core/transaction/State'
 import { UpdateWidgetPayload } from '@/types/Websocket'
+import { Signal } from '@/core/signal/Signal'
 
 export type TransactionType = 'immediate' | 'continuous'
 export type TransactionId = string
@@ -26,7 +27,7 @@ type StarTransactionProps = {
     editTable: EditTable
 }
 
-export const CONTINUOUS_THROTTLE_DELAY = 300 // 300 MS
+export const CONTINUOUS_THROTTLE_DELAY = 1000 // 300 MS
 
 /*
  * TransactionHandler handles updating/deleting widgets
@@ -38,6 +39,8 @@ export class TransactionHandler {
         TransactionId,
         ReturnType<typeof setTimeout>
     >()
+
+    beginning = new Signal<{ widgets: Widget[] }>()
 
     constructor(engine: Engine) {
         this.engine = engine
@@ -52,6 +55,8 @@ export class TransactionHandler {
      * Starts a transaction
      */
     begin(type: TransactionType, props: StarTransactionProps) {
+        this.beginning.dispatch({ widgets: [...props.editTable.keys()] })
+
         const initialState = new Map<Widget, State>()
         for (const widget of props.editTable.keys()) {
             const editingMethods = props.editTable.get(widget)!

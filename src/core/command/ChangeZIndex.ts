@@ -36,10 +36,10 @@ export class ChangeZIndex extends Command {
             return a.zIndex < b.zIndex ? -1 : 1
         })
 
-        // for "to back" and "backward", process in reverse order to maintain relative positions
-        // for "to front" and "forward", process in normal order
+        // "to front" and "backward" go bottom-up, "to back" and "forward" top-down,
+        // otherwise neighbours in the selection swap back and cancel out
         const processOrder =
-            action === 'bringToFront' || action === 'bringForward'
+            action === 'bringToFront' || action === 'sendBackward'
                 ? sortedWidgets
                 : sortedWidgets.reverse()
 

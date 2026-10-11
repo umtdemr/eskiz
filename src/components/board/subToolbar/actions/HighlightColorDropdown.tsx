@@ -5,9 +5,7 @@ import {
 } from '@/components/colorList/ColorList'
 import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
-import { ChangeHighlightColor } from '@/core/command/ChangeHighlightColor'
 import { CommandCtx } from '@/core/command/Command'
-import { useRef } from 'react'
 import { TextEditor } from '@/core/textEditor/TextEditor'
 
 export interface HighlightColorDropdownProps {
@@ -19,10 +17,6 @@ export function HighlightColorDropdown({
     engine,
     closeDropdown,
 }: HighlightColorDropdownProps) {
-    const changeHighlightColorCommandRef = useRef(
-        new ChangeHighlightColor('changeHighlightColor'),
-    )
-
     const handleColorSelect = (signature: ColorSelectSignature) => {
         const textEditor = engine.textEditor
         if (textEditor.isActive) {
@@ -48,7 +42,7 @@ export function HighlightColorDropdown({
                 widgets,
             },
         }
-        changeHighlightColorCommandRef.current?.execute(ctx)
+        engine.getCommand('changeHighlightColor').execute(ctx)
         closeDropdown()
     }
 

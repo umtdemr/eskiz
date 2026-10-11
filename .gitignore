@@ -22,3 +22,11 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+coverage/
+tsconfig.app.tsbuildinfo
+tsconfig.node.tsbuildinfo
+
+# graphify
+graphify-out/
+CLAUDE.local.md

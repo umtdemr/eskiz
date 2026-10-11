@@ -31,6 +31,7 @@ import { LineToolService } from '@/core/services/LineToolService'
 import { TextService } from '../services/TextService'
 import { TextEditor } from '../textEditor/TextEditor'
 import { CommandRegistry } from '../command/CommandRegistry'
+import { ContinuousEdits } from '../command/ContinuousEdits'
 import { Command, Commands } from '../command/Command'
 import { HistoryManager } from '../history/HistoryManager'
 import { ShortcutService } from '../services/ShortcutService'
@@ -69,6 +70,7 @@ export class Engine {
     private _reshapeHandler: ReshapeHandler
     private _rotateHandler: RotateHandler
     private _transactionHandler: TransactionHandler
+    private _continuousEdits: ContinuousEdits
     private _textEditor: TextEditor
     private _commands: CommandRegistry
     private _historyManager: HistoryManager
@@ -100,6 +102,7 @@ export class Engine {
         }
 
         this._transactionHandler = new TransactionHandler(this)
+        this._continuousEdits = new ContinuousEdits(this)
         this._dragHandler = new DragHandler(this)
         this._resizeHandler = new ResizeHandler(this)
         this._reshapeHandler = new ReshapeHandler(this)
@@ -331,6 +334,10 @@ export class Engine {
 
     get transactionHandler(): TransactionHandler {
         return this._transactionHandler
+    }
+
+    get continuousEdits(): ContinuousEdits {
+        return this._continuousEdits
     }
 
     get historyManager(): HistoryManager {
