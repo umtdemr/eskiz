@@ -1,7 +1,9 @@
-import { vi } from 'vitest'
+import { vi, type Mock } from 'vitest'
 import { SelectionService } from '@/core/services/SelectionService'
 import { Signal } from '@/core/signal/Signal'
 import { ContinuousEdits } from '@/core/command/ContinuousEdits'
+import { TransactionHandler } from '@/core/transaction/TransactionHandler'
+import { HistoryManager } from '@/core/history/HistoryManager'
 import { Rectangle } from '@/core/shapes/Rectangle'
 import { Line } from '@/core/shapes/line/Line'
 import { Pen } from '@/core/shapes/path/Pen'
@@ -12,6 +14,7 @@ import type { Engine } from '@/core/engine/Engine'
 import type { ToolService } from '@/core/services/ToolService'
 import type { WidgetsService } from '@/core/services/WidgetsService'
 import type { Widget } from '@/core/shapes/Widget'
+import type { UpdateWidgetPayload } from '@/types/Websocket'
 
 /**
  * Engine stand-in that records every call commands make. Each
@@ -27,14 +30,19 @@ export function createEngineMock(services: Record<string, unknown> = {}) {
         canvas: { requestRender: vi.fn() },
         textEditor: { changeTextColor: vi.fn() },
         transactionHandler: {
+            beginning: new Signal<{ widgets: Widget[] }>(),
             begin: vi.fn(
                 // params are only here so mock.calls is typed
                 (
                     _type: string,
-                    _props: { editTable: Map<Widget, string[]> },
-                ) => ({
-                    transactionId: `tx-${++nextId}`,
-                }),
+                    props: { editTable: Map<Widget, string[]> },
+                ) => {
+                    // like the real one, so open edits on these widgets end
+                    mock.transactionHandler.beginning.dispatch({
+                        widgets: [...props.editTable.keys()],
+                    })
+                    return { transactionId: `tx-${++nextId}` }
+                },
             ),
             update: vi.fn((_id: string) => {}),
             commit: vi.fn((_id: string, _addToHistory?: boolean) => {}),
@@ -65,11 +73,40 @@ export function createEngineMock(services: Record<string, unknown> = {}) {
 export type EngineMock = ReturnType<typeof createEngineMock>
 
 /**
+ * Engine with the real TransactionHandler, HistoryManager and
+ * ContinuousEdits, for checking what undo/redo does. Only the canvas and the
+ * sync adapter are mocked.
+ */
+export function createHistoryEngine() {
+    const mock = {
+        canvas: { requestRender: vi.fn() },
+        syncAdapter: {
+            syncTransaction: vi.fn((_data: UpdateWidgetPayload) => {}),
+        },
+        getService: vi.fn((name: string) => {
+            throw new Error(`service "${name}" is not mocked`)
+        }),
+    }
+
+    const engine = mock as typeof mock & Engine
+    // continuous edits subscribe to the transaction handler, so it goes first
+    Object.assign(mock, { transactionHandler: new TransactionHandler(engine) })
+    Object.assign(mock, {
+        historyManager: new HistoryManager(engine),
+        continuousEdits: new ContinuousEdits(engine),
+    })
+
+    return engine
+}
+
+type TestEngine = Engine & { canvas: { requestRender: Mock } }
+
+/**
  * A real SelectionService with `widgets` selected. Tool/widgets services are
  * replaced by bare signals since selection only subscribes to them.
  */
 export function createSelectionService(
-    engine: EngineMock,
+    engine: TestEngine,
     widgets: Widget[] = [],
 ): SelectionService {
     const toolService = { mainModeChanged: new Signal() }
@@ -99,7 +136,7 @@ export interface CommandCtxOptions {
 
 /** Builds a CommandCtx around the given engine mock and selection. */
 export function createCommandCtx(
-    engine: EngineMock,
+    engine: TestEngine,
     { selected = [], isContinuous = false, params }: CommandCtxOptions = {},
 ): CommandCtx {
     return {

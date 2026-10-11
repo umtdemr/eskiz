@@ -27,12 +27,16 @@ export class HistoryManager {
     }
 
     push(entry: HistoryEntry) {
+        console.log('Pushing history entry:', entry)
         this.undoStack.push(entry)
         this.redoStack = [] // clear redo stack on new action
         this.emitHistoryChanged()
     }
 
     undo() {
+        // a running continuous edit is the latest action
+        this.engine.continuousEdits.flush()
+
         const entry = this.undoStack.pop()
         if (entry) {
             entry.undo()
@@ -43,6 +47,8 @@ export class HistoryManager {
     }
 
     redo() {
+        this.engine.continuousEdits.flush()
+
         const entry = this.redoStack.pop()
         if (entry) {
             entry.redo()

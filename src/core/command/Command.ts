@@ -50,9 +50,7 @@ export abstract class Command {
             return
         }
 
-        // an immediate change closes the running drag on these widgets first
-        edits.end(this._name, [...editTable.keys()])
-
+        // begin commits the running drag on these widgets first
         const { transactionId } = ctx.engine.transactionHandler.begin(
             'immediate',
             {

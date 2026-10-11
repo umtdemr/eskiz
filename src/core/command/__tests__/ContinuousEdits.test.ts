@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { ContinuousEdits } from '../ContinuousEdits'
+import type { ContinuousEdits } from '../ContinuousEdits'
 import { CONTINUOUS_THROTTLE_DELAY } from '@/core/transaction/TransactionHandler'
 import { createEngineMock, EngineMock, makeRect } from '@/test/commandUtils'
 import type { Widget } from '@/core/shapes/Widget'
@@ -17,7 +17,7 @@ describe('ContinuousEdits', () => {
     beforeEach(() => {
         vi.useFakeTimers()
         engine = createEngineMock()
-        edits = new ContinuousEdits(engine)
+        edits = engine.continuousEdits
     })
 
     afterEach(() => {
@@ -71,7 +71,24 @@ describe('ContinuousEdits', () => {
 
         vi.advanceTimersByTime(1)
 
-        expect(engine.transactionHandler.commit.mock.calls).toEqual([['tx-1']])
+        expect(engine.transactionHandler.commit.mock.calls).toEqual([
+            ['tx-1', true],
+        ])
+    })
+
+    it('keeps an edit that changed nothing out of the history', () => {
+        const rect = makeRect(engine)
+
+        edits.apply('changeBgColor', table(rect), () => true)
+        edits.apply('changeBgColor', table(rect), () => false)
+        vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
+        edits.apply('changeBgColor', table(rect), () => false)
+        vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
+
+        expect(engine.transactionHandler.commit.mock.calls).toEqual([
+            ['tx-1', true],
+            ['tx-2', false],
+        ])
     })
 
     it('runs edits on separate widgets side by side', () => {
@@ -90,40 +107,62 @@ describe('ContinuousEdits', () => {
         edits.apply('changeBgColor', table(a, b), () => true)
         edits.apply('changeBgColor', table(b, c), () => true)
 
-        expect(engine.transactionHandler.commit.mock.calls).toEqual([['tx-1']])
+        expect(engine.transactionHandler.commit.mock.calls).toEqual([
+            ['tx-1', true],
+        ])
 
         // the old timer is gone
         vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
         expect(engine.transactionHandler.commit.mock.calls).toEqual([
-            ['tx-1'],
-            ['tx-2'],
+            ['tx-1', true],
+            ['tx-2', true],
         ])
     })
 
-    it('keeps edits of different commands apart', () => {
+    it('commits an edit of another command on the same widget', () => {
         const rect = makeRect(engine)
 
         edits.apply('changeBgColor', table(rect), () => true)
         edits.apply('changeBorderColor', table(rect), () => true)
 
         expect(engine.transactionHandler.begin).toHaveBeenCalledTimes(2)
-        expect(engine.transactionHandler.commit).not.toHaveBeenCalled()
+        expect(engine.transactionHandler.commit.mock.calls).toEqual([
+            ['tx-1', true],
+        ])
     })
 
-    it('end commits only the edits touching the widgets', () => {
+    it('flush commits only the edits touching the widgets', () => {
         const a = makeRect(engine)
         const b = makeRect(engine)
         edits.apply('changeBgColor', table(a), () => true)
         edits.apply('changeBgColor', table(b), () => true)
 
-        edits.end('changeBgColor', [b])
+        edits.flush([b])
 
-        expect(engine.transactionHandler.commit.mock.calls).toEqual([['tx-2']])
+        expect(engine.transactionHandler.commit.mock.calls).toEqual([
+            ['tx-2', true],
+        ])
 
         vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
         expect(engine.transactionHandler.commit.mock.calls).toEqual([
-            ['tx-2'],
-            ['tx-1'],
+            ['tx-2', true],
+            ['tx-1', true],
         ])
+    })
+
+    it('flush without widgets commits every edit', () => {
+        edits.apply('changeBgColor', table(makeRect(engine)), () => true)
+        edits.apply('changeBorderColor', table(makeRect(engine)), () => true)
+
+        edits.flush()
+
+        expect(engine.transactionHandler.commit.mock.calls).toEqual([
+            ['tx-1', true],
+            ['tx-2', true],
+        ])
+
+        // timers are cleared
+        vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
+        expect(engine.transactionHandler.commit).toHaveBeenCalledTimes(2)
     })
 })

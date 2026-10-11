@@ -132,6 +132,7 @@ describe('ChangeFontSize', () => {
 
             expect(engine.transactionHandler.commit).toHaveBeenCalledWith(
                 'tx-1',
+                true,
             )
         })
 
@@ -143,7 +144,7 @@ describe('ChangeFontSize', () => {
             vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
 
             expect(engine.transactionHandler.commit.mock.calls).toEqual([
-                ['tx-1'],
+                ['tx-1', true],
                 ['tx-2', true],
             ])
         })

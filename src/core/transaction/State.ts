@@ -5,6 +5,7 @@ import { Rectangle } from '@/core/shapes/Rectangle'
 import { Path } from '@/core/shapes/path/Path'
 import { Line } from '@/core/shapes/line/Line'
 import { StickyNote } from '@/core/shapes/stickyNote/StickyNote'
+import { TextOp } from '@/core/textEditor/TextEditor'
 
 export type EditingMethods =
     | 'move'
@@ -31,6 +32,12 @@ export type EditingMethods =
 
 export type State = Record<string, unknown>
 
+// text styles live in the ops, so these are enough to restore them
+const opsOf = (props: { text: string; textOps?: TextOp[] }) => ({
+    text: props.text,
+    textOps: structuredClone(props.textOps),
+})
+
 /*
  * Returns captured partial state of the given widget from given editing methods
  */
@@ -44,6 +51,18 @@ export function getPartialState(
         state = {
             ...newState,
             ...state,
+        }
+    }
+
+    // only the touched fields, so undo keeps later changes to the rest
+    const updateShapeText = (textProps: State) => {
+        const properties = (state.properties ?? {}) as State
+        state.properties = {
+            ...properties,
+            textProperties: {
+                ...(properties.textProperties as State | undefined),
+                ...textProps,
+            },
         }
     }
 
@@ -166,38 +185,31 @@ export function getPartialState(
                 break
             case 'textColor':
                 if (widget instanceof Shape) {
-                    state.properties = {
-                        ...(state.properties ? state.properties : undefined),
-                        textProperties: structuredClone(widget.textProperties),
-                    }
+                    updateShapeText(opsOf(widget.textProperties))
                 }
                 if (widget instanceof TextBox) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        ...widget.textPropsJson,
+                        ...opsOf(widget.textPropsJson),
                     }
                 }
                 break
             case 'highlightColor':
                 if (widget instanceof Shape) {
-                    state.properties = {
-                        ...(state.properties ? state.properties : undefined),
-                        textProperties: structuredClone(widget.textProperties),
-                    }
+                    updateShapeText(opsOf(widget.textProperties))
                 }
                 if (widget instanceof TextBox) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        ...widget.textPropsJson,
+                        ...opsOf(widget.textPropsJson),
                     }
                 }
                 break
             case 'textAlign':
                 if (widget instanceof Shape) {
-                    state.properties = {
-                        ...(state.properties ? state.properties : undefined),
-                        textProperties: structuredClone(widget.textProperties),
-                    }
+                    updateShapeText({
+                        textAlign: widget.textProperties.textAlign,
+                    })
                 }
                 if (widget instanceof TextBox) {
                     state.properties = {
@@ -208,10 +220,9 @@ export function getPartialState(
                 break
             case 'fontSize':
                 if (widget instanceof Shape) {
-                    state.properties = {
-                        ...(state.properties ? state.properties : undefined),
-                        textProperties: structuredClone(widget.textProperties),
-                    }
+                    updateShapeText({
+                        fontSize: widget.textProperties.fontSize,
+                    })
                 }
                 if (widget instanceof TextBox) {
                     state.properties = {
@@ -222,15 +233,12 @@ export function getPartialState(
                 break
             case 'fontStyle':
                 if (widget instanceof Shape || widget instanceof StickyNote) {
-                    state.properties = {
-                        ...(state.properties ? state.properties : undefined),
-                        textProperties: structuredClone(widget.textProperties),
-                    }
+                    updateShapeText(opsOf(widget.textProperties))
                 }
                 if (widget instanceof TextBox) {
                     state.properties = {
                         ...(state.properties ? state.properties : undefined),
-                        ...widget.textPropsJson,
+                        ...opsOf(widget.textPropsJson),
                     }
                 }
                 break

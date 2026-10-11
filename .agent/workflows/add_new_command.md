@@ -1,6 +1,7 @@
 ---
 description: How to add a new command
 ---
+
 # How to Add a New Command
 
 Commands are the only way to change board state (create, delete, move, style), so undo/redo and sync keep working. This workflow shows how to add one.
@@ -12,7 +13,7 @@ The examples use a made-up `changeOpacity` command that would fade a whole widge
 - **Commands are stateless.** No instance fields that change between calls (no `transactionId`, no timers). One instance lives in the registry and is shared by everyone.
 - **Undo comes from transactions, not from `undo()`.** `TransactionHandler.begin()` captures the widget state before the change, `commit()` captures it after. There is no `undo()` method on commands.
 - **Begin before you change.** If the widget changes before `begin()`, the "before" state is already the new value and undo does nothing. `this.edit()` handles this ordering for you.
-- **Continuous edits go through `ContinuousEdits`.** Slider and color picker drags call the command many times. `this.edit()` groups those calls into one transaction per command + widget set and commits after `CONTINUOUS_THROTTLE_DELAY`. Don't keep your own timer.
+- **Continuous edits go through `ContinuousEdits`.** Slider and color picker drags call the command many times. `this.edit()` groups those calls into one transaction per command + widget set and commits after `CONTINUOUS_THROTTLE_DELAY`, or right away when undo/redo runs or another transaction begins on the same widgets. Don't keep your own timer.
 
 ## 1. Add the Name
 
@@ -81,10 +82,10 @@ export class ChangeOpacity extends Command {
 What `this.edit(ctx, editTable, change)` does:
 
 - `ctx.isContinuous` is true: joins the open edit for this command and these widgets, or starts one. The edit is committed once the calls stop.
-- Otherwise: commits any open continuous edit on the same widgets, then runs `begin` → `change` → `commit` in a single transaction.
-- `change` must return whether anything actually changed. When it returns false nothing is rendered and nothing goes into the history.
+- Otherwise: runs `begin` → `change` → `commit` in a single transaction. `begin` commits any open continuous edit on the same widgets first, whatever command it belongs to.
+- `change` must return whether anything actually changed. When it returns false nothing is rendered. An immediate edit then stays out of the history; a continuous one stays out only if none of its calls changed anything.
 
-Commands that don't edit widget properties (delete, clone, z-index) call `ctx.engine.transactionHandler.begin()` / `commit()` themselves. They still call `begin` before changing anything.
+Commands that don't fit `this.edit()` (delete, toggle lock, z-index) call `ctx.engine.transactionHandler.begin()` / `commit()` themselves. They still call `begin` before changing anything. Commands that create widgets (clone) don't use a transaction; they push a `CreationHistoryEntry` to the history instead.
 
 ## 3. Make the State Restorable
 
@@ -93,7 +94,9 @@ Each name in the edit table is an `EditingMethods` entry in `src/core/transactio
 1. Add the name to `EditingMethods`.
 2. Add a `case` to `getPartialState` that reads the value from the widget.
 3. Copy objects with `structuredClone`. If the state holds a reference to an object that the change later mutates, the "before" state changes with it and undo breaks.
-4. Make sure the widget's `updateWithPartialState` can apply that state back, since undo/redo and sync both use it.
+4. Record only the fields the change touches. Shape text goes into `textProperties`, so `fontSize` records `{ textProperties: { fontSize } }`, not the whole object. A wider snapshot makes undo bring back text or styles that changed in between.
+5. Make sure the widget's `updateWithPartialState` can apply that state back, since undo/redo and sync both use it.
+6. Sync sends this same partial state, and the db merges `properties` one level deep, with `textProperties` merged one more level. Any other nested object inside `properties` gets replaced, so record it whole.
 
 ## 4. Register It
 
@@ -128,7 +131,8 @@ For a plain button in the sub-toolbar, add a `btnAction` entry instead (see `add
 
 Add `src/core/command/__tests__/ChangeOpacity.test.ts` and use the helpers in `src/test/commandUtils.ts`:
 
-- `createEngineMock()` records the transaction calls (`tx-1`, `tx-2`, ...) and uses a real `ContinuousEdits`.
+- `createEngineMock()` records the transaction calls (`tx-1`, `tx-2`, ...) and uses a real `ContinuousEdits`. Its `begin` dispatches `beginning` like the real one, so open edits on the same widgets get committed.
+- `createHistoryEngine()` uses the real `TransactionHandler` and `HistoryManager`. Use it when the order of undo/redo matters.
 - `createCommandCtx(engine, { selected, isContinuous, params })` builds the ctx around a real `SelectionService`.
 - `makeRect`, `makeLine`, `makePen` and `makeTextBox` build real widgets.
 
@@ -137,6 +141,6 @@ Cover at least:
 - `canExecute`: nothing selected, a locked widget, an unsupported widget.
 - The change itself and the edit table passed to `begin`.
 - `begin` is called before the value changes (read the value inside a `begin.mockImplementation`).
-- For continuous commands: calls join one transaction, it commits after `CONTINUOUS_THROTTLE_DELAY` (use `vi.useFakeTimers()`), and an immediate call commits the open edit first.
+- For continuous commands: calls join one transaction, it commits after `CONTINUOUS_THROTTLE_DELAY` (use `vi.useFakeTimers()`), an immediate call commits the open edit first, and an edit that changed nothing commits with `false`.
 
 `ChangeRoundness.test.ts` covers all of these and is a good starting point. Then run `npx tsc -b`, `pnpm lint` and `pnpm vitest run`.

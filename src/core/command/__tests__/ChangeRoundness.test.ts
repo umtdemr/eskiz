@@ -153,6 +153,20 @@ describe('ChangeRoundness', () => {
 
             expect(engine.transactionHandler.commit).toHaveBeenCalledWith(
                 'tx-1',
+                true,
+            )
+        })
+
+        it('keeps an unchanged drag out of the history', () => {
+            const rect = makeRect(engine)
+            command.execute(makeCtx([rect], 12))
+
+            command.execute(makeCtx([rect], 12, true))
+            vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
+
+            expect(engine.transactionHandler.commit).toHaveBeenLastCalledWith(
+                'tx-2',
+                false,
             )
         })
 
@@ -180,7 +194,7 @@ describe('ChangeRoundness', () => {
             vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
 
             expect(engine.transactionHandler.commit.mock.calls).toEqual([
-                ['tx-1'],
+                ['tx-1', true],
                 ['tx-2', true],
             ])
         })

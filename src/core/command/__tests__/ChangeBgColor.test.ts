@@ -204,6 +204,7 @@ describe('ChangeBgColor', () => {
             expect(engine.transactionHandler.commit).toHaveBeenCalledOnce()
             expect(engine.transactionHandler.commit).toHaveBeenCalledWith(
                 'tx-1',
+                true,
             )
         })
 
@@ -217,8 +218,8 @@ describe('ChangeBgColor', () => {
 
             expect(engine.transactionHandler.begin).toHaveBeenCalledTimes(2)
             expect(engine.transactionHandler.commit.mock.calls).toEqual([
-                ['tx-1'],
-                ['tx-2'],
+                ['tx-1', true],
+                ['tx-2', true],
             ])
         })
 
@@ -229,7 +230,7 @@ describe('ChangeBgColor', () => {
             command.execute(makeCtx([rect], CANVAS_COLORS.GREEN, false))
 
             expect(engine.transactionHandler.commit.mock.calls).toEqual([
-                ['tx-1'],
+                ['tx-1', true],
                 ['tx-2', true],
             ])
             expect(rect.properties.fillColor).toEqual(CANVAS_COLORS.GREEN)
@@ -260,8 +261,8 @@ describe('ChangeBgColor', () => {
             vi.advanceTimersByTime(CONTINUOUS_THROTTLE_DELAY)
 
             expect(engine.transactionHandler.commit.mock.calls).toEqual([
-                ['tx-2'],
-                ['tx-1'],
+                ['tx-2', true],
+                ['tx-1', true],
             ])
         })
 

@@ -8,6 +8,7 @@ interface OpenEdit {
     name: Commands
     widgets: Widget[]
     transactionId: string
+    changed: boolean
     timeoutId?: ReturnType<typeof setTimeout>
 }
 
@@ -20,6 +21,10 @@ export class ContinuousEdits {
 
     constructor(engine: Engine) {
         this.engine = engine
+        // open edits on these widgets go into the history before the new one
+        engine.transactionHandler.beginning.add(({ widgets }) =>
+            this.flush(widgets),
+        )
     }
 
     apply(
@@ -31,20 +36,19 @@ export class ContinuousEdits {
         let edit = this.find(name, widgets)
 
         if (!edit) {
-            // two edits must not record the same widget
-            this.end(name, widgets)
-
+            // begin commits other open edits on these widgets
             const { transactionId } = this.engine.transactionHandler.begin(
                 'continuous',
                 {
                     editTable,
                 },
             )
-            edit = { name, widgets, transactionId }
+            edit = { name, widgets, transactionId, changed: false }
             this.edits.add(edit)
         }
 
         if (change()) {
+            edit.changed = true
             this.engine.canvas.requestRender()
         }
 
@@ -59,13 +63,10 @@ export class ContinuousEdits {
         )
     }
 
-    // commits open edits of the command that touch any of the widgets
-    end(name: Commands, widgets: Widget[]) {
+    // commits open edits right away, only the ones touching `widgets` if given
+    flush(widgets?: Widget[]) {
         for (const edit of [...this.edits]) {
-            if (
-                edit.name === name &&
-                edit.widgets.some((w) => widgets.includes(w))
-            ) {
+            if (!widgets || edit.widgets.some((w) => widgets.includes(w))) {
                 this.commit(edit)
             }
         }
@@ -87,6 +88,7 @@ export class ContinuousEdits {
         if (!this.edits.delete(edit)) return
 
         clearTimeout(edit.timeoutId)
-        this.engine.transactionHandler.commit(edit.transactionId)
+        // unchanged values stay out of the history
+        this.engine.transactionHandler.commit(edit.transactionId, edit.changed)
     }
 }
