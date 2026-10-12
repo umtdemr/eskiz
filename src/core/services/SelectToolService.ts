@@ -12,6 +12,7 @@ import { Line } from '@/core/shapes/line/Line'
 import { CursorService } from '@/core/services/CursorService.ts'
 import { DragHandler } from '@/core/controls/DragHandler'
 import { SelectionLayer } from '../stage/SelectionLayer'
+import { Signal } from '../signal/Signal'
 
 export class SelectToolService extends Service {
     private mouseController: MouseController
@@ -30,6 +31,9 @@ export class SelectToolService extends Service {
     private isDragHandlerOwned: boolean = false
     private isObjectAlreadySelected: boolean = false
     private mouseDownWidget: Widget | null = null
+
+    // screen position of a right click on the selection
+    contextMenuOpened = new Signal<{ x: number; y: number }>()
 
     constructor(
         engine: Engine,
@@ -79,6 +83,7 @@ export class SelectToolService extends Service {
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
         this.mouseController.on('mouseUp', this.onMouseUp, this)
+        this.mouseController.on('contextMenu', this.onContextMenu, this)
     }
 
     onMouseDown(data: CanvasMouseEvent): void {
@@ -230,6 +235,32 @@ export class SelectToolService extends Service {
         }
     }
 
+    // selects what is under the pointer unless it is part of the selection
+    onContextMenu(data: CanvasMouseEvent): void {
+        const widget = this.checksObjectsInLayer(data)
+        const onSelection =
+            widget instanceof Control ||
+            !!this.selectionLayer.selectionBorder?.contains(
+                data.pointer.x,
+                data.pointer.y,
+                1,
+            )
+
+        if (!onSelection) {
+            if (widget) {
+                this.selectionService.selectWidget(widget)
+            } else {
+                this.selectionService.clearSelection()
+            }
+        }
+
+        if (!this.selectionService.selected.length) return
+        this.contextMenuOpened.dispatch({
+            x: data.e.clientX,
+            y: data.e.clientY,
+        })
+    }
+
     checksObjectsInLayer(mouseData: CanvasMouseEvent): Widget | null {
         const searchLayers = [
             this.engine.stage.nonCanvasDynamicContainer.children.first!,
@@ -273,6 +304,7 @@ export class SelectToolService extends Service {
         this.mouseController.off('mouseDown', this.onMouseDown, this)
         this.mouseController.off('mouseMove', this.onMouseMove, this)
         this.mouseController.off('mouseUp', this.onMouseUp, this)
+        this.mouseController.off('contextMenu', this.onContextMenu, this)
     }
 
     dispose(): void {

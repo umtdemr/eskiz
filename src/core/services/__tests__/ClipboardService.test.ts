@@ -107,28 +107,45 @@ describe('ClipboardService', () => {
         vi.unstubAllGlobals()
     })
 
-    it('copies the selection as html', () => {
-        const { e, data } = fire('copy')
+    it('copies widgets as html only', async () => {
+        const write = vi.fn(async (_items: ClipboardItem[]) => {})
+        vi.stubGlobal('navigator', { clipboard: { write } })
+        vi.stubGlobal(
+            'ClipboardItem',
+            class {
+                constructor(public items: Record<string, Blob>) {}
+            },
+        )
+
+        await service.copy([widget('a'), widget('b')])
+
+        const { items } = write.mock.calls[0][0][0] as unknown as {
+            items: Record<string, Blob>
+        }
+        expect(Object.keys(items)).toEqual(['text/html'])
+        expect(decodeWidgets(await items['text/html'].text())).toEqual([
+            json('a'),
+            json('b'),
+        ])
+    })
+
+    it('deletes the selection on cut', () => {
+        const { e, data } = fire('cut')
 
         expect(decodeWidgets(data['text/html'])).toEqual([json('a'), json('b')])
         expect(data['text/plain']).toBeUndefined()
         expect(e.preventDefault).toHaveBeenCalled()
-        expect(engine.execute).not.toHaveBeenCalled()
+        expect(engine.execute).toHaveBeenCalledWith('delete', {})
     })
 
-    it('copies nothing without a selection or with a locked widget', () => {
+    it('cuts nothing without a selection or with a locked widget', () => {
         selection.selected = []
-        expect(fire('copy').e.preventDefault).not.toHaveBeenCalled()
+        expect(fire('cut').e.preventDefault).not.toHaveBeenCalled()
 
         selection.selected = [widget('a'), widget('b', true)]
-        expect(fire('copy').e.preventDefault).not.toHaveBeenCalled()
-    })
+        expect(fire('cut').e.preventDefault).not.toHaveBeenCalled()
 
-    it('deletes the selection on cut', () => {
-        const { data } = fire('cut')
-
-        expect(decodeWidgets(data['text/html'])).toHaveLength(2)
-        expect(engine.execute).toHaveBeenCalledWith('delete', {})
+        expect(engine.execute).not.toHaveBeenCalled()
     })
 
     it('pastes at the middle of the screen before the mouse moved', () => {
@@ -189,7 +206,7 @@ describe('ClipboardService', () => {
 
     it('ignores events in an input or while editing text', () => {
         const input = { tagName: 'INPUT', isContentEditable: false }
-        fire('copy', '', { target: input })
+        fire('cut', '', { target: input })
         fire('paste', encodeWidgets([json('a')]), { target: input })
 
         engine.textEditor.isActive = true
@@ -201,7 +218,7 @@ describe('ClipboardService', () => {
     it('stops listening on dispose', () => {
         service.dispose()
 
-        for (const type of ['copy', 'cut', 'paste']) {
+        for (const type of ['cut', 'paste']) {
             expect(document.removeEventListener).toHaveBeenCalledWith(
                 type,
                 listeners[type],

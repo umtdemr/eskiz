@@ -1,14 +1,10 @@
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog.tsx'
-
-const isMac = /Mac|iPhone|iPad/.test(navigator.userAgent)
-const MOD = isMac ? '⌘' : 'Ctrl'
-const SHIFT = isMac ? '⇧' : 'Shift'
+import { MOD, SHIFT } from '@/helpers/KeyHelpers'
 
 // keep in sync with the shortcuts on the commands and ClipboardService
 const groups: { title: string; items: [string, string[][]][] }[] = [
@@ -77,9 +73,6 @@ export function ShortcutsModal({
             <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Keyboard shortcuts</DialogTitle>
-                    <DialogDescription>
-                        Shortcuts don't work while typing in a text field
-                    </DialogDescription>
                 </DialogHeader>
                 <div className="grid gap-x-8 gap-y-6 sm:grid-cols-2">
                     {groups.map((group) => (

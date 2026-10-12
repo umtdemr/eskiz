@@ -29,6 +29,7 @@ import { ClearSelectionCommand } from './ClearSelection'
 import { MoveCommand } from './Move'
 import { ChangeTool } from './ChangeTool'
 import { PasteCommand } from './Paste'
+import { CopyCommand } from './Copy'
 import { Signal } from '../signal/Signal'
 
 const createCommands = () => [
@@ -54,6 +55,7 @@ const createCommands = () => [
     new MoveCommand(),
     new ChangeTool(),
     new PasteCommand(),
+    new CopyCommand(),
 ]
 
 type Registered = ReturnType<typeof createCommands>[number]

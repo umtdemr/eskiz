@@ -3,6 +3,8 @@ import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
@@ -10,9 +12,56 @@ import { MoreHorizontal } from 'lucide-react'
 import { Engine } from '@/core/engine/Engine'
 import { useBoundStore } from '@/store/store'
 import { ZIndexAction } from '@/core/command/ChangeZIndex'
+import { formatKeys, MOD, SHIFT } from '@/helpers/KeyHelpers'
+
+const zIndexActions: { label: string; action: ZIndexAction; keys: string[] }[] =
+    [
+        {
+            label: 'Bring to Front',
+            action: 'bringToFront',
+            keys: [MOD, SHIFT, ']'],
+        },
+        { label: 'Bring Forward', action: 'bringForward', keys: [MOD, ']'] },
+        { label: 'Send Backward', action: 'sendBackward', keys: [MOD, '['] },
+        {
+            label: 'Send to Back',
+            action: 'sendToBack',
+            keys: [MOD, SHIFT, '['],
+        },
+    ]
 
 export interface MoreOptionsDropdownProps {
     engine: Engine
+}
+
+// shared with the right click menu
+export function MoreOptionsItems({ engine }: MoreOptionsDropdownProps) {
+    return (
+        <>
+            <DropdownMenuItem onClick={() => engine.execute('copy', {})}>
+                Copy
+                <DropdownMenuShortcut>
+                    {formatKeys([MOD, 'C'])}
+                </DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => engine.execute('delete', {})}>
+                Delete
+                <DropdownMenuShortcut>Del</DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            {zIndexActions.map(({ label, action, keys }) => (
+                <DropdownMenuItem
+                    key={action}
+                    onClick={() => engine.execute('changeZIndex', { action })}
+                >
+                    {label}
+                    <DropdownMenuShortcut>
+                        {formatKeys(keys)}
+                    </DropdownMenuShortcut>
+                </DropdownMenuItem>
+            ))}
+        </>
+    )
 }
 
 export function MoreOptionsDropdown({ engine }: MoreOptionsDropdownProps) {
@@ -27,26 +76,6 @@ export function MoreOptionsDropdown({ engine }: MoreOptionsDropdownProps) {
         }
     }
 
-    const executeZIndexCommand = (action: ZIndexAction) => {
-        engine.execute('changeZIndex', { action })
-    }
-
-    const handleBringToFront = () => {
-        executeZIndexCommand('bringToFront')
-    }
-
-    const handleBringForward = () => {
-        executeZIndexCommand('bringForward')
-    }
-
-    const handleSendBackward = () => {
-        executeZIndexCommand('sendBackward')
-    }
-
-    const handleSendToBack = () => {
-        executeZIndexCommand('sendToBack')
-    }
-
     return (
         <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
             <DropdownMenuTrigger asChild>
@@ -59,18 +88,7 @@ export function MoreOptionsDropdown({ engine }: MoreOptionsDropdownProps) {
                 className="rounded-xl shadow-xs select-none"
                 sideOffset={10}
             >
-                <DropdownMenuItem onClick={handleBringToFront}>
-                    Bring to Front
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleBringForward}>
-                    Bring Forward
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSendBackward}>
-                    Send Backward
-                </DropdownMenuItem>
-                <DropdownMenuItem onClick={handleSendToBack}>
-                    Send to Back
-                </DropdownMenuItem>
+                <MoreOptionsItems engine={engine} />
             </DropdownMenuContent>
         </DropdownMenu>
     )

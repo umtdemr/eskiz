@@ -2,7 +2,7 @@ import { Service } from './Service'
 import { Engine } from '../engine/Engine'
 import { MouseController } from '../engine/MouseController'
 import { Point } from '../canvas/Canvas'
-import { WidgetJson } from '../shapes/Widget'
+import { Widget, WidgetJson } from '../shapes/Widget'
 import { SelectionService } from './SelectionService'
 import { isOutsideBoard } from './ShortcutService'
 import type { ImageUploadService } from './ImageUploadService'
@@ -35,7 +35,6 @@ export class ClipboardService extends Service {
         this.offMouseMove = mouseController.on('mouseMove', ({ e }) => {
             this.lastMouse = e
         })
-        document.addEventListener('copy', this.onCopy)
         document.addEventListener('cut', this.onCut)
         document.addEventListener('paste', this.onPaste)
     }
@@ -50,28 +49,33 @@ export class ClipboardService extends Service {
         return !this.mouseController.isMouseDown
     }
 
-    // returns true when the selection went into the clipboard
-    private copy(e: ClipboardEvent) {
-        if (!this.canHandle(e)) return false
+    // async clipboard, so it works outside a copy event too
+    async copy(widgets: Widget[]) {
+        const html = encodeWidgets(widgets.map((widget) => widget.toJson()))
+        const blob = new Blob([html], { type: 'text/html' })
+
+        try {
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'text/html': blob }),
+            ])
+        } catch (e) {
+            console.error('could not copy', e)
+        }
+    }
+
+    private onCut = (e: ClipboardEvent) => {
+        if (!this.canHandle(e)) return
 
         const { selected } =
             this.engine.getService<SelectionService>('selection')
         if (!selected.length || selected.some((widget) => widget.isLocked)) {
-            return false
+            return
         }
 
         const html = encodeWidgets(selected.map((widget) => widget.toJson()))
         e.clipboardData!.setData('text/html', html)
         e.preventDefault()
-        return true
-    }
-
-    private onCopy = (e: ClipboardEvent) => {
-        this.copy(e)
-    }
-
-    private onCut = (e: ClipboardEvent) => {
-        if (this.copy(e)) this.engine.execute('delete', {})
+        this.engine.execute('delete', {})
     }
 
     private onPaste = (e: ClipboardEvent) => {
@@ -110,7 +114,6 @@ export class ClipboardService extends Service {
 
     dispose() {
         this.offMouseMove()
-        document.removeEventListener('copy', this.onCopy)
         document.removeEventListener('cut', this.onCut)
         document.removeEventListener('paste', this.onPaste)
     }

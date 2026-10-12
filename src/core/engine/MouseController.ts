@@ -7,6 +7,7 @@ export type EngineEventsMap = {
     mouseMove: CanvasMouseEvent
     mouseUp: CanvasMouseEvent
     doubleClick: CanvasMouseEvent
+    contextMenu: CanvasMouseEvent
 }
 
 const DOUBLE_CLICK_DELAY = 300 // Max time between clicks for double click (ms)
@@ -34,6 +35,7 @@ export class MouseController extends Emitter<EngineEventsMap> {
         this.onMouseDown = this.onMouseDown.bind(this)
         this.onMouseMove = this.onMouseMove.bind(this)
         this.onMouseUp = this.onMouseUp.bind(this)
+        this.onContextMenu = this.onContextMenu.bind(this)
     }
 
     start(engine: Engine) {
@@ -42,6 +44,7 @@ export class MouseController extends Emitter<EngineEventsMap> {
         this.canvas.tick.add(this.onTick, this)
 
         this.upperCanvasEl.addEventListener('mousedown', this.onMouseDown)
+        this.upperCanvasEl.addEventListener('contextmenu', this.onContextMenu)
         document.addEventListener('mouseup', this.onMouseUp)
         document.addEventListener('mousemove', this.onMouseMove)
     }
@@ -71,6 +74,9 @@ export class MouseController extends Emitter<EngineEventsMap> {
     }
 
     private onMouseDown(e: MouseEvent) {
+        // right and middle buttons don't drag or select
+        if (e.button !== 0) return
+
         this.mouseDownX = e.clientX
         this.mouseDownY = e.clientY
         this._isMouseDown = true
@@ -111,12 +117,22 @@ export class MouseController extends Emitter<EngineEventsMap> {
         this.emit('mouseUp', wrappedMouseEvent)
     }
 
+    private onContextMenu(e: MouseEvent) {
+        e.preventDefault()
+        if (this._isMouseDown) return
+        this.emit('contextMenu', this.wrapMouseEvent(e))
+    }
+
     private wrapMouseEvent(e: MouseEvent): CanvasMouseEvent {
         return { e, pointer: this.canvas.getPointer(e), canvas: this.canvas }
     }
 
     dispose() {
         this.upperCanvasEl.removeEventListener('mousedown', this.onMouseDown)
+        this.upperCanvasEl.removeEventListener(
+            'contextmenu',
+            this.onContextMenu,
+        )
         document.removeEventListener('mousemove', this.onMouseMove)
         document.removeEventListener('mouseup', this.onMouseUp)
     }
