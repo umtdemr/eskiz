@@ -46,6 +46,7 @@ import { TextureManager } from '../services/TextureManager'
 
 import { StickyNoteToolService } from '../services/StickyNoteToolService'
 import { DuplicationService } from '../services/DuplicationService'
+import { ClipboardService } from '../services/ClipboardService'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -168,6 +169,7 @@ export class Engine {
         this.canvas.dispose()
         this.wsEngine?.dispose()
         this.getService<ShortcutService>('shortcut').dispose()
+        this.getService<ClipboardService>('clipboard').dispose()
         this._mouseController.dispose()
         this.zoomChanged.removeAll()
     }
@@ -302,6 +304,10 @@ export class Engine {
         this.serviceManager.register(
             'duplication',
             new DuplicationService(this),
+        )
+        this.serviceManager.register(
+            'clipboard',
+            new ClipboardService(this, this._mouseController),
         )
     }
 

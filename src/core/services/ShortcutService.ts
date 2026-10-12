@@ -3,7 +3,7 @@ import { Engine } from '../engine/Engine'
 import { MouseController } from '../engine/MouseController'
 
 // the key belongs to a field or an open dialog, not the board
-const isOutsideBoard = (target: EventTarget | null) => {
+export const isOutsideBoard = (target: EventTarget | null) => {
     const el = target as HTMLElement | null
     if (!el?.tagName) return false
     if (el.isContentEditable) return true

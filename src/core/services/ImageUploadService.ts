@@ -8,6 +8,7 @@ import { nanoid } from 'nanoid'
 import { AddWidgetPayload } from '@/types/Websocket'
 import { CreationHistoryEntry } from '@/core/history/HistoryManager'
 import { LocalAdapter } from '@/core/sync/LocalAdapter'
+import { Point } from '@/core/canvas/Canvas'
 
 export class ImageUploadService extends Service {
     private readonly MAX_FILE_SIZE = 10 * 1024 * 1024 // 10MB
@@ -19,7 +20,7 @@ export class ImageUploadService extends Service {
         'image/svg+xml',
     ]
 
-    private async handleFiles(files: File[], boardId: number) {
+    private async handleFiles(files: File[], boardId: number, at?: Point) {
         const errorCounts = this.getInitialErrorCounts()
 
         // validate files
@@ -48,7 +49,7 @@ export class ImageUploadService extends Service {
         }
 
         // create image widgets (local only for now)
-        const fileWidgetMap = this.createWidgetsInLayout(finalFiles)
+        const fileWidgetMap = this.createWidgetsInLayout(finalFiles, at)
         if (!fileWidgetMap) return
 
         // upload images
@@ -154,8 +155,10 @@ export class ImageUploadService extends Service {
         })
     }
 
+    // centers the images on `at`, or on the screen
     private createWidgetsInLayout(
         files: { file: File; width: number; height: number }[],
+        at?: Point,
     ): Map<File, ImageWidget> | null {
         const widgetLayer = this.engine.stage.widgetsDefaultLayer
         if (!widgetLayer || !files.length) return null
@@ -216,8 +219,8 @@ export class ImageUploadService extends Service {
         const blockWidth = maxX - minX
         const blockHeight = maxY - minY
 
-        const startX = viewportCenterX - blockWidth / 2
-        const startY = viewportCenterY - blockHeight / 2
+        const startX = (at?.x ?? viewportCenterX) - blockWidth / 2
+        const startY = (at?.y ?? viewportCenterY) - blockHeight / 2
 
         const fileWidgetMap = new Map<File, ImageWidget>()
 
@@ -433,6 +436,10 @@ export class ImageUploadService extends Service {
 
         const data = await response.json()
         return data as ImageResponse
+    }
+
+    upload(files: File[], at?: Point) {
+        return this.handleFiles(files, this.engine.boardId, at)
     }
 
     pickAndUpload() {
