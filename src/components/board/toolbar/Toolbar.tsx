@@ -165,6 +165,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 </TooltipContent>
             </Tooltip>
             <ShapesDropdown
+                engine={engine}
                 activeMode={activeMode}
                 handleShapeModeChange={handleShapeModeChange}
             />
@@ -210,6 +211,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 </TooltipContent>
             </Tooltip>
             <PenDropdown
+                engine={engine}
                 activeMode={activeMode}
                 handlePathModeChange={handlePathModeChange}
             />
