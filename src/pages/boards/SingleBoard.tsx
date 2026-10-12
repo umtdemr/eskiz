@@ -9,6 +9,7 @@ import Toolbar from '@/components/board/toolbar/Toolbar.tsx'
 import Subtoolbar from '@/components/board/subToolbar/Subtoolbar'
 import SkeletonToolbar from '@/components/board/toolbar/SkeletonToolbar.tsx'
 import Footer from '@/components/board/footer/Footer.tsx'
+import ContextMenu from '@/components/board/contextMenu/ContextMenu'
 import SkeletonFooter from '@/components/board/footer/SkeletonFooter.tsx'
 import { Canvas, initCanvasKit } from '@/core/canvas/Canvas.ts'
 import { Engine } from '@/core/engine/Engine.ts'
@@ -273,6 +274,9 @@ export default function SingleBoard() {
                         ) : null}
                         {!isDisconnected ? (
                             <Footer engine={engineRef.current!} />
+                        ) : null}
+                        {!isDisconnected ? (
+                            <ContextMenu engine={engineRef.current!} />
                         ) : null}
                     </>
                 ) : null}

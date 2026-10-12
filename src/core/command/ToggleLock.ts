@@ -1,10 +1,11 @@
 import { WidgetsService } from '../services/WidgetsService'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
-import { Command, CommandCtx } from './Command'
+import { Command, CommandCtx, Shortcut } from './Command'
 
 export class ToggleLockCommand extends Command {
     readonly name = 'toggleLock'
+    readonly shortcuts: Shortcut[] = [{ key: 'l', mod: true, shift: true }]
 
     canExecute(ctx: CommandCtx): boolean {
         return ctx.widgets.length > 0

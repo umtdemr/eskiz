@@ -1,10 +1,11 @@
 import { WidgetsService } from '../services/WidgetsService'
 import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
-import { Command, CommandCtx } from './Command'
+import { Command, CommandCtx, Shortcut } from './Command'
 
 export class DeleteCommand extends Command {
     readonly name = 'delete'
+    readonly shortcuts: Shortcut[] = [{ key: 'Delete' }, { key: 'Backspace' }]
 
     canExecute(ctx: CommandCtx): boolean {
         return this.canEdit(ctx)

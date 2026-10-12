@@ -6,14 +6,10 @@ import {
 import { Button } from '@/components/ui/button.tsx'
 import { clsx } from 'clsx'
 import { Circle, Shapes, Square, Triangle } from 'lucide-react'
-import {
-    ComponentType,
-    SVGAttributes,
-    useEffect,
-    useRef,
-    useState,
-} from 'react'
+import { ComponentType, SVGAttributes, useRef, useState } from 'react'
 import useOnClickOutside from '@/hooks/UseOutsideClick.ts'
+import useToolShortcut from '@/hooks/UseToolShortcut'
+import { Engine } from '@/core/engine/Engine'
 import {
     ACTION_MODES,
     SUB_ACTION_MODES,
@@ -32,9 +28,11 @@ function isSubModeForShapes(
 }
 
 export function ShapesDropdown({
+    engine,
     activeMode,
     handleShapeModeChange,
 }: {
+    engine: Engine
     activeMode: {
         mainMode: keyof typeof ACTION_MODES
         subMode?: keyof typeof SUB_ACTION_MODES
@@ -52,6 +50,7 @@ export function ShapesDropdown({
         setIsOpen(false)
     }
     useOnClickOutside(menuRef, onClickOutsideHandler, isOpen)
+    useToolShortcut(engine, ACTION_MODES.CREATE, setIsOpen)
 
     const shapes: {
         tooltip: string
@@ -77,13 +76,10 @@ export function ShapesDropdown({
 
     const toggleVisibility = () => {
         setIsOpen((oldState) => !oldState)
+        // keep the shape picked by a shortcut
+        if (isSubModeForShapes(activeMode.subMode)) return
+        handleShapeModeChange(SUB_ACTION_MODES.CREATE_RECTANGLE)
     }
-
-    useEffect(() => {
-        if (isOpen) {
-            handleShapeModeChange(SUB_ACTION_MODES.CREATE_RECTANGLE)
-        }
-    }, [isOpen, handleShapeModeChange])
 
     return (
         <div className="relative">

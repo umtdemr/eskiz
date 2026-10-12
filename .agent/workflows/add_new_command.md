@@ -90,6 +90,22 @@ const createCommands = () => [
 ]
 ```
 
+### Keyboard shortcut
+
+To bind keys to the command, give the class a `shortcuts` list. `ShortcutService` has no key list of its own: on keydown it goes through the registry and runs the first command whose shortcut matches and whose `canExecute` passes, on the current selection. When a shortcut matches, the browser default is prevented even if no command could run.
+
+```typescript
+readonly shortcuts: Shortcut<Params>[] = [
+    { key: 'o', mod: true, shift: true, params: { opacity: 0.5 } },
+]
+```
+
+- `key` is compared with `KeyboardEvent.key` (case doesn't matter) and with `KeyboardEvent.code`. Use the code for keys that sit somewhere else on other layouts, e.g. `BracketRight` instead of `]`.
+- `mod` is ctrl, or cmd on mac. `mod`, `shift` and `alt` have to match exactly, so `{ key: 'z', mod: true }` doesn't fire on ctrl+shift+z.
+- `params` is required when the command takes params, and the type checker enforces this. Leave it out for commands without params.
+- `continuous: true` puts repeated presses into one history entry, like the arrow keys in `Move.ts`.
+- Shortcuts are skipped while typing in an input, the text editor or a dialog, and while the mouse is down.
+
 ## 4. Call It from the UI
 
 Call it through `engine.execute`. It builds the ctx, targets the current selection, and returns `false` when `canExecute` fails, so the UI doesn't need its own `canAllChangeX()` check:

@@ -20,6 +20,8 @@ import {
     TOOLBAR_COLORS,
 } from '@/helpers/Constant'
 import useOnClickOutside from '@/hooks/UseOutsideClick'
+import useToolShortcut from '@/hooks/UseToolShortcut'
+import { Engine } from '@/core/engine/Engine'
 import { ColorButton } from '@/components/colorButton/ColorButton'
 import { PenColorDropdown } from './PenColorDropdown'
 import { useBoundStore } from '@/store/store'
@@ -43,9 +45,11 @@ const tools: {
 ]
 
 export function PenDropdown({
+    engine,
     activeMode,
     handlePathModeChange,
 }: {
+    engine: Engine
     activeMode: {
         mainMode: keyof typeof ACTION_MODES
         subMode?: keyof typeof SUB_ACTION_MODES
@@ -67,6 +71,7 @@ export function PenDropdown({
         setIsOpen(false)
     }
     useOnClickOutside(menuRef, onClickOutsideHandler, isOpen)
+    useToolShortcut(engine, ACTION_MODES.PATH, setIsOpen)
 
     const handleClick = () => {
         setIsOpen((old) => !old)

@@ -1,5 +1,5 @@
 import { Service } from './Service'
-import { Widget } from '../shapes/Widget'
+import { Widget, WidgetJson } from '../shapes/Widget'
 import { nanoid } from 'nanoid'
 import { PageService } from './PageService'
 import { WidgetsService } from './WidgetsService'
@@ -8,30 +8,37 @@ import { WidgetType } from '../constants'
 
 export class DuplicationService extends Service {
     duplicateWidgets(widgets: Widget[]): Widget[] {
-        if (!widgets.length) return []
+        return this.addCopies(
+            widgets.map((widget) => widget.toJson()),
+            20,
+            20,
+        )
+    }
+
+    // adds the jsons as new widgets, moved by dx, dy
+    addCopies(jsons: WidgetJson[], dx: number, dy: number): Widget[] {
+        if (!jsons.length) return []
 
         const pageService = this.engine.getService<PageService>('page')
         const widgetsService = this.engine.getService<WidgetsService>('widgets')
 
         const oldToNewIdMap = new Map<string, string>()
 
-        const sorted = [...widgets].sort((a, b) =>
-            (a.zIndex ?? '').localeCompare(b.zIndex ?? ''),
+        const sorted = [...jsons].sort((a, b) =>
+            (a.z_index ?? '').localeCompare(b.z_index ?? ''),
         )
 
         let currentZIndex: string | null = null
 
         // generate new JSONs and collect ID mappings
-        const clonedJsons = sorted.map((widget) => {
-            const json = widget.toJson()
+        const clonedJsons = sorted.map((json) => {
             const newId = nanoid()
             if (json.uuid) {
                 oldToNewIdMap.set(json.uuid, newId)
             }
 
-            // offset position
-            json.x += 20
-            json.y += 20
+            json.x += dx
+            json.y += dy
 
             // assign new z_index and id
             if (!currentZIndex) {

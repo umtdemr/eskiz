@@ -27,6 +27,7 @@ import { MoreOptionsDropdown } from './actions/MoreOptionsDropdown.tsx'
 import { LineColorInput } from './actions/LineColorInput.tsx'
 import { LineStyleInput } from './actions/LineStyleInput.tsx'
 import { StickyNoteBgColorInput } from './actions/StickyNoteBgColorInput.tsx'
+import { Commands } from '@/core/command/CommandRegistry'
 
 export interface SubtoolbarProps {
     engine: Engine
@@ -109,11 +110,17 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             }, 500)
         }
 
+        // arrow key moves have no start and end, hide like on pan
+        const onCommandExecuted = (name: Commands) => {
+            if (name === 'move') onTransform()
+        }
+
         const hideSubtoolbar = () => dispatch({ type: ActionKind.TEMP_HIDE })
         const showSubtoolbar = () => dispatch({ type: ActionKind.TEMP_SHOW })
 
         if (state.show) {
             engine.canvas.transform.add(onTransform)
+            engine.commandExecuted.add(onCommandExecuted)
             engine.dragHandler.moveStarted.add(hideSubtoolbar)
             engine.dragHandler.moveFinished.add(showSubtoolbar)
             engine.resizeHandler.resizeStarted.add(hideSubtoolbar)
@@ -124,6 +131,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             engine.rotateHandler.rotateFinished.add(showSubtoolbar)
         } else {
             engine.canvas.transform.remove(onTransform)
+            engine.commandExecuted.remove(onCommandExecuted)
             engine.dragHandler.moveStarted.remove(hideSubtoolbar)
             engine.dragHandler.moveFinished.remove(showSubtoolbar)
             engine.resizeHandler.resizeStarted.remove(hideSubtoolbar)
@@ -136,6 +144,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
 
         return () => {
             engine.canvas.transform.remove(onTransform)
+            engine.commandExecuted.remove(onCommandExecuted)
             engine.dragHandler.moveStarted.remove(hideSubtoolbar)
             engine.dragHandler.moveFinished.remove(showSubtoolbar)
             engine.resizeHandler.resizeStarted.remove(hideSubtoolbar)

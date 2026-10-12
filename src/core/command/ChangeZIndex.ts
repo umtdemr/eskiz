@@ -1,5 +1,5 @@
 import { Widget } from '../shapes/Widget'
-import { Command, CommandCtx } from './Command'
+import { Command, CommandCtx, Shortcut } from './Command'
 import { EditingMethods } from '../transaction/State'
 
 export type ZIndexAction =
@@ -12,6 +12,23 @@ type Params = { action: ZIndexAction }
 
 export class ChangeZIndex extends Command<Params> {
     readonly name = 'changeZIndex'
+    // codes, since brackets need altgr on some layouts
+    readonly shortcuts: Shortcut<Params>[] = [
+        { key: 'BracketRight', mod: true, params: { action: 'bringForward' } },
+        {
+            key: 'BracketRight',
+            mod: true,
+            shift: true,
+            params: { action: 'bringToFront' },
+        },
+        { key: 'BracketLeft', mod: true, params: { action: 'sendBackward' } },
+        {
+            key: 'BracketLeft',
+            mod: true,
+            shift: true,
+            params: { action: 'sendToBack' },
+        },
+    ]
 
     canExecute(ctx: CommandCtx<Params>): boolean {
         return ctx.widgets.length > 0

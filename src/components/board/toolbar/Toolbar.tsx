@@ -165,6 +165,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 </TooltipContent>
             </Tooltip>
             <ShapesDropdown
+                engine={engine}
                 activeMode={activeMode}
                 handleShapeModeChange={handleShapeModeChange}
             />
@@ -210,6 +211,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 </TooltipContent>
             </Tooltip>
             <PenDropdown
+                engine={engine}
                 activeMode={activeMode}
                 handlePathModeChange={handlePathModeChange}
             />
@@ -246,7 +248,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                     <Button
                         variant="ghost"
                         className="px-2 [&_svg]:size-5"
-                        onClick={() => engine.historyManager.undo()}
+                        onClick={() => engine.execute('undo', {})}
                         disabled={!historyState.canUndo}
                     >
                         <Undo />
@@ -261,7 +263,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                     <Button
                         variant="ghost"
                         className="px-2 [&_svg]:size-5"
-                        onClick={() => engine.historyManager.redo()}
+                        onClick={() => engine.execute('redo', {})}
                         disabled={!historyState.canRedo}
                     >
                         <Redo />

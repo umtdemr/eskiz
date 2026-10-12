@@ -72,6 +72,10 @@ export class ContinuousEdits {
         }
     }
 
+    get hasOpen() {
+        return this.edits.size > 0
+    }
+
     private find(name: Commands, widgets: Widget[]) {
         for (const edit of this.edits) {
             if (

@@ -3,6 +3,7 @@ import Header from '@/components/board/header/Header.tsx'
 import Toolbar from '@/components/board/toolbar/Toolbar.tsx'
 import Subtoolbar from '@/components/board/subToolbar/Subtoolbar'
 import Footer from '@/components/board/footer/Footer.tsx'
+import ContextMenu from '@/components/board/contextMenu/ContextMenu'
 import SkeletonHeader from '@/components/board/header/SkeletonHeader.tsx'
 import SkeletonToolbar from '@/components/board/toolbar/SkeletonToolbar.tsx'
 import SkeletonFooter from '@/components/board/footer/SkeletonFooter.tsx'
@@ -95,6 +96,7 @@ export default function StandaloneBoard() {
                         <Toolbar engine={engineRef.current!} />
                         <Subtoolbar engine={engineRef.current!} />
                         <Footer engine={engineRef.current!} />
+                        <ContextMenu engine={engineRef.current!} />
                     </>
                 ) : null}
             </div>
