@@ -6,6 +6,7 @@ type Handler = (e: Partial<PointerEvent>) => void
 
 let handlers: Record<string, Handler>
 let controller: MouseController
+let upper: ReturnType<typeof listen>
 let tick: () => void
 let removeTick: ReturnType<typeof vi.fn>
 
@@ -24,8 +25,13 @@ const pointer = (rest: Partial<PointerEvent> = {}) =>
         button: 0,
         clientX: 0,
         clientY: 0,
+        timeStamp: 0,
         ...rest,
     }) as PointerEvent
+
+// a mouse move with the left button held
+const drag = (rest: Partial<PointerEvent> = {}) =>
+    pointer({ button: -1, buttons: 1, ...rest })
 
 const touch = (
     pointerId: number,
@@ -46,8 +52,9 @@ describe('MouseController', () => {
         handlers = {}
         removeTick = vi.fn()
         vi.stubGlobal('document', listen())
+        upper = listen()
         const engine = {
-            upperCanvasEl: listen(),
+            upperCanvasEl: upper,
             canvas: {
                 tick: {
                     add: vi.fn((fn: () => void, ctx: unknown) => {
@@ -76,7 +83,7 @@ describe('MouseController', () => {
         controller.on('mouseUp', () => void events.push('up'))
 
         handlers.pointerdown(pointer())
-        handlers.pointermove(pointer({ clientX: 20, clientY: 20 }))
+        handlers.pointermove(drag({ clientX: 20, clientY: 20 }))
         tick()
         handlers.pointerup(pointer({ clientX: 20, clientY: 20 }))
 
@@ -101,7 +108,7 @@ describe('MouseController', () => {
         handlers.pointermove(touch(1, 12, 10))
         expect(down).not.toHaveBeenCalled()
 
-        handlers.pointermove(touch(1, 30, 10))
+        handlers.pointermove({ ...touch(1, 30, 10), timeStamp: 200 })
         expect(down).toHaveBeenCalledOnce()
         expect(down.mock.calls[0][0].e.clientX).toBe(10)
         expect(controller.isMouseDown).toBe(true)
@@ -133,15 +140,18 @@ describe('MouseController', () => {
         expect(up).not.toHaveBeenCalled()
     })
 
-    it('ends the drag when a second finger lands', () => {
+    it('cancels the drag when a second finger lands', () => {
         const up = vi.fn()
+        const cancel = vi.fn()
         controller.on('mouseUp', up)
+        controller.on('mouseCancel', cancel)
 
         handlers.pointerdown(touch(1, 10, 10))
-        handlers.pointermove(touch(1, 30, 10))
+        handlers.pointermove({ ...touch(1, 30, 10), timeStamp: 200 })
         handlers.pointerdown(touch(2, 60, 10))
 
-        expect(up).toHaveBeenCalledOnce()
+        expect(cancel).toHaveBeenCalledOnce()
+        expect(up).not.toHaveBeenCalled()
         expect(controller.isMouseDown).toBe(false)
     })
 
@@ -225,16 +235,19 @@ describe('MouseController', () => {
     it('does not count a cancelled touch as a click', () => {
         const dbl = vi.fn()
         const up = vi.fn()
+        const cancel = vi.fn()
         controller.on('doubleClick', dbl)
         controller.on('mouseUp', up)
+        controller.on('mouseCancel', cancel)
 
         handlers.pointerdown(touch(1, 10, 10))
         handlers.pointerup(touch(1, 10, 10))
         handlers.pointerdown(touch(1, 10, 10))
-        handlers.pointermove(touch(1, 30, 10))
+        handlers.pointermove({ ...touch(1, 30, 10), timeStamp: 200 })
         handlers.pointercancel({ ...touch(1, 30, 10), type: 'pointercancel' })
 
-        expect(up).toHaveBeenCalledTimes(2)
+        expect(up).toHaveBeenCalledOnce()
+        expect(cancel).toHaveBeenCalledOnce()
         expect(dbl).not.toHaveBeenCalled()
         expect(controller.isMouseDown).toBe(false)
     })
@@ -277,15 +290,15 @@ describe('MouseController', () => {
 
     it('lets a pen take over from a resting palm', () => {
         const down = vi.fn()
-        const up = vi.fn()
+        const cancel = vi.fn()
         controller.on('mouseDown', down)
-        controller.on('mouseUp', up)
+        controller.on('mouseCancel', cancel)
 
         handlers.pointerdown(touch(1, 10, 10))
-        handlers.pointermove(touch(1, 40, 10))
+        handlers.pointermove({ ...touch(1, 40, 10), timeStamp: 200 })
         handlers.pointerdown(pointer({ pointerId: 5, pointerType: 'pen' }))
 
-        expect(up).toHaveBeenCalledOnce()
+        expect(cancel).toHaveBeenCalledOnce()
         expect(down).toHaveBeenCalledTimes(2)
         expect(down.mock.calls[1][0].e.pointerType).toBe('pen')
     })
@@ -295,13 +308,13 @@ describe('MouseController', () => {
         controller.on('mouseMove', move)
 
         handlers.pointerdown(pointer())
-        handlers.pointermove(pointer({ clientX: 1 }))
+        handlers.pointermove(drag({ clientX: 1 }))
         tick()
-        handlers.pointermove(pointer({ clientX: 2 }))
+        handlers.pointermove(drag({ clientX: 2 }))
         tick()
         expect(move).not.toHaveBeenCalled()
 
-        handlers.pointermove(pointer({ clientX: 6 }))
+        handlers.pointermove(drag({ clientX: 6 }))
         tick()
         expect(move).toHaveBeenCalledOnce()
     })
@@ -334,6 +347,124 @@ describe('MouseController', () => {
         tick()
 
         expect(move).not.toHaveBeenCalled()
+    })
+
+    it('waits for a second finger before dragging', () => {
+        const down = vi.fn()
+        const pinch = vi.fn()
+        controller.on('mouseDown', down)
+        controller.on('pinch', pinch)
+
+        handlers.pointerdown(touch(1, 10, 10))
+        handlers.pointermove({ ...touch(1, 30, 10), timeStamp: 50 })
+        handlers.pointerdown(touch(2, 100, 10))
+        handlers.pointermove(touch(2, 170, 10))
+        tick()
+
+        expect(down).not.toHaveBeenCalled()
+        expect(pinch).toHaveBeenCalledOnce()
+    })
+
+    it('sends the last move before the up and none after', () => {
+        const events: string[] = []
+        controller.on('mouseMove', () => void events.push('move'))
+        controller.on('mouseUp', () => void events.push('up'))
+
+        handlers.pointerdown(pointer())
+        handlers.pointermove(drag({ clientX: 20 }))
+        handlers.pointerup(pointer({ clientX: 20 }))
+        tick()
+
+        expect(events).toEqual(['move', 'up'])
+    })
+
+    it('clamps the scale for fingers almost touching', () => {
+        const pinch = vi.fn()
+        controller.on('pinch', pinch)
+
+        handlers.pointerdown(touch(1, 0, 0))
+        handlers.pointerdown(touch(2, 1, 0))
+        handlers.pointermove(touch(2, 0, 0))
+        tick()
+        handlers.pointermove(touch(2, 60, 0))
+        tick()
+
+        expect(pinch.mock.calls[0][0].scale).toBe(1)
+        expect(pinch.mock.calls[1][0].scale).toBe(2)
+    })
+
+    it('ends a drag when left lets go while right is held', () => {
+        const up = vi.fn()
+        controller.on('mouseUp', up)
+
+        handlers.pointerdown(pointer())
+        handlers.pointermove(drag({ clientX: 20, buttons: 3 }))
+        handlers.pointermove(pointer({ clientX: 20, buttons: 2 }))
+
+        expect(up).toHaveBeenCalledOnce()
+        expect(controller.isMouseDown).toBe(false)
+    })
+
+    it('presses left while right is held', () => {
+        const down = vi.fn()
+        controller.on('mouseDown', down)
+
+        handlers.pointermove(
+            pointer({ buttons: 3, target: upper as unknown as EventTarget }),
+        )
+
+        expect(down).toHaveBeenCalledOnce()
+    })
+
+    it('keeps a finger drag when the pen barrel lands', () => {
+        const cancel = vi.fn()
+        controller.on('mouseCancel', cancel)
+
+        handlers.pointerdown(touch(1, 10, 10))
+        handlers.pointermove({ ...touch(1, 30, 10), timeStamp: 200 })
+        handlers.pointerdown(
+            pointer({ pointerId: 5, pointerType: 'pen', button: 2 }),
+        )
+
+        expect(cancel).not.toHaveBeenCalled()
+        expect(controller.isMouseDown).toBe(true)
+    })
+
+    it('ignores the context menu during a pinch', () => {
+        const menu = vi.fn()
+        controller.on('contextMenu', menu)
+
+        handlers.pointerdown(touch(1, 0, 0))
+        handlers.pointerdown(touch(2, 100, 0))
+        handlers.contextmenu({ ...touch(1, 0, 0), preventDefault: vi.fn() })
+
+        expect(menu).not.toHaveBeenCalled()
+    })
+
+    it('keeps a resting finger on a mouse right click', () => {
+        const down = vi.fn()
+        controller.on('mouseDown', down)
+
+        handlers.pointerdown(touch(1, 10, 10))
+        handlers.contextmenu({ ...pointer(), preventDefault: vi.fn() })
+        handlers.pointerup(touch(1, 10, 10))
+
+        expect(down).toHaveBeenCalledOnce()
+    })
+
+    it('taps with a finger that is not primary', () => {
+        const events: string[] = []
+        controller.on('mouseDown', () => void events.push('down'))
+        controller.on('mouseUp', () => void events.push('up'))
+
+        handlers.pointerdown(touch(2, 10, 10, false))
+        handlers.pointerup(touch(2, 10, 10, false))
+
+        expect(events).toEqual(['down', 'up'])
+    })
+
+    it('can be disposed before start', () => {
+        expect(() => new MouseController().dispose()).not.toThrow()
     })
 
     it('stops listening to ticks on dispose', () => {

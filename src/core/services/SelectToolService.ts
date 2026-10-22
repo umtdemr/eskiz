@@ -83,6 +83,7 @@ export class SelectToolService extends Service {
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
         this.mouseController.on('mouseUp', this.onMouseUp, this)
+        this.mouseController.on('mouseCancel', this.onMouseCancel, this)
         this.mouseController.on('contextMenu', this.onContextMenu, this)
     }
 
@@ -235,6 +236,12 @@ export class SelectToolService extends Service {
         }
     }
 
+    // keeps what was dragged or marked, but it wasn't a click
+    onMouseCancel(data: CanvasMouseEvent): void {
+        this.mouseDownWidget = null
+        this.onMouseUp(data)
+    }
+
     // selects what is under the pointer unless it is part of the selection
     onContextMenu(data: CanvasMouseEvent): void {
         const widget = this.checksObjectsInLayer(data)
@@ -304,6 +311,7 @@ export class SelectToolService extends Service {
         this.mouseController.off('mouseDown', this.onMouseDown, this)
         this.mouseController.off('mouseMove', this.onMouseMove, this)
         this.mouseController.off('mouseUp', this.onMouseUp, this)
+        this.mouseController.off('mouseCancel', this.onMouseCancel, this)
         this.mouseController.off('contextMenu', this.onContextMenu, this)
     }
 

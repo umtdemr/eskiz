@@ -48,6 +48,7 @@ export class LineToolService extends Service {
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
         this.mouseController.on('mouseUp', this.onMouseUp, this)
+        this.mouseController.on('mouseCancel', this.onMouseCancel, this)
     }
 
     private onMainModeChanged(state: MainModeChangedState) {
@@ -235,6 +236,15 @@ export class LineToolService extends Service {
         this.reset()
     }
 
+    private onMouseCancel() {
+        if (!this.line) return
+        this.line.tailBindingWidget?.removeAttachedLine(this.line)
+        this.engine.stage.widgetsDefaultLayer.removeChild(this.line)
+        this.engine.stage.nonCanvasDynamicContainer.magnetLayer.update(null)
+        this.engine.canvas.requestRender()
+        this.reset()
+    }
+
     private reset() {
         this.line = null
         this.currentScanResult = null
@@ -244,6 +254,7 @@ export class LineToolService extends Service {
         this.mouseController.off('mouseDown', this.onMouseDown, this)
         this.mouseController.off('mouseMove', this.onMouseMove, this)
         this.mouseController.off('mouseUp', this.onMouseUp, this)
+        this.mouseController.off('mouseCancel', this.onMouseCancel, this)
     }
 
     dispose(): void {

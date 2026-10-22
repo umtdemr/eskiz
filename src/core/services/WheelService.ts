@@ -41,9 +41,7 @@ export class WheelService extends Service {
     }
 
     private onPinch({ x, y, scale, dx, dy }: PinchEvent) {
-        this.canvas.translateX += dx / this.canvas.zoom
-        this.canvas.translateY += dy / this.canvas.zoom
-        this.engine.zoomAt(this.canvas.zoom * scale, x, y)
+        this.engine.zoomAt(this.canvas.zoom * scale, x, y, dx, dy)
     }
 
     dispose() {

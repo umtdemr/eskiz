@@ -52,6 +52,7 @@ export class PathToolService extends Service {
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
         this.mouseController.on('mouseUp', this.onMouseUp, this)
+        this.mouseController.on('mouseCancel', this.onMouseCancel, this)
     }
 
     private onStagesInitiated() {
@@ -192,6 +193,20 @@ export class PathToolService extends Service {
         this.reset()
     }
 
+    private onMouseCancel() {
+        if (this.activePathTool === PathToolType.ERASER) {
+            this.trailLayer.finish()
+            // bring back what the eraser hid
+            for (const widget of this.deletedShapesWithEraser.values()) {
+                widget.visible = true
+            }
+        } else if (this.path) {
+            this.engine.stage.widgetsDefaultLayer.removeChild(this.path)
+        }
+        this.engine.canvas.requestRender()
+        this.reset()
+    }
+
     private reset() {
         this.path = null
         this.points = []
@@ -202,6 +217,7 @@ export class PathToolService extends Service {
         this.mouseController.off('mouseDown', this.onMouseDown, this)
         this.mouseController.off('mouseMove', this.onMouseMove, this)
         this.mouseController.off('mouseUp', this.onMouseUp, this)
+        this.mouseController.off('mouseCancel', this.onMouseCancel, this)
     }
 
     private searchPenShapes(mouseData: CanvasMouseEvent): Pen | null {

@@ -43,6 +43,7 @@ export class PanToolService extends Service {
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
         this.mouseController.on('mouseUp', this.onMouseUp, this)
+        this.mouseController.on('mouseCancel', this.onMouseUp, this)
     }
 
     onMouseDown(data: CanvasMouseEvent) {
@@ -77,6 +78,7 @@ export class PanToolService extends Service {
         this.mouseController.off('mouseDown', this.onMouseDown, this)
         this.mouseController.off('mouseMove', this.onMouseMove, this)
         this.mouseController.off('mouseUp', this.onMouseUp, this)
+        this.mouseController.off('mouseCancel', this.onMouseUp, this)
     }
 
     dispose() {}

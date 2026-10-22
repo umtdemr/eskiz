@@ -179,16 +179,16 @@ export class Engine {
         this.zoomAt(targetZoom, window.innerWidth / 2, window.innerHeight / 2)
     }
 
-    // keeps the screen point x, y in place
-    zoomAt(targetZoom: number, x: number, y: number) {
+    // keeps the screen point x, y in place, then pans by dx, dy screen pixels
+    zoomAt(targetZoom: number, x: number, y: number, dx = 0, dy = 0) {
         const oldScale = this.canvas.zoom
         this.canvas.zoom = targetZoom
         const newScale = this.canvas.zoom
 
         this.canvas.translateX =
-            x / newScale - x / oldScale + this.canvas.translateX
+            x / newScale - x / oldScale + this.canvas.translateX + dx / oldScale
         this.canvas.translateY =
-            y / newScale - y / oldScale + this.canvas.translateY
+            y / newScale - y / oldScale + this.canvas.translateY + dy / oldScale
 
         this.canvas.requestRender()
         this.zoomChanged.dispatch(this.canvas.zoom)

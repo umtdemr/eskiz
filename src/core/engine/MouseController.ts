@@ -15,6 +15,8 @@ export type EngineEventsMap = {
     mouseDown: CanvasMouseEvent
     mouseMove: CanvasMouseEvent
     mouseUp: CanvasMouseEvent
+    // press ended without a release (pinch, pen takeover, pointercancel)
+    mouseCancel: CanvasMouseEvent
     doubleClick: CanvasMouseEvent
     contextMenu: CanvasMouseEvent
     pinch: PinchEvent
@@ -24,6 +26,8 @@ const DOUBLE_CLICK_DELAY = 300 // Max time between clicks for double click (ms)
 const DOUBLE_CLICK_THRESHOLD = 5 // Max movement allowed between clicks (pixels)
 const MOVE_THRESHOLD = 3 // Movement tolerance during click (pixels)
 const TOUCH_SLOP = 8 // finger travel before a touch counts as a drag (pixels)
+const PINCH_DELAY = 100 // time a second finger has to start a pinch (ms)
+const PINCH_MIN_DIST = 30 // closer fingers would blow up the scale (pixels)
 
 export class MouseController extends Emitter<EngineEventsMap> {
     private upperCanvasEl: HTMLCanvasElement
@@ -38,7 +42,6 @@ export class MouseController extends Emitter<EngineEventsMap> {
     private _isMouseDown = false
     private pastThreshold = false
 
-    private mouseMoveEvent: PointerEvent
     private mouseMoved = false
     private lastEvent: PointerEvent
 
@@ -74,8 +77,12 @@ export class MouseController extends Emitter<EngineEventsMap> {
             this.pinchMoved = false
             this.movePinch()
         }
+        this.flushMove()
+    }
+
+    private flushMove() {
         if (!this.mouseMoved) return
-        const e = this.mouseMoveEvent
+        const e = this.lastEvent
 
         const wrappedMouseEvent = this.wrapMouseEvent(e)
         let shouldEmit = true
@@ -100,7 +107,9 @@ export class MouseController extends Emitter<EngineEventsMap> {
 
     private onPointerDown(e: PointerEvent) {
         // a pen landing next to a resting palm takes over
-        if (e.pointerType === 'pen' && this.touches.size) this.dropTouches()
+        if (e.pointerType === 'pen' && e.button === 0 && this.touches.size) {
+            this.dropTouches()
+        }
         // palm touches while a pen or mouse is down
         if (this._isMouseDown && e.pointerType !== this.lastEvent.pointerType) {
             return
@@ -116,7 +125,7 @@ export class MouseController extends Emitter<EngineEventsMap> {
 
         if (this.pinching || this._isMouseDown || this.pendingDown) return
         // right and middle buttons don't drag or select
-        if (!e.isPrimary || e.button !== 0) return
+        if (e.button !== 0) return
 
         if (e.pointerType === 'touch') {
             this.pendingDown = e
@@ -138,6 +147,18 @@ export class MouseController extends Emitter<EngineEventsMap> {
     }
 
     private onPointerMove(e: PointerEvent) {
+        // left press or release while another button is held
+        if (e.pointerType === 'mouse' && e.button === 0) {
+            const left = (e.buttons & 1) === 1
+            if (this._isMouseDown && !left) {
+                this.onPointerUp(e)
+                return
+            }
+            if (!this._isMouseDown && left && e.target === this.upperCanvasEl) {
+                this.onPointerDown(e)
+                return
+            }
+        }
         const tracked = this.touches.has(e.pointerId)
         if (tracked) {
             this.touches.set(e.pointerId, { x: e.clientX, y: e.clientY })
@@ -154,16 +175,16 @@ export class MouseController extends Emitter<EngineEventsMap> {
                 e.clientY - down.clientY,
             )
             if (dist < TOUCH_SLOP) return
+            // give a second finger time to land
+            if (e.timeStamp - down.timeStamp < PINCH_DELAY) return
             this.press(down)
         }
-        if (!e.isPrimary) return
         // a finger that isn't pressing isn't hovering either
         if (e.pointerType === 'touch' && !this._isMouseDown) return
         if (this._isMouseDown && e.pointerId !== this.lastEvent.pointerId) {
             return
         }
 
-        this.mouseMoveEvent = e
         this.mouseMoved = true
         this.lastEvent = e
     }
@@ -193,6 +214,8 @@ export class MouseController extends Emitter<EngineEventsMap> {
             this.endDrag()
             return
         }
+        // last move of the frame goes out before the up
+        this.flushMove()
         const wrappedMouseEvent = this.wrapMouseEvent(e)
         const currentTime = Date.now()
 
@@ -219,7 +242,7 @@ export class MouseController extends Emitter<EngineEventsMap> {
         this._isMouseDown = false
         this.pastThreshold = false
         this.mouseMoved = false
-        this.emit('mouseUp', this.wrapMouseEvent(this.lastEvent))
+        this.emit('mouseCancel', this.wrapMouseEvent(this.lastEvent))
     }
 
     private startPinch() {
@@ -247,7 +270,9 @@ export class MouseController extends Emitter<EngineEventsMap> {
         this.emit('pinch', {
             x: next.x,
             y: next.y,
-            scale: last.dist ? next.dist / last.dist : 1,
+            scale:
+                Math.max(next.dist, PINCH_MIN_DIST) /
+                Math.max(last.dist, PINCH_MIN_DIST),
             dx: next.x - last.x,
             dy: next.y - last.y,
         })
@@ -265,9 +290,10 @@ export class MouseController extends Emitter<EngineEventsMap> {
 
     private onContextMenu(e: MouseEvent) {
         e.preventDefault()
-        if (this._isMouseDown) return
+        if (this._isMouseDown || this.pinching) return
         // long press on touch, lifting the finger isn't a tap
-        this.pendingDown = null
+        const fromMouse = 'pointerType' in e && e.pointerType === 'mouse'
+        if (!fromMouse) this.pendingDown = null
         this.emit('contextMenu', this.wrapMouseEvent(e))
     }
 
@@ -276,6 +302,8 @@ export class MouseController extends Emitter<EngineEventsMap> {
     }
 
     dispose() {
+        // never started
+        if (!this.canvas) return
         this.canvas.tick.remove(this.onTick, this)
         this.upperCanvasEl.removeEventListener(
             'pointerdown',
