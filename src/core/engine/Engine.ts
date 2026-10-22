@@ -175,18 +175,20 @@ export class Engine {
     }
 
     zoomTo(targetZoom: number) {
+        // zoom around viewport center
+        this.zoomAt(targetZoom, window.innerWidth / 2, window.innerHeight / 2)
+    }
+
+    // keeps the screen point x, y in place
+    zoomAt(targetZoom: number, x: number, y: number) {
         const oldScale = this.canvas.zoom
         this.canvas.zoom = targetZoom
         const newScale = this.canvas.zoom
 
-        // zoom around viewport center
-        const centerX = window.innerWidth / 2
-        const centerY = window.innerHeight / 2
-
         this.canvas.translateX =
-            centerX / newScale - centerX / oldScale + this.canvas.translateX
+            x / newScale - x / oldScale + this.canvas.translateX
         this.canvas.translateY =
-            centerY / newScale - centerY / oldScale + this.canvas.translateY
+            y / newScale - y / oldScale + this.canvas.translateY
 
         this.canvas.requestRender()
         this.zoomChanged.dispatch(this.canvas.zoom)

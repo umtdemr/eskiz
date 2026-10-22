@@ -1,8 +1,7 @@
 import { Canvas } from '../canvas/Canvas'
 import { Engine } from '../engine/Engine'
-import { MouseController } from '../engine/MouseController'
+import { MouseController, PinchEvent } from '../engine/MouseController'
 import { Service } from './Service'
-import { ZOOM_LEVELS } from '@/helpers/Constant.ts'
 
 export class WheelService extends Service {
     private canvas: Canvas
@@ -16,6 +15,7 @@ export class WheelService extends Service {
 
     start() {
         this.engine.upperCanvasEl.addEventListener('wheel', this.onMouseWheel)
+        this.mouseController.on('pinch', this.onPinch, this)
         this.canvas = this.engine.canvas
     }
 
@@ -35,27 +35,15 @@ export class WheelService extends Service {
             this.canvas.requestRender()
             return
         }
-        const mouseX = e.clientX
-        const mouseY = e.clientY
 
         const zoomFactor = Math.pow(0.995, e.deltaY)
-        const oldScale = this.canvas.zoom
-        this.canvas.zoom = Math.min(
-            Math.max(ZOOM_LEVELS.MIN, this.canvas.zoom * zoomFactor),
-            ZOOM_LEVELS.MAX,
-        )
+        this.engine.zoomAt(this.canvas.zoom * zoomFactor, e.clientX, e.clientY)
+    }
 
-        this.canvas.translateX =
-            mouseX / this.canvas.zoom -
-            mouseX / oldScale +
-            this.canvas.translateX
-        this.canvas.translateY =
-            mouseY / this.canvas.zoom -
-            mouseY / oldScale +
-            this.canvas.translateY
-
-        this.canvas.requestRender()
-        this.engine.zoomChanged.dispatch(this.canvas.zoom)
+    private onPinch({ x, y, scale, dx, dy }: PinchEvent) {
+        this.canvas.translateX += dx / this.canvas.zoom
+        this.canvas.translateY += dy / this.canvas.zoom
+        this.engine.zoomAt(this.canvas.zoom * scale, x, y)
     }
 
     dispose() {
@@ -63,5 +51,6 @@ export class WheelService extends Service {
             'wheel',
             this.onMouseWheel,
         )
+        this.mouseController.off('pinch', this.onPinch, this)
     }
 }
