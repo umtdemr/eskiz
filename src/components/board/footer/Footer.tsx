@@ -55,7 +55,7 @@ export default function Footer({ engine }: { engine: Engine }) {
     }
 
     return (
-        <div className="fixed flex gap-2 bottom-5 right-5">
+        <div className="fixed hidden md:flex gap-2 bottom-5 right-5">
             <div
                 className="flex gap-1 px-2 py-1 bg-white"
                 style={{ boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)' }}

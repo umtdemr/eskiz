@@ -12,10 +12,13 @@ const isStandalone = import.meta.env.VITE_APP_MODE === 'standalone'
 export default function SkeletonHeader() {
     return (
         <>
-            <div className="fixed top-5 left-5" id="header_left">
-                <div className="flex px-5 py-1 rounded-lg gap-2 items-center select-none bg-white shadow">
+            <div
+                className="fixed top-2 left-2 md:top-5 md:left-5"
+                id="header_left"
+            >
+                <div className="flex px-2 md:px-5 py-1 rounded-lg gap-2 items-center select-none bg-white shadow">
                     {isStandalone ? (
-                        <span className="text-base font-bold h-8 px-3 flex justify-center items-center">
+                        <span className="text-sm md:text-base font-bold h-8 px-3 flex justify-center items-center">
                             eskiz
                         </span>
                     ) : (
@@ -26,7 +29,7 @@ export default function SkeletonHeader() {
                                         variant="ghost"
                                         asChild
                                         size="sm"
-                                        className="text-base font-bold"
+                                        className="text-sm md:text-base font-bold"
                                     >
                                         <Link to={'/boards'}>eskiz</Link>
                                     </Button>
@@ -42,7 +45,7 @@ export default function SkeletonHeader() {
                 </div>
             </div>
             {!isStandalone ? (
-                <div className="fixed top-5 right-5 flex bg-white shadow px-2 py-2 rounded-xl h-12 items-center gap-2">
+                <div className="fixed top-2 right-2 md:top-5 md:right-5 flex bg-white shadow px-2 py-2 rounded-xl h-12 items-center gap-2">
                     <Skeleton className="w-32 py-4" />
                 </div>
             ) : null}
