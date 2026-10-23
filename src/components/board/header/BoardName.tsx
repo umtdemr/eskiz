@@ -197,9 +197,7 @@ export function BoardName({ engine }: { engine: Engine }) {
                     </TooltipContent>
                 </Tooltip>
             ) : null}
-            {!engine.isStandalone ? (
-                <BoardSettingsMenu engine={engine} />
-            ) : null}
+            <BoardSettingsMenu engine={engine} />
         </div>
     )
 }
