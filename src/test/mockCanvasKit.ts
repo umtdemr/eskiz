@@ -38,3 +38,7 @@ export const fontManager: FontMgr = canvasKit.FontMgr.FromData(
 export async function initCanvasKit() {}
 
 export const setCanvasStyles = () => {}
+
+export const sizeCanvas = () => {}
+
+export const getDpr = () => 1

@@ -21,7 +21,8 @@ let engine: {
         translateX: number
         translateY: number
         zoom: number
-        canvasEl: { width: number; height: number }
+        width: number
+        height: number
     }
     getService: ReturnType<typeof vi.fn>
     execute: ReturnType<typeof vi.fn>
@@ -89,7 +90,8 @@ describe('ClipboardService', () => {
                 translateX: -100,
                 translateY: -200,
                 zoom: 2,
-                canvasEl: { width: 800, height: 600 },
+                width: 800,
+                height: 600,
             },
             getService: vi.fn((name: string) =>
                 name === 'imageUpload' ? imageUpload : selection,

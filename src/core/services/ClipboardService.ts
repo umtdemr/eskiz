@@ -107,8 +107,8 @@ export class ClipboardService extends Service {
         if (this.lastMouse) return canvas.getPointer(this.lastMouse)
 
         return {
-            x: -canvas.translateX + canvas.canvasEl.width / canvas.zoom / 2,
-            y: -canvas.translateY + canvas.canvasEl.height / canvas.zoom / 2,
+            x: -canvas.translateX + canvas.width / canvas.zoom / 2,
+            y: -canvas.translateY + canvas.height / canvas.zoom / 2,
         }
     }
 

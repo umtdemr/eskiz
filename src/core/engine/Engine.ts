@@ -1,4 +1,9 @@
-import { Canvas, Point, setCanvasStyles } from '@/core/canvas/Canvas.ts'
+import {
+    Canvas,
+    Point,
+    setCanvasStyles,
+    sizeCanvas,
+} from '@/core/canvas/Canvas.ts'
 import { WsEngine } from '@/core/WsEngine.ts'
 import { ISyncAdapter } from '@/core/sync/ISyncAdapter.ts'
 import { WsAdapter } from '@/core/sync/WsAdapter.ts'
@@ -136,13 +141,13 @@ export class Engine {
 
         // create upper canvas
         const upperCanvasEl = document.createElement('canvas')
-        upperCanvasEl.width = this.canvas.canvasEl.width
-        upperCanvasEl.height = this.canvas.canvasEl.height
         upperCanvasEl.id = 'upperCanvas'
         this.canvas.canvasEl.parentNode!.appendChild(upperCanvasEl)
 
         this._upperCanvasEl = upperCanvasEl
         setCanvasStyles(this._upperCanvasEl)
+        this.sizeUpperCanvas()
+        this.canvas.resized.add(this.sizeUpperCanvas, this)
 
         this._mouseController.start(this)
         this.getService<WheelService>('wheel')?.start()
@@ -156,6 +161,14 @@ export class Engine {
         return true
     }
 
+    private sizeUpperCanvas() {
+        const dpr = this.canvas.dpr
+        sizeCanvas(this._upperCanvasEl, dpr)
+        // resizing resets the 2d context
+        this._upperCanvasEl.getContext('2d')?.scale(dpr, dpr)
+        this.upperCanvasRenderer.requestRender()
+    }
+
     run() {
         if (this._isRunning) {
             return
@@ -166,6 +179,7 @@ export class Engine {
     }
 
     dispose() {
+        this.canvas.resized.remove(this.sizeUpperCanvas, this)
         this.canvas.dispose()
         this.wsEngine?.dispose()
         this.getService<ShortcutService>('shortcut').dispose()
