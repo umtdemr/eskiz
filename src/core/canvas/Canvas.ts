@@ -37,6 +37,7 @@ export const setCanvasStyles = (canvasEl: HTMLCanvasElement) => {
     canvasEl.style.position = 'absolute'
     canvasEl.style.left = '0'
     canvasEl.style.top = '0'
+    canvasEl.style.touchAction = 'none'
 }
 
 export class Canvas {
@@ -130,7 +131,6 @@ export class Canvas {
         if (this.needsRender) {
             this.render()
             this.needsRender = false
-            window.requestAnimationFrame(this.draw.bind(this))
         }
         this.tick.dispatch()
         window.requestAnimationFrame(this.draw.bind(this))

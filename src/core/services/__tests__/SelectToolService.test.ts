@@ -25,7 +25,7 @@ const rightClick = () =>
         pointer: { x: 0, y: 0 },
     } as unknown as CanvasMouseEvent)
 
-describe('SelectToolService context menu', () => {
+describe('SelectToolService', () => {
     beforeEach(() => {
         engine = createEngineMock({ cursor: {} })
         Object.assign(engine, { stagesInitiated: new Signal() })
@@ -47,6 +47,19 @@ describe('SelectToolService context menu', () => {
         vi.spyOn(service, 'checksObjectsInLayer').mockImplementation(
             () => underPointer,
         )
+    })
+
+    it('does not select on a cancelled press', () => {
+        const data = { pointer: { x: 0, y: 0 } } as CanvasMouseEvent
+        Object.assign(service, {
+            dragHandler: { start: vi.fn(), end: vi.fn(() => false) },
+        })
+        underPointer = makeRect(engine)
+
+        service.onMouseDown(data)
+        service.onMouseCancel(data)
+
+        expect(selection.selected).toEqual([])
     })
 
     it('selects the widget under the pointer and opens', () => {

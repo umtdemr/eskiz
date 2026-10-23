@@ -13,6 +13,7 @@ import { PageService } from '@/core/services/PageService.ts'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { useBoundStore } from '@/store/store.ts'
 import { initializeAllWidgets } from '@/core/initializers/registerWidgets.ts'
+import useNoBrowserZoom from '@/hooks/UseNoBrowserZoom'
 
 const DEFAULT_SLUG = 'local'
 const DEFAULT_BOARD_ID = 1
@@ -21,21 +22,10 @@ const DEFAULT_PAGE_ID = 1
 export default function StandaloneBoard() {
     const [isInitialized, setIsInitialized] = useState(false)
     const engineRef = useRef<Engine | null>(null)
-    const whiteboardRef = useRef<HTMLDivElement>(null)
 
     const setBoardData = useBoundStore((state) => state.setBoardData)
 
-    useEffect(() => {
-        const el = whiteboardRef.current
-        if (!el) return
-        const handler = (e: WheelEvent) => {
-            if (e.ctrlKey || e.metaKey) {
-                e.preventDefault()
-            }
-        }
-        el.addEventListener('wheel', handler, { passive: false })
-        return () => el.removeEventListener('wheel', handler)
-    }, [])
+    useNoBrowserZoom()
 
     useEffect(() => {
         const initializeApp = async () => {
@@ -79,7 +69,7 @@ export default function StandaloneBoard() {
 
     return (
         <TooltipProvider delayDuration={0}>
-            <div className="whiteboard" ref={whiteboardRef}>
+            <div className="whiteboard">
                 <div className="canvas_wrapper">
                     <canvas id="board"></canvas>
                 </div>

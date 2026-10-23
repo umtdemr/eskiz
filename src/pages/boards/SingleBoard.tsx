@@ -31,6 +31,7 @@ import { CollaboratorUser } from '@/store/collaborators.ts'
 import { PageService } from '@/core/services/PageService.ts'
 import { TooltipProvider } from '@/components/ui/tooltip'
 import { initializeAllWidgets } from '@/core/initializers/registerWidgets.ts'
+import useNoBrowserZoom from '@/hooks/UseNoBrowserZoom'
 
 export default function SingleBoard() {
     const [isInitialized, setIsInitialized] = useState(false)
@@ -41,7 +42,6 @@ export default function SingleBoard() {
     const [connectionError, setConnectionError] =
         useState<WsErrorMessage | null>(null)
     const disconnectionToastId = useRef('')
-    const whiteboardRef = useRef<HTMLDivElement>(null)
 
     const token = useBoundStore((state) => state.token)
     const userData = useBoundStore((state) => state.userData)
@@ -53,17 +53,7 @@ export default function SingleBoard() {
 
     const navigate = useNavigate()
 
-    useEffect(() => {
-        const el = whiteboardRef.current
-        if (!el) return
-        const handler = (e: WheelEvent) => {
-            if (e.ctrlKey || e.metaKey) {
-                e.preventDefault()
-            }
-        }
-        el.addEventListener('wheel', handler, { passive: false })
-        return () => el.removeEventListener('wheel', handler)
-    }, [])
+    useNoBrowserZoom()
 
     const boardQuery = useQuery({
         queryKey: ['board', slugId, token],
@@ -251,7 +241,7 @@ export default function SingleBoard() {
 
     return (
         <TooltipProvider delayDuration={0}>
-            <div className="whiteboard" ref={whiteboardRef}>
+            <div className="whiteboard">
                 <div className="canvas_wrapper">
                     <canvas id="board"></canvas>
                 </div>

@@ -36,7 +36,9 @@ Create a new file in `src/core/services/MyNewToolService.ts`.
 1.  **Extend `Service`**: Your class must extend the base `Service` class.
 2.  **Dependencies**: Inject `MouseController` and `ToolService` in the constructor.
 3.  **State Management**: Listen to `toolService.mainModeChanged` (or `subModeChanged`) to know when your tool is active.
-4.  **Mouse Events**: Bind/unbind `MouseController` events (`mouseDown`, `mouseMove`, `mouseUp`) when your tool activates/deactivates.
+4.  **Mouse Events**: Bind/unbind `MouseController` events (`mouseDown`, `mouseMove`, `mouseUp`, `mouseCancel`) when your tool activates/deactivates.
+    *   `mouseCancel` comes instead of `mouseUp` when a press ends without a release: a second finger starts a pinch, a pen takes over from a resting palm, or the browser sends `pointercancel`. Throw away what the press started (remove the half drawn widget, restore anything hidden) and don't save it, push history or switch tools.
+    *   If your tool has nothing to throw away, point `mouseCancel` at `onMouseUp` like `PanToolService`. If it does nothing until `mouseUp` (like `TextService`), you can skip it. `SelectToolService` is the exception: it keeps a drag or resize and only skips the click.
 5.  **Cursor**: Use `CursorService` to set the cursor when active.
 
 ### Example Template
@@ -88,6 +90,7 @@ export class MyNewToolService extends Service {
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
         this.mouseController.on('mouseUp', this.onMouseUp, this)
+        this.mouseController.on('mouseCancel', this.onMouseCancel, this)
     }
 
     private deactivate() {
@@ -98,6 +101,7 @@ export class MyNewToolService extends Service {
         this.mouseController.off('mouseDown', this.onMouseDown, this)
         this.mouseController.off('mouseMove', this.onMouseMove, this)
         this.mouseController.off('mouseUp', this.onMouseUp, this)
+        this.mouseController.off('mouseCancel', this.onMouseCancel, this)
     }
 
     private onMouseDown(data: CanvasMouseEvent) {
@@ -111,6 +115,10 @@ export class MyNewToolService extends Service {
 
     private onMouseUp(data: CanvasMouseEvent) {
         // Implement logic
+    }
+
+    private onMouseCancel() {
+        // Undo what onMouseDown/onMouseMove started, don't commit
     }
 
     dispose(): void {

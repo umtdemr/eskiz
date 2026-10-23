@@ -50,6 +50,7 @@ export class ShapeDrawerToolService extends Service {
         this.mouseController.on('mouseDown', this.onMouseDown, this)
         this.mouseController.on('mouseMove', this.onMouseMove, this)
         this.mouseController.on('mouseUp', this.onMouseUp, this)
+        this.mouseController.on('mouseCancel', this.onMouseCancel, this)
     }
 
     private onSubModeChanged(state: SubModeChangedState) {
@@ -165,10 +166,21 @@ export class ShapeDrawerToolService extends Service {
         this.reset()
     }
 
+    // drop the half drawn shape, the tool stays on
+    onMouseCancel() {
+        if (this.shape) {
+            this.engine.stage.widgetsDefaultLayer.removeChild(this.shape)
+            this.engine.canvas.requestRender()
+        }
+        this.shape = null
+        this.drawingStarted = false
+    }
+
     private reset() {
         this.mouseController.off('mouseDown', this.onMouseDown, this)
         this.mouseController.off('mouseMove', this.onMouseMove, this)
         this.mouseController.off('mouseUp', this.onMouseUp, this)
+        this.mouseController.off('mouseCancel', this.onMouseCancel, this)
         this.shape = null
         this.drawingStarted = false
         this.drawingMode = null
