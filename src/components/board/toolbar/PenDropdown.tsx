@@ -17,6 +17,7 @@ import {
     ACTION_MODES,
     PEN_CONSTANTS,
     SUB_ACTION_MODES,
+    TOOLBAR_BUTTON,
     TOOLBAR_COLORS,
 } from '@/helpers/Constant'
 import useOnClickOutside from '@/hooks/UseOutsideClick'
@@ -98,7 +99,7 @@ export function PenDropdown({
                     <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
-                            className={clsx('px-2 [&_svg]:size-5', {
+                            className={clsx(TOOLBAR_BUTTON, {
                                 'bg-sky-100':
                                     activeMode?.mainMode === ACTION_MODES.PATH,
                             })}
@@ -119,18 +120,13 @@ export function PenDropdown({
                     </TooltipContent>
                 </Tooltip>
                 {isOpen ? (
-                    <div
-                        className="absolute flex flex-col items-center gap-2 left-14 top-[50%] bg-white shadow-2xl p-1 rounded-lg z-50"
-                        style={{
-                            transform: 'translateY(-50%)',
-                        }}
-                    >
+                    <div className="absolute flex items-center gap-2 bottom-12 left-1/2 -translate-x-1/2 md:flex-col md:bottom-auto md:left-14 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 bg-white shadow-2xl p-1 rounded-lg z-50">
                         {tools.map((tool) => (
                             <Tooltip key={tool.mode}>
                                 <TooltipTrigger asChild>
                                     <Button
                                         variant="ghost"
-                                        className={clsx('px-2 [&_svg]:size-5', {
+                                        className={clsx(TOOLBAR_BUTTON, {
                                             'bg-sky-100':
                                                 activeMode?.subMode ===
                                                 tool.mode,
@@ -158,7 +154,7 @@ export function PenDropdown({
                         ))}
                         {activeMode.subMode === SUB_ACTION_MODES.DRAW_PEN ? (
                             <>
-                                <div className="w-3/5 h-[0.2px] bg-zinc-300 my-2" />
+                                <div className="w-[0.5px] h-6 bg-zinc-300 md:w-3/5 md:h-[0.2px] md:my-2" />
                                 <Tooltip>
                                     <TooltipTrigger>
                                         <ColorButton
@@ -183,12 +179,7 @@ export function PenDropdown({
 
                 {showColorDropdown &&
                 activeMode.subMode === SUB_ACTION_MODES.DRAW_PEN ? (
-                    <div
-                        className="absolute left-28 top-[50%]"
-                        style={{
-                            transform: 'translateY(-50%)',
-                        }}
-                    >
+                    <div className="absolute bottom-24 right-0 md:bottom-auto md:right-auto md:left-28 md:top-1/2 md:-translate-y-1/2">
                         <PenColorDropdown />
                     </div>
                 ) : null}

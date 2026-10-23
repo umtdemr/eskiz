@@ -13,6 +13,7 @@ import { Engine } from '@/core/engine/Engine'
 import {
     ACTION_MODES,
     SUB_ACTION_MODES,
+    TOOLBAR_BUTTON,
     TOOLBAR_COLORS,
 } from '@/helpers/Constant'
 
@@ -88,7 +89,7 @@ export function ShapesDropdown({
                     <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
-                            className={clsx('px-2 [&_svg]:size-5 relative', {
+                            className={clsx(TOOLBAR_BUTTON, 'relative', {
                                 'bg-sky-100': isSubModeForShapes(
                                     activeMode?.subMode,
                                 ),
@@ -111,7 +112,7 @@ export function ShapesDropdown({
                 </Tooltip>
                 {isOpen ? (
                     <div
-                        className="absolute flex gap-2 left-14 top-[50%] translate-y-[-50%] bg-white shadow-2xl p-1 rounded-lg z-50"
+                        className="absolute flex gap-2 bottom-12 left-1/2 -translate-x-1/2 md:bottom-auto md:left-14 md:top-1/2 md:translate-x-0 md:-translate-y-1/2 bg-white shadow-2xl p-1 rounded-lg z-50"
                         ref={menuRef}
                     >
                         {shapes.map((shape) => (
@@ -119,7 +120,7 @@ export function ShapesDropdown({
                                 <TooltipTrigger asChild>
                                     <Button
                                         variant="ghost"
-                                        className={clsx('px-2 [&_svg]:size-5', {
+                                        className={clsx(TOOLBAR_BUTTON, {
                                             'bg-sky-100':
                                                 activeMode?.subMode ===
                                                 shape.mode,
