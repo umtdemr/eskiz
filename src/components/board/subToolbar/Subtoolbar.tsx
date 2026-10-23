@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useRef } from 'react'
+import { useEffect, useLayoutEffect, useReducer, useRef } from 'react'
 import { Engine } from '@/core/engine/Engine'
 import './Subtoolbar.scss'
 import {
@@ -156,6 +156,14 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
         }
     }, [state.show, engine])
 
+    // keep it inside the screen
+    useLayoutEffect(() => {
+        const el = subtoolbarRef.current
+        if (!el) return
+        const maxLeft = window.innerWidth - el.offsetWidth - 8
+        if (el.offsetLeft > maxLeft) el.style.left = `${Math.max(8, maxLeft)}px`
+    })
+
     if (!selectionLayerRef.current?.selectionBorder) return null
 
     const selectedWidgets = selectionServiceRef.current.selected
@@ -166,15 +174,20 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
     const rotateControlAtTop =
         singleWidget != null && normalizedAngle > 90 && normalizedAngle < 270
 
-    const position = {
-        x: selectionLayerRef.current.selectionBorder.bounds.left,
-        y: selectionLayerRef.current.selectionBorder.bounds.top,
-    }
-
+    const { bounds } = selectionLayerRef.current.selectionBorder
     const transformedPos = engine.canvas.transformPoint(
-        position,
+        { x: bounds.left, y: bounds.top },
         engine.canvas.viewportTransform,
     )
+    const bottom = engine.canvas.transformPoint(
+        { x: bounds.left, y: bounds.bottom },
+        engine.canvas.viewportTransform,
+    ).y
+
+    // no room above, put it under the selection
+    let top = transformedPos.y - (rotateControlAtTop ? 100 : 70)
+    if (top < 8) top = bottom + (rotateControlAtTop ? 20 : 50)
+    top = Math.max(8, Math.min(top, window.innerHeight - 58))
 
     if (!state.show || !state.visible) return null
 
@@ -185,10 +198,8 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                 show: state.show,
             })}
             style={{
-                left: `${transformedPos.x}px`,
-                top: rotateControlAtTop
-                    ? `${transformedPos.y - 100}px`
-                    : `${transformedPos.y - 70}px`,
+                left: `${Math.max(8, transformedPos.x)}px`,
+                top: `${top}px`,
             }}
         >
             <>
