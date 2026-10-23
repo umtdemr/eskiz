@@ -3,8 +3,10 @@ import CanvasKitInit, {
     Surface,
     Canvas as SkiaCanvas,
     FontMgr,
+    GrDirectContext,
     Paint,
     Path,
+    WebGLContextHandle,
 } from 'canvaskit-wasm'
 import canvaskitWasmUrl from 'canvaskit-wasm/bin/canvaskit.wasm?url'
 import { ZOOM_LEVELS } from '@/helpers/Constant.ts'
@@ -34,21 +36,39 @@ export type RenderContext = {
 }
 
 export const setCanvasStyles = (canvasEl: HTMLCanvasElement) => {
-    canvasEl.style.position = 'absolute'
+    canvasEl.style.position = 'fixed'
     canvasEl.style.left = '0'
     canvasEl.style.top = '0'
     canvasEl.style.touchAction = 'none'
 }
 
+const MAX_DPR = 2
+
+export const getDpr = () => Math.min(window.devicePixelRatio || 1, MAX_DPR)
+
+export const sizeCanvas = (canvasEl: HTMLCanvasElement, dpr: number) => {
+    canvasEl.width = Math.round(window.innerWidth * dpr)
+    canvasEl.height = Math.round(window.innerHeight * dpr)
+    canvasEl.style.width = `${window.innerWidth}px`
+    canvasEl.style.height = `${window.innerHeight}px`
+}
+
 export class Canvas {
     private _initialized: boolean = false
+    private glContext: WebGLContextHandle
+    private grContext: GrDirectContext
     private surface: Surface
+    private skCanvas: SkiaCanvas
     private _canvasEl: HTMLCanvasElement
+    private _dpr = 1
+    private needsResize = false
+    private dprQuery: MediaQueryList | null = null
     private offsetX = 0
     private offsetY = 0
     private _stage: Stage
 
     private needsRender = false
+    private frame = 0
     private scale = 1
 
     private gridPaint: Paint
@@ -58,9 +78,11 @@ export class Canvas {
     tickBefore = new Signal()
     tick = new Signal()
     transform = new Signal()
+    resized = new Signal()
 
     constructor(stage: Stage) {
         this._stage = stage
+        this.onResize = this.onResize.bind(this)
     }
 
     async initialize() {
@@ -70,13 +92,14 @@ export class Canvas {
         }
         this._canvasEl = canvas
 
-        canvas.width = window.innerWidth
-        canvas.height = window.innerHeight
-
         // set canvas styles
         setCanvasStyles(this._canvasEl)
 
-        this.surface = canvasKit.MakeWebGLCanvasSurface(canvas)!
+        // kept across resizes so the gpu caches survive
+        this.glContext = canvasKit.GetWebGLContext(canvas)
+        this.grContext = canvasKit.MakeWebGLContext(this.glContext)!
+        this.resize()
+        window.addEventListener('resize', this.onResize)
 
         this.gridPaint = new canvasKit.Paint()
         this.gridPaint.setColor(canvasKit.BLACK)
@@ -92,34 +115,57 @@ export class Canvas {
         return true
     }
 
+    private resize() {
+        this._dpr = getDpr()
+        sizeCanvas(this._canvasEl, this._dpr)
+
+        this.surface?.delete()
+        this.surface = canvasKit.MakeOnScreenGLSurface(
+            this.grContext,
+            this._canvasEl.width,
+            this._canvasEl.height,
+            canvasKit.ColorSpace.SRGB,
+        )!
+        this.skCanvas = this.surface.getCanvas()
+
+        // devicePixelRatio changes when the window moves to another screen
+        this.dprQuery?.removeEventListener('change', this.onResize)
+        this.dprQuery = window.matchMedia(
+            `(resolution: ${window.devicePixelRatio}dppx)`,
+        )
+        this.dprQuery.addEventListener('change', this.onResize)
+
+        this.resized.dispatch()
+    }
+
+    private onResize() {
+        this.needsResize = true
+    }
+
     render() {
-        const draw = (ctx: SkiaCanvas) => {
-            ctx.clear(canvasKit.Color(239, 239, 239, 1))
+        const ctx = this.skCanvas
+        ctx.clear(canvasKit.Color(239, 239, 239, 1))
 
-            ctx.save()
-            ctx.scale(this.scale, this.scale)
-            ctx.translate(this.offsetX, this.offsetY)
+        ctx.save()
+        ctx.scale(this._dpr * this.scale, this._dpr * this.scale)
+        ctx.translate(this.offsetX, this.offsetY)
 
-            const height = this.surface.height()
-            const width = this.surface.width()
-
-            const viewport = {
-                left: -this.offsetX,
-                top: -this.offsetY,
-                right: width / this.scale - this.offsetX,
-                bottom: height / this.scale - this.offsetY,
-            }
-
-            if (this.gridType !== BoardGridType.NONE) {
-                this.drawGrid(ctx)
-            }
-
-            // render all elements
-            this._stage.render({ ctx, scale: this.scale, viewport })
-
-            ctx.restore()
+        const viewport = {
+            left: -this.offsetX,
+            top: -this.offsetY,
+            right: this.width / this.scale - this.offsetX,
+            bottom: this.height / this.scale - this.offsetY,
         }
-        this.surface.requestAnimationFrame(draw.bind(this))
+
+        if (this.gridType !== BoardGridType.NONE) {
+            this.drawGrid(ctx)
+        }
+
+        // render all elements
+        this._stage.render({ ctx, scale: this.scale, viewport })
+
+        ctx.restore()
+        this.surface.flush()
     }
 
     requestRender() {
@@ -128,12 +174,17 @@ export class Canvas {
 
     draw() {
         this.tickBefore.dispatch()
+        if (this.needsResize) {
+            this.needsResize = false
+            this.resize()
+            this.needsRender = true
+        }
         if (this.needsRender) {
             this.render()
             this.needsRender = false
         }
         this.tick.dispatch()
-        window.requestAnimationFrame(this.draw.bind(this))
+        this.frame = window.requestAnimationFrame(this.draw.bind(this))
     }
 
     setGridType(type: GridType) {
@@ -144,15 +195,13 @@ export class Canvas {
     drawGrid(ctx: SkiaCanvas) {
         if (this.gridType === BoardGridType.NONE) return
 
-        const height = this.surface.height()
-        const width = this.surface.width()
         const baseGridSize = 50
 
         // Calculate the visible area
         const visibleLeft = -this.offsetX
         const visibleTop = -this.offsetY
-        const visibleRight = width / this.scale - this.offsetX
-        const visibleBottom = height / this.scale - this.offsetY
+        const visibleRight = this.width / this.scale - this.offsetX
+        const visibleBottom = this.height / this.scale - this.offsetY
 
         // Calculate the appropriate grid size based on current scale
         const log10Scale = Math.log10(this.scale)
@@ -242,8 +291,14 @@ export class Canvas {
     }
 
     dispose() {
+        window.cancelAnimationFrame(this.frame)
+        window.removeEventListener('resize', this.onResize)
+        this.dprQuery?.removeEventListener('change', this.onResize)
         this.gridPaint?.delete()
         this.gridPath?.delete()
+        this.surface?.delete()
+        this.grContext?.delete()
+        if (this.glContext) canvasKit.deleteContext(this.glContext)
     }
 
     getPointer(e: MouseEvent): Point {
@@ -331,6 +386,19 @@ export class Canvas {
 
     get canvasEl(): HTMLCanvasElement {
         return this._canvasEl
+    }
+
+    get dpr() {
+        return this._dpr
+    }
+
+    // css pixels
+    get width() {
+        return this.surface.width() / this._dpr
+    }
+
+    get height() {
+        return this.surface.height() / this._dpr
     }
 }
 

@@ -1,6 +1,6 @@
 import { WidgetType, ImageType } from '@/core/constants'
 import { Widget, WidgetProps, WidgetJson } from '@/core/shapes/Widget'
-import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
+import { canvasKit, getDpr, RenderContext } from '@/core/canvas/Canvas'
 import { Image as SkiaImage } from 'canvaskit-wasm'
 import { TextureManager, TextureOptions } from '@/core/services/TextureManager'
 import { Engine } from '@/core/engine/Engine'
@@ -9,7 +9,7 @@ import { WsWidget } from '@/types/Websocket'
 const SVG_SCALE_TIERS = [1, 2, 3, 4] as const
 
 export function getSvgScaleTier(scale: number): number {
-    const dpr = window.devicePixelRatio || 1
+    const dpr = getDpr()
     const effectiveScale = scale * dpr
 
     for (const tier of SVG_SCALE_TIERS) {
@@ -122,7 +122,8 @@ export class Image extends Widget {
     private getBestVariation(scale: number): ImageVariation | undefined {
         if (!this._imageData || !this._imageData.variations) return undefined
 
-        const renderedWidth = this._width * scale
+        // in device pixels
+        const renderedWidth = this._width * scale * getDpr()
         let preferredType = 'original'
 
         if (renderedWidth <= 120) {

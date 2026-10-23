@@ -168,10 +168,8 @@ export class ImageUploadService extends Service {
 
         const canvas = this.engine.canvas
         const scale = canvas.zoom
-        const viewportCenterX =
-            -canvas.translateX + canvas.canvasEl.width / scale / 2
-        const viewportCenterY =
-            -canvas.translateY + canvas.canvasEl.height / scale / 2
+        const viewportCenterX = -canvas.translateX + canvas.width / scale / 2
+        const viewportCenterY = -canvas.translateY + canvas.height / scale / 2
 
         let currentX = 0
         let currentY = 0
