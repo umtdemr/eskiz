@@ -23,12 +23,15 @@ export default function Header({ engine }: { engine: Engine }) {
 
     return (
         <>
-            <div className="fixed top-5 left-5" id="header_left">
+            <div
+                className="fixed top-2 left-2 md:top-5 md:left-5"
+                id="header_left"
+            >
                 <BoardName engine={engine} />
             </div>
             {!isDisconnected && !engine.isStandalone ? (
                 <>
-                    <div className="fixed top-5 right-5 flex bg-white shadow px-2 py-2 rounded-xl h-12 items-center gap-2">
+                    <div className="fixed top-2 right-2 md:top-5 md:right-5 flex bg-white shadow px-2 py-2 rounded-xl h-12 items-center gap-2">
                         <UsersListDropdown />
                         {isUsersListCardActive ? <UsersListCard /> : null}
                     </div>

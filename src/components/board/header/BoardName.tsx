@@ -115,9 +115,9 @@ export function BoardName({ engine }: { engine: Engine }) {
     }
 
     return (
-        <div className="flex px-5 py-1 rounded-lg gap-1 items-center select-none bg-white shadow">
+        <div className="flex px-2 md:px-5 py-1 rounded-lg gap-1 items-center select-none bg-white shadow">
             {engine.isStandalone ? (
-                <span className="text-base font-bold h-8 px-3 flex justify-center items-center">
+                <span className="text-sm md:text-base font-bold h-8 px-3 flex justify-center items-center">
                     eskiz
                 </span>
             ) : (
@@ -126,7 +126,7 @@ export function BoardName({ engine }: { engine: Engine }) {
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="text-base font-bold"
+                            className="text-sm md:text-base font-bold"
                             disabled={isDisconnected}
                         >
                             <Link to={'/boards'}>eskiz</Link>
@@ -145,10 +145,13 @@ export function BoardName({ engine }: { engine: Engine }) {
                     <TooltipTrigger asChild>
                         <Button
                             variant="ghost"
-                            className={clsx('text-sm max-w-[300px]', {
-                                'border-2 border-solid border-blue-400':
-                                    isEditing,
-                            })}
+                            className={clsx(
+                                'text-xs md:text-sm max-w-[140px] md:max-w-[300px]',
+                                {
+                                    'border-2 border-solid border-blue-400':
+                                        isEditing,
+                                },
+                            )}
                             size="sm"
                             disabled={isEditingDisabled}
                             onClick={nameBtnClickHandler}
@@ -175,7 +178,7 @@ export function BoardName({ engine }: { engine: Engine }) {
                     </TooltipContent>
                 </Tooltip>
             ) : !engine.isStandalone ? (
-                <span className="text-sm px-3">{board.name}</span>
+                <span className="text-xs md:text-sm px-3">{board.name}</span>
             ) : null}
             {!engine.isStandalone &&
             board.owner_id === user.id &&
@@ -197,9 +200,7 @@ export function BoardName({ engine }: { engine: Engine }) {
                     </TooltipContent>
                 </Tooltip>
             ) : null}
-            {!engine.isStandalone ? (
-                <BoardSettingsMenu engine={engine} />
-            ) : null}
+            <BoardSettingsMenu engine={engine} />
         </div>
     )
 }

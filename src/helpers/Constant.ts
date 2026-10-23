@@ -156,3 +156,5 @@ export const TOOLBAR_COLORS = {
     SELECTED: 'oklch(42.4% 0.199 265.638)',
     DEFAULT: '#000',
 }
+
+export const TOOLBAR_BUTTON = 'h-8 px-2 [&_svg]:size-4 md:h-9 md:[&_svg]:size-5'

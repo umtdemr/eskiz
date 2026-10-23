@@ -21,17 +21,20 @@ import { useBoundStore } from '@/store/store'
 import {
     ACTION_MODES,
     SUB_ACTION_MODES,
+    TOOLBAR_BUTTON,
     TOOLBAR_COLORS,
 } from '@/helpers/Constant'
 import { PenDropdown } from '@/components/board/toolbar/PenDropdown'
 import { Engine } from '@/core/engine/Engine'
 import { ImageUploadService } from '@/core/services/ImageUploadService'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 interface ToolbarProps {
     engine: Engine
 }
 
 export default function Toolbar({ engine }: ToolbarProps) {
+    const isMobile = useIsMobile()
     const [historyState, setHistoryState] = useState({
         canUndo: engine.historyManager.canUndo,
         canRedo: engine.historyManager.canRedo,
@@ -75,19 +78,51 @@ export default function Toolbar({ engine }: ToolbarProps) {
         changeActiveMode(ACTION_MODES.LINE)
     }, [changeActiveMode])
 
+    const history = (
+        <>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className={TOOLBAR_BUTTON}
+                        onClick={() => engine.execute('undo', {})}
+                        disabled={!historyState.canUndo}
+                    >
+                        <Undo />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'right'}>
+                    <p>Undo</p>
+                </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button
+                        variant="ghost"
+                        className={TOOLBAR_BUTTON}
+                        onClick={() => engine.execute('redo', {})}
+                        disabled={!historyState.canRedo}
+                    >
+                        <Redo />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent side={'right'}>
+                    <p>Redo</p>
+                </TooltipContent>
+            </Tooltip>
+        </>
+    )
+
     return (
         <div
-            className="fixed flex gap-2 flex-col rounded p-2 top-[50%] left-5 bg-white"
-            style={{
-                transform: 'translateY(-50%)',
-                boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)',
-            }}
+            className="fixed flex gap-1 rounded p-1 bottom-2 left-1/2 -translate-x-1/2 bg-white md:flex-col md:gap-2 md:p-2 md:bottom-auto md:top-1/2 md:left-5 md:translate-x-0 md:-translate-y-1/2"
+            style={{ boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)' }}
         >
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className={clsx('px-2 [&_svg]:size-5', {
+                        className={clsx(TOOLBAR_BUTTON, {
                             'bg-sky-100':
                                 activeMode?.mainMode === ACTION_MODES.SELECT,
                         })}
@@ -121,7 +156,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className={clsx('px-2 [&_svg]:size-5', {
+                        className={clsx(TOOLBAR_BUTTON, {
                             'bg-sky-100':
                                 activeMode?.mainMode === ACTION_MODES.PAN,
                         })}
@@ -140,12 +175,12 @@ export default function Toolbar({ engine }: ToolbarProps) {
                     <p>Pan</p>
                 </TooltipContent>
             </Tooltip>
-            <div className="w-full h-[0.5px] bg-zinc-400 my-5" />
+            <div className="w-[0.5px] h-6 self-center bg-zinc-400 mx-1 md:w-full md:h-[0.5px] md:my-5 md:mx-0" />
             <Tooltip>
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className={clsx('px-2 [&_svg]:size-5', {
+                        className={clsx(TOOLBAR_BUTTON, {
                             'bg-sky-100':
                                 activeMode?.mainMode === ACTION_MODES.TEXT,
                         })}
@@ -173,7 +208,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className={clsx('px-2 [&_svg]:size-5', {
+                        className={clsx(TOOLBAR_BUTTON, {
                             'bg-sky-100':
                                 activeMode?.mainMode === ACTION_MODES.LINE,
                         })}
@@ -196,7 +231,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className="px-2 [&_svg]:size-5"
+                        className={TOOLBAR_BUTTON}
                         onClick={() => {
                             engine
                                 .getService<ImageUploadService>('imageUpload')
@@ -219,7 +254,7 @@ export default function Toolbar({ engine }: ToolbarProps) {
                 <TooltipTrigger asChild>
                     <Button
                         variant="ghost"
-                        className={clsx('px-2 [&_svg]:size-5', {
+                        className={clsx(TOOLBAR_BUTTON, {
                             'bg-sky-100':
                                 activeMode?.mainMode ===
                                 ACTION_MODES.STICKY_NOTE,
@@ -242,37 +277,21 @@ export default function Toolbar({ engine }: ToolbarProps) {
                     <p>Sticky note</p>
                 </TooltipContent>
             </Tooltip>
-            <div className="w-full h-[0.5px] bg-zinc-400 my-5" />
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        className="px-2 [&_svg]:size-5"
-                        onClick={() => engine.execute('undo', {})}
-                        disabled={!historyState.canUndo}
-                    >
-                        <Undo />
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent side={'right'}>
-                    <p>Undo</p>
-                </TooltipContent>
-            </Tooltip>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button
-                        variant="ghost"
-                        className="px-2 [&_svg]:size-5"
-                        onClick={() => engine.execute('redo', {})}
-                        disabled={!historyState.canRedo}
-                    >
-                        <Redo />
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent side={'right'}>
-                    <p>Redo</p>
-                </TooltipContent>
-            </Tooltip>
+            {isMobile ? (
+                <div
+                    className="absolute left-0 bottom-full mb-2 flex gap-1 rounded p-1 bg-white"
+                    style={{
+                        boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)',
+                    }}
+                >
+                    {history}
+                </div>
+            ) : (
+                <>
+                    <div className="w-full h-[0.5px] bg-zinc-400 my-5" />
+                    {history}
+                </>
+            )}
         </div>
     )
 }

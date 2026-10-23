@@ -5,7 +5,7 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
-import { CircleHelp, Keyboard, Minus, Plus, ZoomIn } from 'lucide-react'
+import { Minus, Plus, ZoomIn } from 'lucide-react'
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -13,7 +13,6 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx'
 import { Engine } from '@/core/engine/Engine.ts'
-import { ShortcutsModal } from '@/components/modals/shortcutsModal/ShortcutsModal'
 
 const ZOOM_STEPS = [
     0.01, 0.02, 0.05, 0.08, 0.1, 0.15, 0.2, 0.25, 0.33, 0.5, 0.75, 1, 1.25, 1.5,
@@ -23,7 +22,6 @@ const ZOOM_DROPDOWN = [0.25, 0.5, 1, 2]
 
 export default function Footer({ engine }: { engine: Engine }) {
     const [zoom, setZoom] = useState(100)
-    const [showShortcuts, setShowShortcuts] = useState(false)
 
     useEffect(() => {
         const zoomChangeHandler = (val: number) => {
@@ -57,7 +55,7 @@ export default function Footer({ engine }: { engine: Engine }) {
     }
 
     return (
-        <div className="fixed flex gap-2 bottom-5 right-5">
+        <div className="fixed hidden md:flex gap-2 bottom-5 right-5">
             <div
                 className="flex gap-1 px-2 py-1 bg-white"
                 style={{ boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)' }}
@@ -118,37 +116,6 @@ export default function Footer({ engine }: { engine: Engine }) {
                     </TooltipContent>
                 </Tooltip>
             </div>
-            <div
-                className="flex px-1 py-1 bg-white"
-                style={{ boxShadow: '0 4px 16px 0 rgba(161 161 170 / 40%)' }}
-            >
-                <DropdownMenu modal={false}>
-                    <DropdownMenuTrigger asChild>
-                        <Button
-                            variant="ghost"
-                            className="px-2 py-1"
-                            aria-label="Help"
-                        >
-                            <CircleHelp />
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent
-                        sideOffset={20}
-                        side={'top'}
-                        align="end"
-                    >
-                        <DropdownMenuItem
-                            onSelect={() => setShowShortcuts(true)}
-                        >
-                            <Keyboard /> Keyboard shortcuts
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </div>
-            <ShortcutsModal
-                isOpen={showShortcuts}
-                closeModal={() => setShowShortcuts(false)}
-            />
         </div>
     )
 }
