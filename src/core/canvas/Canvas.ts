@@ -6,6 +6,7 @@ import CanvasKitInit, {
     GrDirectContext,
     Paint,
     Path,
+    WebGLContextHandle,
 } from 'canvaskit-wasm'
 import canvaskitWasmUrl from 'canvaskit-wasm/bin/canvaskit.wasm?url'
 import { ZOOM_LEVELS } from '@/helpers/Constant.ts'
@@ -54,6 +55,7 @@ export const sizeCanvas = (canvasEl: HTMLCanvasElement, dpr: number) => {
 
 export class Canvas {
     private _initialized: boolean = false
+    private glContext: WebGLContextHandle
     private grContext: GrDirectContext
     private surface: Surface
     private skCanvas: SkiaCanvas
@@ -66,6 +68,7 @@ export class Canvas {
     private _stage: Stage
 
     private needsRender = false
+    private frame = 0
     private scale = 1
 
     private gridPaint: Paint
@@ -93,9 +96,8 @@ export class Canvas {
         setCanvasStyles(this._canvasEl)
 
         // kept across resizes so the gpu caches survive
-        this.grContext = canvasKit.MakeWebGLContext(
-            canvasKit.GetWebGLContext(canvas),
-        )!
+        this.glContext = canvasKit.GetWebGLContext(canvas)
+        this.grContext = canvasKit.MakeWebGLContext(this.glContext)!
         this.resize()
         window.addEventListener('resize', this.onResize)
 
@@ -182,7 +184,7 @@ export class Canvas {
             this.needsRender = false
         }
         this.tick.dispatch()
-        window.requestAnimationFrame(this.draw.bind(this))
+        this.frame = window.requestAnimationFrame(this.draw.bind(this))
     }
 
     setGridType(type: GridType) {
@@ -289,10 +291,14 @@ export class Canvas {
     }
 
     dispose() {
+        window.cancelAnimationFrame(this.frame)
         window.removeEventListener('resize', this.onResize)
         this.dprQuery?.removeEventListener('change', this.onResize)
         this.gridPaint?.delete()
         this.gridPath?.delete()
+        this.surface?.delete()
+        this.grContext?.delete()
+        if (this.glContext) canvasKit.deleteContext(this.glContext)
     }
 
     getPointer(e: MouseEvent): Point {
