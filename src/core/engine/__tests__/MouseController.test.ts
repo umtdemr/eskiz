@@ -215,6 +215,34 @@ describe('MouseController', () => {
         expect(dbl).toHaveBeenCalledOnce()
     })
 
+    it('emits double click for taps a few pixels apart', () => {
+        const dbl = vi.fn()
+        controller.on('doubleClick', dbl)
+
+        handlers.pointerdown(touch(1, 10, 10))
+        handlers.pointerup(touch(1, 10, 10))
+        handlers.pointerdown(touch(1, 20, 14))
+        handlers.pointerup(touch(1, 20, 14))
+
+        expect(dbl).toHaveBeenCalledOnce()
+    })
+
+    it('moves to the end of a quick swipe', () => {
+        const events: string[] = []
+        controller.on('mouseDown', () => void events.push('down'))
+        controller.on(
+            'mouseMove',
+            (d) => void events.push(`move ${d.e.clientX}`),
+        )
+        controller.on('mouseUp', () => void events.push('up'))
+
+        handlers.pointerdown(touch(1, 10, 10))
+        handlers.pointermove({ ...touch(1, 60, 10), timeStamp: 50 })
+        handlers.pointerup(touch(1, 60, 10))
+
+        expect(events).toEqual(['down', 'move 60', 'up'])
+    })
+
     it('ignores palm touches while a pen draws', () => {
         const move = vi.fn()
         const up = vi.fn()

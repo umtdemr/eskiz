@@ -26,6 +26,7 @@ const DOUBLE_CLICK_DELAY = 300 // Max time between clicks for double click (ms)
 const DOUBLE_CLICK_THRESHOLD = 5 // Max movement allowed between clicks (pixels)
 const MOVE_THRESHOLD = 3 // Movement tolerance during click (pixels)
 const TOUCH_SLOP = 8 // finger travel before a touch counts as a drag (pixels)
+const DOUBLE_TAP_THRESHOLD = 16 // fingers land further apart than a mouse (pixels)
 const PINCH_DELAY = 100 // time a second finger has to start a pinch (ms)
 const PINCH_MIN_DIST = 30 // closer fingers would blow up the scale (pixels)
 
@@ -204,6 +205,9 @@ export class MouseController extends Emitter<EngineEventsMap> {
             this.pendingDown = null
             if (e.type === 'pointercancel') return
             this.press(down)
+            // a quick swipe still moves to where the finger left
+            this.lastEvent = e
+            this.mouseMoved = true
         }
 
         if (!this._isMouseDown || e.pointerId !== this.lastEvent.pointerId) {
@@ -222,8 +226,12 @@ export class MouseController extends Emitter<EngineEventsMap> {
         if (currentTime - this.lastClickTime <= DOUBLE_CLICK_DELAY) {
             const dx = Math.abs(e.clientX - this.lastClickX)
             const dy = Math.abs(e.clientY - this.lastClickY)
+            const threshold =
+                e.pointerType === 'touch'
+                    ? DOUBLE_TAP_THRESHOLD
+                    : DOUBLE_CLICK_THRESHOLD
 
-            if (dx <= DOUBLE_CLICK_THRESHOLD && dy <= DOUBLE_CLICK_THRESHOLD) {
+            if (dx <= threshold && dy <= threshold) {
                 this.emit('doubleClick', wrappedMouseEvent)
             }
         }
