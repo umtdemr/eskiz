@@ -14,12 +14,12 @@ const makeEngine = () =>
         },
     }) as unknown as Engine
 
+const makeRect = (engine: Engine, x = 0, y = 0) =>
+    new Rectangle({ x, y, width: 100, height: 50, properties: {} }, engine)
+
 const setup = () => {
     const engine = makeEngine()
-    const rect = new Rectangle(
-        { x: 0, y: 0, width: 100, height: 50, properties: {} },
-        engine,
-    )
+    const rect = makeRect(engine)
     const border = new Border(
         { widgets: [rect], parentLayer: {} as Layer },
         engine,
@@ -36,6 +36,21 @@ describe('Border', () => {
 
         expect(border.left).toBe(200)
         expect(border.top).toBe(120)
+    })
+
+    it('follows every widget of a multi selection', () => {
+        const engine = makeEngine()
+        const a = makeRect(engine)
+        const b = makeRect(engine, 200, 0)
+        const border = new Border(
+            { widgets: [a, b], parentLayer: {} as Layer },
+            engine,
+        )
+
+        b.move(200, 100)
+        engine.canvas.tickBefore.dispatch()
+
+        expect(border.height).toBe(150)
     })
 
     it('stops following after destroy', () => {
