@@ -20,10 +20,11 @@ export interface ShapeBgColorInputProps {
 
 function getSelectedFillColor(engine: Engine): string | null {
     const selectionService = engine.getService<SelectionService>('selection')
-    if (selectionService.selected.length !== 1) return null
-    const widget = selectionService.selected[0]
+    const widget = selectionService.selected.find(
+        (w) => w.properties && 'fillColor' in w.properties,
+    )
 
-    if (widget.properties && 'fillColor' in widget.properties) {
+    if (widget) {
         const color = widget.properties.fillColor as RGBA
         if (color) {
             return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`

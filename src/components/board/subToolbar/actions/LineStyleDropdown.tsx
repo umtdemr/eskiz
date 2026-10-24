@@ -30,10 +30,9 @@ export function LineStyleDropdown({ engine }: LineStyleDropdownProps) {
         const selectionService =
             engine.getService<SelectionService>('selection')
 
-        if (selectionService.selected.length !== 1) {
-            return
-        }
-        const selectedWidget = selectionService.selected[0]
+        const selectedWidget = selectionService.selected.find(
+            (w) => w instanceof Line,
+        )
 
         if (!(selectedWidget instanceof Line)) {
             return

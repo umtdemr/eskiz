@@ -42,10 +42,13 @@ export function ShapeBorderColorDropdown({
         const selectionService =
             engine.getService<SelectionService>('selection')
 
-        if (selectionService.selected.length !== 1) {
-            return
-        }
-        const selectedWidget = selectionService.selected[0]
+        const { selected } = selectionService
+        // shapes have more options than paths, show theirs
+        const selectedWidget =
+            selected.find((w) => w instanceof Rectangle) ??
+            selected.find((w) => w.widgetType === 'shape') ??
+            selected.find((w) => w.widgetType === 'path')
+        if (!selectedWidget) return
 
         if (selectedWidget.widgetType === 'path') {
             const color = selectedWidget.properties.color as RGBA

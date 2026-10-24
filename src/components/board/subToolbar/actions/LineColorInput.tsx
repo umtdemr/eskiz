@@ -20,8 +20,7 @@ export interface LineColorInputProps {
 
 function getSelectedStrokeColor(engine: Engine): string | null {
     const selectionService = engine.getService<SelectionService>('selection')
-    if (selectionService.selected.length !== 1) return null
-    const widget = selectionService.selected[0]
+    const widget = selectionService.selected.find((w) => w instanceof Line)
 
     if (widget instanceof Line) {
         const color = widget.strokeColor

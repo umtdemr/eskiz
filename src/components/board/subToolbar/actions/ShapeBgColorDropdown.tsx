@@ -27,16 +27,17 @@ export function ShapeBgColorDropdown({
         const selectionService =
             engine.getService<SelectionService>('selection')
 
-        if (selectionService.selected.length !== 1) {
-            return
-        }
-        const selectedWidget = selectionService.selected[0]
-        if (selectedWidget.widgetType !== 'shape') {
-            return
-        }
-        const color = selectedWidget.properties.fillColor as RGBA
+        const fills = selectionService.selected
+            .filter((w) => w.widgetType === 'shape')
+            .map((w) => w.properties.fillColor as RGBA)
+        if (!fills.length) return
 
-        if (color.a === 0 && color.r === 0 && color.g === 0 && color.b === 0) {
+        // transparent ones don't take opacity, show the first that does
+        const color = fills.find(
+            (c) => !(c.a === 0 && c.r === 0 && c.g === 0 && c.b === 0),
+        )
+
+        if (!color) {
             setShowOpacity(false)
         } else {
             setOpacity(color.a)

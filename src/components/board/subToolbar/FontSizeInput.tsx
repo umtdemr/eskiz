@@ -26,10 +26,12 @@ export function FontSizeInput({ id, inputId, engine }: FontSizeInputProps) {
         const selectionService =
             engine.getService<SelectionService>('selection')
 
-        if (selectionService.selected.length !== 1) {
-            return
-        }
-        const selectedWidget = selectionService.selected[0]
+        // first one with text decides what to show
+        const selectedWidget = selectionService.selected.find(
+            (w) =>
+                w instanceof TextBox ||
+                (w instanceof Shape && w.textProperties),
+        )
 
         if (selectedWidget instanceof TextBox) {
             setInputVal(selectedWidget.fontSize.toString())

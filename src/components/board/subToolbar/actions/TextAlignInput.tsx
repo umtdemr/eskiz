@@ -29,10 +29,11 @@ export function TextAlignInput({ tooltip, id, engine }: TextAlignInputProps) {
         const selectionService =
             engine.getService<SelectionService>('selection')
 
-        if (selectionService.selected.length !== 1) {
-            return
-        }
-        const selectedWidget = selectionService.selected[0]
+        const selectedWidget = selectionService.selected.find(
+            (w) =>
+                w instanceof TextBox ||
+                (w instanceof Shape && w.textProperties),
+        )
 
         if (selectedWidget instanceof TextBox) {
             setCurrentAlign(selectedWidget.properties.textAlign || 'left')
