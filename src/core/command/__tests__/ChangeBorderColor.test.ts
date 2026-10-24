@@ -118,6 +118,28 @@ describe('ChangeBorderColor', () => {
             expect(b.properties.strokeColor).toEqual(CANVAS_COLORS.RED)
             expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
+
+        it('keeps each color when only the opacity changes', () => {
+            const rect = makeRect(engine)
+            const line = makeLine(engine)
+            const pen = makePen(engine)
+            rect.changeBorderColor(CANVAS_COLORS.RED)
+            line.changeBorderColor(CANVAS_COLORS.BLACK)
+            pen.changeBorderColor(CANVAS_COLORS.RED)
+
+            command.execute(
+                createCommandCtx(engine, {
+                    selected: [rect, line, pen],
+                    params: { opacity: 0.5 },
+                }),
+            )
+
+            const half = { ...CANVAS_COLORS.RED, a: 0.5 }
+            expect(rect.properties.strokeColor).toEqual(half)
+            expect(line.strokeColor).toEqual({ ...CANVAS_COLORS.BLACK, a: 0.5 })
+            expect(pen.properties.color).toEqual(half)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
+        })
     })
 
     describe('execute (continuous)', () => {

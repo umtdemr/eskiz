@@ -20,8 +20,9 @@ export interface StickyNoteBgColorInputProps {
 
 function getSelectedFillColor(engine: Engine): string | null {
     const selectionService = engine.getService<SelectionService>('selection')
-    if (selectionService.selected.length !== 1) return null
-    const widget = selectionService.selected[0]
+    const widget = selectionService.selected.find(
+        (w) => w instanceof StickyNote,
+    )
     if (widget instanceof StickyNote) {
         const color = widget.properties.fillColor as RGBA
         return `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`

@@ -50,15 +50,14 @@ describe('ChangeBgColor', () => {
             expect(command.canExecute(makeCtx([makeRect(true)]))).toBe(false)
         })
 
-        it('returns false when a selected widget cannot change bg color', () => {
+        it('returns false when no selected widget can change bg color', () => {
             const widget = {
                 isLocked: false,
                 canChangeBgColor: () => false,
             } as unknown as Widget
 
-            expect(command.canExecute(makeCtx([makeRect(), widget]))).toBe(
-                false,
-            )
+            expect(command.canExecute(makeCtx([widget]))).toBe(false)
+            expect(command.canExecute(makeCtx([makeRect(), widget]))).toBe(true)
         })
 
         it('returns true for unlocked widgets that support bg color', () => {
@@ -156,6 +155,34 @@ describe('ChangeBgColor', () => {
 
             expect(widget.changeBgColor).not.toHaveBeenCalled()
             expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+        })
+
+        it('keeps each color when only the opacity changes', () => {
+            const red = makeRect()
+            const black = makeRect()
+            const empty = makeRect()
+            red.changeBgColor(CANVAS_COLORS.RED)
+            black.changeBgColor(CANVAS_COLORS.BLACK)
+
+            command.execute(
+                createCommandCtx(engine, {
+                    selected: [red, black, empty],
+                    params: { opacity: 0.5 },
+                }),
+            )
+
+            expect(red.properties.fillColor).toEqual({
+                ...CANVAS_COLORS.RED,
+                a: 0.5,
+            })
+            expect(black.properties.fillColor).toEqual({
+                ...CANVAS_COLORS.BLACK,
+                a: 0.5,
+            })
+            // transparent stays transparent
+            expect(empty.properties.fillColor).toEqual(
+                CANVAS_COLORS.TRANSPARENT,
+            )
         })
     })
 

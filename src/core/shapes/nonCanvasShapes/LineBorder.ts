@@ -44,7 +44,7 @@ export class LineBorder extends Widget {
         this.paint.setStrokeCap(canvasKit.StrokeCap.Round)
 
         this.listenLine()
-        this._engine.canvas.tick.add(this.onTick, this)
+        this._engine.canvas.tickBefore.add(this.onTick, this)
     }
 
     private listenLine() {
@@ -97,7 +97,7 @@ export class LineBorder extends Widget {
 
     destroy(): void {
         this.line.boundsChanged.remove(this.onLineBoundsChanged, this)
-        this._engine.canvas.tick.remove(this.onTick, this)
+        this._engine.canvas.tickBefore.remove(this.onTick, this)
         this._borderPath?.delete()
         this._borderPath = null
         this.paint.delete()

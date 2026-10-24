@@ -107,6 +107,16 @@ describe('ChangeFontSize', () => {
             expect(b.fontSize).toBe(24)
             expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
         })
+
+        it('changes the ones with text when some have none', () => {
+            const withText = makeRect(engine, { text: 'hi' })
+            const empty = makeRect(engine)
+
+            command.execute(makeCtx([withText, empty]))
+
+            expect(withText.textProperties.fontSize).toBe(24)
+            expect(engine.transactionHandler.begin).toHaveBeenCalledOnce()
+        })
     })
 
     describe('execute (continuous)', () => {

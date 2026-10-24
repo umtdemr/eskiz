@@ -6,7 +6,14 @@ import { Line } from '@/core/shapes/line/Line'
 import { EditingMethods } from '../transaction/State'
 import { Command, CommandCtx } from './Command'
 
-type Params = { color: RGBA }
+// opacity keeps each widget's own color
+type Params = { color: RGBA } | { opacity: number }
+
+const strokeColorOf = (widget: Shape | Path | Line) => {
+    if (widget instanceof Line) return widget.strokeColor
+    const key = widget instanceof Path ? 'color' : 'strokeColor'
+    return widget.properties[key] as RGBA | undefined
+}
 
 export class ChangeBorderColor extends Command<Params> {
     readonly name = 'changeBorderColor'
@@ -18,8 +25,7 @@ export class ChangeBorderColor extends Command<Params> {
     execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
 
-        const { color } = ctx.params
-        const { widgets } = ctx
+        const { params, widgets } = ctx
 
         const targets = widgets.filter(
             (widget): widget is Shape | Path | Line =>
@@ -38,7 +44,12 @@ export class ChangeBorderColor extends Command<Params> {
         this.edit(ctx, editTable, () => {
             let changed = false
             for (const widget of targets) {
-                if (widget.changeBorderColor(color)) changed = true
+                const current = strokeColorOf(widget)
+                const color =
+                    'color' in params
+                        ? params.color
+                        : current && { ...current, a: params.opacity }
+                if (color && widget.changeBorderColor(color)) changed = true
             }
             return changed
         })

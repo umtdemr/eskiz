@@ -73,7 +73,7 @@ export class Border extends Widget {
 
         this.bindWidgets = props.widgets
         this.listenWidgets()
-        this._engine.canvas.tick.add(this.onTick, this)
+        this._engine.canvas.tickBefore.add(this.onTick, this)
     }
 
     protected renderContent(renderContext: RenderContext): void {
@@ -84,8 +84,9 @@ export class Border extends Widget {
     }
 
     private listenWidgets() {
-        const widget = this.bindWidgets![0]
-        widget.boundsChanged.add(this.onWidgetBoundsChanged, this)
+        for (const widget of this.bindWidgets!) {
+            widget.boundsChanged.add(this.onWidgetBoundsChanged, this)
+        }
     }
 
     private onWidgetBoundsChanged() {
@@ -109,9 +110,10 @@ export class Border extends Widget {
     }
 
     destroy(): void {
-        const widget = this.bindWidgets![0]
-        widget.boundsChanged.remove(this.onWidgetBoundsChanged, this)
-        this._engine.canvas.tick.remove(this.onTick, this)
+        for (const widget of this.bindWidgets!) {
+            widget.boundsChanged.remove(this.onWidgetBoundsChanged, this)
+        }
+        this._engine.canvas.tickBefore.remove(this.onTick, this)
         this.paint.delete()
         super.destroy()
     }

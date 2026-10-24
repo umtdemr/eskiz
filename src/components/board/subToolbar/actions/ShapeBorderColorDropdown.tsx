@@ -21,11 +21,13 @@ import { Rectangle } from '@/core/shapes/Rectangle'
 export interface ShapeBorderColorDropdownProps {
     engine: Engine
     onColorChange: (colorStr: string, isImmediate?: boolean) => void
+    onOpacityChange: (opacity: number) => void
 }
 
 export function ShapeBorderColorDropdown({
     engine,
     onColorChange,
+    onOpacityChange,
 }: ShapeBorderColorDropdownProps) {
     const [opacity, setOpacity] = useState(1)
     const [thickness, setThickness] = useState(DEFAULT_SHAPE_THICKNESS)
@@ -40,10 +42,13 @@ export function ShapeBorderColorDropdown({
         const selectionService =
             engine.getService<SelectionService>('selection')
 
-        if (selectionService.selected.length !== 1) {
-            return
-        }
-        const selectedWidget = selectionService.selected[0]
+        const { selected } = selectionService
+        // shapes have more options than paths, show theirs
+        const selectedWidget =
+            selected.find((w) => w instanceof Rectangle) ??
+            selected.find((w) => w.widgetType === 'shape') ??
+            selected.find((w) => w.widgetType === 'path')
+        if (!selectedWidget) return
 
         if (selectedWidget.widgetType === 'path') {
             const color = selectedWidget.properties.color as RGBA
@@ -101,33 +106,9 @@ export function ShapeBorderColorDropdown({
     }
 
     const handleOpacityChange = (newOpacityArr: number[]) => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-        if (selectionService.selected.length !== 1) return
-
-        const selected = selectionService.selected[0]
         const newOpacity = newOpacityArr[0]
         setOpacity(newOpacity)
-
-        // Get the correct color property based on widget type
-        const colorProp =
-            selected.widgetType === 'path'
-                ? selected.properties.color
-                : selected.properties.strokeColor
-
-        if (!colorProp) return
-
-        const color = {
-            ...(colorProp as RGBA),
-            a: newOpacity,
-        }
-
-        engine.execute(
-            'changeBorderColor',
-            { color },
-            { continuous: true, widgets: [selected] },
-        )
-        onColorChange(`rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`)
+        onOpacityChange(newOpacity)
     }
 
     const handleColorSelect = (signature: ColorSelectSignature) => {

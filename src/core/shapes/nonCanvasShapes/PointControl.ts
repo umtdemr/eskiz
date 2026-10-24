@@ -30,7 +30,7 @@ export class PointControl extends Control {
 
         this.line.boundsChanged.add(this.onLineBoundsChanged, this)
         this.updatePosition()
-        this.engine.canvas.tick.add(this.onTick, this)
+        this.engine.canvas.tickBefore.add(this.onTick, this)
         this.paint = new canvasKit.Paint()
         this.paint.setAntiAlias(true)
     }
@@ -101,7 +101,7 @@ export class PointControl extends Control {
 
     destroy() {
         this.line.boundsChanged.remove(this.onLineBoundsChanged, this)
-        this.engine.canvas.tick.remove(this.onTick, this)
+        this.engine.canvas.tickBefore.remove(this.onTick, this)
         this.paint?.delete()
         super.destroy()
     }

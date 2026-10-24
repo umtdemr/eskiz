@@ -11,11 +11,13 @@ import { RGBA } from '@/core/shapes/Color'
 
 export interface ShapeBgColorDropdownProps {
     onColorSelect: (signature: ColorSelectSignature) => void
+    onOpacityChange: (opacity: number) => void
     engine: Engine
 }
 
 export function ShapeBgColorDropdown({
     onColorSelect,
+    onOpacityChange,
     engine,
 }: ShapeBgColorDropdownProps) {
     const [showOpacity, setShowOpacity] = useState(true)
@@ -25,16 +27,17 @@ export function ShapeBgColorDropdown({
         const selectionService =
             engine.getService<SelectionService>('selection')
 
-        if (selectionService.selected.length !== 1) {
-            return
-        }
-        const selectedWidget = selectionService.selected[0]
-        if (selectedWidget.widgetType !== 'shape') {
-            return
-        }
-        const color = selectedWidget.properties.fillColor as RGBA
+        const fills = selectionService.selected
+            .filter((w) => w.widgetType === 'shape')
+            .map((w) => w.properties.fillColor as RGBA)
+        if (!fills.length) return
 
-        if (color.a === 0 && color.r === 0 && color.g === 0 && color.b === 0) {
+        // transparent ones don't take opacity, show the first that does
+        const color = fills.find(
+            (c) => !(c.a === 0 && c.r === 0 && c.g === 0 && c.b === 0),
+        )
+
+        if (!color) {
             setShowOpacity(false)
         } else {
             setOpacity(color.a)
@@ -42,24 +45,9 @@ export function ShapeBgColorDropdown({
     }, [engine])
 
     const handleOpacityChange = (newOpacityArr: number[]) => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-        if (selectionService.selected.length !== 1) return
-
-        const selected = selectionService.selected[0]
         const newOpacity = newOpacityArr[0]
         setOpacity(newOpacity)
-
-        const color = {
-            ...(selected.properties.fillColor as RGBA),
-            a: newOpacity,
-        } as RGBA
-
-        onColorSelect({
-            color,
-            isImmediate: false,
-            rgba: `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`,
-        })
+        onOpacityChange(newOpacity)
     }
 
     const onColorSelectWrapper = (signature: ColorSelectSignature) => {

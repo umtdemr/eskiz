@@ -20,8 +20,10 @@ export interface ShapeBorderColorInputProps {
 
 function getSelectedStrokeColor(engine: Engine): string | null {
     const selectionService = engine.getService<SelectionService>('selection')
-    if (selectionService.selected.length !== 1) return null
-    const widget = selectionService.selected[0]
+    const widget = selectionService.selected.find(
+        (w) => w.widgetType === 'path' || w.widgetType === 'shape',
+    )
+    if (!widget) return null
 
     if (widget.widgetType === 'path') {
         const color = widget.properties.color as RGBA
@@ -64,6 +66,11 @@ export function ShapeBorderColorInput({
         }
     }
 
+    const onOpacityChange = (opacity: number) => {
+        engine.execute('changeBorderColor', { opacity }, { continuous: true })
+        setBorderColor(getSelectedStrokeColor(engine))
+    }
+
     return (
         <div id={id} className="relative">
             <Tooltip>
@@ -86,6 +93,7 @@ export function ShapeBorderColorInput({
                 <ShapeBorderColorDropdown
                     engine={engine}
                     onColorChange={onColorChange}
+                    onOpacityChange={onOpacityChange}
                 />
             )}
         </div>
