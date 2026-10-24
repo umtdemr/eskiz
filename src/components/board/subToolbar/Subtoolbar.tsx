@@ -13,6 +13,7 @@ import {
 } from './SubtoolbarReducer.tsx'
 import clsx from 'clsx'
 import { SelectionLayer } from '@/core/stage/SelectionLayer'
+import { BoundingBox } from '@/core/geometry/BoundingBox'
 import { ButtonAction } from './actions/ButtonAction'
 import { FontSizeInput } from './FontSizeInput.tsx'
 import { ShapeBorderColorInput } from './actions/ShapeBorderColorInput.tsx'
@@ -174,7 +175,10 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
     const rotateControlAtTop =
         singleWidget != null && normalizedAngle > 90 && normalizedAngle < 270
 
-    const { bounds } = selectionLayerRef.current.selectionBorder
+    // the border catches up on the next frame, the widgets are already there
+    const bounds = BoundingBox.createWithMerge(
+        ...selectedWidgets.map((w) => w.bounds),
+    )
     const transformedPos = engine.canvas.transformPoint(
         { x: bounds.left, y: bounds.top },
         engine.canvas.viewportTransform,
