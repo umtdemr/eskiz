@@ -63,6 +63,11 @@ export function ShapeBgColorInput({
         }
     }
 
+    const onOpacityChange = (opacity: number) => {
+        engine.execute('changeBgColor', { opacity }, { continuous: true })
+        setBgColor(getSelectedFillColor(engine))
+    }
+
     return (
         <div id={id} className="relative">
             <Tooltip>
@@ -82,6 +87,7 @@ export function ShapeBgColorInput({
             {isActive && (
                 <ShapeBgColorDropdown
                     onColorSelect={onColorSelect}
+                    onOpacityChange={onOpacityChange}
                     engine={engine}
                 />
             )}

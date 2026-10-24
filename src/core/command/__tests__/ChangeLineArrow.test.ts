@@ -39,9 +39,13 @@ describe('ChangeLineArrow', () => {
             expect(command.canExecute(ctx)).toBe(false)
         })
 
-        it('returns false when a non line is selected', () => {
+        it('returns false when no line is selected', () => {
+            expect(command.canExecute(makeCtx([makeRect(engine)]))).toBe(false)
+        })
+
+        it('returns true when a line is selected with others', () => {
             const ctx = makeCtx([makeLine(engine), makeRect(engine)])
-            expect(command.canExecute(ctx)).toBe(false)
+            expect(command.canExecute(ctx)).toBe(true)
         })
 
         it('returns true for lines', () => {

@@ -42,8 +42,12 @@ describe('ChangeRoundness', () => {
         })
 
         it('returns false for non rectangles', () => {
+            expect(command.canExecute(makeCtx([makeLine(engine)]))).toBe(false)
+        })
+
+        it('returns true when a rectangle is selected with others', () => {
             const ctx = makeCtx([makeRect(engine), makeLine(engine)])
-            expect(command.canExecute(ctx)).toBe(false)
+            expect(command.canExecute(ctx)).toBe(true)
         })
 
         it('returns true for rectangles', () => {

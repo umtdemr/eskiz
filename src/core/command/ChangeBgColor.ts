@@ -6,7 +6,8 @@ import { Widget } from '../shapes/Widget'
 import { EditingMethods } from '../transaction/State'
 import { Command, CommandCtx } from './Command'
 
-type Params = { color: RGBA }
+// opacity keeps each widget's own color
+type Params = { color: RGBA } | { opacity: number }
 
 export class ChangeBgColor extends Command<Params> {
     readonly name = 'changeBgColor'
@@ -18,14 +19,23 @@ export class ChangeBgColor extends Command<Params> {
     execute(ctx: CommandCtx<Params>) {
         if (!this.canExecute(ctx)) return
 
-        const { color } = ctx.params
+        const { params } = ctx
         const targets = ctx.widgets.filter(
             (widget): widget is Shape | TextBox | StickyNote =>
-                widget instanceof Shape ||
-                widget instanceof TextBox ||
-                widget instanceof StickyNote,
+                widget.canChangeBgColor() &&
+                (widget instanceof Shape ||
+                    widget instanceof TextBox ||
+                    widget instanceof StickyNote),
         )
         if (!targets.length) return
+
+        const colorOf = (widget: Widget): RGBA | null => {
+            if ('color' in params) return params.color
+            const current = widget.properties.fillColor as RGBA | undefined
+            // transparent ones stay transparent
+            if (!current || current.a === 0) return null
+            return { ...current, a: params.opacity }
+        }
 
         const editTable = new Map<Widget, EditingMethods[]>()
         targets.forEach((widget) => {
@@ -35,7 +45,8 @@ export class ChangeBgColor extends Command<Params> {
         this.edit(ctx, editTable, () => {
             let changed = false
             for (const widget of targets) {
-                if (widget.changeBgColor(color)) changed = true
+                const color = colorOf(widget)
+                if (color && widget.changeBgColor(color)) changed = true
             }
             return changed
         })

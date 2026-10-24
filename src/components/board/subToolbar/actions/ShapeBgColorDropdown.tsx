@@ -11,11 +11,13 @@ import { RGBA } from '@/core/shapes/Color'
 
 export interface ShapeBgColorDropdownProps {
     onColorSelect: (signature: ColorSelectSignature) => void
+    onOpacityChange: (opacity: number) => void
     engine: Engine
 }
 
 export function ShapeBgColorDropdown({
     onColorSelect,
+    onOpacityChange,
     engine,
 }: ShapeBgColorDropdownProps) {
     const [showOpacity, setShowOpacity] = useState(true)
@@ -42,24 +44,9 @@ export function ShapeBgColorDropdown({
     }, [engine])
 
     const handleOpacityChange = (newOpacityArr: number[]) => {
-        const selectionService =
-            engine.getService<SelectionService>('selection')
-        if (selectionService.selected.length !== 1) return
-
-        const selected = selectionService.selected[0]
         const newOpacity = newOpacityArr[0]
         setOpacity(newOpacity)
-
-        const color = {
-            ...(selected.properties.fillColor as RGBA),
-            a: newOpacity,
-        } as RGBA
-
-        onColorSelect({
-            color,
-            isImmediate: false,
-            rgba: `rgba(${color.r}, ${color.g}, ${color.b}, ${color.a})`,
-        })
+        onOpacityChange(newOpacity)
     }
 
     const onColorSelectWrapper = (signature: ColorSelectSignature) => {

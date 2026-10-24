@@ -64,6 +64,11 @@ export function ShapeBorderColorInput({
         }
     }
 
+    const onOpacityChange = (opacity: number) => {
+        engine.execute('changeBorderColor', { opacity }, { continuous: true })
+        setBorderColor(getSelectedStrokeColor(engine))
+    }
+
     return (
         <div id={id} className="relative">
             <Tooltip>
@@ -86,6 +91,7 @@ export function ShapeBorderColorInput({
                 <ShapeBorderColorDropdown
                     engine={engine}
                     onColorChange={onColorChange}
+                    onOpacityChange={onOpacityChange}
                 />
             )}
         </div>

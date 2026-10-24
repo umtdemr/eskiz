@@ -3,6 +3,7 @@ import { Engine } from '@/core/engine/Engine'
 import { SelectionService } from '@/core/services/SelectionService'
 import { Copy, LockKeyholeOpen, Trash2, LockKeyhole } from 'lucide-react'
 import { WidgetType } from '@/core/constants.ts'
+import { Widget } from '@/core/shapes/Widget'
 
 export interface Action {
     id: string
@@ -265,41 +266,54 @@ function getLockedActions(): Action[] {
     ]
 }
 
+function getWidgetActions(widget: Widget): Action[] {
+    switch (widget.widgetType) {
+        case WidgetType.SHAPE:
+            return getShapeActions()
+        case WidgetType.TEXTBOX:
+            return getTextActions()
+        case WidgetType.PATH:
+            return getPathActions()
+        case WidgetType.LINE:
+            return getLineActions()
+        case WidgetType.STICKY_NOTE:
+            return getStickyNoteActions()
+        default:
+            return getCommonActions()
+    }
+}
+
+// actions every list has, in the order of the first one
+function intersectActions(lists: Action[][]): Action[] {
+    const [first, ...rest] = lists
+    const shared = first.filter(
+        (action) =>
+            action.type === 'seperator' ||
+            rest.every((list) => list.some((a) => a.id === action.id)),
+    )
+
+    // drop separators left next to each other or at the end
+    return shared.filter((action, i) => {
+        if (action.type !== 'seperator') return true
+        const next = shared[i + 1]
+        return next !== undefined && next.type !== 'seperator'
+    })
+}
+
 export function generateActions(engine: Engine): Action[] {
     const selectionService = engine.getService<SelectionService>('selection')
-    if (!selectionService.selected || selectionService.selected.length === 0)
-        return []
-    if (selectionService.isMultipleSelection()) {
+    const { selected } = selectionService
+    if (!selected || selected.length === 0) return []
+
+    if (selected.length === 1 && selected[0].isLocked) {
+        return getLockedActions()
+    }
+    // locked ones can't be edited
+    if (selectionService.isThereLockedWidget()) {
         return getCommonActions()
     }
 
-    const widget = selectionService.selected[0]
-
-    if (widget.isLocked) {
-        return getLockedActions()
-    }
-
-    const actions: Action[] = []
-
-    switch (widget.widgetType) {
-        case WidgetType.SHAPE:
-            actions.push(...getShapeActions())
-            break
-        case WidgetType.TEXTBOX:
-            actions.push(...getTextActions())
-            break
-        case WidgetType.PATH:
-            actions.push(...getPathActions())
-            break
-        case WidgetType.LINE:
-            actions.push(...getLineActions())
-            break
-        case WidgetType.STICKY_NOTE:
-            actions.push(...getStickyNoteActions())
-            break
-        default:
-            actions.push(...getCommonActions())
-    }
+    const actions = intersectActions(selected.map(getWidgetActions))
 
     actions.push(
         {
