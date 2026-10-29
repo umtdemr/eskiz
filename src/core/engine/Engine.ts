@@ -52,6 +52,7 @@ import { TextureManager } from '../services/TextureManager'
 import { StickyNoteToolService } from '../services/StickyNoteToolService'
 import { DuplicationService } from '../services/DuplicationService'
 import { ClipboardService } from '../services/ClipboardService'
+import { ExportService } from '../services/ExportService'
 
 export type CanvasMouseEvent = {
     e: MouseEvent
@@ -325,6 +326,7 @@ export class Engine {
             'clipboard',
             new ClipboardService(this, this._mouseController),
         )
+        this.serviceManager.register('export', new ExportService(this))
     }
 
     getService<T>(name: string): T {

@@ -10,12 +10,19 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { Button } from '@/components/ui/button'
-import { EllipsisVertical, Grid3X3, Check, Keyboard } from 'lucide-react'
+import {
+    EllipsisVertical,
+    Grid3X3,
+    Check,
+    Keyboard,
+    ImageDown,
+} from 'lucide-react'
 import { useBoundStore } from '@/store/store'
 import { Engine } from '@/core/engine/Engine'
 import { GridType } from '@/core/canvas/Canvas'
 import { BoardGridType } from '@/core/constants'
 import { ShortcutsModal } from '@/components/modals/shortcutsModal/ShortcutsModal'
+import { ExportModal } from '@/components/modals/exportModal/ExportModal'
 
 interface BoardSettingsMenuProps {
     engine: Engine
@@ -25,6 +32,7 @@ export function BoardSettingsMenu({ engine }: BoardSettingsMenuProps) {
     const gridType = useBoundStore((state) => state.gridType)
     const setGridType = useBoundStore((state) => state.setGridType)
     const [showShortcuts, setShowShortcuts] = useState(false)
+    const [showExport, setShowExport] = useState(false)
 
     const handleChangeGridType = (newType: GridType) => {
         if (engine && engine.canvas) {
@@ -114,12 +122,21 @@ export function BoardSettingsMenu({ engine }: BoardSettingsMenuProps) {
                             </DropdownMenuPortal>
                         </DropdownMenuSub>
                     ) : null}
+                    <DropdownMenuItem onSelect={() => setShowExport(true)}>
+                        <ImageDown className="mr-2 h-4 w-4" />
+                        <span>Export board</span>
+                    </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => setShowShortcuts(true)}>
                         <Keyboard className="mr-2 h-4 w-4" />
                         <span>Keyboard shortcuts</span>
                     </DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
+            <ExportModal
+                engine={engine}
+                isOpen={showExport}
+                closeModal={() => setShowExport(false)}
+            />
             <ShortcutsModal
                 isOpen={showShortcuts}
                 closeModal={() => setShowShortcuts(false)}
