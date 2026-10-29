@@ -13,6 +13,8 @@ import { Engine } from '@/core/engine/Engine'
 import { useBoundStore } from '@/store/store'
 import { ZIndexAction } from '@/core/command/ChangeZIndex'
 import { formatKeys, MOD, SHIFT } from '@/helpers/KeyHelpers'
+import { ExportService } from '@/core/services/ExportService'
+import { toast } from 'react-hot-toast'
 
 const zIndexActions: { label: string; action: ZIndexAction; keys: string[] }[] =
     [
@@ -36,6 +38,15 @@ export interface MoreOptionsDropdownProps {
 
 // shared with the right click menu
 export function MoreOptionsItems({ engine }: MoreOptionsDropdownProps) {
+    const copyPng = async () => {
+        const service = engine.getService<ExportService>('export')
+        const widgets = service.getWidgets(true)
+        const options = { widgets, scale: 1, background: false, padding: 0 }
+        if (!(await service.copy(options))) {
+            toast.error('Could not copy the image.')
+        }
+    }
+
     return (
         <>
             <DropdownMenuItem onClick={() => engine.execute('copy', {})}>
@@ -44,6 +55,7 @@ export function MoreOptionsItems({ engine }: MoreOptionsDropdownProps) {
                     {formatKeys([MOD, 'C'])}
                 </DropdownMenuShortcut>
             </DropdownMenuItem>
+            <DropdownMenuItem onClick={copyPng}>Copy as PNG</DropdownMenuItem>
             <DropdownMenuItem onClick={() => engine.execute('delete', {})}>
                 Delete
                 <DropdownMenuShortcut>Del</DropdownMenuShortcut>

@@ -8,6 +8,7 @@ export type ExportOptions = {
     widgets: Widget[]
     scale: number
     background: boolean
+    padding?: number
 }
 
 const PADDING = 24
@@ -63,8 +64,9 @@ export class ExportService extends Service {
         }
     }
 
-    toPng({ widgets, scale, background }: ExportOptions) {
-        const bounds = this.getBounds(widgets, PADDING)
+    // rgba pixels
+    toPixels({ widgets, scale, background, padding = PADDING }: ExportOptions) {
+        const bounds = this.getBounds(widgets, padding)
         if (!bounds) return null
 
         const size = this.fit(bounds, scale)
@@ -83,13 +85,52 @@ export class ExportService extends Service {
             widget.render(renderContext)
             ctx.restore()
         }
-        surface.flush()
 
-        const image = surface.makeImageSnapshot()
-        const bytes = image.encodeToBytes()
-        image.delete()
+        const data = ctx.readPixels(0, 0, {
+            width: size.width,
+            height: size.height,
+            colorType: canvasKit.ColorType.RGBA_8888,
+            alphaType: canvasKit.AlphaType.Unpremul,
+            colorSpace: canvasKit.ColorSpace.SRGB,
+        }) as Uint8Array | null
         surface.delete()
 
-        return bytes
+        return data && { width: size.width, height: size.height, data }
+    }
+
+    // the browser encodes off the main thread, skia's encoder blocks it
+    async toPng(options: ExportOptions) {
+        const pixels = this.toPixels(options)
+        if (!pixels) return null
+
+        const { width, height, data } = pixels
+        // same memory, no copy
+        const rgba = new Uint8ClampedArray(
+            data.buffer as ArrayBuffer,
+            data.byteOffset,
+            data.byteLength,
+        )
+        const canvas = new OffscreenCanvas(width, height)
+        canvas
+            .getContext('2d')!
+            .putImageData(new ImageData(rgba, width, height), 0, 0)
+        return canvas.convertToBlob({ type: 'image/png' })
+    }
+
+    async copy(options: ExportOptions) {
+        const png = this.toPng(options).then((blob) => {
+            if (!blob) throw new Error('nothing to copy')
+            return blob
+        })
+
+        try {
+            await navigator.clipboard.write([
+                new ClipboardItem({ 'image/png': png }),
+            ])
+            return true
+        } catch (e) {
+            console.error('could not copy', e)
+            return false
+        }
     }
 }

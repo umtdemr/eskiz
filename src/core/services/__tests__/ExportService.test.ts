@@ -1,7 +1,6 @@
-import { describe, it, expect } from 'vitest'
-import { ExportService } from '../ExportService'
+import { describe, it, expect, vi, afterEach } from 'vitest'
+import { ExportService, type ExportOptions } from '../ExportService'
 import { Rectangle } from '@/core/shapes/Rectangle'
-import { canvasKit } from '@/core/canvas/Canvas'
 import { createEngineStub } from '@/test/testUtils'
 import type { Engine } from '@/core/engine/Engine'
 import type { Widget } from '@/core/shapes/Widget'
@@ -23,24 +22,28 @@ const setup = (widgets: Widget[], selected: Widget[] = []) => {
     return new ExportService(engine)
 }
 
-const decode = (bytes: Uint8Array) => {
-    const image = canvasKit.MakeImageFromEncoded(bytes)!
-    const width = image.width()
-    const height = image.height()
-    const pixels = image.readPixels(0, 0, {
-        width,
-        height,
-        colorType: canvasKit.ColorType.RGBA_8888,
-        alphaType: canvasKit.AlphaType.Unpremul,
-        colorSpace: canvasKit.ColorSpace.SRGB,
-    }) as Uint8Array
-    image.delete()
-
+const render = (service: ExportService, options: ExportOptions) => {
+    const { width, height, data } = service.toPixels(options)!
     const at = (x: number, y: number) => {
         const i = (y * width + x) * 4
-        return Array.from(pixels.slice(i, i + 4))
+        return Array.from(data.slice(i, i + 4))
     }
     return { width, height, at }
+}
+
+const stubEncoder = () => {
+    vi.stubGlobal('ImageData', class {})
+    vi.stubGlobal(
+        'OffscreenCanvas',
+        class {
+            getContext() {
+                return { putImageData: () => {} }
+            }
+            async convertToBlob({ type }: { type: string }) {
+                return new Blob([], { type })
+            }
+        },
+    )
 }
 
 describe('ExportService', () => {
@@ -66,7 +69,7 @@ describe('ExportService', () => {
 
         expect(service.getSize([], 1)).toBeNull()
         expect(
-            service.toPng({ widgets: [], scale: 1, background: true }),
+            service.toPixels({ widgets: [], scale: 1, background: true }),
         ).toBeNull()
     })
 
@@ -81,22 +84,111 @@ describe('ExportService', () => {
     it('renders at the given scale', () => {
         const widget = rect(0, 0)
         const service = setup([widget])
-        const png = decode(
-            service.toPng({ widgets: [widget], scale: 2, background: true })!,
-        )
+        const png = render(service, {
+            widgets: [widget],
+            scale: 2,
+            background: true,
+        })
 
         expect([png.width, png.height]).toEqual([296, 196])
         expect(png.at(2, 2)).toEqual([255, 255, 255, 255])
         expect(png.at(148, 98)).toEqual([255, 0, 0, 255])
     })
 
+    it('crops tight without padding', () => {
+        const widget = rect(0, 0)
+        const service = setup([widget])
+        const png = render(service, {
+            widgets: [widget],
+            scale: 1,
+            background: false,
+            padding: 0,
+        })
+
+        expect([png.width, png.height]).toEqual([100, 50])
+    })
+
     it('leaves the background transparent', () => {
         const widget = rect(0, 0)
         const service = setup([widget])
-        const png = decode(
-            service.toPng({ widgets: [widget], scale: 1, background: false })!,
-        )
+        const png = render(service, {
+            widgets: [widget],
+            scale: 1,
+            background: false,
+        })
 
         expect(png.at(2, 2)[3]).toBe(0)
+    })
+
+    describe('copy', () => {
+        afterEach(() => {
+            vi.unstubAllGlobals()
+        })
+
+        const stubClipboard = (write: () => Promise<void>) => {
+            stubEncoder()
+            // like the browser, waits for the png and fails with it
+            const clipboard = {
+                write: vi.fn(
+                    async ([item]: {
+                        items: Record<string, Promise<Blob>>
+                    }[]) => {
+                        await item.items['image/png']
+                        await write()
+                    },
+                ),
+            }
+            vi.stubGlobal('navigator', { clipboard })
+            vi.stubGlobal(
+                'ClipboardItem',
+                class {
+                    constructor(public items: Record<string, Promise<Blob>>) {}
+                },
+            )
+            return navigator.clipboard.write as ReturnType<typeof vi.fn>
+        }
+
+        it('writes a png', async () => {
+            const write = stubClipboard(async () => {})
+            const widget = rect(0, 0)
+            const service = setup([widget])
+
+            expect(
+                await service.copy({
+                    widgets: [widget],
+                    scale: 1,
+                    background: true,
+                }),
+            ).toBe(true)
+            const [[item]] = write.mock.calls[0]
+            expect((await item.items['image/png']).type).toBe('image/png')
+        })
+
+        it('returns false with nothing to copy', async () => {
+            stubClipboard(async () => {})
+            vi.spyOn(console, 'error').mockImplementation(() => {})
+            const service = setup([])
+
+            expect(
+                await service.copy({ widgets: [], scale: 1, background: true }),
+            ).toBe(false)
+        })
+
+        it('returns false when the clipboard fails', async () => {
+            stubClipboard(async () => {
+                throw new Error('denied')
+            })
+            vi.spyOn(console, 'error').mockImplementation(() => {})
+            const widget = rect(0, 0)
+            const service = setup([widget])
+
+            expect(
+                await service.copy({
+                    widgets: [widget],
+                    scale: 1,
+                    background: true,
+                }),
+            ).toBe(false)
+        })
     })
 })

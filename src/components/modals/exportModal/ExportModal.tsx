@@ -25,9 +25,6 @@ const checkerboard = {
     backgroundSize: '12px 12px',
 }
 
-const toBlob = (bytes: Uint8Array) =>
-    new Blob([bytes as Uint8Array<ArrayBuffer>], { type: 'image/png' })
-
 const fileName = (name?: string) =>
     `${(name || 'eskiz').replace(/[\\/:*?"<>|]/g, '-').trim()}.png`
 
@@ -71,23 +68,26 @@ function ExportForm({ engine, close }: { engine: Engine; close: () => void }) {
                 (PREVIEW_WIDTH * dpr) / size.width,
                 (PREVIEW_HEIGHT * dpr) / size.height,
             )
-        const bytes = service.toPng({ widgets, scale: fit, background })
-        if (!bytes) return
+        let url: string | null = null
+        let cancelled = false
+        service.toPng({ widgets, scale: fit, background }).then((blob) => {
+            if (!blob || cancelled) return
+            url = URL.createObjectURL(blob)
+            setPreview(url)
+        })
 
-        const url = URL.createObjectURL(toBlob(bytes))
-        setPreview(url)
-        return () => URL.revokeObjectURL(url)
+        return () => {
+            cancelled = true
+            if (url) URL.revokeObjectURL(url)
+        }
     }, [service, widgets, size, background])
 
-    const render = () => {
-        const bytes = service.toPng({ widgets, scale, background })
-        if (!bytes) toast.error('Could not export the image.')
-        return bytes && toBlob(bytes)
-    }
-
-    const download = () => {
-        const blob = render()
-        if (!blob) return
+    const download = async () => {
+        const blob = await service.toPng({ widgets, scale, background })
+        if (!blob) {
+            toast.error('Could not export the image.')
+            return
+        }
 
         const url = URL.createObjectURL(blob)
         const a = document.createElement('a')
@@ -99,18 +99,12 @@ function ExportForm({ engine, close }: { engine: Engine; close: () => void }) {
     }
 
     const copy = async () => {
-        const blob = render()
-        if (!blob) return
-
-        try {
-            await navigator.clipboard.write([
-                new ClipboardItem({ 'image/png': blob }),
-            ])
-            toast.success('Copied to clipboard.')
-            close()
-        } catch {
+        if (!(await service.copy({ widgets, scale, background }))) {
             toast.error('Could not copy the image.')
+            return
         }
+        toast.success('Copied to clipboard.')
+        close()
     }
 
     return (
