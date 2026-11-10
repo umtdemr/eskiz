@@ -27,7 +27,7 @@ const checkerboard = {
 }
 
 const fileName = (name?: string) =>
-    `${(name || 'eskiz').replace(/[\\/:*?"<>|]/g, '-').trim()}.png`
+    `${name?.replace(/[\\/:*?"<>|]/g, '-').trim() || 'eskiz'}.png`
 
 function Row({ label, children }: { label: string; children: ReactNode }) {
     return (
@@ -59,17 +59,22 @@ function ExportForm({ engine, close }: { engine: Engine; close: () => void }) {
         [service, widgets, scale],
     )
 
-    useEffect(() => {
-        if (!size) return
+    // stays the same across scales once the export outgrows the preview
+    const fit = useMemo(() => {
+        const base = service.getSize(widgets, 1)
+        if (!base || !size) return null
 
         const dpr = getDpr()
-        const fit =
-            size.scale *
-            Math.min(
-                1,
-                (PREVIEW_WIDTH * dpr) / size.width,
-                (PREVIEW_HEIGHT * dpr) / size.height,
-            )
+        return Math.min(
+            size.scale,
+            (PREVIEW_WIDTH * dpr * base.scale) / base.width,
+            (PREVIEW_HEIGHT * dpr * base.scale) / base.height,
+        )
+    }, [service, widgets, size])
+
+    useEffect(() => {
+        if (!fit) return
+
         let url: string | null = null
         let cancelled = false
         service
@@ -88,7 +93,7 @@ function ExportForm({ engine, close }: { engine: Engine; close: () => void }) {
             cancelled = true
             if (url) URL.revokeObjectURL(url)
         }
-    }, [service, widgets, size, background])
+    }, [service, widgets, fit, background])
 
     const run = async (
         action: 'copy' | 'download',

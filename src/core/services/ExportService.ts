@@ -19,18 +19,17 @@ const MAX_SIDE = 8192
 const maxPixels = () => (isIOS() ? 16 : 32) * 1024 * 1024
 
 export class ExportService extends Service {
-    // in z-order
+    // in z-order, the layer keeps its children sorted
     getWidgets(onlySelected = false) {
-        if (onlySelected) {
-            const { selected } =
-                this.engine.getService<SelectionService>('selection')
-            return [...selected].sort((a, b) => (a.zIndex < b.zIndex ? -1 : 1))
-        }
-
-        return this.engine.stage.widgetsDefaultLayer.childrenArray.filter(
+        const widgets = this.engine.stage.widgetsDefaultLayer.childrenArray.filter(
             (child): child is Widget =>
                 child instanceof Widget && child.visible,
         )
+        if (!onlySelected) return widgets
+
+        const { selected } =
+            this.engine.getService<SelectionService>('selection')
+        return widgets.filter((w) => selected.includes(w))
     }
 
     // pixel size of the image, after the size limits

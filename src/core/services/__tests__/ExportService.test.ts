@@ -2,11 +2,13 @@ import { describe, it, expect, vi, afterEach } from 'vitest'
 import { ExportService, type ExportOptions } from '../ExportService'
 import { Rectangle } from '@/core/shapes/Rectangle'
 import { Line } from '@/core/shapes/line/Line'
-import { createEngineStub } from '@/test/testUtils'
-import type { Engine } from '@/core/engine/Engine'
+import { createEngineStub, isColor, isTransparent } from '@/test/testUtils'
+import { createEngineMock, createSelectionService } from '@/test/commandUtils'
 import type { Widget } from '@/core/shapes/Widget'
 
 const red = { r: 255, g: 0, b: 0, a: 1 }
+const white = { r: 255, g: 255, b: 255, a: 1 }
+const black = { r: 0, g: 0, b: 0, a: 1 }
 
 const rect = (x: number, y: number, width = 100, height = 50, z = 'a0') =>
     new Rectangle(
@@ -15,11 +17,13 @@ const rect = (x: number, y: number, width = 100, height = 50, z = 'a0') =>
     )
 
 const setup = (widgets: Widget[], selected: Widget[] = []) => {
-    const engine = {
-        canvas: { zoom: 1 },
+    const services: Record<string, unknown> = {}
+    const engine = createEngineMock(services)
+    Object.assign(engine.canvas, { zoom: 1 })
+    Object.assign(engine, {
         stage: { widgetsDefaultLayer: { childrenArray: widgets } },
-        getService: () => ({ selected }),
-    } as unknown as Engine
+    })
+    services.selection = createSelectionService(engine, selected)
     return new ExportService(engine)
 }
 
@@ -27,7 +31,7 @@ const render = (service: ExportService, options: ExportOptions) => {
     const { width, height, data } = service.toPixels(options)!
     const at = (x: number, y: number) => {
         const i = (y * width + x) * 4
-        return Array.from(data.slice(i, i + 4))
+        return { r: data[i], g: data[i + 1], b: data[i + 2], a: data[i + 3] }
     }
     return { width, height, at }
 }
@@ -56,6 +60,16 @@ describe('ExportService', () => {
 
         expect(service.getWidgets()).toEqual([a, b, c])
         expect(service.getWidgets(true)).toEqual([a, c])
+    })
+
+    it('skips hidden widgets', () => {
+        const a = rect(0, 0)
+        const b = rect(200, 0, 100, 50, 'a1')
+        b.visible = false
+        const service = setup([a, b], [a, b])
+
+        expect(service.getWidgets()).toEqual([a])
+        expect(service.getWidgets(true)).toEqual([a])
     })
 
     it('pads the union of bounds', () => {
@@ -92,8 +106,8 @@ describe('ExportService', () => {
         })
 
         expect([png.width, png.height]).toEqual([296, 196])
-        expect(png.at(2, 2)).toEqual([255, 255, 255, 255])
-        expect(png.at(148, 98)).toEqual([255, 0, 0, 255])
+        expect(isColor(png.at(2, 2), white)).toBe(true)
+        expect(isColor(png.at(148, 98), red)).toBe(true)
     })
 
     it('crops tight without padding', () => {
@@ -135,7 +149,7 @@ describe('ExportService', () => {
         })
 
         expect([png.width, png.height]).toEqual([104, 4])
-        expect(png.at(52, 2)).toEqual([0, 0, 0, 255])
+        expect(isColor(png.at(52, 2), black)).toBe(true)
     })
 
     it('caps the pixels on ios', () => {
@@ -156,7 +170,7 @@ describe('ExportService', () => {
             background: false,
         })
 
-        expect(png.at(2, 2)[3]).toBe(0)
+        expect(isTransparent(png.at(2, 2))).toBe(true)
     })
 
     describe('copy', () => {
