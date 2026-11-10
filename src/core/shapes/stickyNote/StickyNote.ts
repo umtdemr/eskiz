@@ -102,6 +102,19 @@ export class StickyNote extends Widget {
         return this._width / DEFAULT_WIDTH
     }
 
+    protected getOverflow() {
+        const scale = this.getScaleFactor()
+        // the blur sigma is half of it and fades out by 3 sigma
+        const blur = SHADOW_BLUR * scale * 1.5
+        const offset = SHADOW_OFFSET_Y * scale
+        return {
+            left: blur,
+            top: Math.max(0, blur - offset),
+            right: blur,
+            bottom: blur + offset,
+        }
+    }
+
     render(renderContext: RenderContext) {
         if (!this.visible || this._isDeleted) return
 

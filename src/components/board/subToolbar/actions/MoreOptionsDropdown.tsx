@@ -42,7 +42,10 @@ export function MoreOptionsItems({ engine }: MoreOptionsDropdownProps) {
         const service = engine.getService<ExportService>('export')
         const widgets = service.getWidgets(true)
         const options = { widgets, scale: 1, background: false, padding: 0 }
-        if (!(await service.copy(options))) {
+        try {
+            await service.copy(options)
+        } catch (e) {
+            console.error(e)
             toast.error('Could not copy the image.')
         }
     }

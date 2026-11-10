@@ -632,6 +632,41 @@ export abstract class Widget extends Layer {
         return this._localBounds
     }
 
+    // how far the drawing goes past the box, in local space
+    protected getOverflow() {
+        return { left: 0, top: 0, right: 0, bottom: 0 }
+    }
+
+    // bounds of everything drawn, strokes and shadows included
+    get renderBounds(): BoundingBox {
+        const o = this.getOverflow()
+        const left = this._x - o.left
+        const top = this._y - o.top
+        const right = this._x + this._width + o.right
+        const bottom = this._y + this._height + o.bottom
+        const cx = this._x + this._width / 2
+        const cy = this._y + this._height / 2
+
+        let minX = Infinity
+        let minY = Infinity
+        let maxX = -Infinity
+        let maxY = -Infinity
+        for (const [x, y] of [
+            [left, top],
+            [right, top],
+            [right, bottom],
+            [left, bottom],
+        ]) {
+            const p = rotatePoint(x, y, cx, cy, this._angle)
+            minX = Math.min(minX, p.x)
+            minY = Math.min(minY, p.y)
+            maxX = Math.max(maxX, p.x)
+            maxY = Math.max(maxY, p.y)
+        }
+
+        return new BoundingBox(minX, minY, maxX - minX, maxY - minY)
+    }
+
     get selected(): boolean {
         return this._selected
     }

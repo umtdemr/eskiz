@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useMemo, useState } from 'react'
-import { Copy, Download } from 'lucide-react'
+import { Copy, Download, LoaderCircle } from 'lucide-react'
 import { toast } from 'react-hot-toast'
 import {
     Dialog,
@@ -14,6 +14,7 @@ import { Engine } from '@/core/engine/Engine'
 import { getDpr } from '@/core/canvas/Canvas'
 import { ExportService } from '@/core/services/ExportService'
 import { useBoundStore } from '@/store/store'
+import { downloadBlob } from '@/helpers/FileHelpers'
 
 const SCALES = [1, 2, 3]
 const PREVIEW_WIDTH = 400
@@ -47,6 +48,7 @@ function ExportForm({ engine, close }: { engine: Engine; close: () => void }) {
     const [background, setBackground] = useState(true)
     const [scale, setScale] = useState(2)
     const [preview, setPreview] = useState<string | null>(null)
+    const [busy, setBusy] = useState<'copy' | 'download' | null>(null)
 
     const widgets = useMemo(
         () => service.getWidgets(onlySelected),
@@ -70,11 +72,17 @@ function ExportForm({ engine, close }: { engine: Engine; close: () => void }) {
             )
         let url: string | null = null
         let cancelled = false
-        service.toPng({ widgets, scale: fit, background }).then((blob) => {
-            if (!blob || cancelled) return
-            url = URL.createObjectURL(blob)
-            setPreview(url)
-        })
+        service
+            .toPng({ widgets, scale: fit, background })
+            .then((blob) => {
+                if (cancelled) return
+                url = URL.createObjectURL(blob)
+                setPreview(url)
+            })
+            .catch((e) => {
+                console.error('could not render the preview', e)
+                if (!cancelled) setPreview(null)
+            })
 
         return () => {
             cancelled = true
@@ -82,30 +90,43 @@ function ExportForm({ engine, close }: { engine: Engine; close: () => void }) {
         }
     }, [service, widgets, size, background])
 
-    const download = async () => {
-        const blob = await service.toPng({ widgets, scale, background })
-        if (!blob) {
-            toast.error('Could not export the image.')
-            return
+    const run = async (
+        action: 'copy' | 'download',
+        task: () => Promise<void>,
+        error: string,
+    ) => {
+        if (busy) return
+        setBusy(action)
+        try {
+            await task()
+            close()
+        } catch (e) {
+            console.error(e)
+            toast.error(error)
+        } finally {
+            setBusy(null)
         }
-
-        const url = URL.createObjectURL(blob)
-        const a = document.createElement('a')
-        a.href = url
-        a.download = fileName(boardName)
-        a.click()
-        URL.revokeObjectURL(url)
-        close()
     }
 
-    const copy = async () => {
-        if (!(await service.copy({ widgets, scale, background }))) {
-            toast.error('Could not copy the image.')
-            return
-        }
-        toast.success('Copied to clipboard.')
-        close()
-    }
+    const download = () =>
+        run(
+            'download',
+            async () => {
+                const blob = await service.toPng({ widgets, scale, background })
+                downloadBlob(blob, fileName(boardName))
+            },
+            'Could not export the image.',
+        )
+
+    const copy = () =>
+        run(
+            'copy',
+            async () => {
+                await service.copy({ widgets, scale, background })
+                toast.success('Copied to clipboard.')
+            },
+            'Could not copy the image.',
+        )
 
     return (
         <>
@@ -170,12 +191,24 @@ function ExportForm({ engine, close }: { engine: Engine; close: () => void }) {
                 </div>
             </div>
             <div className="flex justify-end gap-2">
-                <Button variant="outline" disabled={!size} onClick={copy}>
-                    <Copy />
+                <Button
+                    variant="outline"
+                    disabled={!size || !!busy}
+                    onClick={copy}
+                >
+                    {busy === 'copy' ? (
+                        <LoaderCircle className="animate-spin" />
+                    ) : (
+                        <Copy />
+                    )}
                     Copy to clipboard
                 </Button>
-                <Button disabled={!size} onClick={download}>
-                    <Download />
+                <Button disabled={!size || !!busy} onClick={download}>
+                    {busy === 'download' ? (
+                        <LoaderCircle className="animate-spin" />
+                    ) : (
+                        <Download />
+                    )}
                     Download PNG
                 </Button>
             </div>

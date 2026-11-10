@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest'
 import { ExportService, type ExportOptions } from '../ExportService'
 import { Rectangle } from '@/core/shapes/Rectangle'
+import { Line } from '@/core/shapes/line/Line'
 import { createEngineStub } from '@/test/testUtils'
 import type { Engine } from '@/core/engine/Engine'
 import type { Widget } from '@/core/shapes/Widget'
@@ -108,6 +109,44 @@ describe('ExportService', () => {
         expect([png.width, png.height]).toEqual([100, 50])
     })
 
+    it('keeps the stroke of a flat line', () => {
+        const line = new Line(
+            {
+                x: 0,
+                y: 0,
+                width: 100,
+                height: 0,
+                properties: {
+                    points: [
+                        [0, 0],
+                        [100, 0],
+                    ],
+                    strokeWidth: 4,
+                },
+            },
+            createEngineStub(),
+        )
+        const service = setup([line])
+        const png = render(service, {
+            widgets: [line],
+            scale: 1,
+            background: false,
+            padding: 0,
+        })
+
+        expect([png.width, png.height]).toEqual([104, 4])
+        expect(png.at(52, 2)).toEqual([0, 0, 0, 255])
+    })
+
+    it('caps the pixels on ios', () => {
+        vi.stubGlobal('navigator', { userAgent: 'iPhone', maxTouchPoints: 5 })
+        const service = setup([])
+        const size = service.getSize([rect(0, 0, 6000, 5000)], 1)!
+        vi.unstubAllGlobals()
+
+        expect(size.width * size.height).toBeLessThanOrEqual(16 * 1024 * 1024)
+    })
+
     it('leaves the background transparent', () => {
         const widget = rect(0, 0)
         const service = setup([widget])
@@ -153,42 +192,38 @@ describe('ExportService', () => {
             const widget = rect(0, 0)
             const service = setup([widget])
 
-            expect(
-                await service.copy({
-                    widgets: [widget],
-                    scale: 1,
-                    background: true,
-                }),
-            ).toBe(true)
+            await service.copy({
+                widgets: [widget],
+                scale: 1,
+                background: true,
+            })
             const [[item]] = write.mock.calls[0]
             expect((await item.items['image/png']).type).toBe('image/png')
         })
 
-        it('returns false with nothing to copy', async () => {
+        it('fails with nothing to copy', async () => {
             stubClipboard(async () => {})
-            vi.spyOn(console, 'error').mockImplementation(() => {})
             const service = setup([])
 
-            expect(
-                await service.copy({ widgets: [], scale: 1, background: true }),
-            ).toBe(false)
+            await expect(
+                service.copy({ widgets: [], scale: 1, background: true }),
+            ).rejects.toThrow('nothing to export')
         })
 
-        it('returns false when the clipboard fails', async () => {
+        it('fails when the clipboard fails', async () => {
             stubClipboard(async () => {
                 throw new Error('denied')
             })
-            vi.spyOn(console, 'error').mockImplementation(() => {})
             const widget = rect(0, 0)
             const service = setup([widget])
 
-            expect(
-                await service.copy({
+            await expect(
+                service.copy({
                     widgets: [widget],
                     scale: 1,
                     background: true,
                 }),
-            ).toBe(false)
+            ).rejects.toThrow('denied')
         })
     })
 })
