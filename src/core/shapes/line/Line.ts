@@ -300,6 +300,54 @@ export class Line extends Widget {
         return true
     }
 
+    protected getOverflow() {
+        let [minX, minY, maxX, maxY] = [0, 0, this._width, this._height]
+        for (const [x, y] of this._points) {
+            minX = Math.min(minX, x)
+            minY = Math.min(minY, y)
+            maxX = Math.max(maxX, x)
+            maxY = Math.max(maxY, y)
+        }
+        for (const b of this.arrowBounds()) {
+            minX = Math.min(minX, b[0])
+            minY = Math.min(minY, b[1])
+            maxX = Math.max(maxX, b[2])
+            maxY = Math.max(maxY, b[3])
+        }
+
+        // the stroke is centered on the path, arrows are stroked too
+        const half = (this._strokeWidth || 2) / 2
+        return {
+            left: half - minX,
+            top: half - minY,
+            right: maxX - this._width + half,
+            bottom: maxY - this._height + half,
+        }
+    }
+
+    private arrowBounds() {
+        const p = this._points
+        if (!this._arrowPath || p.length < 2) return []
+
+        const ends: [number, number][][] = []
+        if (this._hasHeadArrow) ends.push([p[p.length - 1], p[p.length - 2]])
+        if (this._hasTailArrow) ends.push([p[0], p[1]])
+
+        // same transform as _drawArrow
+        return ends.map(([[x, y], [cx, cy]]) => {
+            const path = this._arrowPath!.copy()
+            path.transform(
+                canvasKit.Matrix.multiply(
+                    canvasKit.Matrix.translated(x, y),
+                    canvasKit.Matrix.rotated(Math.atan2(y - cy, x - cx)),
+                ),
+            )
+            const bounds = path.getBounds()
+            path.delete()
+            return bounds
+        })
+    }
+
     // returns points
     get points() {
         return this._points

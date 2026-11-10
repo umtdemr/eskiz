@@ -1,0 +1,245 @@
+import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { Copy, Download, LoaderCircle } from 'lucide-react'
+import { toast } from 'react-hot-toast'
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog.tsx'
+import { Button } from '@/components/ui/button.tsx'
+import { Switch } from '@/components/ui/switch.tsx'
+import { cn } from '@/lib/utils'
+import { Engine } from '@/core/engine/Engine'
+import { getDpr } from '@/core/canvas/Canvas'
+import { ExportService } from '@/core/services/ExportService'
+import { useBoundStore } from '@/store/store'
+import { downloadBlob } from '@/helpers/FileHelpers'
+
+const SCALES = [1, 2, 3]
+const PREVIEW_WIDTH = 400
+const PREVIEW_HEIGHT = 240
+
+const checkerboard = {
+    backgroundImage:
+        'conic-gradient(#e4e4e7 25%, #fff 0 50%, #e4e4e7 0 75%, #fff 0)',
+    backgroundSize: '12px 12px',
+}
+
+const fileName = (name?: string) =>
+    `${name?.replace(/[\\/:*?"<>|]/g, '-').trim() || 'eskiz'}.png`
+
+function Row({ label, children }: { label: string; children: ReactNode }) {
+    return (
+        <label className="flex h-8 items-center justify-between text-sm">
+            <span>{label}</span>
+            {children}
+        </label>
+    )
+}
+
+function ExportForm({ engine, close }: { engine: Engine; close: () => void }) {
+    const service = engine.getService<ExportService>('export')
+    const boardName = useBoundStore((state) => state.boardData?.name)
+
+    // content only mounts while open, so this is the selection at open time
+    const [hasSelection] = useState(() => service.getWidgets(true).length > 0)
+    const [onlySelected, setOnlySelected] = useState(hasSelection)
+    const [background, setBackground] = useState(true)
+    const [scale, setScale] = useState(2)
+    const [preview, setPreview] = useState<string | null>(null)
+    const [busy, setBusy] = useState<'copy' | 'download' | null>(null)
+
+    const widgets = useMemo(
+        () => service.getWidgets(onlySelected),
+        [service, onlySelected],
+    )
+    const size = useMemo(
+        () => service.getSize(widgets, scale),
+        [service, widgets, scale],
+    )
+
+    // stays the same across scales once the export outgrows the preview
+    const fit = useMemo(() => {
+        const base = service.getSize(widgets, 1)
+        if (!base || !size) return null
+
+        const dpr = getDpr()
+        return Math.min(
+            size.scale,
+            (PREVIEW_WIDTH * dpr * base.scale) / base.width,
+            (PREVIEW_HEIGHT * dpr * base.scale) / base.height,
+        )
+    }, [service, widgets, size])
+
+    useEffect(() => {
+        if (!fit) return
+
+        let url: string | null = null
+        let cancelled = false
+        service
+            .toPng({ widgets, scale: fit, background })
+            .then((blob) => {
+                if (cancelled) return
+                url = URL.createObjectURL(blob)
+                setPreview(url)
+            })
+            .catch((e) => {
+                console.error('could not render the preview', e)
+                if (!cancelled) setPreview(null)
+            })
+
+        return () => {
+            cancelled = true
+            if (url) URL.revokeObjectURL(url)
+        }
+    }, [service, widgets, fit, background])
+
+    const run = async (
+        action: 'copy' | 'download',
+        task: () => Promise<void>,
+        error: string,
+    ) => {
+        if (busy) return
+        setBusy(action)
+        try {
+            await task()
+            close()
+        } catch (e) {
+            console.error(e)
+            toast.error(error)
+        } finally {
+            setBusy(null)
+        }
+    }
+
+    const download = () =>
+        run(
+            'download',
+            async () => {
+                const blob = await service.toPng({ widgets, scale, background })
+                downloadBlob(blob, fileName(boardName))
+            },
+            'Could not export the image.',
+        )
+
+    const copy = () =>
+        run(
+            'copy',
+            async () => {
+                await service.copy({ widgets, scale, background })
+                toast.success('Copied to clipboard.')
+            },
+            'Could not copy the image.',
+        )
+
+    return (
+        <>
+            <DialogHeader>
+                <DialogTitle>Export board</DialogTitle>
+            </DialogHeader>
+            <div className="flex h-60 items-center justify-center rounded-lg bg-zinc-100 p-4">
+                {size && preview ? (
+                    <img
+                        src={preview}
+                        alt="Export preview"
+                        className="max-h-full max-w-full rounded-sm object-contain shadow-sm ring-1 ring-black/5"
+                        style={background ? undefined : checkerboard}
+                    />
+                ) : (
+                    <span className="text-sm text-zinc-400">
+                        Nothing to export
+                    </span>
+                )}
+            </div>
+            <div className="flex flex-col gap-1">
+                {hasSelection ? (
+                    <Row label="Only selected">
+                        <Switch
+                            checked={onlySelected}
+                            onCheckedChange={setOnlySelected}
+                        />
+                    </Row>
+                ) : null}
+                <Row label="Background">
+                    <Switch
+                        checked={background}
+                        onCheckedChange={setBackground}
+                    />
+                </Row>
+                <div className="flex h-8 items-center justify-between text-sm">
+                    <span>
+                        Scale
+                        {size ? (
+                            <span className="ml-2 text-xs tabular-nums text-zinc-400">
+                                {size.width} × {size.height} px
+                            </span>
+                        ) : null}
+                    </span>
+                    <div className="flex rounded-md bg-zinc-100 p-0.5">
+                        {SCALES.map((s) => (
+                            <button
+                                key={s}
+                                type="button"
+                                onClick={() => setScale(s)}
+                                className={cn(
+                                    'h-7 w-10 rounded text-xs font-medium tabular-nums transition-colors',
+                                    s === scale
+                                        ? 'bg-white text-zinc-900 shadow-sm'
+                                        : 'text-zinc-500 hover:text-zinc-900',
+                                )}
+                            >
+                                {s}x
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            <div className="flex justify-end gap-2">
+                <Button
+                    variant="outline"
+                    disabled={!size || !!busy}
+                    onClick={copy}
+                >
+                    {busy === 'copy' ? (
+                        <LoaderCircle className="animate-spin" />
+                    ) : (
+                        <Copy />
+                    )}
+                    Copy to clipboard
+                </Button>
+                <Button disabled={!size || !!busy} onClick={download}>
+                    {busy === 'download' ? (
+                        <LoaderCircle className="animate-spin" />
+                    ) : (
+                        <Download />
+                    )}
+                    Download PNG
+                </Button>
+            </div>
+        </>
+    )
+}
+
+export function ExportModal({
+    engine,
+    isOpen = false,
+    closeModal,
+}: {
+    engine: Engine
+    isOpen: boolean
+    closeModal: () => void
+}) {
+    return (
+        <Dialog
+            open={isOpen}
+            onOpenChange={(open) => {
+                if (!open) closeModal()
+            }}
+        >
+            <DialogContent className="max-w-md gap-5">
+                <ExportForm engine={engine} close={closeModal} />
+            </DialogContent>
+        </Dialog>
+    )
+}
