@@ -351,4 +351,22 @@ describe('Rectangle', () => {
             expect(findVisiblePixel(result)).toBeNull()
         })
     })
+
+    describe('hit testing', () => {
+        it('hits the corners of a sharp rectangle', () => {
+            const rect = makeRect()
+
+            expect(rect.contains(1, 1, 1)).toBe(true)
+        })
+
+        it('misses outside the rounded corners', () => {
+            const rect = makeRect({ properties: { radius: 20 } })
+
+            expect(rect.contains(1, 1, 1)).toBe(false)
+            expect(rect.contains(99, 49, 1)).toBe(false)
+            expect(rect.contains(7, 7, 1)).toBe(true)
+            expect(rect.contains(50, 1, 1)).toBe(true)
+            expect(rect.contains(1, 25, 1)).toBe(true)
+        })
+    })
 })

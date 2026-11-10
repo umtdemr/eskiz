@@ -93,6 +93,14 @@ export class Ellipse extends Shape {
         super.destroy()
     }
 
+    protected containsLocal(x: number, y: number): boolean {
+        const rx = this._width / 2
+        const ry = this._height / 2
+        if (rx <= 0 || ry <= 0) return false
+
+        return ((x - rx) / rx) ** 2 + ((y - ry) / ry) ** 2 <= 1
+    }
+
     calcTextBounds(): { x: number; y: number; width: number; height: number } {
         const maxWidth = this._width / Math.sqrt(2)
         const maxHeight = this._height / Math.sqrt(2)

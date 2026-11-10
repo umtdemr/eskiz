@@ -26,6 +26,7 @@ export class Triangle extends Shape {
         if (!this.paint) {
             this.paint = new canvasKit.Paint()
             this.paint.setAntiAlias(true)
+            this.paint.setStrokeJoin(canvasKit.StrokeJoin.Round)
         }
         return this.paint
     }
@@ -128,6 +129,14 @@ export class Triangle extends Shape {
         this._fillPath = null
         this._strokePath = null
         super.destroy()
+    }
+
+    protected containsLocal(x: number, y: number): boolean {
+        if (y < 0 || y > this._height || this._height <= 0) return false
+
+        // the triangle widens from the top middle down to the base
+        const half = (this._width / 2) * (y / this._height)
+        return Math.abs(x - this._width / 2) <= half
     }
 
     calcTextBounds(): { x: number; y: number; width: number; height: number } {

@@ -136,6 +136,22 @@ export class Rectangle extends Shape {
         }
     }
 
+    protected containsLocal(x: number, y: number): boolean {
+        if (!super.containsLocal(x, y)) return false
+
+        const r = Math.min(
+            (this._properties.radius as number) || 0,
+            this._width / 2,
+            this._height / 2,
+        )
+        if (r <= 0) return true
+
+        // nearest point of the inner rect, only the corners are farther than r
+        const cx = Math.max(r, Math.min(x, this._width - r))
+        const cy = Math.max(r, Math.min(y, this._height - r))
+        return (x - cx) ** 2 + (y - cy) ** 2 <= r * r
+    }
+
     canChangeRoundness(): boolean {
         return true
     }
