@@ -2,6 +2,7 @@ import {
     Path as CkPath,
     Paint as CkPaint,
     Canvas as SkiaCanvas,
+    PathEffect,
 } from 'canvaskit-wasm'
 import { Widget, WidgetJson, WidgetProps } from '../Widget'
 import { RGBA } from '../Color'
@@ -50,6 +51,9 @@ export class Line extends Widget {
 
     private _arrowPath: CkPath | null = null
     private _paint: CkPaint | null = null
+    private _dash: PathEffect | null = null
+    private _dashStyle: BorderStyle | null = null
+    private _dashWidth = 0
     private _pointCount = 0
 
     pointCountChanged = new Signal()
@@ -151,6 +155,33 @@ export class Line extends Widget {
         ctx.drawPath(this._arrowPath, this._paint)
     }
 
+    // kept on the line, rebuilt when border style or thickness changes
+    private dashEffect(width: number): PathEffect | null {
+        const style = this._borderStyle
+        if (style !== BorderStyle.DOTTED && style !== BorderStyle.DASHED) {
+            this._dash?.delete()
+            this._dash = null
+            return null
+        }
+
+        if (
+            !this._dash ||
+            this._dashStyle !== style ||
+            this._dashWidth !== width
+        ) {
+            this._dash?.delete()
+            this._dash = canvasKit.PathEffect.MakeDash(
+                style === BorderStyle.DOTTED
+                    ? [0, width * 2]
+                    : [width * 5, width * 5],
+                0,
+            )
+            this._dashStyle = style
+            this._dashWidth = width
+        }
+        return this._dash
+    }
+
     setPoints(points: [number, number][]) {
         this._points = points
         this.updatePath()
@@ -225,24 +256,12 @@ export class Line extends Widget {
         const strokeWidth = this._strokeWidth || 2
 
         // apply path effect for border styles
-        if (this._borderStyle === BorderStyle.DOTTED) {
-            const pathEffect = canvasKit.PathEffect.MakeDash(
-                [0, strokeWidth * 2],
-                0,
-            )
-            this._paint.setPathEffect(pathEffect)
-            this._paint.setStrokeCap(canvasKit.StrokeCap.Round)
-        } else if (this._borderStyle === BorderStyle.DASHED) {
-            const pathEffect = canvasKit.PathEffect.MakeDash(
-                [strokeWidth * 5, strokeWidth * 5],
-                0,
-            )
-            this._paint.setPathEffect(pathEffect)
-            this._paint.setStrokeCap(canvasKit.StrokeCap.Butt)
-        } else {
-            this._paint.setPathEffect(null)
-            this._paint.setStrokeCap(canvasKit.StrokeCap.Butt)
-        }
+        this._paint.setPathEffect(this.dashEffect(strokeWidth))
+        this._paint.setStrokeCap(
+            this._borderStyle === BorderStyle.DOTTED
+                ? canvasKit.StrokeCap.Round
+                : canvasKit.StrokeCap.Butt,
+        )
 
         ctx.drawPath(this._path!, this._paint)
 
@@ -667,6 +686,8 @@ export class Line extends Widget {
         this._path?.delete()
         this._arrowPath?.delete()
         this._paint?.delete()
+        this._dash?.delete()
+        this._dash = null
         this._path = null
         this._arrowPath = null
         this._paint = null
