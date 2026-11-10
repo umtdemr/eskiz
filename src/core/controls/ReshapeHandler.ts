@@ -34,7 +34,13 @@ export class ReshapeHandler {
         this.engine = engine
     }
 
-    start(_data: CanvasMouseEvent, shape: Line, pointIndex: number) {
+    // insert adds a new point at pointIndex before dragging it
+    start(
+        _data: CanvasMouseEvent,
+        shape: Line,
+        pointIndex: number,
+        insert?: [number, number],
+    ) {
         this.shape = shape
         this.pointIndex = pointIndex
         this.initialHeadBinding = shape.headBinding
@@ -49,6 +55,14 @@ export class ReshapeHandler {
             },
         )
         this.transactionId = transactionId
+
+        if (insert) {
+            const points = [...shape.absolutePoints] as [number, number][]
+            points.splice(pointIndex, 0, insert)
+            shape.updateFromAbsolutePoints(points)
+            this.engine.transactionHandler.update(transactionId)
+            this.engine.canvas.requestRender()
+        }
 
         this.reshapeStarted.dispatch({ widgets: [shape] })
     }

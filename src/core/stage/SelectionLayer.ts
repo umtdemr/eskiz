@@ -19,6 +19,7 @@ import { DragHandler } from '../controls/DragHandler'
 
 import { LineBorder } from '@/core/shapes/nonCanvasShapes/LineBorder'
 import { PointControl } from '@/core/shapes/nonCanvasShapes/PointControl'
+import { MidPointControl } from '@/core/shapes/nonCanvasShapes/MidPointControl'
 import { Line } from '@/core/shapes/line/Line'
 import { WidgetType } from '@/core/constants.ts'
 import { RotateControl } from '../shapes/nonCanvasShapes/RotateControl'
@@ -29,6 +30,7 @@ export class SelectionLayer extends Layer {
     private _selected: Widget[]
     private _selectionBorder: Border | null = null
     private controls: Control[] = []
+    private line: Line | null = null
     private dragHandler: DragHandler
 
     constructor(engine: Engine, selectionService: SelectionService) {
@@ -163,6 +165,24 @@ export class SelectionLayer extends Layer {
 
         if (widgets[0].widgetType === WidgetType.LINE) {
             const line = widgets[0] as Line
+            this.line = line
+            line.pointCountChanged.add(this.onPointCountChanged, this)
+
+            // mid points go first so real points stay on top
+            for (let index = 0; index < line.points.length - 1; index++) {
+                const handle = new MidPointControl(
+                    {
+                        pointIndex: index,
+                        x: 0,
+                        y: 0,
+                        selectionLayer: this,
+                    },
+                    this.engine,
+                    this.selectionService,
+                )
+                this.controls.push(handle)
+                this.addChildren(handle)
+            }
             line.points.forEach((_, index) => {
                 const handle = new PointControl(
                     {
@@ -276,7 +296,19 @@ export class SelectionLayer extends Layer {
         return border
     }
 
+    // rebuilt on the next tick, the signal is still dispatching here
+    private onPointCountChanged() {
+        this.engine.canvas.tickBefore.addOnce(this.rebuild, this)
+        this.engine.canvas.requestRender()
+    }
+
+    private rebuild() {
+        this.createSelectionUI(this._selected)
+    }
+
     private clearSelection() {
+        this.line?.pointCountChanged.remove(this.onPointCountChanged, this)
+        this.line = null
         for (const widget of this.children) {
             widget.destroy()
         }

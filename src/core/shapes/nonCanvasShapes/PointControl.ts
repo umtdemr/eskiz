@@ -14,10 +14,10 @@ export interface PointControlProps extends ControlProps {
  */
 export class PointControl extends Control {
     pointIndex: number
-    private line: Line
+    protected line: Line
     private strokeWidth = 1.5
     private needsUpdate = false
-    private paint: Paint
+    protected paint: Paint
 
     constructor(
         props: PointControlProps,
