@@ -11,6 +11,7 @@ import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WsWidget } from '@/types/Websocket'
 import { Layer } from '@/core/stage/Layer'
 import { Engine } from '@/core/engine/Engine'
+import { Signal } from '@/core/signal/Signal'
 
 export interface LineProps extends WidgetProps {
     properties: LineProperties
@@ -49,11 +50,15 @@ export class Line extends Widget {
 
     private _arrowPath: CkPath | null = null
     private _paint: CkPaint | null = null
+    private _pointCount = 0
+
+    pointCountChanged = new Signal()
 
     constructor(props: LineProps, engine: Engine) {
         super(WidgetType.LINE, props, engine)
         this._interactive = true
         this._points = props.properties.points
+        this._pointCount = this._points.length
         this._hasHeadArrow = !!props.properties.hasHeadArrow
         this._hasTailArrow = !!props.properties.hasTailArrow
 
@@ -95,6 +100,11 @@ export class Line extends Widget {
         }
 
         this._path = path
+
+        if (points.length !== this._pointCount) {
+            this._pointCount = points.length
+            this.pointCountChanged.dispatch()
+        }
     }
 
     private updateArrowPath() {
@@ -660,6 +670,7 @@ export class Line extends Widget {
         this._path = null
         this._arrowPath = null
         this._paint = null
+        this.pointCountChanged.removeAll()
         super.destroy()
     }
 }
