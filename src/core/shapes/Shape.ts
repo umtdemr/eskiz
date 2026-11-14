@@ -1,4 +1,6 @@
 import { Engine } from '@/core/engine/Engine'
+import { PathEffect } from 'canvaskit-wasm'
+import { canvasKit } from '@/core/canvas/Canvas'
 import { RGBA } from '@/core/shapes/Color.ts'
 import {
     BorderStyle,
@@ -47,6 +49,9 @@ export abstract class Shape extends Widget {
     private _shapeType: ShapeType
     protected _text: ShapeText | null
     protected _textProperties: ShapeTextConstructProps
+    private _dash: PathEffect | null = null
+    private _dashStyle: BorderStyle | null = null
+    private _dashWidth = 0
 
     protected constructor(type: ShapeType, props: ShapeProps, engine: Engine) {
         super(WidgetType.SHAPE, props, engine)
@@ -70,6 +75,39 @@ export abstract class Shape extends Widget {
             this._textProperties = props.properties.textProperties
             this.createTextObject()
         }
+    }
+
+    protected dashEffect(): PathEffect | null {
+        const style = this._properties.borderStyle
+        const width = this._properties.strokeWidth as number
+        if (style !== BorderStyle.DOTTED && style !== BorderStyle.DASHED) {
+            this._dash?.delete()
+            this._dash = null
+            return null
+        }
+
+        if (
+            !this._dash ||
+            this._dashStyle !== style ||
+            this._dashWidth !== width
+        ) {
+            this._dash?.delete()
+            this._dash = canvasKit.PathEffect.MakeDash(
+                style === BorderStyle.DOTTED
+                    ? [width, width * 2]
+                    : [width * 5, width * 5],
+                0,
+            )
+            this._dashStyle = style
+            this._dashWidth = width
+        }
+        return this._dash
+    }
+
+    destroy() {
+        this._dash?.delete()
+        this._dash = null
+        super.destroy()
     }
 
     protected generateJson(): WidgetJson {

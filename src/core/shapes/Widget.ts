@@ -331,13 +331,18 @@ export abstract class Widget extends Layer {
         const sy = y * scale
 
         if (this._angle === 0) {
-            return this._bounds.contains(sx, sy)
+            return this.containsLocal(sx - this._x, sy - this._y)
         }
 
         const cx = this._x + this._width / 2
         const cy = this._y + this._height / 2
         const local = reverseRotatePoint(sx, sy, cx, cy, this._angle)
-        return this._localBounds.contains(local.x - this._x, local.y - this._y)
+        return this.containsLocal(local.x - this._x, local.y - this._y)
+    }
+
+    // point is in the widget's own unrotated space
+    protected containsLocal(x: number, y: number): boolean {
+        return this._localBounds.contains(x, y)
     }
 
     onMouseEnter() {}

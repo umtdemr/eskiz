@@ -3,7 +3,6 @@ import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WsWidget } from '@/types/Websocket.ts'
 import { WidgetJson } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color'
-import { BorderStyle } from '@/helpers/Constant'
 import { ShapeType } from '@/core/constants.ts'
 import { Engine } from '@/core/engine/Engine'
 import { Paint } from 'canvaskit-wasm'
@@ -69,28 +68,23 @@ export class Ellipse extends Shape {
         paint.setStyle(canvasKit.PaintStyle.Stroke)
         paint.setStrokeWidth(strokeWidth)
 
-        if (this._properties.borderStyle === BorderStyle.DOTTED) {
-            const pathEffect = canvasKit.PathEffect.MakeDash(
-                [strokeWidth, strokeWidth * 2],
-                0,
-            )
-            paint.setPathEffect(pathEffect)
-        } else if (this._properties.borderStyle === BorderStyle.DASHED) {
-            const pathEffect = canvasKit.PathEffect.MakeDash(
-                [strokeWidth * 5, strokeWidth * 5],
-                0,
-            )
-            paint.setPathEffect(pathEffect)
-        }
+        paint.setPathEffect(this.dashEffect())
 
         ctx.drawOval(strokeEllipse, paint)
-        paint.setPathEffect(null)
     }
 
     destroy() {
         this.paint?.delete()
         this.paint = null
         super.destroy()
+    }
+
+    protected containsLocal(x: number, y: number): boolean {
+        const rx = this._width / 2
+        const ry = this._height / 2
+        if (rx <= 0 || ry <= 0) return false
+
+        return ((x - rx) / rx) ** 2 + ((y - ry) / ry) ** 2 <= 1
     }
 
     calcTextBounds(): { x: number; y: number; width: number; height: number } {

@@ -9,9 +9,14 @@ import getStroke from 'perfect-freehand'
 import { PathType, WidgetType } from '@/core/constants.ts'
 import { Paint } from 'canvaskit-wasm'
 
+const HIT_TOLERANCE = 6
+
 export class Pen extends Path {
     private _paint: Paint | null = null
     private _scale: number = 1
+    private _band: CkPath | null = null
+    private _bandOf: CkPath | null = null
+    private _bandWidth = 0
     protected _baseWidth: number = 0
 
     constructor(props: PathProps, engine: Engine) {
@@ -75,6 +80,45 @@ export class Pen extends Path {
         renderContext.ctx.restore()
     }
 
+    protected containsLocal(x: number, y: number): boolean {
+        if (!this._path || this._path.isDeleted()) {
+            return super.containsLocal(x, y)
+        }
+
+        const tolerance = HIT_TOLERANCE / (this._engine.canvas.zoom || 1)
+        if (
+            x < -tolerance ||
+            y < -tolerance ||
+            x > this._width + tolerance ||
+            y > this._height + tolerance
+        ) {
+            return false
+        }
+
+        // the path keeps its drawn size, resize only scales it
+        const px = x / this._scale
+        const py = y / this._scale
+        if (this._path.contains(px, py)) return true
+
+        return this.hitBand((2 * tolerance) / this._scale).contains(px, py)
+    }
+
+    // outline widened so thin strokes are easy to hit, rebuilt when the path or zoom changes
+    private hitBand(width: number): CkPath {
+        if (
+            !this._band ||
+            this._bandOf !== this._path ||
+            this._bandWidth !== width
+        ) {
+            this._band?.delete()
+            this._band = this._path!.copy()
+            this._band.stroke({ width })
+            this._bandOf = this._path
+            this._bandWidth = width
+        }
+        return this._band
+    }
+
     replacePath(newPath: CkPath, newPoints: number[][]) {
         super.replacePath(newPath, newPoints)
         const bounds = newPath.getBounds()
@@ -84,6 +128,9 @@ export class Pen extends Path {
     destroy() {
         this._paint?.delete()
         this._paint = null
+        this._band?.delete()
+        this._band = null
+        this._bandOf = null
         super.destroy()
     }
 

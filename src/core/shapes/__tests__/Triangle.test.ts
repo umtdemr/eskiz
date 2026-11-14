@@ -221,4 +221,29 @@ describe('Triangle', () => {
             expect(findVisiblePixel(result)).toBeNull()
         })
     })
+
+    describe('hit testing', () => {
+        it('hits inside the triangle', () => {
+            const triangle = makeTriangle()
+
+            expect(triangle.contains(40, 30, 1)).toBe(true)
+            expect(triangle.contains(2, 58, 1)).toBe(true)
+        })
+
+        it('misses the empty corners of the box', () => {
+            const triangle = makeTriangle()
+
+            expect(triangle.contains(5, 5, 1)).toBe(false)
+            expect(triangle.contains(75, 5, 1)).toBe(false)
+        })
+
+        it('follows rotation', () => {
+            const triangle = makeTriangle()
+            triangle.rotate(180)
+
+            // upside down, the base is at the top now
+            expect(triangle.contains(5, 5, 1)).toBe(true)
+            expect(triangle.contains(5, 55, 1)).toBe(false)
+        })
+    })
 })

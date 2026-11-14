@@ -1,5 +1,4 @@
 import { Shape, ShapeProperties, ShapeProps } from '@/core/shapes/Shape.ts'
-import { BorderStyle } from '@/helpers/Constant.ts'
 import { canvasKit, RenderContext } from '@/core/canvas/Canvas'
 import { WidgetJson } from '@/core/shapes/Widget.ts'
 import { RGBA } from '@/core/shapes/Color'
@@ -98,27 +97,13 @@ export class Rectangle extends Shape {
         paint.setStyle(canvasKit.PaintStyle.Stroke)
         paint.setStrokeWidth(strokeWidth)
 
-        if (this._properties.borderStyle === BorderStyle.DOTTED) {
-            const pathEffect = canvasKit.PathEffect.MakeDash(
-                [strokeWidth, strokeWidth * 2],
-                0,
-            )
-            paint.setPathEffect(pathEffect)
-        } else if (this._properties.borderStyle === BorderStyle.DASHED) {
-            const pathEffect = canvasKit.PathEffect.MakeDash(
-                [strokeWidth * 5, strokeWidth * 5],
-                0,
-            )
-            paint.setPathEffect(pathEffect)
-        }
+        paint.setPathEffect(this.dashEffect())
 
         if (drawFn === 'drawRRect') {
             ctx.drawRRect(strokeRect, paint)
         } else {
             ctx.drawRect(strokeRect, paint)
         }
-
-        paint.setPathEffect(null)
     }
 
     destroy() {
@@ -134,6 +119,22 @@ export class Rectangle extends Shape {
             width: this._width - TEXT_PADDING * 2,
             height: this._height - TEXT_PADDING * 2,
         }
+    }
+
+    protected containsLocal(x: number, y: number): boolean {
+        if (!super.containsLocal(x, y)) return false
+
+        const r = Math.min(
+            (this._properties.radius as number) || 0,
+            this._width / 2,
+            this._height / 2,
+        )
+        if (r <= 0) return true
+
+        // nearest point of the inner rect, only the corners are farther than r
+        const cx = Math.max(r, Math.min(x, this._width - r))
+        const cy = Math.max(r, Math.min(y, this._height - r))
+        return (x - cx) ** 2 + (y - cy) ** 2 <= r * r
     }
 
     canChangeRoundness(): boolean {

@@ -10,7 +10,7 @@ import {
 import { TextOp } from '@/core/textEditor/TextEditor'
 import { FontStyleType } from '@/helpers/Constant'
 import { RGBA, isDarkColor } from '@/core/shapes/Color'
-import { Paint } from 'canvaskit-wasm'
+import { MaskFilter, Paint } from 'canvaskit-wasm'
 
 export interface StickyNoteProps extends WidgetProps {
     properties: StickyNoteProperties
@@ -53,6 +53,8 @@ export class StickyNote extends Widget {
     protected _autoFontSize: boolean = true
     private _bgPaint: Paint | null = null
     private _shadowPaint: Paint | null = null
+    private _blur: MaskFilter | null = null
+    private _blurSigma = 0
 
     constructor(props: StickyNoteProps, engine: Engine) {
         const width = props.width || DEFAULT_WIDTH
@@ -201,13 +203,18 @@ export class StickyNote extends Widget {
 
         const shadowPaint = this.ensureShadowPaint()
 
-        // Create blur effect for shadow — must be refreshed since it depends on scale
-        const blurFilter = canvasKit.MaskFilter.MakeBlur(
-            canvasKit.BlurStyle.Normal,
-            scaledBlur / 2,
-            true,
-        )
-        shadowPaint.setMaskFilter(blurFilter)
+        // the blur depends on scale, rebuilt only when the note is resized
+        const sigma = scaledBlur / 2
+        if (!this._blur || this._blurSigma !== sigma) {
+            this._blur?.delete()
+            this._blur = canvasKit.MaskFilter.MakeBlur(
+                canvasKit.BlurStyle.Normal,
+                sigma,
+                true,
+            )
+            this._blurSigma = sigma
+            shadowPaint.setMaskFilter(this._blur)
+        }
 
         // Shadow rect is offset
         const shadowRect = canvasKit.LTRBRect(
@@ -227,8 +234,10 @@ export class StickyNote extends Widget {
     destroy() {
         this._bgPaint?.delete()
         this._shadowPaint?.delete()
+        this._blur?.delete()
         this._bgPaint = null
         this._shadowPaint = null
+        this._blur = null
         super.destroy()
     }
 

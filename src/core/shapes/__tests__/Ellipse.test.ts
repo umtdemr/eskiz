@@ -199,4 +199,29 @@ describe('Ellipse', () => {
             expect(findVisiblePixel(result)).toBeNull()
         })
     })
+
+    describe('hit testing', () => {
+        it('hits inside the ellipse', () => {
+            const ellipse = makeEllipse()
+
+            expect(ellipse.contains(40, 20, 1)).toBe(true)
+            expect(ellipse.contains(40, 1, 1)).toBe(true)
+        })
+
+        it('misses the corners of the box', () => {
+            const ellipse = makeEllipse()
+
+            expect(ellipse.contains(3, 3, 1)).toBe(false)
+            expect(ellipse.contains(77, 37, 1)).toBe(false)
+        })
+
+        it('follows rotation', () => {
+            const ellipse = makeEllipse()
+            ellipse.rotate(90)
+
+            // tall now, x:[20,60] y:[-20,60]
+            expect(ellipse.contains(40, -15, 1)).toBe(true)
+            expect(ellipse.contains(5, 20, 1)).toBe(false)
+        })
+    })
 })
