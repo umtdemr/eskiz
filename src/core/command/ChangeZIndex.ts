@@ -1,7 +1,6 @@
 import { Widget } from '../shapes/Widget'
 import { Command, CommandCtx, Shortcut } from './Command'
 import { EditingMethods } from '../transaction/State'
-import { compareLayers } from '../indexer/order'
 
 export type ZIndexAction =
     | 'bringToFront'
@@ -41,72 +40,19 @@ export class ChangeZIndex extends Command<Params> {
         const { engine, params, widgets } = ctx
         const { action } = params
 
-        const affectedWidgets: Widget[] = []
         const parentLayer = engine.stage.widgetsDefaultLayer
-        const indexer = engine.stage.indexer
+        const keys = engine.stage.indexer.reorder(parentLayer, widgets, action)
 
-        // sort widgets by their current position in the layer to maintain relative order
-        // with this way, we ensure that widgets in the selection keep their relative order after z-index change
-        const sortedWidgets = [...widgets].sort(compareLayers)
+        const affectedWidgets: Widget[] = []
+        const initialZIndexes = new Map<Widget, string>()
+        for (const widget of widgets) {
+            const key = keys.get(widget)
+            if (!key) continue
 
-        // "to front" and "backward" go bottom-up, "to back" and "forward" top-down,
-        // otherwise neighbours in the selection swap back and cancel out
-        const processOrder =
-            action === 'bringToFront' || action === 'sendBackward'
-                ? sortedWidgets
-                : sortedWidgets.reverse()
-
-        const initialZIndexes = new Map<string, string>()
-        processOrder.forEach((w) => initialZIndexes.set(w.uuid!, w.zIndex))
-
-        for (const widget of processOrder) {
-            let moved = false
-
-            switch (action) {
-                case 'bringToFront':
-                    moved = parentLayer.bringChildToFront(widget)
-                    if (moved) {
-                        // Update zIndex to reflect new position
-                        widget.zIndex = indexer.generateBringToFrontIndex(
-                            widget,
-                            parentLayer,
-                        )
-                    }
-                    break
-                case 'bringForward':
-                    moved = parentLayer.bringChildForward(widget)
-                    if (moved) {
-                        widget.zIndex = indexer.generateBringForwardIndex(
-                            widget,
-                            parentLayer,
-                        )
-                    }
-                    break
-                case 'sendBackward':
-                    moved = parentLayer.sendChildBackward(widget)
-                    if (moved) {
-                        widget.zIndex = indexer.generateSendBackwardIndex(
-                            widget,
-                            parentLayer,
-                        )
-                    }
-                    break
-                case 'sendToBack':
-                    moved = parentLayer.sendChildToBack(widget)
-                    if (moved) {
-                        widget.zIndex = indexer.generateSendToBackIndex(
-                            widget,
-                            parentLayer,
-                        )
-                    }
-                    break
-                default:
-                    continue
-            }
-
-            if (moved) {
-                affectedWidgets.push(widget)
-            }
+            initialZIndexes.set(widget, widget.zIndex)
+            widget.zIndex = key
+            parentLayer.repositionChild(widget)
+            affectedWidgets.push(widget)
         }
 
         if (affectedWidgets.length > 0) {
@@ -123,7 +69,7 @@ export class ChangeZIndex extends Command<Params> {
                     transactionId,
                     widget,
                     'zIndex',
-                    { z_index: initialZIndexes.get(widget.uuid!) },
+                    { z_index: initialZIndexes.get(widget) },
                 )
             })
 

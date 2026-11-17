@@ -91,93 +91,149 @@ describe('Indexer', () => {
         expect(sorted).toEqual([children[1], children[2], children[0]])
     })
 
-    describe('reordering indexes', () => {
-        it('bring to front generates an index above all siblings', () => {
+    describe('reorder', () => {
+        // applies the keys and returns the order by child position
+        const orderAfter = (keys: Map<Layer, string>, children: Layer[]) =>
+            [...children]
+                .sort((x, y) =>
+                    (keys.get(x) ?? x.zIndex) < (keys.get(y) ?? y.zIndex)
+                        ? -1
+                        : 1,
+                )
+                .map((c) => children.indexOf(c))
+                .join('')
+
+        it('brings to front above every sibling', () => {
             const { parent, children } = makeParentWithChildren(
                 'a0',
                 'a1',
                 'a2',
             )
 
-            const index = indexer.generateBringToFrontIndex(
-                children[0],
-                parent,
-            )
+            const keys = indexer.reorder(parent, [children[0]], 'bringToFront')
 
-            expect(index > 'a2').toBe(true)
+            expect(keys.get(children[0])! > 'a2').toBe(true)
         })
 
-        it('bring to front keeps the index when already at front', () => {
+        it('sends to back below every sibling', () => {
+            const { parent, children } = makeParentWithChildren(
+                'a0',
+                'a1',
+                'a2',
+            )
+
+            const keys = indexer.reorder(parent, [children[2]], 'sendToBack')
+
+            expect(keys.get(children[2])! < 'a0').toBe(true)
+        })
+
+        it('returns nothing when already in place', () => {
             const { parent, children } = makeParentWithChildren('a0', 'a1')
 
             expect(
-                indexer.generateBringToFrontIndex(children[1], parent),
-            ).toBe('a1')
-        })
-
-        it('send to back generates an index below all siblings', () => {
-            const { parent, children } = makeParentWithChildren(
-                'a0',
-                'a1',
-                'a2',
-            )
-
-            const index = indexer.generateSendToBackIndex(children[2], parent)
-
-            expect(index < 'a0').toBe(true)
-        })
-
-        it('send to back keeps the index when already at back', () => {
-            const { parent, children } = makeParentWithChildren('a0', 'a1')
-
-            expect(indexer.generateSendToBackIndex(children[0], parent)).toBe(
-                'a0',
-            )
-        })
-
-        it('bring forward moves one step up', () => {
-            const { parent, children } = makeParentWithChildren(
-                'a0',
-                'a1',
-                'a2',
-            )
-
-            const index = indexer.generateBringForwardIndex(
-                children[0],
-                parent,
-            )
-
-            // lands between the next sibling and the one after it
-            expect(index > 'a1').toBe(true)
-            expect(index < 'a2').toBe(true)
-        })
-
-        it('send backward moves one step down', () => {
-            const { parent, children } = makeParentWithChildren(
-                'a0',
-                'a1',
-                'a2',
-            )
-
-            const index = indexer.generateSendBackwardIndex(
-                children[2],
-                parent,
-            )
-
-            // lands between the previous sibling and the one before it
-            expect(index > 'a0').toBe(true)
-            expect(index < 'a1').toBe(true)
-        })
-
-        it('bring forward and send backward keep the index at the boundaries', () => {
-            const { parent, children } = makeParentWithChildren('a0', 'a1')
-
+                indexer.reorder(parent, [children[1]], 'bringToFront').size,
+            ).toBe(0)
             expect(
-                indexer.generateBringForwardIndex(children[1], parent),
-            ).toBe('a1')
+                indexer.reorder(parent, [children[1]], 'bringForward').size,
+            ).toBe(0)
             expect(
-                indexer.generateSendBackwardIndex(children[0], parent),
-            ).toBe('a0')
+                indexer.reorder(parent, [children[0]], 'sendToBack').size,
+            ).toBe(0)
+            expect(
+                indexer.reorder(parent, [children[0]], 'sendBackward').size,
+            ).toBe(0)
+        })
+
+        it('moves forward one step', () => {
+            const { parent, children } = makeParentWithChildren(
+                'a0',
+                'a1',
+                'a2',
+            )
+
+            const key = indexer
+                .reorder(parent, [children[0]], 'bringForward')
+                .get(children[0])!
+
+            expect(key > 'a1' && key < 'a2').toBe(true)
+        })
+
+        it('moves backward one step', () => {
+            const { parent, children } = makeParentWithChildren(
+                'a0',
+                'a1',
+                'a2',
+            )
+
+            const key = indexer
+                .reorder(parent, [children[2]], 'sendBackward')
+                .get(children[2])!
+
+            expect(key > 'a0' && key < 'a1').toBe(true)
+        })
+
+        it('skips hidden neighbours', () => {
+            const { parent, children } = makeParentWithChildren(
+                'a0',
+                'a1',
+                'a2',
+                'a3',
+            )
+            children[1].visible = false
+
+            const key = indexer
+                .reorder(parent, [children[0]], 'bringForward')
+                .get(children[0])!
+
+            expect(key > 'a2' && key < 'a3').toBe(true)
+        })
+
+        it('keeps below a hidden widget right above the target', () => {
+            const { parent, children } = makeParentWithChildren(
+                'a0',
+                'a1',
+                'a2',
+            )
+            children[2].visible = false
+
+            const key = indexer
+                .reorder(parent, [children[0]], 'bringForward')
+                .get(children[0])!
+
+            expect(key > 'a1' && key < 'a2').toBe(true)
+        })
+
+        it('stops a selection that is blocked at the edge', () => {
+            const { parent, children } = makeParentWithChildren(
+                'a0',
+                'a1',
+                'a2',
+            )
+
+            const keys = indexer.reorder(
+                parent,
+                [children[1], children[2]],
+                'bringForward',
+            )
+
+            expect(keys.size).toBe(0)
+        })
+
+        it('keeps the order of a split selection when bringing to front', () => {
+            const { parent, children } = makeParentWithChildren(
+                'a0',
+                'a1',
+                'a2',
+                'a3',
+            )
+
+            const keys = indexer.reorder(
+                parent,
+                [children[3], children[0]],
+                'bringToFront',
+            )
+
+            expect(orderAfter(keys, children)).toBe('1203')
         })
     })
 })

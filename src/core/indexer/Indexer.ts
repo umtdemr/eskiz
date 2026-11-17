@@ -1,7 +1,11 @@
 import { generateKeyBetween } from 'fractional-indexing'
-import { generateKeyBetween as keyBetween } from 'jittered-fractional-indexing'
+import {
+    generateKeyBetween as keyBetween,
+    generateNKeysBetween as keysBetween,
+} from 'jittered-fractional-indexing'
 import { Layer } from '@/core/stage/Layer'
 import { compareLayers } from './order'
+import type { ZIndexAction } from '@/core/command/ChangeZIndex'
 
 /**
  * Indexer generates zIndexes for layers and widgets.
@@ -79,71 +83,59 @@ export class Indexer {
         return siblings.sort(compareLayers)
     }
 
-    /**
-     * Generates zIndex to bring a widget to the front (above all siblings).
-     */
-    generateBringToFrontIndex(widget: Layer, parentLayer: Layer): string {
-        const siblings = this.getSortedSiblings(parentLayer)
-        if (siblings.length === 0 || siblings[siblings.length - 1] === widget) {
-            return widget.zIndex
-        }
-        // generate index after the current maximum
-        const maxZIndex = siblings[siblings.length - 1].zIndex
-        return keyBetween(maxZIndex, null)
-    }
+    // new keys for the widgets that move. neighbours are picked among visible
+    // siblings, keys come from the full list so deleted widgets keep their slot
+    reorder(
+        parent: Layer,
+        widgets: Layer[],
+        action: ZIndexAction,
+    ): Map<Layer, string> {
+        const list = this.getSortedSiblings(parent)
+        const selected = new Set(widgets)
+        const keys = new Map<Layer, string>()
+        const keyOf = (layer: Layer | undefined) =>
+            layer ? (keys.get(layer) ?? layer.zIndex) : null
+        const up = action === 'bringToFront' || action === 'bringForward'
+        const moving = list.filter((l) => selected.has(l))
 
-    /**
-     * Generates zIndex to send a widget to the back (below all siblings).
-     */
-    generateSendToBackIndex(widget: Layer, parentLayer: Layer): string {
-        const siblings = this.getSortedSiblings(parentLayer)
-        if (siblings.length === 0 || siblings[0] === widget) {
-            return widget.zIndex
-        }
-        // generate index before the current minimum
-        const minZIndex = siblings[0].zIndex
-        return keyBetween(null, minZIndex)
-    }
+        if (action === 'bringToFront' || action === 'sendToBack') {
+            const visible = list.filter((l) => l.visible)
+            const edge = up
+                ? visible.slice(-moving.length)
+                : visible.slice(0, moving.length)
+            // already there
+            if (edge.every((l) => selected.has(l))) return keys
 
-    /**
-     * Generates zIndex to bring a widget forward (one step up).
-     */
-    generateBringForwardIndex(widget: Layer, parentLayer: Layer): string {
-        const siblings = this.getSortedSiblings(parentLayer)
-        const currentIndex = siblings.findIndex((s) => s === widget)
-
-        if (currentIndex === -1 || currentIndex === siblings.length - 1) {
-            // not found or already at front
-            return widget.zIndex
+            const newKeys = up
+                ? keysBetween(list[list.length - 1].zIndex, null, moving.length)
+                : keysBetween(null, list[0].zIndex, moving.length)
+            moving.forEach((l, i) => keys.set(l, newKeys[i]))
+            return keys
         }
 
-        // move between current position and next widget
-        const nextWidget = siblings[currentIndex + 1]
-        const afterNext =
-            currentIndex + 2 < siblings.length
-                ? siblings[currentIndex + 2]
-                : null
+        // top-down when going up, so a moved widget doesn't block the next one
+        if (up) moving.reverse()
 
-        return keyBetween(nextWidget.zIndex, afterNext?.zIndex || null)
-    }
+        for (const widget of moving) {
+            const i = list.indexOf(widget)
+            const step = up ? 1 : -1
+            let j = i + step
+            while (list[j] && !list[j].visible) j += step
 
-    /**
-     * Generates zIndex to send a widget backward (one step down).
-     */
-    generateSendBackwardIndex(widget: Layer, parentLayer: Layer): string {
-        const siblings = this.getSortedSiblings(parentLayer)
-        const currentIndex = siblings.findIndex((s) => s === widget)
+            const target = list[j]
+            // a selected neighbour that couldn't move blocks this one too
+            if (!target || selected.has(target)) continue
 
-        if (currentIndex === -1 || currentIndex === 0) {
-            // not found or already at back
-            return widget.zIndex
+            keys.set(
+                widget,
+                up
+                    ? keyBetween(keyOf(target), keyOf(list[j + 1]))
+                    : keyBetween(keyOf(list[j - 1]), keyOf(target)),
+            )
+            list.splice(i, 1)
+            list.splice(list.indexOf(target) + (up ? 1 : 0), 0, widget)
         }
 
-        // move between previous widget and the one before it
-        const prevWidget = siblings[currentIndex - 1]
-        const beforePrev =
-            currentIndex - 2 >= 0 ? siblings[currentIndex - 2] : null
-
-        return keyBetween(beforePrev?.zIndex || null, prevWidget.zIndex)
+        return keys
     }
 }

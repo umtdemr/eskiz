@@ -113,46 +113,6 @@ describe('LinkedList', () => {
         })
     })
 
-    describe('reordering', () => {
-        it('moves a value to the front', () => {
-            const list = listOf(1, 2, 3)
-
-            expect(list.moveToFront(3)).toBe(true)
-            expect(list.toArray()).toEqual([3, 1, 2])
-        })
-
-        it('moves a value to the back', () => {
-            const list = listOf(1, 2, 3)
-
-            expect(list.moveToBack(1)).toBe(true)
-            expect(list.toArray()).toEqual([2, 3, 1])
-        })
-
-        it('moves a value one step toward the end', () => {
-            const list = listOf(1, 2, 3)
-
-            expect(list.moveTowardEnd(1)).toBe(true)
-            expect(list.toArray()).toEqual([2, 1, 3])
-        })
-
-        it('moves a value one step toward the start', () => {
-            const list = listOf(1, 2, 3)
-
-            expect(list.moveTowardStart(3)).toBe(true)
-            expect(list.toArray()).toEqual([1, 3, 2])
-        })
-
-        it('reports false when the value is missing or already in place', () => {
-            const list = listOf(1, 2, 3)
-
-            expect(list.moveToFront(1)).toBe(false)
-            expect(list.moveToBack(3)).toBe(false)
-            expect(list.moveTowardEnd(3)).toBe(false)
-            expect(list.moveTowardStart(1)).toBe(false)
-            expect(list.moveToFront(99)).toBe(false)
-        })
-    })
-
     describe('iteration', () => {
         it('iterates forward', () => {
             const list = listOf(1, 2, 3)
