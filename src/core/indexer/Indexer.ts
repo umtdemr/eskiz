@@ -1,5 +1,6 @@
 import { generateKeyBetween } from 'fractional-indexing'
 import { Layer } from '@/core/stage/Layer'
+import { compareLayers } from './order'
 
 /**
  * Indexer generates zIndexes for layers and widgets.
@@ -74,7 +75,7 @@ export class Indexer {
         for (const child of parentLayer.children) {
             siblings.push(child)
         }
-        return siblings.sort((a, b) => (a.zIndex < b.zIndex ? -1 : 1))
+        return siblings.sort(compareLayers)
     }
 
     /**

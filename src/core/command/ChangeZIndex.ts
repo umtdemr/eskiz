@@ -1,6 +1,7 @@
 import { Widget } from '../shapes/Widget'
 import { Command, CommandCtx, Shortcut } from './Command'
 import { EditingMethods } from '../transaction/State'
+import { compareLayers } from '../indexer/order'
 
 export type ZIndexAction =
     | 'bringToFront'
@@ -46,9 +47,7 @@ export class ChangeZIndex extends Command<Params> {
 
         // sort widgets by their current position in the layer to maintain relative order
         // with this way, we ensure that widgets in the selection keep their relative order after z-index change
-        const sortedWidgets = [...widgets].sort((a, b) => {
-            return a.zIndex < b.zIndex ? -1 : 1
-        })
+        const sortedWidgets = [...widgets].sort(compareLayers)
 
         // "to front" and "backward" go bottom-up, "to back" and "forward" top-down,
         // otherwise neighbours in the selection swap back and cancel out

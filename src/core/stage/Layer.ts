@@ -1,6 +1,7 @@
 import { LinkedList } from '../dataStructures/LinkedList'
 import { Widget } from '../shapes/Widget'
 import { RenderContext } from '../canvas/Canvas'
+import { compareLayers } from '../indexer/order'
 
 interface LayerProps {
     name: string
@@ -100,7 +101,7 @@ export class Layer {
         let insertIdx = 0
 
         for (let i = 0; i < siblings.length; i++) {
-            if (siblings[i].zIndex > child.zIndex) {
+            if (compareLayers(siblings[i], child) > 0) {
                 insertIdx = i
                 break
             }
