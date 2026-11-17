@@ -46,6 +46,15 @@ describe('Indexer', () => {
         expect(indexer.generateIndexAfter('a5') > 'a5').toBe(true)
     })
 
+    it('gives different keys for the same spot', () => {
+        const { parent } = makeParentWithChildren('a0')
+        const keys = new Set<string>()
+        for (let i = 0; i < 50; i++) {
+            keys.add(indexer.generateIndexForWidget(parent, null))
+        }
+        expect(keys.size).toBe(50)
+    })
+
     it('generates widget indexes above the last child', () => {
         const { parent, children } = makeParentWithChildren('a1', 'a2')
 

@@ -1,4 +1,5 @@
 import { generateKeyBetween } from 'fractional-indexing'
+import { generateKeyBetween as keyBetween } from 'jittered-fractional-indexing'
 import { Layer } from '@/core/stage/Layer'
 import { compareLayers } from './order'
 
@@ -23,7 +24,7 @@ export class Indexer {
      * @returns
      */
     generateIndex(prev: Layer, next: Layer | null) {
-        return generateKeyBetween(prev.zIndex, next?.zIndex)
+        return keyBetween(prev.zIndex, next?.zIndex)
     }
 
     /**
@@ -39,14 +40,14 @@ export class Indexer {
             prevZIndex = lastObj.zIndex
         }
 
-        return generateKeyBetween(prevZIndex, nextLayer?.zIndex)
+        return keyBetween(prevZIndex, nextLayer?.zIndex)
     }
 
     /**
      * Generates a zIndex strictly after the given zIndex.
      */
     generateIndexAfter(zIndex: string): string {
-        return generateKeyBetween(zIndex, null)
+        return keyBetween(zIndex, null)
     }
 
     /**
@@ -63,7 +64,7 @@ export class Indexer {
         }
 
         // Generate a new index after the maximum zIndex
-        return generateKeyBetween(maxZIndex, null)
+        return keyBetween(maxZIndex, null)
     }
 
     /**
@@ -88,7 +89,7 @@ export class Indexer {
         }
         // generate index after the current maximum
         const maxZIndex = siblings[siblings.length - 1].zIndex
-        return generateKeyBetween(maxZIndex, null)
+        return keyBetween(maxZIndex, null)
     }
 
     /**
@@ -101,7 +102,7 @@ export class Indexer {
         }
         // generate index before the current minimum
         const minZIndex = siblings[0].zIndex
-        return generateKeyBetween(null, minZIndex)
+        return keyBetween(null, minZIndex)
     }
 
     /**
@@ -123,7 +124,7 @@ export class Indexer {
                 ? siblings[currentIndex + 2]
                 : null
 
-        return generateKeyBetween(nextWidget.zIndex, afterNext?.zIndex || null)
+        return keyBetween(nextWidget.zIndex, afterNext?.zIndex || null)
     }
 
     /**
@@ -143,6 +144,6 @@ export class Indexer {
         const beforePrev =
             currentIndex - 2 >= 0 ? siblings[currentIndex - 2] : null
 
-        return generateKeyBetween(beforePrev?.zIndex || null, prevWidget.zIndex)
+        return keyBetween(beforePrev?.zIndex || null, prevWidget.zIndex)
     }
 }
