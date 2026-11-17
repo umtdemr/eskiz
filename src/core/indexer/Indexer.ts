@@ -7,6 +7,12 @@ import { Layer } from '@/core/stage/Layer'
 import { compareLayers } from './order'
 import type { ZIndexAction } from '@/core/command/ChangeZIndex'
 
+// layers without bounds count as overlapping
+function overlaps(a: Layer, b: Layer) {
+    if (!a.bounds || !b.bounds) return true
+    return a.bounds.intersects(b.bounds)
+}
+
 /**
  * Indexer generates zIndexes for layers and widgets.
  */
@@ -83,8 +89,9 @@ export class Indexer {
         return siblings.sort(compareLayers)
     }
 
-    // new keys for the widgets that move. neighbours are picked among visible
-    // siblings, keys come from the full list so deleted widgets keep their slot
+    // new keys for the widgets that move. forward and backward jump over the first
+    // visible sibling that overlaps. keys come from the full list so
+    // deleted widgets keep their slot
     reorder(
         parent: Layer,
         widgets: Layer[],
@@ -120,7 +127,8 @@ export class Indexer {
             const i = list.indexOf(widget)
             const step = up ? 1 : -1
             let j = i + step
-            while (list[j] && !list[j].visible) j += step
+            while (list[j] && !(list[j].visible && overlaps(list[j], widget)))
+                j += step
 
             const target = list[j]
             // a selected neighbour that couldn't move blocks this one too

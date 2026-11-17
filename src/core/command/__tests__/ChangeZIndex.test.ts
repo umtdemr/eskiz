@@ -116,6 +116,25 @@ describe('ChangeZIndex', () => {
         expect(sortedByZIndex()).toEqual([b, c, a])
     })
 
+    it('jumps over widgets that do not overlap', () => {
+        b.left = 500
+
+        command.execute(makeCtx([a], 'bringForward'))
+
+        expect(order()).toEqual([b, c, a])
+        expect(sortedByZIndex()).toEqual([b, c, a])
+    })
+
+    it('stays when nothing above overlaps', () => {
+        b.left = 500
+        c.left = 1000
+
+        command.execute(makeCtx([a], 'bringForward'))
+
+        expect(order()).toEqual([a, b, c])
+        expect(engine.transactionHandler.begin).not.toHaveBeenCalled()
+    })
+
     it('does nothing when the widget is already in place', () => {
         command.execute(makeCtx([c], 'bringToFront'))
 

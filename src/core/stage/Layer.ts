@@ -1,6 +1,7 @@
 import { LinkedList } from '../dataStructures/LinkedList'
 import { Widget } from '../shapes/Widget'
 import { RenderContext } from '../canvas/Canvas'
+import { BoundingBox } from '../geometry/BoundingBox'
 import { compareLayers } from '../indexer/order'
 
 interface LayerProps {
@@ -99,6 +100,11 @@ export class Layer {
 
     get interactive(): boolean {
         return this._interactive
+    }
+
+    // plain layers have no area, widgets override this
+    get bounds(): BoundingBox | null {
+        return null
     }
 
     get visible(): boolean {
