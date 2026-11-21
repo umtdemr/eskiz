@@ -128,7 +128,7 @@ export class Engine {
 
         this._stage = new Stage(this)
         this.canvas = new Canvas(this._stage)
-        this.camera = new Camera(this.canvas, this._stage)
+        this.camera = this.canvas.camera
 
         this.upperCanvasRenderer = new UpperCanvasRenderer()
 

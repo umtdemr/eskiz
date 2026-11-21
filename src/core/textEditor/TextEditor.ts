@@ -98,16 +98,12 @@ export class TextEditor {
     }
 
     private setPosition() {
-        const transform = this.engine.canvas.viewportTransform
-
-        const transformedPosition = this.engine.canvas.transformPoint(
-            {
-                x: this._editProps.x,
-                y: this._editProps.y,
-            },
-            transform,
-        )
-        const scale = this.engine.canvas.zoom
+        const camera = this.engine.camera
+        const transformedPosition = camera.toScreen({
+            x: this._editProps.x,
+            y: this._editProps.y,
+        })
+        const scale = camera.zoom
         const contentScale = this._editProps.contentScale ?? 1
         const totalScale = scale * contentScale
         const angle = this._editProps.angle ?? 0
@@ -138,12 +134,12 @@ export class TextEditor {
 
     private initalizeListeners() {
         this._quill.on('text-change', this.onTextChange)
-        this.engine.canvas.transform.add(this.onCanvasTransform, this)
+        this.engine.camera.changed.add(this.onCanvasTransform, this)
     }
 
     private removeListeners() {
         this._quill.off('text-change', this.onTextChange)
-        this.engine.canvas.transform.remove(this.onCanvasTransform, this)
+        this.engine.camera.changed.remove(this.onCanvasTransform, this)
     }
 
     private onTextChange() {

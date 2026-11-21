@@ -166,10 +166,11 @@ export class ImageUploadService extends Service {
         const GAP = 50
         const MAX_COLS = 10
 
-        const canvas = this.engine.canvas
-        const scale = canvas.zoom
-        const viewportCenterX = -canvas.translateX + canvas.width / scale / 2
-        const viewportCenterY = -canvas.translateY + canvas.height / scale / 2
+        const { camera, canvas } = this.engine
+        const { x: viewportCenterX, y: viewportCenterY } = camera.toBoard({
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+        })
 
         let currentX = 0
         let currentY = 0

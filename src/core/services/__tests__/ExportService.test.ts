@@ -19,8 +19,8 @@ const rect = (x: number, y: number, width = 100, height = 50, z = 'a0') =>
 const setup = (widgets: Widget[], selected: Widget[] = []) => {
     const services: Record<string, unknown> = {}
     const engine = createEngineMock(services)
-    Object.assign(engine.canvas, { zoom: 1 })
     Object.assign(engine, {
+        camera: { zoom: 1 },
         stage: { widgetsDefaultLayer: { childrenArray: widgets } },
     })
     services.selection = createSelectionService(engine, selected)

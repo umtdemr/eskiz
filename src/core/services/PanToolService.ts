@@ -46,13 +46,11 @@ export class PanToolService extends Service {
         this.mouseController.on('mouseCancel', this.onMouseUp, this)
     }
 
-    onMouseDown(data: CanvasMouseEvent) {
-        const { e, canvas } = data
-        // a running animation would move the view under the pan
-        this.engine.camera.stop()
+    onMouseDown({ e }: CanvasMouseEvent) {
+        const camera = this.engine.camera
         this._isPanning = true
-        this.startPanX = e.clientX - canvas.translateX * canvas.zoom
-        this.startPanY = e.clientY - canvas.translateY * canvas.zoom
+        this.startPanX = e.clientX - camera.translateX * camera.zoom
+        this.startPanY = e.clientY - camera.translateY * camera.zoom
     }
 
     onMouseMove(data: CanvasMouseEvent) {
@@ -60,13 +58,14 @@ export class PanToolService extends Service {
             return
         }
 
-        const { e, canvas } = data
+        const { e } = data
+        const camera = this.engine.camera
         this.cursorService.setCursor(this.cursorToolName, 'panning')
 
-        canvas.translateX = (e.clientX - this.startPanX) / canvas.zoom
-        canvas.translateY = (e.clientY - this.startPanY) / canvas.zoom
-
-        canvas.requestRender()
+        camera.set({
+            translateX: (e.clientX - this.startPanX) / camera.zoom,
+            translateY: (e.clientY - this.startPanY) / camera.zoom,
+        })
     }
 
     onMouseUp() {

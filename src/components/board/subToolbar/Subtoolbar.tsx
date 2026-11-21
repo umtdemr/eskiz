@@ -129,7 +129,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
         const showSubtoolbar = () => dispatch({ type: ActionKind.TEMP_SHOW })
 
         if (state.show) {
-            engine.canvas.transform.add(onTransform)
+            engine.camera.changed.add(onTransform)
             engine.commandExecuted.add(onCommandExecuted)
             engine.dragHandler.moveStarted.add(hideSubtoolbar)
             engine.dragHandler.moveFinished.add(showSubtoolbar)
@@ -140,7 +140,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             engine.rotateHandler.rotateStarted.add(hideSubtoolbar)
             engine.rotateHandler.rotateFinished.add(showSubtoolbar)
         } else {
-            engine.canvas.transform.remove(onTransform)
+            engine.camera.changed.remove(onTransform)
             engine.commandExecuted.remove(onCommandExecuted)
             engine.dragHandler.moveStarted.remove(hideSubtoolbar)
             engine.dragHandler.moveFinished.remove(showSubtoolbar)
@@ -153,7 +153,7 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
         }
 
         return () => {
-            engine.canvas.transform.remove(onTransform)
+            engine.camera.changed.remove(onTransform)
             engine.commandExecuted.remove(onCommandExecuted)
             engine.dragHandler.moveStarted.remove(hideSubtoolbar)
             engine.dragHandler.moveFinished.remove(showSubtoolbar)
@@ -188,14 +188,14 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
     const bounds = BoundingBox.createWithMerge(
         ...selectedWidgets.map((w) => w.bounds),
     )
-    const transformedPos = engine.canvas.transformPoint(
-        { x: bounds.left, y: bounds.top },
-        engine.canvas.viewportTransform,
-    )
-    const bottom = engine.canvas.transformPoint(
-        { x: bounds.left, y: bounds.bottom },
-        engine.canvas.viewportTransform,
-    ).y
+    const transformedPos = engine.camera.toScreen({
+        x: bounds.left,
+        y: bounds.top,
+    })
+    const bottom = engine.camera.toScreen({
+        x: bounds.left,
+        y: bounds.bottom,
+    }).y
 
     // no room above, put it under the selection
     let top = transformedPos.y - (rotateControlAtTop ? 100 : 70)

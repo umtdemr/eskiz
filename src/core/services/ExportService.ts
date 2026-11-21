@@ -85,7 +85,7 @@ export class ExportService extends Service {
             ctx.translate(-bounds.x, -bounds.y)
 
             // board zoom, so images keep the texture they already have
-            const renderContext = { ctx, scale: this.engine.canvas.zoom }
+            const renderContext = { ctx, scale: this.engine.camera.zoom }
             for (const widget of widgets) {
                 ctx.save()
                 widget.render(renderContext)

@@ -1,4 +1,4 @@
-import { Canvas } from './Canvas'
+import type { Canvas, Point } from './Canvas'
 import { Stage } from '../stage/Stage'
 import { Signal } from '../signal/Signal'
 import { LTRBRect } from '../geometry/BoundingBox'
@@ -8,16 +8,21 @@ import {
     interpolateView,
     View,
 } from '../geometry/math'
+import { ZOOM_LEVELS } from '@/helpers/Constant'
 
 export class Camera {
     private canvas: Canvas
     private stage: Stage
-    // frame of the running animation, 0 when there is none
-    private animation = 0
-    private isAnimating = false
+    private _zoom = 1
+    private _translateX = 0
+    private _translateY = 0
+    // runs before each canvas frame while animating
+    private step: (() => void) | null = null
 
     padding = 96
 
+    // once per change of the view, after zoom and translate are both set
+    changed = new Signal()
     zoomChanged = new Signal<number>()
 
     constructor(canvas: Canvas, stage: Stage) {
@@ -26,7 +31,47 @@ export class Camera {
     }
 
     get zoom() {
-        return this.canvas.zoom
+        return this._zoom
+    }
+
+    get translateX() {
+        return this._translateX
+    }
+
+    get translateY() {
+        return this._translateY
+    }
+
+    /** the part of the board on screen */
+    get viewport(): LTRBRect {
+        return {
+            left: -this._translateX,
+            top: -this._translateY,
+            right: this.canvas.width / this._zoom - this._translateX,
+            bottom: this.canvas.height / this._zoom - this._translateY,
+        }
+    }
+
+    /** a board point on the screen, in css pixels */
+    toScreen(p: Point): Point {
+        return {
+            x: (p.x + this._translateX) * this._zoom,
+            y: (p.y + this._translateY) * this._zoom,
+        }
+    }
+
+    /** a screen point, in css pixels, on the board */
+    toBoard(p: Point): Point {
+        return {
+            x: p.x / this._zoom - this._translateX,
+            y: p.y / this._zoom - this._translateY,
+        }
+    }
+
+    /** moves the view, stops a running animation */
+    set(view: Partial<View>) {
+        this.stop()
+        this.apply(view)
     }
 
     zoomTo(zoom: number) {
@@ -36,18 +81,16 @@ export class Camera {
 
     /** keeps the screen point x, y in place, then pans by dx, dy screen pixels */
     zoomAt(zoom: number, x: number, y: number, dx = 0, dy = 0) {
-        const canvas = this.canvas
-        const oldZoom = canvas.zoom
-        canvas.zoom = zoom
-        const newZoom = canvas.zoom
+        const oldZoom = this._zoom
+        const newZoom = clampZoom(zoom)
 
-        canvas.translateX =
-            x / newZoom - x / oldZoom + canvas.translateX + dx / oldZoom
-        canvas.translateY =
-            y / newZoom - y / oldZoom + canvas.translateY + dy / oldZoom
-
-        canvas.requestRender()
-        this.zoomChanged.dispatch(canvas.zoom)
+        this.set({
+            zoom: newZoom,
+            translateX:
+                x / newZoom - x / oldZoom + this._translateX + dx / oldZoom,
+            translateY:
+                y / newZoom - y / oldZoom + this._translateY + dy / oldZoom,
+        })
     }
 
     /** shows `rect` on the screen. `maxZoom` keeps a small area from filling it */
@@ -82,63 +125,61 @@ export class Camera {
             '(prefers-reduced-motion: reduce)',
         ).matches
         if (reduced || duration <= 0) {
-            this.set(view)
+            this.apply(view)
             return
         }
 
         const from = {
-            zoom: this.canvas.zoom,
-            translateX: this.canvas.translateX,
-            translateY: this.canvas.translateY,
+            zoom: this._zoom,
+            translateX: this._translateX,
+            translateY: this._translateY,
         }
         const start = performance.now()
 
-        const step = (now: number) => {
-            const t = Math.min((now - start) / duration, 1)
-            const { width, height } = this.canvas
+        // on the canvas frame, so what it draws is never a step behind
+        this.step = () => {
+            const t = Math.min((performance.now() - start) / duration, 1)
+            if (t === 1) {
+                this.stop()
+                // the exact target, the curve can land a hair off
+                this.apply(view)
+                return
+            }
 
-            this.isAnimating = true
-            this.set(
+            const { width, height } = this.canvas
+            this.apply(
                 interpolateView(from, view, easeInOutCubic(t), width, height),
             )
-            this.isAnimating = false
-
-            if (t < 1) {
-                this.animation = requestAnimationFrame(step)
-            } else {
-                this.stop()
-            }
         }
-
-        this.canvas.transform.add(this.onMoved, this)
+        this.canvas.tickBefore.add(this.step)
         // the target was fitted to the old size
         this.canvas.resized.add(this.stop, this)
-        this.animation = requestAnimationFrame(step)
     }
 
     stop() {
-        if (!this.animation) return
-        cancelAnimationFrame(this.animation)
-        this.animation = 0
-        this.canvas.transform.remove(this.onMoved, this)
+        if (!this.step) return
+        this.canvas.tickBefore.remove(this.step)
+        this.step = null
         this.canvas.resized.remove(this.stop, this)
     }
 
     dispose() {
         this.stop()
+        this.changed.removeAll()
         this.zoomChanged.removeAll()
     }
 
-    private onMoved() {
-        if (!this.isAnimating) this.stop()
-    }
-
-    private set(view: View) {
-        this.canvas.zoom = view.zoom
-        this.canvas.translateX = view.translateX
-        this.canvas.translateY = view.translateY
+    private apply(view: Partial<View>) {
+        const oldZoom = this._zoom
+        if (view.zoom !== undefined) this._zoom = clampZoom(view.zoom)
+        if (view.translateX !== undefined) this._translateX = view.translateX
+        if (view.translateY !== undefined) this._translateY = view.translateY
 
         this.canvas.requestRender()
-        this.zoomChanged.dispatch(this.canvas.zoom)
+        this.changed.dispatch()
+        if (this._zoom !== oldZoom) this.zoomChanged.dispatch(this._zoom)
     }
 }
+
+const clampZoom = (zoom: number) =>
+    Math.min(Math.max(ZOOM_LEVELS.MIN, zoom), ZOOM_LEVELS.MAX)

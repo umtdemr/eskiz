@@ -103,13 +103,14 @@ export class ClipboardService extends Service {
 
     // under the mouse, or the middle of the screen before it moved
     private pastePoint(): Point {
-        const canvas = this.engine.canvas
-        if (this.lastMouse) return canvas.getPointer(this.lastMouse)
-
-        return {
-            x: -canvas.translateX + canvas.width / canvas.zoom / 2,
-            y: -canvas.translateY + canvas.height / canvas.zoom / 2,
+        const { camera, canvas } = this.engine
+        if (this.lastMouse) {
+            return camera.toBoard({
+                x: this.lastMouse.clientX,
+                y: this.lastMouse.clientY,
+            })
         }
+        return camera.toBoard({ x: canvas.width / 2, y: canvas.height / 2 })
     }
 
     dispose() {

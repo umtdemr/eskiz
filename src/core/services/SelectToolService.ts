@@ -323,7 +323,7 @@ export class SelectToolService extends Service {
                         widget.contains(
                             pointer.x,
                             pointer.y,
-                            mouseData.canvas.zoom,
+                            mouseData.canvas.camera.zoom,
                         )
                     ) {
                         return widget
