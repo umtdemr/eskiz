@@ -48,6 +48,8 @@ export class PanToolService extends Service {
 
     onMouseDown(data: CanvasMouseEvent) {
         const { e, canvas } = data
+        // a running animation would move the view under the pan
+        this.engine.camera.stop()
         this._isPanning = true
         this.startPanX = e.clientX - canvas.translateX * canvas.zoom
         this.startPanY = e.clientY - canvas.translateY * canvas.zoom

@@ -30,6 +30,7 @@ import { MoveCommand } from './Move'
 import { AlignCommand } from './Align'
 import { DistributeCommand } from './Distribute'
 import { ChangeTool } from './ChangeTool'
+import { ZoomToFit } from './ZoomToFit'
 import { PasteCommand } from './Paste'
 import { CopyCommand } from './Copy'
 import { Signal } from '../signal/Signal'
@@ -58,6 +59,7 @@ const createCommands = () => [
     new AlignCommand(),
     new DistributeCommand(),
     new ChangeTool(),
+    new ZoomToFit(),
     new PasteCommand(),
     new CopyCommand(),
 ]

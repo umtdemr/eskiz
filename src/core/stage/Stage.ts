@@ -1,6 +1,7 @@
 import { STAGE_LAYERS } from '@/helpers/Constant.ts'
 import { Layer } from './Layer.ts'
 import { Widget } from '../shapes/Widget.ts'
+import { BoundingBox } from '../geometry/BoundingBox.ts'
 import { Indexer } from '../indexer/Indexer.ts'
 import { NonCanvasDynamicContainer } from './NonCanvasDynamicContainer.ts'
 import { RenderContext } from '../canvas/Canvas.ts'
@@ -114,6 +115,17 @@ export class Stage {
 
     get staticCanvasContainer() {
         return this._canvasStaticContainer
+    }
+
+    /** what the widgets cover, strokes included. null on an empty board */
+    contentBounds(): BoundingBox | null {
+        let bounds: BoundingBox | null = null
+        for (const child of this._widgetsDefaultLayer.children) {
+            if (!(child instanceof Widget) || !child.visible) continue
+            const b = child.renderBounds
+            bounds = bounds ? BoundingBox.createWithMerge(bounds, b) : b
+        }
+        return bounds
     }
 
     get widgetsDefaultLayer() {

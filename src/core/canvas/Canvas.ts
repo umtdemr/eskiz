@@ -13,6 +13,7 @@ import { ZOOM_LEVELS } from '@/helpers/Constant.ts'
 import { Stage } from '../stage/Stage'
 import { Signal } from '../signal/Signal'
 import { BoardGridType } from '../constants'
+import { LTRBRect } from '../geometry/BoundingBox'
 import { useBoundStore } from '@/store/store'
 
 export type GridType = (typeof BoardGridType)[keyof typeof BoardGridType]
@@ -150,12 +151,7 @@ export class Canvas {
         ctx.scale(this._dpr * this.scale, this._dpr * this.scale)
         ctx.translate(this.offsetX, this.offsetY)
 
-        const viewport = {
-            left: -this.offsetX,
-            top: -this.offsetY,
-            right: this.width / this.scale - this.offsetX,
-            bottom: this.height / this.scale - this.offsetY,
-        }
+        const viewport = this.viewport
 
         if (this.gridType !== BoardGridType.NONE) {
             this.drawGrid(ctx)
@@ -349,6 +345,16 @@ export class Canvas {
             this.offsetX * this.scale,
             this.offsetY * this.scale,
         ]
+    }
+
+    /** the part of the board on screen */
+    get viewport(): LTRBRect {
+        return {
+            left: -this.offsetX,
+            top: -this.offsetY,
+            right: this.width / this.scale - this.offsetX,
+            bottom: this.height / this.scale - this.offsetY,
+        }
     }
 
     get initialized() {

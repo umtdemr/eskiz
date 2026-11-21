@@ -10,6 +10,7 @@ import { WsAdapter } from '@/core/sync/WsAdapter.ts'
 import { LocalAdapter } from '@/core/sync/LocalAdapter.ts'
 import { UpperCanvasRenderer } from '@/core/renderers/UpperCanvasRenderer.ts'
 import { Stage } from '../stage/Stage'
+import { Camera } from '../canvas/Camera'
 import { ServiceManager } from '../services/ServiceManager'
 import { SelectionService } from '../services/SelectionService'
 import { MouseController } from './MouseController'
@@ -72,6 +73,7 @@ export class Engine {
     private _upperCanvasEl: HTMLCanvasElement
     private _stage: Stage
     canvas: Canvas
+    camera: Camera
     wsEngine: WsEngine | null = null
     readonly isStandalone: boolean
     private serviceManager: ServiceManager
@@ -92,7 +94,6 @@ export class Engine {
     stagesInitiated = new Signal()
     canvasInitiated = new Signal<Canvas>()
     initialized = new Signal()
-    zoomChanged = new Signal<number>()
 
     constructor(slugId: string, boardId: number, pageId: number) {
         this._slugId = slugId
@@ -127,6 +128,7 @@ export class Engine {
 
         this._stage = new Stage(this)
         this.canvas = new Canvas(this._stage)
+        this.camera = new Camera(this.canvas, this._stage)
 
         this.upperCanvasRenderer = new UpperCanvasRenderer()
 
@@ -180,33 +182,13 @@ export class Engine {
     }
 
     dispose() {
+        this.camera.dispose()
         this.canvas.resized.remove(this.sizeUpperCanvas, this)
         this.canvas.dispose()
         this.wsEngine?.dispose()
         this.getService<ShortcutService>('shortcut').dispose()
         this.getService<ClipboardService>('clipboard').dispose()
         this._mouseController.dispose()
-        this.zoomChanged.removeAll()
-    }
-
-    zoomTo(targetZoom: number) {
-        // zoom around viewport center
-        this.zoomAt(targetZoom, window.innerWidth / 2, window.innerHeight / 2)
-    }
-
-    // keeps the screen point x, y in place, then pans by dx, dy screen pixels
-    zoomAt(targetZoom: number, x: number, y: number, dx = 0, dy = 0) {
-        const oldScale = this.canvas.zoom
-        this.canvas.zoom = targetZoom
-        const newScale = this.canvas.zoom
-
-        this.canvas.translateX =
-            x / newScale - x / oldScale + this.canvas.translateX + dx / oldScale
-        this.canvas.translateY =
-            y / newScale - y / oldScale + this.canvas.translateY + dy / oldScale
-
-        this.canvas.requestRender()
-        this.zoomChanged.dispatch(this.canvas.zoom)
     }
 
     private initializeServices() {
