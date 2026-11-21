@@ -5,14 +5,17 @@ import {
     TooltipContent,
     TooltipTrigger,
 } from '@/components/ui/tooltip.tsx'
-import { Minus, Plus, ZoomIn } from 'lucide-react'
+import { Minus, Plus, Scan, ZoomIn } from 'lucide-react'
 import {
     DropdownMenu,
     DropdownMenuContent,
     DropdownMenuItem,
+    DropdownMenuSeparator,
+    DropdownMenuShortcut,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu.tsx'
 import { Engine } from '@/core/engine/Engine.ts'
+import { formatKeys, SHIFT } from '@/helpers/KeyHelpers'
 
 const ZOOM_STEPS = [
     0.01, 0.02, 0.05, 0.08, 0.1, 0.15, 0.2, 0.25, 0.33, 0.5, 0.75, 1, 1.25, 1.5,
@@ -91,6 +94,15 @@ export default function Footer({ engine }: { engine: Engine }) {
                         </Tooltip>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent sideOffset={20} side={'top'}>
+                        <DropdownMenuItem
+                            onClick={() => engine.execute('zoomToFit', {})}
+                        >
+                            <Scan /> Zoom to fit
+                            <DropdownMenuShortcut>
+                                {formatKeys([SHIFT, '1'])}
+                            </DropdownMenuShortcut>
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
                         {ZOOM_DROPDOWN.map((level) => (
                             <DropdownMenuItem
                                 key={level}

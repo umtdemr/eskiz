@@ -28,6 +28,7 @@ import { SelectAllCommand } from './SelectAll'
 import { ClearSelectionCommand } from './ClearSelection'
 import { MoveCommand } from './Move'
 import { ChangeTool } from './ChangeTool'
+import { ZoomToFit } from './ZoomToFit'
 import { PasteCommand } from './Paste'
 import { CopyCommand } from './Copy'
 import { Signal } from '../signal/Signal'
@@ -54,6 +55,7 @@ const createCommands = () => [
     new ClearSelectionCommand(),
     new MoveCommand(),
     new ChangeTool(),
+    new ZoomToFit(),
     new PasteCommand(),
     new CopyCommand(),
 ]

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { rotatePoint, reverseRotatePoint } from '../math'
+import { rotatePoint, reverseRotatePoint, fitView } from '../math'
 
 describe('rotatePoint', () => {
     it('returns same point for 0 degrees', () => {
@@ -82,5 +82,40 @@ describe('reverseRotatePoint', () => {
             expect(reversed.x).toBeCloseTo(7, 10)
             expect(reversed.y).toBeCloseTo(3, 10)
         }
+    })
+})
+
+describe('fitView', () => {
+    // where a board point lands on screen
+    const toScreen = (x: number, view: { zoom: number; translateX: number }) =>
+        (x + view.translateX) * view.zoom
+
+    it('zooms out to fit and centers', () => {
+        const rect = { left: 0, top: 0, right: 2000, bottom: 1000 }
+
+        const view = fitView(rect, 1000, 600, 50, 1)
+
+        // 900 / 2000 is tighter than 500 / 1000
+        expect(view.zoom).toBeCloseTo(0.45)
+        expect(toScreen(1000, view)).toBeCloseTo(500)
+        expect((500 + view.translateY) * view.zoom).toBeCloseTo(300)
+    })
+
+    it('stops at maxZoom for a small area', () => {
+        const rect = { left: 100, top: 100, right: 200, bottom: 150 }
+
+        expect(fitView(rect, 1000, 600, 50, 1).zoom).toBe(1)
+    })
+
+    it('fits a line with no width by its height', () => {
+        const rect = { left: 300, top: 0, right: 300, bottom: 2000 }
+
+        expect(fitView(rect, 1000, 600, 50, 1).zoom).toBeCloseTo(0.25)
+    })
+
+    it('keeps the zoom in range', () => {
+        const rect = { left: 0, top: 0, right: 1e7, bottom: 1e7 }
+
+        expect(fitView(rect, 1000, 600, 50, 1).zoom).toBe(0.01)
     })
 })

@@ -10,6 +10,8 @@ import { WsAdapter } from '@/core/sync/WsAdapter.ts'
 import { LocalAdapter } from '@/core/sync/LocalAdapter.ts'
 import { UpperCanvasRenderer } from '@/core/renderers/UpperCanvasRenderer.ts'
 import { Stage } from '../stage/Stage'
+import { LTRBRect } from '../geometry/BoundingBox'
+import { fitView } from '../geometry/math'
 import { ServiceManager } from '../services/ServiceManager'
 import { SelectionService } from '../services/SelectionService'
 import { MouseController } from './MouseController'
@@ -187,6 +189,30 @@ export class Engine {
         this.getService<ClipboardService>('clipboard').dispose()
         this._mouseController.dispose()
         this.zoomChanged.removeAll()
+    }
+
+    // fits `rect` on the screen. the padding leaves room for toolbars on the
+    // sides, `maxZoom` keeps a small area from filling the screen
+    zoomToBounds(rect: LTRBRect, { padding = 96, maxZoom = 1 } = {}) {
+        const view = fitView(
+            rect,
+            this.canvas.width,
+            this.canvas.height,
+            padding,
+            maxZoom,
+        )
+        this.canvas.zoom = view.zoom
+        this.canvas.translateX = view.translateX
+        this.canvas.translateY = view.translateY
+
+        this.canvas.requestRender()
+        this.zoomChanged.dispatch(this.canvas.zoom)
+    }
+
+    // shows every widget, does nothing on an empty board
+    zoomToFit(options?: { padding?: number; maxZoom?: number }) {
+        const bounds = this.stage.contentBounds()
+        if (bounds) this.zoomToBounds(bounds, options)
     }
 
     zoomTo(targetZoom: number) {
