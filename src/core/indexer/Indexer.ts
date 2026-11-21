@@ -103,6 +103,7 @@ export class Indexer {
             layer ? (keys.get(layer) ?? layer.zIndex) : null
         const up = action === 'bringToFront' || action === 'bringForward'
         const moving = list.filter((l) => selected.has(l))
+        if (!moving.length) return keys
 
         if (action === 'bringToFront' || action === 'sendToBack') {
             const visible = list.filter((l) => l.visible)

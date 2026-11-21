@@ -17,7 +17,7 @@ export class PageService extends Service {
     addWidgetsToCanvas(widgets: WsWidget[]): Widget[] {
         // sort by z_index
         const sorted = [...widgets].sort((a, b) =>
-            compareOrder(a.z_index, b.z_index, a.uuid, b.uuid),
+            compareOrder(a.z_index ?? '', b.z_index ?? '', a.uuid, b.uuid),
         )
 
         const addedWidgets = []
