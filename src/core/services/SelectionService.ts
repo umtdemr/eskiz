@@ -28,6 +28,7 @@ export class SelectionService extends Service {
 
     selectionChanged = new Signal<SelectionChangedProps>()
     tempSelected = new Signal<Widget>()
+    drawingStarted = new Signal()
     drawingSelectionUpdated = new Signal()
 
     constructor(
@@ -155,6 +156,19 @@ export class SelectionService extends Service {
         this.engine.canvas.requestRender()
     }
 
+    // adds the widget, or takes it out when it's already selected
+    toggleWidget(widget: Widget) {
+        const rest = this._selected.filter((w) => w !== widget)
+        if (rest.length === this._selected.length) rest.push(widget)
+
+        if (rest.length) {
+            this.selectWidgets(rest)
+        } else {
+            this.clearSelection()
+            this.engine.canvas.requestRender()
+        }
+    }
+
     tempSelectWidget(widget: Widget) {
         this.clearSelection(false)
         this._selected = [widget]
@@ -210,29 +224,27 @@ export class SelectionService extends Service {
         return Array.from(allWidgets)
     }
 
-    selectObjectsWithDrawing(rect: BoundingBox) {
-        const allObjects = this.checkObjectsInRect(rect)
-        if (allObjects.length !== this._selectedDuringDrawing.length) {
-            this._selectedDuringDrawing = allObjects
+    // with `add` the area joins the current selection
+    selectObjectsWithDrawing(rect: BoundingBox, add = false) {
+        const widgets = this.areaSelection(rect, add)
+        if (widgets.length !== this._selectedDuringDrawing.length) {
+            this._selectedDuringDrawing = widgets
             this.drawingSelectionUpdated.dispatch()
         }
     }
 
-    selectRectangularArea(rect: BoundingBox) {
-        const allObjects = this.checkObjectsInRect(rect)
-        if (!allObjects.length) {
-            if (this._selected.length) {
-                this._selected = []
-                this.selectionChanged.dispatch()
-            }
-            this._selected = []
-            return
+    selectRectangularArea(rect: BoundingBox, add = false) {
+        const widgets = this.areaSelection(rect, add)
+        if (widgets.length) {
+            this.selectWidgets(widgets)
+        } else {
+            this.clearSelection()
         }
-        this._selected = allObjects
-        this.selectionChanged.dispatch({
-            type: 'selected',
-            widgets: allObjects,
-        })
+    }
+
+    private areaSelection(rect: BoundingBox, add: boolean) {
+        const inArea = this.checkObjectsInRect(rect)
+        return add ? [...new Set([...this._selected, ...inArea])] : inArea
     }
 
     isMultipleSelection(): boolean {

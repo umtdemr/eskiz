@@ -31,6 +31,12 @@ export class SelectToolService extends Service {
     private isDragHandlerOwned: boolean = false
     private isObjectAlreadySelected: boolean = false
     private mouseDownWidget: Widget | null = null
+    // shift click on a selected widget, it leaves the selection on mouse up
+    // unless the selection gets dragged
+    private isShiftClick: boolean = false
+    private removeOnUp: Widget | null = null
+    // shift drag on empty space adds the area to the selection
+    private isAddingArea: boolean = false
 
     // screen position of a right click on the selection
     contextMenuOpened = new Signal<{ x: number; y: number }>()
@@ -99,30 +105,32 @@ export class SelectToolService extends Service {
             this.controlOwned = this.mouseDownWidget
             this.controlOwned.onMouseDown(data)
         } else if (
+            data.e.shiftKey &&
+            this.mouseDownWidget &&
+            !this.mouseDownWidget.isLocked &&
+            !this.selectionService.isThereLockedWidget()
+        ) {
+            this.isDrawing = false
+            this.isShiftClick = true
+            if (this.mouseDownWidget.selected) {
+                this.removeOnUp = this.mouseDownWidget
+            } else {
+                this.selectionService.toggleWidget(this.mouseDownWidget)
+            }
+            this.startDrag(data, this.selectionService.selected)
+        } else if (
             selectionBorder &&
             selectionBorder.contains(data.pointer.x, data.pointer.y, 1)
         ) {
             this.isObjectAlreadySelected = true
             this.isDrawing = false
             if (!this.selectionService.isThereLockedWidget()) {
-                const draggableObjects = this.getDraggableObjects(
-                    this.selectionService.selected,
-                )
-                if (draggableObjects.length) {
-                    this.dragHandler.start(data, draggableObjects)
-                    this.isDragHandlerOwned = true
-                }
+                this.startDrag(data, this.selectionService.selected)
             }
         } else if (this.mouseDownWidget) {
             this.isDrawing = false
             if (!this.mouseDownWidget.isLocked) {
-                const draggableObjects = this.getDraggableObjects([
-                    this.mouseDownWidget,
-                ])
-                if (draggableObjects.length) {
-                    this.dragHandler.start(data, draggableObjects)
-                    this.isDragHandlerOwned = true
-                }
+                this.startDrag(data, [this.mouseDownWidget])
             }
 
             // if there is a selection which is not this widget, clear selection
@@ -134,13 +142,16 @@ export class SelectToolService extends Service {
                 this.selectionService.clearSelection()
             }
         } else {
-            if (this.selectionService.selected?.length) {
+            this.isAddingArea =
+                data.e.shiftKey && !this.selectionService.isThereLockedWidget()
+            if (!this.isAddingArea && this.selectionService.selected?.length) {
                 this.selectionService.clearSelection()
             }
             this.isDrawing = true
             const multiSelector =
                 this.engine.stage.nonCanvasDynamicContainer.multiSelector
             multiSelector.onMouseDown(data)
+            this.selectionService.drawingStarted.dispatch()
             this.engine.canvas.requestRender()
         }
     }
@@ -185,7 +196,10 @@ export class SelectToolService extends Service {
             return
         }
         multiSelector.onMouseMove(data)
-        this.selectionService.selectObjectsWithDrawing(multiSelector.bounds)
+        this.selectionService.selectObjectsWithDrawing(
+            multiSelector.bounds,
+            this.isAddingArea,
+        )
         this.engine.canvas.requestRender()
     }
 
@@ -202,12 +216,24 @@ export class SelectToolService extends Service {
             this.isDragHandlerOwned = false
         }
 
+        if (this.isShiftClick) {
+            if (this.removeOnUp && !isObjectMoved) {
+                this.selectionService.toggleWidget(this.removeOnUp)
+            }
+            this.isShiftClick = false
+            this.removeOnUp = null
+            return
+        }
+
         if (this.isDrawing) {
             this.isDrawing = false
             const multiSelector =
                 this.engine.stage.nonCanvasDynamicContainer.multiSelector
 
-            this.selectionService.selectRectangularArea(multiSelector.bounds)
+            this.selectionService.selectRectangularArea(
+                multiSelector.bounds,
+                this.isAddingArea,
+            )
 
             multiSelector.onMouseUp(data)
             this.engine.canvas.requestRender()
@@ -317,6 +343,14 @@ export class SelectToolService extends Service {
 
     dispose(): void {
         this.reset()
+    }
+
+    private startDrag(data: CanvasMouseEvent, objects: Widget[]) {
+        const draggableObjects = this.getDraggableObjects(objects)
+        if (!draggableObjects.length) return
+
+        this.dragHandler.start(data, draggableObjects)
+        this.isDragHandlerOwned = true
     }
 
     private getDraggableObjects(objects: Widget[]): Widget[] {

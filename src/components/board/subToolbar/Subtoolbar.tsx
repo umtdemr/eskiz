@@ -91,10 +91,15 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
             }
         }
 
+        // a shift drag keeps the selection, hide while the area is drawn
+        const onDrawingStarted = () => dispatch({ type: ActionKind.TEMP_HIDE })
+
         selectionService.selectionChanged.add(onSelectionChanged)
+        selectionService.drawingStarted.add(onDrawingStarted)
 
         return () => {
             selectionService.selectionChanged.remove(onSelectionChanged)
+            selectionService.drawingStarted.remove(onDrawingStarted)
         }
     }, [engine, closeDropdown])
 
