@@ -5,6 +5,7 @@ import { PageService } from './PageService'
 import { WidgetsService } from './WidgetsService'
 import { CreationHistoryEntry } from '../history/HistoryManager'
 import { WidgetType } from '../constants'
+import { compareOrder } from '../indexer/order'
 
 export class DuplicationService extends Service {
     duplicateWidgets(widgets: Widget[]): Widget[] {
@@ -25,7 +26,7 @@ export class DuplicationService extends Service {
         const oldToNewIdMap = new Map<string, string>()
 
         const sorted = [...jsons].sort((a, b) =>
-            (a.z_index ?? '').localeCompare(b.z_index ?? ''),
+            compareOrder(a.z_index ?? '', b.z_index ?? '', a.uuid, b.uuid),
         )
 
         let currentZIndex: string | null = null

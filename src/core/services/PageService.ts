@@ -3,6 +3,7 @@ import { WsWidget } from '@/types/Websocket.ts'
 import { WidgetFactory } from '@/core/engine/WidgetFactory.ts'
 import { Widget } from '../shapes/Widget'
 import { Line } from '@/core/shapes/line/Line'
+import { compareOrder } from '@/core/indexer/order'
 
 export class PageService extends Service {
     async fetchPageDetails(page_id: number) {
@@ -16,7 +17,7 @@ export class PageService extends Service {
     addWidgetsToCanvas(widgets: WsWidget[]): Widget[] {
         // sort by z_index
         const sorted = [...widgets].sort((a, b) =>
-            (a.z_index ?? 0) < (b.z_index ?? 0) ? -1 : 1,
+            compareOrder(a.z_index ?? '', b.z_index ?? '', a.uuid, b.uuid),
         )
 
         const addedWidgets = []

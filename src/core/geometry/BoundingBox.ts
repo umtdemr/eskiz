@@ -282,4 +282,14 @@ export class BoundingBox {
             this.bottom >= rect.bottom
         )
     }
+
+    // touching edges count as overlap
+    intersects(rect: LTRBRect) {
+        return (
+            this.left <= rect.right &&
+            this.right >= rect.left &&
+            this.top <= rect.bottom &&
+            this.bottom >= rect.top
+        )
+    }
 }

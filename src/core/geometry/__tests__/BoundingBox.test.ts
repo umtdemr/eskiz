@@ -193,6 +193,20 @@ describe('BoundingBox', () => {
         })
     })
 
+    describe('intersects', () => {
+        it('detects overlap and touching edges', () => {
+            const a = new BoundingBox(0, 0, 10, 10)
+            expect(a.intersects(new BoundingBox(5, 5, 10, 10))).toBe(true)
+            expect(a.intersects(new BoundingBox(10, 0, 10, 10))).toBe(true)
+        })
+
+        it('returns false for separate boxes', () => {
+            const a = new BoundingBox(0, 0, 10, 10)
+            expect(a.intersects(new BoundingBox(20, 0, 10, 10))).toBe(false)
+            expect(a.intersects(new BoundingBox(0, 20, 10, 10))).toBe(false)
+        })
+    })
+
     describe('containsRect', () => {
         it('returns true when this contains the other rect', () => {
             const outer = new BoundingBox(0, 0, 100, 100)

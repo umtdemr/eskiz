@@ -1,6 +1,8 @@
 import { LinkedList } from '../dataStructures/LinkedList'
 import { Widget } from '../shapes/Widget'
 import { RenderContext } from '../canvas/Canvas'
+import { BoundingBox } from '../geometry/BoundingBox'
+import { compareLayers } from '../indexer/order'
 
 interface LayerProps {
     name: string
@@ -56,36 +58,6 @@ export class Layer {
     destroy() {}
 
     /**
-     * Moves a child to the front (top) of the rendering order.
-     */
-    bringChildToFront(child: Layer | Widget): boolean {
-        return this._children.moveToBack(child)
-    }
-
-    /**
-     * Moves a child to the back (bottom) of the rendering order.
-     */
-    sendChildToBack(child: Layer | Widget): boolean {
-        return this._children.moveToFront(child)
-    }
-
-    /**
-     * Moves a child forward by one position in the rendering order.
-     * TODO: check current viewport first!
-     */
-    bringChildForward(child: Layer | Widget): boolean {
-        return this._children.moveTowardEnd(child)
-    }
-
-    /**
-     * Moves a child backward by one position in the rendering order.
-     * TODO: check current viewport first!
-     */
-    sendChildBackward(child: Layer | Widget): boolean {
-        return this._children.moveTowardStart(child)
-    }
-
-    /**
      * Repositions a child in the correct position based on its zIndex.
      */
     repositionChild(child: Layer | Widget) {
@@ -100,7 +72,7 @@ export class Layer {
         let insertIdx = 0
 
         for (let i = 0; i < siblings.length; i++) {
-            if (siblings[i].zIndex > child.zIndex) {
+            if (compareLayers(siblings[i], child) > 0) {
                 insertIdx = i
                 break
             }
@@ -128,6 +100,11 @@ export class Layer {
 
     get interactive(): boolean {
         return this._interactive
+    }
+
+    // plain layers have no area, widgets override this
+    get bounds(): BoundingBox | null {
+        return null
     }
 
     get visible(): boolean {
