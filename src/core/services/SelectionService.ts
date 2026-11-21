@@ -28,6 +28,8 @@ export class SelectionService extends Service {
 
     selectionChanged = new Signal<SelectionChangedProps>()
     tempSelected = new Signal<Widget>()
+    drawingStarted = new Signal()
+    drawingFinished = new Signal()
     drawingSelectionUpdated = new Signal()
 
     constructor(
@@ -155,6 +157,47 @@ export class SelectionService extends Service {
         this.engine.canvas.requestRender()
     }
 
+    // adds the widget, or takes it out when it's already selected
+    toggleWidget(widget: Widget) {
+        const rest = this._selected.filter((w) => w !== widget)
+        if (rest.length === this._selected.length) rest.push(widget)
+
+        this.changeSelection(rest)
+    }
+
+    // changes the selection in place, so the ones that stay aren't deselected
+    private changeSelection(widgets: Widget[]) {
+        // text editing hooks into a full select of a single widget
+        if (widgets.length < 2 || !this._selected.length) {
+            if (widgets.length) {
+                this.selectWidgets(widgets)
+            } else {
+                this.clearSelection()
+                this.engine.canvas.requestRender()
+            }
+            return
+        }
+
+        const next = new Set(widgets)
+        const current = new Set(this._selected)
+        const removedWidgets = this._selected.filter((w) => !next.has(w))
+        const addedWidgets = widgets.filter((w) => !current.has(w))
+
+        removedWidgets.forEach((widget) => {
+            widget.selected = false
+            widget.deselected.dispatch()
+        })
+        addedWidgets.forEach((widget) => (widget.selected = true))
+        this._selected = widgets
+
+        this.selectionChanged.dispatch({
+            type: 'updated',
+            widgets,
+            updateData: { removedWidgets, addedWidgets },
+        })
+        this.engine.canvas.requestRender()
+    }
+
     tempSelectWidget(widget: Widget) {
         this.clearSelection(false)
         this._selected = [widget]
@@ -210,29 +253,35 @@ export class SelectionService extends Service {
         return Array.from(allWidgets)
     }
 
-    selectObjectsWithDrawing(rect: BoundingBox) {
-        const allObjects = this.checkObjectsInRect(rect)
-        if (allObjects.length !== this._selectedDuringDrawing.length) {
-            this._selectedDuringDrawing = allObjects
+    startDrawing() {
+        // the preview only redraws when its size changes, start from empty
+        this._selectedDuringDrawing = []
+        this.drawingStarted.dispatch()
+    }
+
+    // with `add` the area joins the current selection
+    selectObjectsWithDrawing(rect: BoundingBox, add = false) {
+        const widgets = this.areaSelection(rect, add)
+        if (widgets.length !== this._selectedDuringDrawing.length) {
+            this._selectedDuringDrawing = widgets
             this.drawingSelectionUpdated.dispatch()
         }
     }
 
-    selectRectangularArea(rect: BoundingBox) {
-        const allObjects = this.checkObjectsInRect(rect)
-        if (!allObjects.length) {
-            if (this._selected.length) {
-                this._selected = []
-                this.selectionChanged.dispatch()
-            }
-            this._selected = []
-            return
+    selectRectangularArea(rect: BoundingBox, add = false) {
+        const widgets = this.areaSelection(rect, add)
+        if (add) {
+            this.changeSelection(widgets)
+        } else if (widgets.length) {
+            this.selectWidgets(widgets)
+        } else {
+            this.clearSelection()
         }
-        this._selected = allObjects
-        this.selectionChanged.dispatch({
-            type: 'selected',
-            widgets: allObjects,
-        })
+    }
+
+    private areaSelection(rect: BoundingBox, add: boolean) {
+        const inArea = this.checkObjectsInRect(rect)
+        return add ? [...new Set([...this._selected, ...inArea])] : inArea
     }
 
     isMultipleSelection(): boolean {

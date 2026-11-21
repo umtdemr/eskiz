@@ -25,6 +25,20 @@ const rightClick = () =>
         pointer: { x: 0, y: 0 },
     } as unknown as CanvasMouseEvent)
 
+const press = (shiftKey = false) =>
+    ({
+        e: { shiftKey },
+        pointer: { x: 0, y: 0 },
+    }) as unknown as CanvasMouseEvent
+
+// a click, or a drag when `moved`
+const click = (shiftKey: boolean, moved = false) => {
+    const end = vi.fn(() => moved)
+    Object.assign(service, { dragHandler: { start: vi.fn(), end } })
+    service.onMouseDown(press(shiftKey))
+    service.onMouseUp(press(shiftKey))
+}
+
 describe('SelectToolService', () => {
     beforeEach(() => {
         engine = createEngineMock({ cursor: {} })
@@ -50,7 +64,7 @@ describe('SelectToolService', () => {
     })
 
     it('does not select on a cancelled press', () => {
-        const data = { pointer: { x: 0, y: 0 } } as CanvasMouseEvent
+        const data = press()
         Object.assign(service, {
             dragHandler: { start: vi.fn(), end: vi.fn(() => false) },
         })
@@ -60,6 +74,92 @@ describe('SelectToolService', () => {
         service.onMouseCancel(data)
 
         expect(selection.selected).toEqual([])
+    })
+
+    describe('shift click', () => {
+        it('adds to the selection', () => {
+            const a = makeRect(engine)
+            selection.selectWidget(a)
+            underPointer = makeRect(engine)
+
+            click(true)
+
+            expect(selection.selected).toEqual([a, underPointer])
+        })
+
+        it('drags the whole selection', () => {
+            const a = makeRect(engine)
+            selection.selectWidget(a)
+            underPointer = makeRect(engine)
+            const start = vi.fn()
+            Object.assign(service, { dragHandler: { start } })
+
+            service.onMouseDown(press(true))
+
+            expect(start).toHaveBeenCalledWith(expect.anything(), [
+                a,
+                underPointer,
+            ])
+        })
+
+        it('takes a selected widget out', () => {
+            const [a, b] = [makeRect(engine), makeRect(engine)]
+            selection.selectWidgets([a, b])
+            underPointer = a
+
+            click(true)
+
+            expect(selection.selected).toEqual([b])
+        })
+
+        it('keeps it when the selection was dragged', () => {
+            const [a, b] = [makeRect(engine), makeRect(engine)]
+            selection.selectWidgets([a, b])
+            underPointer = a
+
+            click(true, true)
+
+            expect(selection.selected).toEqual([a, b])
+        })
+
+        it('does not leak into the next click', () => {
+            const [a, b] = [makeRect(engine), makeRect(engine)]
+            selection.selectWidgets([a, b])
+            underPointer = a
+            Object.assign(service, {
+                dragHandler: { start: vi.fn(), end: vi.fn(() => false) },
+            })
+            // the mouse up of this press is lost
+            service.onMouseDown(press(true))
+
+            underPointer = makeRect(engine)
+            click(false)
+
+            expect(selection.selected).toEqual([underPointer])
+        })
+
+        it('keeps the widget when the press is cancelled', () => {
+            const [a, b] = [makeRect(engine), makeRect(engine)]
+            selection.selectWidgets([a, b])
+            underPointer = a
+            Object.assign(service, {
+                dragHandler: { start: vi.fn(), end: vi.fn(() => false) },
+            })
+
+            service.onMouseDown(press(true))
+            service.onMouseCancel(press(true))
+
+            expect(selection.selected).toEqual([a, b])
+        })
+
+        it('selects a locked widget alone', () => {
+            selection.selectWidget(makeRect(engine))
+            underPointer = makeRect(engine, { locked: true })
+
+            click(true)
+
+            expect(selection.selected).toEqual([underPointer])
+        })
     })
 
     it('selects the widget under the pointer and opens', () => {
