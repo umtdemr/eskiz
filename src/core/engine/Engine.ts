@@ -345,6 +345,14 @@ export class Engine {
         return this._commands.execute(this, name, params, options)
     }
 
+    canExecute<K extends Commands>(
+        name: K,
+        params: CommandParams[K],
+        options?: ExecuteOptions,
+    ): boolean {
+        return this._commands.canExecute(this, name, params, options)
+    }
+
     // true when a command is bound to the keys
     executeShortcut(input: KeyInput): boolean {
         return this._commands.executeShortcut(this, input)

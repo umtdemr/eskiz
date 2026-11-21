@@ -539,6 +539,11 @@ export class Line extends Widget {
         }
     }
 
+    // a line tied to a widget follows it instead
+    canAlign(): boolean {
+        return !this._headBinding && !this._tailBinding
+    }
+
     canChangeArrows(): boolean {
         return true
     }

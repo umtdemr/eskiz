@@ -34,6 +34,8 @@ describe('generateActions', () => {
             'highlightColor',
             'seperator3',
             'backgroundColor',
+            'seperator_align',
+            'align',
             'seperator_more_opitons',
             'moreOptions',
         ])
@@ -46,6 +48,8 @@ describe('generateActions', () => {
             'lock',
             'seperator3',
             'borderStyleColor',
+            'seperator_align',
+            'align',
             'seperator_more_opitons',
             'moreOptions',
         ])
@@ -56,9 +60,15 @@ describe('generateActions', () => {
             'duplicate',
             'remove',
             'lock',
+            'seperator_align',
+            'align',
             'seperator_more_opitons',
             'moreOptions',
         ])
+    })
+
+    it('offers align only for several widgets', () => {
+        expect(ids((e) => [makeRect(e)])).not.toContain('align')
     })
 
     it('shows only common actions when one is locked', () => {

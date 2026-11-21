@@ -28,6 +28,7 @@ import { MoreOptionsDropdown } from './actions/MoreOptionsDropdown.tsx'
 import { LineColorInput } from './actions/LineColorInput.tsx'
 import { LineStyleInput } from './actions/LineStyleInput.tsx'
 import { StickyNoteBgColorInput } from './actions/StickyNoteBgColorInput.tsx'
+import { AlignInput } from './actions/AlignInput.tsx'
 import { Commands } from '@/core/command/CommandRegistry'
 
 export interface SubtoolbarProps {
@@ -316,9 +317,18 @@ export default function Subtoolbar({ engine }: SubtoolbarProps) {
                                 engine={engine}
                             />
                         )
+                    } else if (action.type === 'alignInput') {
+                        return (
+                            <AlignInput
+                                key={action.id}
+                                tooltip={action.tooltip!}
+                                id={action.id}
+                                engine={engine}
+                            />
+                        )
                     } else if (action.type === 'moreOptions') {
                         return (
-                            <div>
+                            <div key={action.id}>
                                 <MoreOptionsDropdown engine={engine} />
                             </div>
                         )
