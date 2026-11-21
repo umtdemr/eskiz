@@ -25,6 +25,7 @@ const ZOOM_DROPDOWN = [0.25, 0.5, 1, 2]
 
 export default function Footer({ engine }: { engine: Engine }) {
     const [zoom, setZoom] = useState(100)
+    const [canFit, setCanFit] = useState(false)
 
     useEffect(() => {
         const zoomChangeHandler = (val: number) => {
@@ -77,7 +78,12 @@ export default function Footer({ engine }: { engine: Engine }) {
                         <p>Zoom out</p>
                     </TooltipContent>
                 </Tooltip>
-                <DropdownMenu>
+                <DropdownMenu
+                    // the board changes without rendering the footer
+                    onOpenChange={(open) =>
+                        open && setCanFit(engine.canExecute('zoomToFit', {}))
+                    }
+                >
                     <DropdownMenuTrigger>
                         <Tooltip delayDuration={0}>
                             <TooltipTrigger asChild>
@@ -95,7 +101,7 @@ export default function Footer({ engine }: { engine: Engine }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent sideOffset={20} side={'top'}>
                         <DropdownMenuItem
-                            disabled={!engine.stage.contentBounds()}
+                            disabled={!canFit}
                             onClick={() => engine.execute('zoomToFit', {})}
                         >
                             <Scan /> Zoom to fit
