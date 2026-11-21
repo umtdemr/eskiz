@@ -27,6 +27,8 @@ import { RedoCommand } from './Redo'
 import { SelectAllCommand } from './SelectAll'
 import { ClearSelectionCommand } from './ClearSelection'
 import { MoveCommand } from './Move'
+import { AlignCommand } from './Align'
+import { DistributeCommand } from './Distribute'
 import { ChangeTool } from './ChangeTool'
 import { PasteCommand } from './Paste'
 import { CopyCommand } from './Copy'
@@ -53,6 +55,8 @@ const createCommands = () => [
     new SelectAllCommand(),
     new ClearSelectionCommand(),
     new MoveCommand(),
+    new AlignCommand(),
+    new DistributeCommand(),
     new ChangeTool(),
     new PasteCommand(),
     new CopyCommand(),
@@ -110,27 +114,43 @@ export class CommandRegistry {
         return bound
     }
 
+    canExecute<K extends Commands>(
+        engine: Engine,
+        name: K,
+        params: CommandParams[K],
+        options?: ExecuteOptions,
+    ): boolean {
+        return this.get(name).canExecute(this.ctx(engine, params, options))
+    }
+
     private run<P>(
         engine: Engine,
         command: Command<P>,
         params: P,
-        { continuous = false, widgets }: ExecuteOptions = {},
+        options?: ExecuteOptions,
     ): boolean {
+        const ctx = this.ctx(engine, params, options)
+        if (!command.canExecute(ctx)) return false
+
+        command.execute(ctx)
+        this.executed.dispatch(command.name)
+        return true
+    }
+
+    private ctx<P>(
+        engine: Engine,
+        params: P,
+        { continuous = false, widgets }: ExecuteOptions = {},
+    ): CommandCtx<P> {
         const selectionService =
             engine.getService<SelectionService>('selection')
-        const ctx: CommandCtx<P> = {
+        return {
             selectionService,
             engine,
             widgets: widgets ?? [...selectionService.selected],
             isContinuous: continuous,
             params,
         }
-
-        if (!command.canExecute(ctx)) return false
-
-        command.execute(ctx)
-        this.executed.dispatch(command.name)
-        return true
     }
 
     registerCommand(cmd: Registered) {

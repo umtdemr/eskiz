@@ -22,6 +22,7 @@ export interface Action {
         | 'textAlignInput'
         | 'moreOptions'
         | 'lineStyleInput'
+        | 'alignInput'
     btnActionProps?: {
         command: Commands | 'willDo'
         icon?: React.ReactNode
@@ -314,6 +315,13 @@ export function generateActions(engine: Engine): Action[] {
     }
 
     const actions = intersectActions(selected.map(getWidgetActions))
+
+    if (selected.length > 1) {
+        actions.push(
+            { id: 'seperator_align', type: 'seperator' },
+            { id: 'align', tooltip: 'Align', type: 'alignInput' },
+        )
+    }
 
     actions.push(
         {
