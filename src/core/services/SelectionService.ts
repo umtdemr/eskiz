@@ -29,6 +29,7 @@ export class SelectionService extends Service {
     selectionChanged = new Signal<SelectionChangedProps>()
     tempSelected = new Signal<Widget>()
     drawingStarted = new Signal()
+    drawingFinished = new Signal()
     drawingSelectionUpdated = new Signal()
 
     constructor(
@@ -161,12 +162,40 @@ export class SelectionService extends Service {
         const rest = this._selected.filter((w) => w !== widget)
         if (rest.length === this._selected.length) rest.push(widget)
 
-        if (rest.length) {
-            this.selectWidgets(rest)
-        } else {
-            this.clearSelection()
-            this.engine.canvas.requestRender()
+        this.changeSelection(rest)
+    }
+
+    // changes the selection in place, so the ones that stay aren't deselected
+    private changeSelection(widgets: Widget[]) {
+        // text editing hooks into a full select of a single widget
+        if (widgets.length < 2 || !this._selected.length) {
+            if (widgets.length) {
+                this.selectWidgets(widgets)
+            } else {
+                this.clearSelection()
+                this.engine.canvas.requestRender()
+            }
+            return
         }
+
+        const next = new Set(widgets)
+        const current = new Set(this._selected)
+        const removedWidgets = this._selected.filter((w) => !next.has(w))
+        const addedWidgets = widgets.filter((w) => !current.has(w))
+
+        removedWidgets.forEach((widget) => {
+            widget.selected = false
+            widget.deselected.dispatch()
+        })
+        addedWidgets.forEach((widget) => (widget.selected = true))
+        this._selected = widgets
+
+        this.selectionChanged.dispatch({
+            type: 'updated',
+            widgets,
+            updateData: { removedWidgets, addedWidgets },
+        })
+        this.engine.canvas.requestRender()
     }
 
     tempSelectWidget(widget: Widget) {
@@ -224,6 +253,12 @@ export class SelectionService extends Service {
         return Array.from(allWidgets)
     }
 
+    startDrawing() {
+        // the preview only redraws when its size changes, start from empty
+        this._selectedDuringDrawing = []
+        this.drawingStarted.dispatch()
+    }
+
     // with `add` the area joins the current selection
     selectObjectsWithDrawing(rect: BoundingBox, add = false) {
         const widgets = this.areaSelection(rect, add)
@@ -235,7 +270,9 @@ export class SelectionService extends Service {
 
     selectRectangularArea(rect: BoundingBox, add = false) {
         const widgets = this.areaSelection(rect, add)
-        if (widgets.length) {
+        if (add) {
+            this.changeSelection(widgets)
+        } else if (widgets.length) {
             this.selectWidgets(widgets)
         } else {
             this.clearSelection()

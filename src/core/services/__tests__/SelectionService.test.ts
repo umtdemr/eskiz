@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, vi } from 'vitest'
 import {
     createEngineMock,
     createSelectionService,
@@ -76,6 +76,16 @@ describe('SelectionService', () => {
             expect(selection.selectedDuringDrawing).toEqual([c, a])
         })
 
+        it('starts every drawing with an empty preview', () => {
+            selection.selectObjectsWithDrawing(area(0, 300))
+            selection.selectWidget(c)
+
+            selection.startDrawing()
+            selection.selectObjectsWithDrawing(area(0, 100), true)
+
+            expect(selection.selectedDuringDrawing).toEqual([c, a])
+        })
+
         it('clears on an empty area', () => {
             selection.selectWidget(c)
 
@@ -95,6 +105,39 @@ describe('SelectionService', () => {
             selection.toggleWidget(a)
             expect(selection.selected).toEqual([b])
             expect(a.selected).toBe(false)
+        })
+
+        it('keeps the others selected', () => {
+            selection.selectWidgets([a, b])
+            const deselected = vi.fn()
+            a.deselected.add(deselected)
+            const changed = vi.fn()
+            selection.selectionChanged.add(changed)
+
+            selection.toggleWidget(c)
+            selection.toggleWidget(b)
+
+            expect(selection.selected).toEqual([a, c])
+            expect(deselected).not.toHaveBeenCalled()
+            expect(changed).toHaveBeenLastCalledWith({
+                type: 'updated',
+                widgets: [a, c],
+                updateData: { removedWidgets: [b], addedWidgets: [] },
+            })
+        })
+
+        it('fully selects when one is left', () => {
+            selection.selectWidgets([a, b])
+            const changed = vi.fn()
+            selection.selectionChanged.add(changed)
+
+            selection.toggleWidget(b)
+
+            expect(selection.selected).toEqual([a])
+            expect(changed).toHaveBeenLastCalledWith({
+                type: 'selected',
+                widgets: [a],
+            })
         })
 
         it('clears when the last one goes', () => {

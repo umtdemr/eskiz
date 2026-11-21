@@ -95,6 +95,9 @@ export class SelectToolService extends Service {
 
     onMouseDown(data: CanvasMouseEvent): void {
         this.isObjectAlreadySelected = false
+        // a press can lose its mouse up when the tool changes
+        this.isShiftClick = false
+        this.removeOnUp = null
 
         const selectionBorder = this.selectionLayer.selectionBorder
         this.mouseDownWidget = this.checksObjectsInLayer(data)
@@ -151,7 +154,7 @@ export class SelectToolService extends Service {
             const multiSelector =
                 this.engine.stage.nonCanvasDynamicContainer.multiSelector
             multiSelector.onMouseDown(data)
-            this.selectionService.drawingStarted.dispatch()
+            this.selectionService.startDrawing()
             this.engine.canvas.requestRender()
         }
     }
@@ -234,6 +237,7 @@ export class SelectToolService extends Service {
                 multiSelector.bounds,
                 this.isAddingArea,
             )
+            this.selectionService.drawingFinished.dispatch()
 
             multiSelector.onMouseUp(data)
             this.engine.canvas.requestRender()
@@ -265,6 +269,7 @@ export class SelectToolService extends Service {
     // keeps what was dragged or marked, but it wasn't a click
     onMouseCancel(data: CanvasMouseEvent): void {
         this.mouseDownWidget = null
+        this.removeOnUp = null
         this.onMouseUp(data)
     }
 

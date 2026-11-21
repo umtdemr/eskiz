@@ -122,6 +122,36 @@ describe('SelectToolService', () => {
             expect(selection.selected).toEqual([a, b])
         })
 
+        it('does not leak into the next click', () => {
+            const [a, b] = [makeRect(engine), makeRect(engine)]
+            selection.selectWidgets([a, b])
+            underPointer = a
+            Object.assign(service, {
+                dragHandler: { start: vi.fn(), end: vi.fn(() => false) },
+            })
+            // the mouse up of this press is lost
+            service.onMouseDown(press(true))
+
+            underPointer = makeRect(engine)
+            click(false)
+
+            expect(selection.selected).toEqual([underPointer])
+        })
+
+        it('keeps the widget when the press is cancelled', () => {
+            const [a, b] = [makeRect(engine), makeRect(engine)]
+            selection.selectWidgets([a, b])
+            underPointer = a
+            Object.assign(service, {
+                dragHandler: { start: vi.fn(), end: vi.fn(() => false) },
+            })
+
+            service.onMouseDown(press(true))
+            service.onMouseCancel(press(true))
+
+            expect(selection.selected).toEqual([a, b])
+        })
+
         it('selects a locked widget alone', () => {
             selection.selectWidget(makeRect(engine))
             underPointer = makeRect(engine, { locked: true })
