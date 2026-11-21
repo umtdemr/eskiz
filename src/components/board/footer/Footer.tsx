@@ -95,6 +95,7 @@ export default function Footer({ engine }: { engine: Engine }) {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent sideOffset={20} side={'top'}>
                         <DropdownMenuItem
+                            disabled={!engine.stage.contentBounds()}
                             onClick={() => engine.execute('zoomToFit', {})}
                         >
                             <Scan /> Zoom to fit

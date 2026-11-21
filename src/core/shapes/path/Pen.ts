@@ -85,7 +85,7 @@ export class Pen extends Path {
             return super.containsLocal(x, y)
         }
 
-        const tolerance = HIT_TOLERANCE / (this._engine.canvas.zoom || 1)
+        const tolerance = HIT_TOLERANCE / (this._engine.camera.zoom || 1)
         if (
             x < -tolerance ||
             y < -tolerance ||

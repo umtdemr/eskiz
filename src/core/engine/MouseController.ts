@@ -107,6 +107,8 @@ export class MouseController extends Emitter<EngineEventsMap> {
     }
 
     private onPointerDown(e: PointerEvent) {
+        // the board shouldn't move under a press
+        this.canvas.camera.stop()
         // a pen landing next to a resting palm takes over
         if (e.pointerType === 'pen' && e.button === 0 && this.touches.size) {
             this.dropTouches()
@@ -306,7 +308,11 @@ export class MouseController extends Emitter<EngineEventsMap> {
     }
 
     private wrapMouseEvent(e: MouseEvent): CanvasMouseEvent {
-        return { e, pointer: this.canvas.getPointer(e), canvas: this.canvas }
+        const pointer = this.canvas.camera.toBoard({
+            x: e.clientX,
+            y: e.clientY,
+        })
+        return { e, pointer, canvas: this.canvas }
     }
 
     dispose() {

@@ -62,10 +62,10 @@ describe('MouseController', () => {
                     }),
                     remove: removeTick,
                 },
-                getPointer: (e: PointerEvent) => ({
-                    x: e.clientX,
-                    y: e.clientY,
-                }),
+                camera: {
+                    toBoard: (p: { x: number; y: number }) => p,
+                    stop: () => {},
+                },
             },
         }
         controller = new MouseController()

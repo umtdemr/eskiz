@@ -11,13 +11,15 @@ import type { RGBA } from '@/core/shapes/Color'
 
 /**
  * Minimal Engine stand-in. Widgets only touch `engine.canvas.requestRender()`
- * outside of the real render loop, so this is enough for unit tests.
+ * and the zoom outside of the real render loop, so this is enough for unit
+ * tests.
  */
 export function createEngineStub(): Engine {
     return {
         canvas: {
             requestRender: () => {},
         },
+        camera: { zoom: 1 },
     } as unknown as Engine
 }
 

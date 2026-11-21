@@ -9,6 +9,7 @@ This is a collaborative whiteboard application built with **React**, **Vite**, *
 The application logic is centralized in the `Engine` class, which orchestrates rendering, input handling, and services.
 - **Entry Point:** `src/core/engine/Engine.ts` initializes the `Canvas`, `Stage`, and `ServiceManager`.
 - **Rendering:** `src/core/canvas/Canvas.ts` wraps CanvasKit. Rendering logic is split into renderers (e.g., `UpperCanvasRenderer`).
+- **Camera:** `src/core/canvas/Camera.ts` (`engine.camera`) owns zoom and pan; `Canvas` only reads it to draw. Move the view only through the camera (`set`, `zoomAt`, `fit`, `animateTo`), so `camera.changed` fires once per change and a running animation stops. Convert points with `camera.toScreen` / `camera.toBoard`. The view isn't board state, so it doesn't go through Commands.
 - **Services:** Business logic is encapsulated in services (e.g., `SelectionService`, `ToolService`) managed by `ServiceManager`.
   - **Pattern:** Access services via `engine.serviceManager.get<ServiceType>('serviceName')`.
 - **Widgets:** All board elements extend `Widget` (`src/core/shapes/Widget.ts`). Geometric shapes extend `Shape`.
@@ -22,7 +23,7 @@ All actions that modify the board state (create, delete, move, style) MUST be im
 
 ### 3. State Management
 - **React UI State:** Managed by **Zustand** (`src/store`). The store is composed of multiple slices (`UserSlice`, `ToolSlice`, etc.).
-- **Engine State:** The `Engine` maintains its own state (widgets, selection, canvas transform) independent of React.
+- **Engine State:** The `Engine` maintains its own state (widgets, selection, camera) independent of React.
 - **Bridge:** React components subscribe to `Engine` signals or Zustand store updates to reflect changes.
 
 ### 4. Real-time Collaboration

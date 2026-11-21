@@ -62,11 +62,10 @@ export class UpperCanvasRenderer {
     }
 
     handleCursorEvent(msg: EventCursor, canvas: Canvas) {
-        // calculate cursor position based on viewport transform
-        const actualCursorPosition = canvas.transformPoint(
-            { x: msg.data.cursor.x, y: msg.data.cursor.y },
-            canvas.viewportTransform,
-        )
+        const actualCursorPosition = canvas.camera.toScreen({
+            x: msg.data.cursor.x,
+            y: msg.data.cursor.y,
+        })
 
         const cursor = this.collabCursors.find(
             (cursor) => cursor.user_id === msg.data.cursor.user_id,

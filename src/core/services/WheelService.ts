@@ -1,10 +1,8 @@
-import { Canvas } from '../canvas/Canvas'
 import { Engine } from '../engine/Engine'
 import { MouseController, PinchEvent } from '../engine/MouseController'
 import { Service } from './Service'
 
 export class WheelService extends Service {
-    private canvas: Canvas
     private mouseController: MouseController
 
     constructor(engine: Engine, mouseController: MouseController) {
@@ -16,7 +14,6 @@ export class WheelService extends Service {
     start() {
         this.engine.upperCanvasEl.addEventListener('wheel', this.onMouseWheel)
         this.mouseController.on('pinch', this.onPinch, this)
-        this.canvas = this.engine.canvas
     }
 
     private onMouseWheel(e: WheelEvent) {
@@ -28,24 +25,31 @@ export class WheelService extends Service {
 
         // handle panning if ctrl or meta is not pressed
         if (!e.ctrlKey && !e.metaKey) {
-            const panSpeed = 1.5 / this.canvas.zoom
-            this.canvas.translateX -= e.deltaX * panSpeed
-            this.canvas.translateY -= e.deltaY * panSpeed
-
-            this.canvas.requestRender()
+            const camera = this.engine.camera
+            const panSpeed = 1.5 / camera.zoom
+            camera.set({
+                translateX: camera.translateX - e.deltaX * panSpeed,
+                translateY: camera.translateY - e.deltaY * panSpeed,
+            })
             return
         }
 
         const zoomFactor = Math.pow(0.995, e.deltaY)
         this.engine.camera.zoomAt(
-            this.canvas.zoom * zoomFactor,
+            this.engine.camera.zoom * zoomFactor,
             e.clientX,
             e.clientY,
         )
     }
 
     private onPinch({ x, y, scale, dx, dy }: PinchEvent) {
-        this.engine.camera.zoomAt(this.canvas.zoom * scale, x, y, dx, dy)
+        this.engine.camera.zoomAt(
+            this.engine.camera.zoom * scale,
+            x,
+            y,
+            dx,
+            dy,
+        )
     }
 
     dispose() {

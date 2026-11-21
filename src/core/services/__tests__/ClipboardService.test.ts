@@ -16,13 +16,9 @@ const widget = (uuid: string, isLocked = false) =>
 
 let engine: {
     textEditor: { isActive: boolean }
-    canvas: {
-        getPointer: ReturnType<typeof vi.fn>
-        translateX: number
-        translateY: number
-        zoom: number
-        width: number
-        height: number
+    canvas: { width: number; height: number }
+    camera: {
+        toBoard: (p: { x: number; y: number }) => { x: number; y: number }
     }
     getService: ReturnType<typeof vi.fn>
     execute: ReturnType<typeof vi.fn>
@@ -85,13 +81,10 @@ describe('ClipboardService', () => {
         imageUpload = { upload: vi.fn() }
         engine = {
             textEditor: { isActive: false },
-            canvas: {
-                getPointer: vi.fn(() => ({ x: 5, y: 6 })),
-                translateX: -100,
-                translateY: -200,
-                zoom: 2,
-                width: 800,
-                height: 600,
+            canvas: { width: 800, height: 600 },
+            // zoom 2, translate -100, -200
+            camera: {
+                toBoard: ({ x, y }) => ({ x: x / 2 + 100, y: y / 2 + 200 }),
             },
             getService: vi.fn((name: string) =>
                 name === 'imageUpload' ? imageUpload : selection,
@@ -162,15 +155,13 @@ describe('ClipboardService', () => {
 
     it('pastes under the mouse', () => {
         const onMove = mouse.on.mock.calls[0][1]
-        const mouseEvent = {}
-        onMove({ e: mouseEvent })
+        onMove({ e: { clientX: 10, clientY: 20 } })
 
         fire('paste', encodeWidgets([json('a')]))
 
-        expect(engine.canvas.getPointer).toHaveBeenCalledWith(mouseEvent)
         expect(engine.execute).toHaveBeenCalledWith('paste', {
             widgets: [json('a')],
-            at: { x: 5, y: 6 },
+            at: { x: 105, y: 210 },
         })
     })
 

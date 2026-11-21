@@ -9,11 +9,10 @@ import CanvasKitInit, {
     WebGLContextHandle,
 } from 'canvaskit-wasm'
 import canvaskitWasmUrl from 'canvaskit-wasm/bin/canvaskit.wasm?url'
-import { ZOOM_LEVELS } from '@/helpers/Constant.ts'
 import { Stage } from '../stage/Stage'
+import { Camera } from './Camera'
 import { Signal } from '../signal/Signal'
 import { BoardGridType } from '../constants'
-import { LTRBRect } from '../geometry/BoundingBox'
 import { useBoundStore } from '@/store/store'
 
 export type GridType = (typeof BoardGridType)[keyof typeof BoardGridType]
@@ -22,8 +21,6 @@ export type Point = {
     x: number
     y: number
 }
-
-type Transform = [number, number, number, number, number, number]
 
 export type RenderContext = {
     ctx: SkiaCanvas
@@ -64,13 +61,10 @@ export class Canvas {
     private _dpr = 1
     private needsResize = false
     private dprQuery: MediaQueryList | null = null
-    private offsetX = 0
-    private offsetY = 0
     private _stage: Stage
 
     private needsRender = false
     private frame = 0
-    private scale = 1
 
     private gridPaint: Paint
     private gridPath: Path
@@ -78,11 +72,13 @@ export class Canvas {
 
     tickBefore = new Signal()
     tick = new Signal()
-    transform = new Signal()
     resized = new Signal()
+
+    camera: Camera
 
     constructor(stage: Stage) {
         this._stage = stage
+        this.camera = new Camera(this, stage)
         this.onResize = this.onResize.bind(this)
     }
 
@@ -147,18 +143,17 @@ export class Canvas {
         const ctx = this.skCanvas
         ctx.clear(canvasKit.Color(239, 239, 239, 1))
 
+        const { zoom, translateX, translateY, viewport } = this.camera
         ctx.save()
-        ctx.scale(this._dpr * this.scale, this._dpr * this.scale)
-        ctx.translate(this.offsetX, this.offsetY)
-
-        const viewport = this.viewport
+        ctx.scale(this._dpr * zoom, this._dpr * zoom)
+        ctx.translate(translateX, translateY)
 
         if (this.gridType !== BoardGridType.NONE) {
             this.drawGrid(ctx)
         }
 
         // render all elements
-        this._stage.render({ ctx, scale: this.scale, viewport })
+        this._stage.render({ ctx, scale: zoom, viewport })
 
         ctx.restore()
         this.surface.flush()
@@ -193,14 +188,16 @@ export class Canvas {
 
         const baseGridSize = 50
 
-        // Calculate the visible area
-        const visibleLeft = -this.offsetX
-        const visibleTop = -this.offsetY
-        const visibleRight = this.width / this.scale - this.offsetX
-        const visibleBottom = this.height / this.scale - this.offsetY
+        const scale = this.camera.zoom
+        const {
+            left: visibleLeft,
+            top: visibleTop,
+            right: visibleRight,
+            bottom: visibleBottom,
+        } = this.camera.viewport
 
         // Calculate the appropriate grid size based on current scale
-        const log10Scale = Math.log10(this.scale)
+        const log10Scale = Math.log10(scale)
         const power = Math.floor(log10Scale)
         const fraction = log10Scale - power
 
@@ -220,8 +217,8 @@ export class Canvas {
         const screenLineWidth = 0.4
         const screenDotSize = 3
 
-        const lineWidth = screenLineWidth / this.scale
-        const dotSize = screenDotSize / this.scale
+        const lineWidth = screenLineWidth / scale
+        const dotSize = screenDotSize / scale
 
         if (!this.gridPaint) {
             this.gridPaint = new canvasKit.Paint()
@@ -297,97 +294,8 @@ export class Canvas {
         if (this.glContext) canvasKit.deleteContext(this.glContext)
     }
 
-    getPointer(e: MouseEvent): Point {
-        const pointer = {
-            x: e.x,
-            y: e.y,
-        }
-
-        return this.transformPoint(
-            pointer,
-            this.invertTransform(this.viewportTransform) as Transform,
-        )
-    }
-
-    transformPoint(p: Point, t: Transform, ignoreOffset?: boolean) {
-        if (ignoreOffset) {
-            return {
-                x: t[0] * p.x + t[2] * p.y,
-                y: t[1] * p.x + t[3] * p.y,
-            }
-        }
-        return {
-            x: t[0] * p.x + t[2] * p.y + t[4],
-            y: t[1] * p.x + t[3] * p.y + t[5],
-        }
-    }
-
-    invertTransform(t: Transform) {
-        const a = 1 / (t[0] * t[3] - t[1] * t[2]),
-            r = [
-                a * t[3],
-                -a * t[1],
-                -a * t[2],
-                a * t[0],
-            ] as unknown as Transform,
-            o = this.transformPoint({ x: t[4], y: t[5] }, r, true)
-        r[4] = -o.x
-        r[5] = -o.y
-        return r
-    }
-
-    get viewportTransform(): Transform {
-        return [
-            this.scale,
-            0,
-            0,
-            this.scale,
-            this.offsetX * this.scale,
-            this.offsetY * this.scale,
-        ]
-    }
-
-    /** the part of the board on screen */
-    get viewport(): LTRBRect {
-        return {
-            left: -this.offsetX,
-            top: -this.offsetY,
-            right: this.width / this.scale - this.offsetX,
-            bottom: this.height / this.scale - this.offsetY,
-        }
-    }
-
     get initialized() {
         return this._initialized
-    }
-
-    get zoom() {
-        return this.scale
-    }
-
-    get translateX() {
-        return this.offsetX
-    }
-
-    set translateX(x: number) {
-        this.offsetX = x
-        this.transform.dispatch()
-    }
-
-    get translateY() {
-        return this.offsetY
-    }
-
-    set translateY(y: number) {
-        this.offsetY = y
-        this.transform.dispatch()
-    }
-
-    set zoom(newZoom: number) {
-        newZoom = Math.min(Math.max(ZOOM_LEVELS.MIN, newZoom), ZOOM_LEVELS.MAX)
-        this.scale = newZoom
-        this.transform.dispatch()
-        this.needsRender = true
     }
 
     get canvasEl(): HTMLCanvasElement {

@@ -99,7 +99,7 @@ export class RotateControl extends Control {
 
     updatePosition() {
         const point = this.shape.getPointFromRelative(-1, 1)
-        const offset = ROTATE_CONTROL_OFFSET / this.engine.canvas.zoom
+        const offset = ROTATE_CONTROL_OFFSET / this.engine.camera.zoom
         const rotatedOffset = reverseRotatePoint(
             offset,
             offset,
