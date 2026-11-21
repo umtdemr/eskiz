@@ -15,6 +15,7 @@ const fakeCanvas = () => {
         width: 1000,
         height: 600,
         transform,
+        resized: new Signal(),
         requestRender: vi.fn(),
         get zoom() {
             return zoom
@@ -140,6 +141,17 @@ describe('Camera', () => {
 
         expect(canvas.translateX).toBe(500)
         expect(canvas.zoom).toBeLessThan(2)
+    })
+
+    it('stops when the screen is resized', () => {
+        camera.animateTo({ zoom: 2, translateX: 0, translateY: 0 })
+        runFrame(100)
+        const zoom = canvas.zoom
+
+        canvas.resized.dispatch()
+        runFrame(400)
+
+        expect(canvas.zoom).toBe(zoom)
     })
 
     it('jumps with reduced motion', () => {

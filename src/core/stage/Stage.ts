@@ -119,13 +119,13 @@ export class Stage {
 
     /** what the widgets cover, strokes included. null on an empty board */
     contentBounds(): BoundingBox | null {
-        const bounds: BoundingBox[] = []
+        let bounds: BoundingBox | null = null
         for (const child of this._widgetsDefaultLayer.children) {
-            if (child instanceof Widget && child.visible) {
-                bounds.push(child.renderBounds)
-            }
+            if (!(child instanceof Widget) || !child.visible) continue
+            const b = child.renderBounds
+            bounds = bounds ? BoundingBox.createWithMerge(bounds, b) : b
         }
-        return bounds.length ? BoundingBox.createWithMerge(...bounds) : null
+        return bounds
     }
 
     get widgetsDefaultLayer() {

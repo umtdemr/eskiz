@@ -111,6 +111,8 @@ export class Camera {
         }
 
         this.canvas.transform.add(this.onMoved, this)
+        // the target was fitted to the old size
+        this.canvas.resized.add(this.stop, this)
         this.animation = requestAnimationFrame(step)
     }
 
@@ -119,6 +121,7 @@ export class Camera {
         cancelAnimationFrame(this.animation)
         this.animation = 0
         this.canvas.transform.remove(this.onMoved, this)
+        this.canvas.resized.remove(this.stop, this)
     }
 
     dispose() {
