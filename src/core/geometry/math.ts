@@ -43,8 +43,10 @@ export function reverseRotatePoint(
 
 export type View = { zoom: number; translateX: number; translateY: number }
 
-// zoom and translate that center `rect` on a screen of width x height css
-// pixels, with `padding` around it
+/**
+ * zoom and translate that center `rect` on a screen of width x height css
+ * pixels, with `padding` around it
+ */
 export function fitView(
     rect: LTRBRect,
     width: number,
@@ -70,9 +72,11 @@ export function fitView(
     }
 }
 
-// the zoom changes by the same factor each step. the board point at the screen
-// center moves in a straight line, at a steady speed on screen: zooming out it
-// pans mostly once far, zooming in mostly while still far
+/**
+ * the zoom changes by the same factor each step. the board point at the screen
+ * center moves in a straight line, at a steady speed on screen: zooming out it
+ * pans mostly once far, zooming in mostly while still far
+ */
 export function interpolateView(
     from: View,
     to: View,

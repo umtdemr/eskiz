@@ -73,7 +73,7 @@ export class RotateControl extends Control {
         this.paint.setAntiAlias(true)
         this.rotateHandler = engine.rotateHandler
 
-        this.engine.zoomChanged.add(this.onZoomChanged, this)
+        this.engine.camera.zoomChanged.add(this.onZoomChanged, this)
         this.updatePosition()
         this.width = 20
         this.height = 20
@@ -124,7 +124,7 @@ export class RotateControl extends Control {
     }
 
     destroy() {
-        this.engine.zoomChanged.remove(this.onZoomChanged, this)
+        this.engine.camera.zoomChanged.remove(this.onZoomChanged, this)
         this.shape.boundsChanged.remove(this.onShapeBoundsChanged, this)
         this.paint.delete()
         super.destroy()

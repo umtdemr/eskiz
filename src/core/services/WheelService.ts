@@ -37,11 +37,15 @@ export class WheelService extends Service {
         }
 
         const zoomFactor = Math.pow(0.995, e.deltaY)
-        this.engine.zoomAt(this.canvas.zoom * zoomFactor, e.clientX, e.clientY)
+        this.engine.camera.zoomAt(
+            this.canvas.zoom * zoomFactor,
+            e.clientX,
+            e.clientY,
+        )
     }
 
     private onPinch({ x, y, scale, dx, dy }: PinchEvent) {
-        this.engine.zoomAt(this.canvas.zoom * scale, x, y, dx, dy)
+        this.engine.camera.zoomAt(this.canvas.zoom * scale, x, y, dx, dy)
     }
 
     dispose() {

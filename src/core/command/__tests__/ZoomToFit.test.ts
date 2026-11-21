@@ -19,7 +19,7 @@ describe('ZoomToFit', () => {
         bounds = new BoundingBox(0, 0, 100, 100)
         Object.assign(engine, {
             stage: { contentBounds: () => bounds },
-            zoomToFit: vi.fn(),
+            camera: { fitContent: vi.fn() },
         })
         command = new ZoomToFit()
     })
@@ -43,6 +43,8 @@ describe('ZoomToFit', () => {
 
     it('fits the board', () => {
         command.execute(createCommandCtx(engine))
-        expect(engine.zoomToFit).toHaveBeenCalledWith({ animate: true })
+        expect(engine.camera.fitContent).toHaveBeenCalledWith({
+            animate: true,
+        })
     })
 })

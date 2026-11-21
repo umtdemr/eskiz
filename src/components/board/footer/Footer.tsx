@@ -30,18 +30,18 @@ export default function Footer({ engine }: { engine: Engine }) {
         const zoomChangeHandler = (val: number) => {
             setZoom(Math.floor(val * 100))
         }
-        engine.zoomChanged.add(zoomChangeHandler)
+        engine.camera.zoomChanged.add(zoomChangeHandler)
 
         return () => {
-            engine.zoomChanged.remove(zoomChangeHandler)
+            engine.camera.zoomChanged.remove(zoomChangeHandler)
         }
-    }, [engine.zoomChanged])
+    }, [engine.camera])
 
     const handleZoomOut = () => {
         const currentZoom = zoom / 100
         for (let i = ZOOM_STEPS.length - 1; i >= 0; i--) {
             if (ZOOM_STEPS[i] < currentZoom - 0.001) {
-                engine.zoomTo(ZOOM_STEPS[i])
+                engine.camera.zoomTo(ZOOM_STEPS[i])
                 return
             }
         }
@@ -51,7 +51,7 @@ export default function Footer({ engine }: { engine: Engine }) {
         const currentZoom = zoom / 100
         for (let i = 0; i < ZOOM_STEPS.length; i++) {
             if (ZOOM_STEPS[i] > currentZoom + 0.001) {
-                engine.zoomTo(ZOOM_STEPS[i])
+                engine.camera.zoomTo(ZOOM_STEPS[i])
                 return
             }
         }
@@ -106,7 +106,7 @@ export default function Footer({ engine }: { engine: Engine }) {
                         {ZOOM_DROPDOWN.map((level) => (
                             <DropdownMenuItem
                                 key={level}
-                                onClick={() => engine.zoomTo(level)}
+                                onClick={() => engine.camera.zoomTo(level)}
                             >
                                 <ZoomIn /> {level * 100}%
                             </DropdownMenuItem>

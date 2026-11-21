@@ -10,6 +10,6 @@ export class ZoomToFit extends Command {
     }
 
     execute(ctx: CommandCtx) {
-        ctx.engine.zoomToFit({ animate: true })
+        ctx.engine.camera.fitContent({ animate: true })
     }
 }

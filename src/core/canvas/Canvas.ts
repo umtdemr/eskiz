@@ -347,7 +347,7 @@ export class Canvas {
         ]
     }
 
-    // the part of the board on screen
+    /** the part of the board on screen */
     get viewport(): LTRBRect {
         return {
             left: -this.offsetX,

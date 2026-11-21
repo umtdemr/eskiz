@@ -117,7 +117,7 @@ export class Stage {
         return this._canvasStaticContainer
     }
 
-    // what the widgets cover, strokes included. null on an empty board
+    /** what the widgets cover, strokes included. null on an empty board */
     contentBounds(): BoundingBox | null {
         const bounds: BoundingBox[] = []
         for (const child of this._widgetsDefaultLayer.children) {
