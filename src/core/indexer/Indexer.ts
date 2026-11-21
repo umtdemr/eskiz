@@ -1,4 +1,3 @@
-import { generateKeyBetween } from 'fractional-indexing'
 import {
     generateKeyBetween as keyBetween,
     generateNKeysBetween as keysBetween,
@@ -24,7 +23,7 @@ export class Indexer {
      * @returns zIndex for root layer.
      */
     generateRootIndex(): string {
-        return generateKeyBetween(null, null)
+        return keyBetween(null, null, { jitterBits: 0 })
     }
 
     /**
