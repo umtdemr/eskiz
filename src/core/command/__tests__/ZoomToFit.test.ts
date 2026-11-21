@@ -43,6 +43,6 @@ describe('ZoomToFit', () => {
 
     it('fits the board', () => {
         command.execute(createCommandCtx(engine))
-        expect(engine.zoomToFit).toHaveBeenCalled()
+        expect(engine.zoomToFit).toHaveBeenCalledWith({ animate: true })
     })
 })

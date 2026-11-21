@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { rotatePoint, reverseRotatePoint, fitView } from '../math'
+import {
+    rotatePoint,
+    reverseRotatePoint,
+    fitView,
+    interpolateView,
+    easeInOutCubic,
+} from '../math'
 
 describe('rotatePoint', () => {
     it('returns same point for 0 degrees', () => {
@@ -117,5 +123,52 @@ describe('fitView', () => {
         const rect = { left: 0, top: 0, right: 1e7, bottom: 1e7 }
 
         expect(fitView(rect, 1000, 600, 50, 1).zoom).toBe(0.01)
+    })
+})
+
+describe('interpolateView', () => {
+    const from = { zoom: 1, translateX: 0, translateY: 0 }
+    const to = { zoom: 4, translateX: -900, translateY: -500 }
+    // the board point at the center of a 1000 x 600 screen
+    const center = (v: { zoom: number; translateX: number }) =>
+        500 / v.zoom - v.translateX
+
+    it('starts and ends on the views', () => {
+        expect(interpolateView(from, to, 0, 1000, 600)).toEqual(from)
+        const end = interpolateView(from, to, 1, 1000, 600)
+        expect(end.zoom).toBeCloseTo(4)
+        expect(end.translateX).toBeCloseTo(-900)
+        expect(end.translateY).toBeCloseTo(-500)
+    })
+
+    it('zooms by the same factor each step', () => {
+        expect(interpolateView(from, to, 0.5, 1000, 600).zoom).toBeCloseTo(2)
+    })
+
+    it('pans evenly when the zoom stays', () => {
+        const panned = { zoom: 1, translateX: -800, translateY: 0 }
+        const half = interpolateView(from, panned, 0.5, 1000, 600)
+
+        expect(center(half)).toBeCloseTo((center(from) + center(panned)) / 2)
+    })
+
+    it('pans at a steady speed on screen', () => {
+        // board distance per step times zoom, early and late
+        const speed = (t: number) => {
+            const a = interpolateView(from, to, t, 1000, 600)
+            const b = interpolateView(from, to, t + 0.01, 1000, 600)
+            return (center(b) - center(a)) * a.zoom
+        }
+
+        expect(speed(0.1)).toBeCloseTo(speed(0.8), 0)
+    })
+})
+
+describe('easeInOutCubic', () => {
+    it('starts and ends slow', () => {
+        expect(easeInOutCubic(0)).toBe(0)
+        expect(easeInOutCubic(0.1)).toBeCloseTo(0.004)
+        expect(easeInOutCubic(0.5)).toBe(0.5)
+        expect(easeInOutCubic(1)).toBe(1)
     })
 })

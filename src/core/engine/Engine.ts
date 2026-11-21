@@ -11,7 +11,12 @@ import { LocalAdapter } from '@/core/sync/LocalAdapter.ts'
 import { UpperCanvasRenderer } from '@/core/renderers/UpperCanvasRenderer.ts'
 import { Stage } from '../stage/Stage'
 import { LTRBRect } from '../geometry/BoundingBox'
-import { fitView } from '../geometry/math'
+import {
+    easeInOutCubic,
+    fitView,
+    interpolateView,
+    View,
+} from '../geometry/math'
 import { ServiceManager } from '../services/ServiceManager'
 import { SelectionService } from '../services/SelectionService'
 import { MouseController } from './MouseController'
@@ -78,6 +83,9 @@ export class Engine {
     readonly isStandalone: boolean
     private serviceManager: ServiceManager
     private _isRunning = false
+    // frame of the running view animation, 0 when there is none
+    private viewAnimation = 0
+    private isAnimatingView = false
     private _dragHandler: DragHandler
     private _resizeHandler: ResizeHandler
     private _reshapeHandler: ReshapeHandler
@@ -182,6 +190,7 @@ export class Engine {
     }
 
     dispose() {
+        this.stopViewAnimation()
         this.canvas.resized.remove(this.sizeUpperCanvas, this)
         this.canvas.dispose()
         this.wsEngine?.dispose()
@@ -193,7 +202,10 @@ export class Engine {
 
     // fits `rect` on the screen. the padding leaves room for toolbars on the
     // sides, `maxZoom` keeps a small area from filling the screen
-    zoomToBounds(rect: LTRBRect, { padding = 96, maxZoom = 1 } = {}) {
+    zoomToBounds(
+        rect: LTRBRect,
+        { padding = 96, maxZoom = 1, animate = false } = {},
+    ) {
         const view = fitView(
             rect,
             this.canvas.width,
@@ -201,18 +213,81 @@ export class Engine {
             padding,
             maxZoom,
         )
+        if (animate) {
+            this.animateView(view)
+        } else {
+            this.setView(view)
+        }
+    }
+
+    // shows every widget, does nothing on an empty board
+    zoomToFit(options?: {
+        padding?: number
+        maxZoom?: number
+        animate?: boolean
+    }) {
+        const bounds = this.stage.contentBounds()
+        if (bounds) this.zoomToBounds(bounds, options)
+    }
+
+    // moving the view any other way, like a wheel or a pan, stops it
+    animateView(view: View, { duration = 400 } = {}) {
+        this.stopViewAnimation()
+
+        const reduced = window.matchMedia(
+            '(prefers-reduced-motion: reduce)',
+        ).matches
+        if (reduced || duration <= 0) {
+            this.setView(view)
+            return
+        }
+
+        const from = {
+            zoom: this.canvas.zoom,
+            translateX: this.canvas.translateX,
+            translateY: this.canvas.translateY,
+        }
+        const start = performance.now()
+
+        const step = (now: number) => {
+            const t = Math.min((now - start) / duration, 1)
+            const { width, height } = this.canvas
+
+            this.isAnimatingView = true
+            this.setView(
+                interpolateView(from, view, easeInOutCubic(t), width, height),
+            )
+            this.isAnimatingView = false
+
+            if (t < 1) {
+                this.viewAnimation = requestAnimationFrame(step)
+            } else {
+                this.stopViewAnimation()
+            }
+        }
+
+        this.canvas.transform.add(this.onViewMoved, this)
+        this.viewAnimation = requestAnimationFrame(step)
+    }
+
+    stopViewAnimation() {
+        if (!this.viewAnimation) return
+        cancelAnimationFrame(this.viewAnimation)
+        this.viewAnimation = 0
+        this.canvas.transform.remove(this.onViewMoved, this)
+    }
+
+    private onViewMoved() {
+        if (!this.isAnimatingView) this.stopViewAnimation()
+    }
+
+    private setView(view: View) {
         this.canvas.zoom = view.zoom
         this.canvas.translateX = view.translateX
         this.canvas.translateY = view.translateY
 
         this.canvas.requestRender()
         this.zoomChanged.dispatch(this.canvas.zoom)
-    }
-
-    // shows every widget, does nothing on an empty board
-    zoomToFit(options?: { padding?: number; maxZoom?: number }) {
-        const bounds = this.stage.contentBounds()
-        if (bounds) this.zoomToBounds(bounds, options)
     }
 
     zoomTo(targetZoom: number) {
