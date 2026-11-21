@@ -421,6 +421,10 @@ export abstract class Widget extends Layer {
         return false
     }
 
+    canAlign(): boolean {
+        return true
+    }
+
     rotate(newAngle: number) {
         if (newAngle < 0 || newAngle >= 360) {
             newAngle = ((newAngle % 360) + 360) % 360
