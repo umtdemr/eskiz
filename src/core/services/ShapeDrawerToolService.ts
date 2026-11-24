@@ -18,6 +18,7 @@ import { WidgetsService } from '@/core/services/WidgetsService.ts'
 import { AddWidgetPayload } from '@/types/Websocket.ts'
 import { CursorService } from '@/core/services/CursorService.ts'
 import { CreationHistoryEntry } from '@/core/history/HistoryManager'
+import { GRID_SIZE, snapPoint } from '../canvas/grid'
 
 export class ShapeDrawerToolService extends Service {
     private mouseController: MouseController
@@ -26,6 +27,8 @@ export class ShapeDrawerToolService extends Service {
     private shape: Shape | null = null
     private drawingStarted: boolean = false
     private initialPosition: { x: number; y: number } = { x: 0, y: 0 }
+    // where the press was before snapping, it gives the drag direction
+    private pressPosition: { x: number; y: number } = { x: 0, y: 0 }
     private drawingMode: keyof typeof DRAWING_MODES | null
     private cursorService: CursorService
     private cursorToolName = CURSOR_OWNERS.SHAPE_DRAWER_TOOL
@@ -78,10 +81,11 @@ export class ShapeDrawerToolService extends Service {
             return
         }
 
-        this.initialPosition = {
-            x: data.pointer.x,
-            y: data.pointer.y,
-        }
+        const pointer = this.engine.settings.isGridSnapEnabled
+            ? snapPoint(data.pointer)
+            : data.pointer
+        this.initialPosition = pointer
+        this.pressPosition = data.pointer
 
         let shapeConstructor
         if (this.drawingMode === DRAWING_MODES.CREATE_RECTANGLE) {
@@ -95,8 +99,8 @@ export class ShapeDrawerToolService extends Service {
         if (shapeConstructor) {
             this.shape = new shapeConstructor(
                 {
-                    x: data.pointer.x,
-                    y: data.pointer.y,
+                    x: pointer.x,
+                    y: pointer.y,
                     width: 1,
                     height: 1,
                     parentLayer: this.engine.stage.widgetsDefaultLayer,
@@ -117,10 +121,13 @@ export class ShapeDrawerToolService extends Service {
     onMouseMove(data: CanvasMouseEvent) {
         if (!this.shape) return
         const { canvas } = data
+        const pointer = this.engine.settings.isGridSnapEnabled
+            ? snapPoint(data.pointer)
+            : data.pointer
 
         // change width and height
-        this.shape.width = Math.abs(data.pointer.x - this.initialPosition.x)
-        this.shape.height = Math.abs(data.pointer.y - this.initialPosition.y)
+        this.shape.width = Math.abs(pointer.x - this.initialPosition.x)
+        this.shape.height = Math.abs(pointer.y - this.initialPosition.y)
 
         // grow shape equally when shift key is being pressed
         if (data.e.shiftKey) {
@@ -128,14 +135,20 @@ export class ShapeDrawerToolService extends Service {
             this.shape.width = this.shape.height = maxSide
         }
 
+        // a short drag snaps back to the start point, keep one grid step
+        if (this.engine.settings.isGridSnapEnabled) {
+            this.shape.width = Math.max(this.shape.width, GRID_SIZE)
+            this.shape.height = Math.max(this.shape.height, GRID_SIZE)
+        }
+
         // align x and y
-        if (data.pointer.x > this.initialPosition.x) {
+        if (data.pointer.x > this.pressPosition.x) {
             this.shape.left = this.initialPosition.x
         } else {
             this.shape.right = this.initialPosition.x
         }
 
-        if (data.pointer.y > this.initialPosition.y) {
+        if (data.pointer.y > this.pressPosition.y) {
             this.shape.top = this.initialPosition.y
         } else {
             this.shape.bottom = this.initialPosition.y

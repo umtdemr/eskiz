@@ -11,7 +11,7 @@ import { Engine } from '@/core/engine/Engine.ts'
 import { initCanvasKit } from '@/core/canvas/Canvas.ts'
 import { PageService } from '@/core/services/PageService.ts'
 import { TooltipProvider } from '@/components/ui/tooltip'
-import { useBoundStore } from '@/store/store.ts'
+import { bindSettings, useBoundStore } from '@/store/store.ts'
 import { initializeAllWidgets } from '@/core/initializers/registerWidgets.ts'
 import useNoBrowserZoom from '@/hooks/UseNoBrowserZoom'
 
@@ -37,6 +37,7 @@ export default function StandaloneBoard() {
                     DEFAULT_BOARD_ID,
                     DEFAULT_PAGE_ID,
                 )
+                bindSettings(engineRef.current)
                 await engineRef.current.initialize()
 
                 // set default board data in store

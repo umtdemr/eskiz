@@ -11,6 +11,7 @@ import { LocalAdapter } from '@/core/sync/LocalAdapter.ts'
 import { UpperCanvasRenderer } from '@/core/renderers/UpperCanvasRenderer.ts'
 import { Stage } from '../stage/Stage'
 import { Camera } from '../canvas/Camera'
+import { Settings } from '../settings/Settings'
 import { ServiceManager } from '../services/ServiceManager'
 import { SelectionService } from '../services/SelectionService'
 import { MouseController } from './MouseController'
@@ -74,6 +75,7 @@ export class Engine {
     private _stage: Stage
     canvas: Canvas
     camera: Camera
+    readonly settings = new Settings()
     wsEngine: WsEngine | null = null
     readonly isStandalone: boolean
     private serviceManager: ServiceManager
@@ -127,7 +129,7 @@ export class Engine {
         this.initializeServices()
 
         this._stage = new Stage(this)
-        this.canvas = new Canvas(this._stage)
+        this.canvas = new Canvas(this._stage, this.settings)
         this.camera = this.canvas.camera
 
         this.upperCanvasRenderer = new UpperCanvasRenderer()
@@ -183,6 +185,7 @@ export class Engine {
 
     dispose() {
         this.camera.dispose()
+        this.settings.dispose()
         this.canvas.resized.remove(this.sizeUpperCanvas, this)
         this.canvas.dispose()
         this.wsEngine?.dispose()

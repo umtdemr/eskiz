@@ -127,6 +127,33 @@ describe('MoveCommand', () => {
             )
         })
 
+        it('carries the move to the next grid line when snapping', () => {
+            engine.settings.set({ isGridSnapEnabled: true })
+            const rect = makeRect(engine)
+            rect.move(3, 4)
+
+            command.execute(makeCtx([rect], 1, 0))
+            expect([rect.left, rect.top]).toEqual([10, 4])
+
+            command.execute(makeCtx([rect], 1, 0))
+            expect(rect.left).toBe(20)
+
+            command.execute(makeCtx([rect], 0, -1))
+            expect(rect.top).toBe(0)
+        })
+
+        it('lands the group top left on the grid when snapping', () => {
+            engine.settings.set({ isGridSnapEnabled: true })
+            const a = makeRect(engine)
+            const b = makeRect(engine)
+            a.move(13, 0)
+            b.move(31, 0)
+
+            command.execute(makeCtx([a, b], -1, 0))
+
+            expect([a.left, b.left]).toEqual([10, 28])
+        })
+
         it('does nothing when a widget is locked', () => {
             const rect = makeRect(engine, { locked: true })
 

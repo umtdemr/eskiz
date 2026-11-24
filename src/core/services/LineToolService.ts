@@ -13,6 +13,7 @@ import { AddWidgetPayload } from '@/types/Websocket.ts'
 import { CreationHistoryEntry } from '@/core/history/HistoryManager'
 import { MagnetService } from './MagnetService'
 import { Widget } from '@/core/shapes/Widget'
+import { snapPoint } from '@/core/canvas/grid'
 
 export class LineToolService extends Service {
     private mouseController: MouseController
@@ -64,6 +65,9 @@ export class LineToolService extends Service {
 
     private onMouseDown(data: CanvasMouseEvent) {
         const { x, y } = data.pointer
+        const start = this.engine.settings.isGridSnapEnabled
+            ? snapPoint(data.pointer)
+            : data.pointer
 
         this.line = new Line(
             {
@@ -74,8 +78,8 @@ export class LineToolService extends Service {
                 properties: {
                     hasHeadArrow: true,
                     points: [
-                        [x, y],
-                        [x, y],
+                        [start.x, start.y],
+                        [start.x, start.y],
                         // TODO: add stroke color and width later
                     ],
                 },
@@ -153,12 +157,17 @@ export class LineToolService extends Service {
         this.currentScanResult = scanResult
         const { nearbyWidget, snappedPoint, snappedPointIndex } = scanResult
 
-        let targetX = x
-        let targetY = y
+        let { x: targetX, y: targetY } = this.engine.settings.isGridSnapEnabled
+            ? snapPoint(data.pointer)
+            : data.pointer
 
         if (snappedPoint) {
             targetX = snappedPoint.x
             targetY = snappedPoint.y
+        } else if (scanResult.isInside && nearbyWidget?.canSnap()) {
+            // the grid point could fall outside the widget it binds to
+            targetX = x
+            targetY = y
         }
 
         magnetLayer.update(nearbyWidget, snappedPointIndex)

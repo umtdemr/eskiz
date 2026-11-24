@@ -5,6 +5,7 @@ import { Signal } from '@/core/signal/Signal'
 import { EditTable, TransactionId } from '@/core/transaction/TransactionHandler'
 import { State } from '@/core/transaction/State'
 import { MagnetService } from '../services/MagnetService'
+import { snapPoint } from '@/core/canvas/grid'
 
 export class ReshapeHandler {
     private engine: Engine
@@ -73,8 +74,12 @@ export class ReshapeHandler {
         const pointer = data.pointer
         const absolutePoints = [...this.shape.absolutePoints]
 
-        let targetX = pointer.x
-        let targetY = pointer.y
+        // a magnet point below wins over the grid
+        const target = this.engine.settings.isGridSnapEnabled
+            ? snapPoint(pointer)
+            : pointer
+        let targetX = target.x
+        let targetY = target.y
 
         // if head or tail point is being dragged, check for magnetic snapping
         if (
@@ -98,6 +103,10 @@ export class ReshapeHandler {
             if (snappedPoint) {
                 targetX = snappedPoint.x
                 targetY = snappedPoint.y
+            } else if (scanResult.isInside && nearbyWidget?.canSnap()) {
+                // the grid point could fall outside the widget it binds to
+                targetX = pointer.x
+                targetY = pointer.y
             }
             this.currentScanResult = scanResult
 

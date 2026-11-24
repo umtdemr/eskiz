@@ -1,18 +1,17 @@
-import { GridType } from '@/core/canvas/Canvas'
-import { BoardGridType } from '@/core/constants'
 import { StateCreator } from 'zustand'
+import { defaultSettings, SettingsValues } from '@/core/settings/Settings'
 
-export interface BoardSettingsSlice {
-    gridType: GridType
-    setGridType: (newType: GridType) => void
+// a copy of engine.settings, kept to persist it and to render the menus
+export interface BoardSettingsSlice extends SettingsValues {
+    setSettings: (values: SettingsValues) => void
 }
 
 export const creaateBoardSettingsSlice: StateCreator<
     BoardSettingsSlice,
     [],
-    [['zustand/persist', { gridType: GridType }]],
+    [['zustand/persist', SettingsValues]],
     BoardSettingsSlice
 > = (set) => ({
-    gridType: BoardGridType.LINES,
-    setGridType: (newType: GridType) => set({ gridType: newType }),
+    ...defaultSettings,
+    setSettings: (values: SettingsValues) => set(values),
 })

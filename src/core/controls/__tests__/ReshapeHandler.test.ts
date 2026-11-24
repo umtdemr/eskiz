@@ -1,11 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
 import { ReshapeHandler } from '../ReshapeHandler'
 import { makeLine } from '@/test/commandUtils'
+import { Settings } from '@/core/settings/Settings'
 import type { CanvasMouseEvent, Engine } from '@/core/engine/Engine'
 
 const setup = () => {
     const engine = {
         canvas: { requestRender: () => {} },
+        settings: new Settings(),
         transactionHandler: {
             begin: () => ({ transactionId: 't' }),
             update: vi.fn(),

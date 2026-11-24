@@ -10,6 +10,8 @@ The application logic is centralized in the `Engine` class, which orchestrates r
 - **Entry Point:** `src/core/engine/Engine.ts` initializes the `Canvas`, `Stage`, and `ServiceManager`.
 - **Rendering:** `src/core/canvas/Canvas.ts` wraps CanvasKit. Rendering logic is split into renderers (e.g., `UpperCanvasRenderer`).
 - **Camera:** `src/core/canvas/Camera.ts` (`engine.camera`) owns zoom and pan; `Canvas` only reads it to draw. Move the view only through the camera (`set`, `zoomAt`, `fit`, `animateTo`), so `camera.changed` fires once per change and a running animation stops. Convert points with `camera.toScreen` / `camera.toBoard`. The view isn't board state, so it doesn't go through Commands.
+- **Settings:** `src/core/settings/Settings.ts` (`engine.settings`) holds per-user engine options: `gridType` and `isGridSnapEnabled`. Change them with `settings.set({...})`; `settings.changed` fires with all values. They aren't board state, so no Commands. The app persists them: `bindSettings(engine)` in `src/store/store.ts` loads the saved values into the engine and copies every change to the zustand store, which menus read. New options go in `SettingsValues`, not in the store or on `Canvas`.
+- **Grid:** `src/core/canvas/grid.ts` has the grid levels `Canvas` draws and `GRID_SIZE` (10), the snapping step. Tools that place or move points check `engine.settings.isGridSnapEnabled` and snap with `snapPoint` / `snap` from there.
 - **Services:** Business logic is encapsulated in services (e.g., `SelectionService`, `ToolService`) managed by `ServiceManager`.
   - **Pattern:** Access services via `engine.serviceManager.get<ServiceType>('serviceName')`.
 - **Widgets:** All board elements extend `Widget` (`src/core/shapes/Widget.ts`). Geometric shapes extend `Shape`.

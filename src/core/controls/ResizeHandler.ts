@@ -8,6 +8,8 @@ import { EditingMethods } from '../transaction/State'
 import { Signal } from '../signal/Signal'
 import { WidgetType } from '@/core/constants.ts'
 import { rotatePoint, reverseRotatePoint } from '@/core/geometry/math'
+import { snap } from '@/core/canvas/grid'
+import type { Point } from '@/core/canvas/Canvas'
 
 interface ResizableTextWidget extends Widget {
     fontSize: number
@@ -80,10 +82,32 @@ function calculateResizedBounds(
     }
 }
 
+const LEFT = [
+    ResizePosition.EDGE_LEFT,
+    ResizePosition.CORNER_TOP_LEFT,
+    ResizePosition.CORNER_BOTTOM_LEFT,
+]
+const RIGHT = [
+    ResizePosition.EDGE_RIGHT,
+    ResizePosition.CORNER_TOP_RIGHT,
+    ResizePosition.CORNER_BOTTOM_RIGHT,
+]
+const TOP = [
+    ResizePosition.EDGE_TOP,
+    ResizePosition.CORNER_TOP_LEFT,
+    ResizePosition.CORNER_TOP_RIGHT,
+]
+const BOTTOM = [
+    ResizePosition.EDGE_BOTTOM,
+    ResizePosition.CORNER_BOTTOM_LEFT,
+    ResizePosition.CORNER_BOTTOM_RIGHT,
+]
+
 /*
  * Handles resizing from corners or edges.
  */
 export class ResizeHandler {
+    private engine: Engine
     private initialBounds = {
         pointerX: 0,
         pointerY: 0,
@@ -106,6 +130,7 @@ export class ResizeHandler {
     private static readonly MIN_DIMENSION = 1 // Minimum width/height in pixels
 
     constructor(engine: Engine) {
+        this.engine = engine
         this.transactionHandler = engine.transactionHandler
     }
 
@@ -149,6 +174,11 @@ export class ResizeHandler {
     }
 
     handle(data: CanvasMouseEvent): boolean {
+        // a rotated edge doesn't run along the grid
+        if (this.engine.settings.isGridSnapEnabled && !this.shape.angle) {
+            data = { ...data, pointer: this.snapPointer(data.pointer) }
+        }
+
         if (this.resizer === 'edge' && this.resizeFromEdge(data)) {
             if (this._transactionId) {
                 this.transactionHandler.update(this._transactionId)
@@ -178,6 +208,34 @@ export class ResizeHandler {
         if (this._isResized) {
             this.resizeFinished.dispatch({ widgets: [this.shape] })
             this._isResized = false
+        }
+    }
+
+    // moves the pointer so the dragged edge or corner lands on the grid
+    private snapPointer(pointer: Point): Point {
+        const { pointerX, pointerY, widgetX, widgetY, width, height } =
+            this.initialBounds
+
+        const edgeX = LEFT.includes(this.position)
+            ? widgetX
+            : RIGHT.includes(this.position)
+              ? widgetX + width
+              : null
+        const edgeY = TOP.includes(this.position)
+            ? widgetY
+            : BOTTOM.includes(this.position)
+              ? widgetY + height
+              : null
+
+        return {
+            x:
+                edgeX === null
+                    ? pointer.x
+                    : pointerX + snap(edgeX + pointer.x - pointerX) - edgeX,
+            y:
+                edgeY === null
+                    ? pointer.y
+                    : pointerY + snap(edgeY + pointer.y - pointerY) - edgeY,
         }
     }
 
