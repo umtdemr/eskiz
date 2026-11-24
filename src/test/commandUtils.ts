@@ -82,6 +82,7 @@ export type EngineMock = ReturnType<typeof createEngineMock>
 export function createHistoryEngine() {
     const mock = {
         canvas: { requestRender: vi.fn() },
+        settings: new Settings(),
         syncAdapter: {
             syncTransaction: vi.fn((_data: UpdateWidgetPayload) => {}),
         },
