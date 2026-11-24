@@ -15,6 +15,7 @@ import { nanoid } from 'nanoid'
 import { WidgetsService } from '@/core/services/WidgetsService.ts'
 import { AddWidgetPayload } from '@/types/Websocket.ts'
 import { CreationHistoryEntry } from '@/core/history/HistoryManager'
+import { snapPoint } from '@/core/canvas/grid'
 
 export class StickyNoteToolService extends Service {
     private mouseController: MouseController
@@ -46,7 +47,10 @@ export class StickyNoteToolService extends Service {
     }
 
     private init() {
-        this.cursorService.setCursor(this.cursorToolName, CursorType.STICKY_NOTE)
+        this.cursorService.setCursor(
+            this.cursorToolName,
+            CursorType.STICKY_NOTE,
+        )
         this.mouseController.on('mouseDown', this.onMouseDown, this)
     }
 
@@ -56,11 +60,12 @@ export class StickyNoteToolService extends Service {
 
     private onMouseDown(data: CanvasMouseEvent) {
         const { x, y } = data.pointer
+        let corner = { x: x - DEFAULT_WIDTH / 2, y: y - DEFAULT_HEIGHT / 2 }
+        if (this.engine.settings.isGridSnapEnabled) corner = snapPoint(corner)
 
         const stickyNote = new StickyNote(
             {
-                x: x - DEFAULT_WIDTH / 2,
-                y: y - DEFAULT_HEIGHT / 2,
+                ...corner,
                 width: DEFAULT_WIDTH,
                 height: DEFAULT_HEIGHT,
                 uuid: nanoid(),

@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import Header from '@/components/board/header/Header.tsx'
 import { useQuery } from '@tanstack/react-query'
 import { API_ENDPOINTS } from '@/helpers/Constant.ts'
-import { useBoundStore } from '@/store/store.ts'
+import { bindSettings, useBoundStore } from '@/store/store.ts'
 import SkeletonHeader from '@/components/board/header/SkeletonHeader.tsx'
 import Toolbar from '@/components/board/toolbar/Toolbar.tsx'
 import Subtoolbar from '@/components/board/subToolbar/Subtoolbar'
@@ -162,6 +162,7 @@ export default function SingleBoard() {
                     boardQuery.data!.id,
                     boardQuery.data!.pages[0].id,
                 )
+                bindSettings(engineRef.current)
                 await engineRef.current?.initialize()
                 canvasRef.current = engineRef.current?.canvas
                 const connectResp =

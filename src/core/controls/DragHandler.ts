@@ -8,6 +8,7 @@ import {
 } from '@/core/transaction/TransactionHandler'
 import { EditingMethods } from '@/core/transaction/State'
 import { Line } from '../shapes/line/Line'
+import { snap } from '../canvas/grid'
 
 export class DragHandler {
     private engine: Engine
@@ -17,6 +18,8 @@ export class DragHandler {
         isObjectAlreadySelected: boolean
         initialPointer: Point
         initialWidgetPositions: { left: number; top: number }[]
+        // top left of all the moving widgets, the point snapped to the grid
+        initialCorner: Point
         lines: Set<string>
     } = {
         movingShape: [],
@@ -24,6 +27,7 @@ export class DragHandler {
         isObjectAlreadySelected: false,
         initialPointer: { x: 0, y: 0 },
         initialWidgetPositions: [],
+        initialCorner: { x: 0, y: 0 },
         lines: new Set(),
     }
 
@@ -61,6 +65,11 @@ export class DragHandler {
                 left: widget.left,
                 top: widget.top,
             }))
+        const positions = this.movingObjectState.initialWidgetPositions
+        this.movingObjectState.initialCorner = {
+            x: Math.min(...positions.map((p) => p.left)),
+            y: Math.min(...positions.map((p) => p.top)),
+        }
 
         // if starting with one widget and it is not selected
         if (widgets.length === 1 && !!widgets[0].selected) {
@@ -82,8 +91,14 @@ export class DragHandler {
 
     handle(data: CanvasMouseEvent) {
         // drag handler
-        const deltaX = data.pointer.x - this.movingObjectState.initialPointer.x
-        const deltaY = data.pointer.y - this.movingObjectState.initialPointer.y
+        let deltaX = data.pointer.x - this.movingObjectState.initialPointer.x
+        let deltaY = data.pointer.y - this.movingObjectState.initialPointer.y
+
+        if (this.engine.settings.isGridSnapEnabled) {
+            const { x, y } = this.movingObjectState.initialCorner
+            deltaX = snap(x + deltaX) - x
+            deltaY = snap(y + deltaY) - y
+        }
 
         // apply new positions
         this.movingObjectState.movingShape.forEach((widget, index) => {
@@ -167,6 +182,7 @@ export class DragHandler {
             isObjectAlreadySelected: false,
             initialPointer: { x: 0, y: 0 },
             initialWidgetPositions: [],
+            initialCorner: { x: 0, y: 0 },
             lines: this.movingObjectState.lines,
         }
     }

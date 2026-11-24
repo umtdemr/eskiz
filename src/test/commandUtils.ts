@@ -1,6 +1,7 @@
 import { vi, type Mock } from 'vitest'
 import { SelectionService } from '@/core/services/SelectionService'
 import { Signal } from '@/core/signal/Signal'
+import { Settings } from '@/core/settings/Settings'
 import { ContinuousEdits } from '@/core/command/ContinuousEdits'
 import { TransactionHandler } from '@/core/transaction/TransactionHandler'
 import { HistoryManager } from '@/core/history/HistoryManager'
@@ -28,6 +29,7 @@ export function createEngineMock(services: Record<string, unknown> = {}) {
     let nextId = 0
     const mock = {
         canvas: { requestRender: vi.fn() },
+        settings: new Settings(),
         textEditor: { changeTextColor: vi.fn() },
         transactionHandler: {
             beginning: new Signal<{ widgets: Widget[] }>(),

@@ -10,6 +10,7 @@ import { createToolSlice, ToolSlice } from './tool'
 import { createSubtoolbarSlice, SubtoolbarSlice } from './subtoolbar'
 import { BoardSettingsSlice, creaateBoardSettingsSlice } from './boardSettings'
 import { persist } from 'zustand/middleware'
+import type { Engine } from '@/core/engine/Engine'
 
 export type ZState = UserSlice &
     CollaboratorsSlice &
@@ -36,7 +37,16 @@ export const useBoundStore = create<ZState>()(
                 pen: state.pen,
                 colors: state.colors,
                 gridType: state.gridType,
+                isGridSnapEnabled: state.isGridSnapEnabled,
             }),
         },
     ),
 )
+
+// gives the engine the saved settings and saves every change
+export function bindSettings(engine: Engine) {
+    const { gridType, isGridSnapEnabled, setSettings } =
+        useBoundStore.getState()
+    engine.settings.set({ gridType, isGridSnapEnabled })
+    engine.settings.changed.add(setSettings)
+}

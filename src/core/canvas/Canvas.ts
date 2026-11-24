@@ -13,9 +13,8 @@ import { Stage } from '../stage/Stage'
 import { Camera } from './Camera'
 import { Signal } from '../signal/Signal'
 import { BoardGridType } from '../constants'
-import { useBoundStore } from '@/store/store'
-
-export type GridType = (typeof BoardGridType)[keyof typeof BoardGridType]
+import { Settings } from '../settings/Settings'
+import { gridLevels, onCoarseLine } from './grid'
 
 export type Point = {
     x: number
@@ -62,13 +61,13 @@ export class Canvas {
     private needsResize = false
     private dprQuery: MediaQueryList | null = null
     private _stage: Stage
+    private settings: Settings
 
     private needsRender = false
     private frame = 0
 
     private gridPaint: Paint
     private gridPath: Path
-    public gridType: GridType = BoardGridType.LINES
 
     tickBefore = new Signal()
     tick = new Signal()
@@ -76,10 +75,12 @@ export class Canvas {
 
     camera: Camera
 
-    constructor(stage: Stage) {
+    constructor(stage: Stage, settings: Settings) {
         this._stage = stage
+        this.settings = settings
         this.camera = new Camera(this, stage)
         this.onResize = this.onResize.bind(this)
+        settings.changed.add(this.requestRender, this)
     }
 
     async initialize() {
@@ -105,9 +106,6 @@ export class Canvas {
         this.gridPath = new canvasKit.Path()
 
         this._initialized = true
-
-        const store = useBoundStore.getState()
-        this.gridType = store.gridType
 
         return true
     }
@@ -148,7 +146,7 @@ export class Canvas {
         ctx.scale(this._dpr * zoom, this._dpr * zoom)
         ctx.translate(translateX, translateY)
 
-        if (this.gridType !== BoardGridType.NONE) {
+        if (this.settings.gridType !== BoardGridType.NONE) {
             this.drawGrid(ctx)
         }
 
@@ -178,113 +176,69 @@ export class Canvas {
         this.frame = window.requestAnimationFrame(this.draw.bind(this))
     }
 
-    setGridType(type: GridType) {
-        this.gridType = type
-        this.requestRender()
-    }
+    private drawGrid(ctx: SkiaCanvas) {
+        const { zoom, viewport } = this.camera
+        const paint = this.gridPaint
 
-    drawGrid(ctx: SkiaCanvas) {
-        if (this.gridType === BoardGridType.NONE) return
+        // sizes in css pixels whatever the zoom
+        const lineWidth = 0.4 / zoom
+        const dotSize = 3 / zoom
+        const maxAlpha = 0.18
 
-        const baseGridSize = 50
-
-        const scale = this.camera.zoom
-        const {
-            left: visibleLeft,
-            top: visibleTop,
-            right: visibleRight,
-            bottom: visibleBottom,
-        } = this.camera.viewport
-
-        // Calculate the appropriate grid size based on current scale
-        const log10Scale = Math.log10(scale)
-        const power = Math.floor(log10Scale)
-        const fraction = log10Scale - power
-
-        // Calculate two grid sizes for smooth transition
-        const gridSize1 = baseGridSize * Math.pow(10, -power)
-        const gridSize2 = gridSize1 / 10
-
-        // Constant base alpha
-        const baseAlpha = 0.18
-
-        // Calculate alpha for smooth transition
-        // As we zoom out (fraction 1 -> 0), gridSize2 (small) fades out, gridSize1 (large) fades in
-        const alpha1 = (1 - fraction) * baseAlpha
-        const alpha2 = fraction * baseAlpha
-
-        // Calculate line width to maintain constant screen pixel size
-        const screenLineWidth = 0.4
-        const screenDotSize = 3
-
-        const lineWidth = screenLineWidth / scale
-        const dotSize = screenDotSize / scale
-
-        if (!this.gridPaint) {
-            this.gridPaint = new canvasKit.Paint()
-            this.gridPaint.setColor(canvasKit.BLACK)
-            this.gridPaint.setAntiAlias(true)
-        }
-        if (!this.gridPath) {
-            this.gridPath = new canvasKit.Path()
+        const lines = this.settings.gridType === BoardGridType.LINES
+        if (lines) {
+            paint.setStyle(canvasKit.PaintStyle.Stroke)
+            paint.setStrokeWidth(lineWidth)
+            paint.setStrokeCap(canvasKit.StrokeCap.Butt)
+        } else {
+            paint.setStyle(canvasKit.PaintStyle.Stroke)
+            paint.setStrokeWidth(dotSize)
+            paint.setStrokeCap(canvasKit.StrokeCap.Round)
         }
 
-        ;[
-            { size: gridSize1, alpha: alpha1 },
-            { size: gridSize2, alpha: alpha2 },
-        ].forEach(({ size, alpha }) => {
-            if (alpha <= 0.02) return // Slightly higher threshold to avoid faint ghosting
+        const [fine, coarse] = gridLevels(zoom)
+        for (const { size, alpha } of [fine, coarse]) {
+            if (alpha * maxAlpha < 0.01) continue
+            paint.setAlphaf(alpha * maxAlpha)
 
-            this.gridPaint.setAlphaf(alpha)
+            // line numbers, onCoarseLine needs them
+            const x0 = Math.ceil(viewport.left / size)
+            const x1 = Math.floor(viewport.right / size)
+            const y0 = Math.ceil(viewport.top / size)
+            const y1 = Math.floor(viewport.bottom / size)
+            const fineLevel = size === fine.size
 
-            const startX = Math.floor(visibleLeft / size) * size
-            const endX = Math.ceil(visibleRight / size) * size
-            const startY = Math.floor(visibleTop / size) * size
-            const endY = Math.ceil(visibleBottom / size) * size
-
-            if (this.gridType === BoardGridType.LINES) {
-                this.gridPaint.setStyle(canvasKit.PaintStyle.Stroke)
-                this.gridPaint.setStrokeWidth(lineWidth)
-                this.gridPaint.setStrokeCap(canvasKit.StrokeCap.Butt)
-
-                this.gridPath.rewind()
-
-                // Draw horizontal lines
-                for (let y = startY; y <= endY; y += size) {
-                    this.gridPath.moveTo(startX, y)
-                    this.gridPath.lineTo(endX, y)
+            if (lines) {
+                const path = this.gridPath
+                path.rewind()
+                for (let i = x0; i <= x1; i++) {
+                    if (fineLevel && onCoarseLine(i)) continue
+                    path.moveTo(i * size, viewport.top)
+                    path.lineTo(i * size, viewport.bottom)
                 }
-
-                // Draw vertical lines
-                for (let x = startX; x <= endX; x += size) {
-                    this.gridPath.moveTo(x, startY)
-                    this.gridPath.lineTo(x, endY)
+                for (let j = y0; j <= y1; j++) {
+                    if (fineLevel && onCoarseLine(j)) continue
+                    path.moveTo(viewport.left, j * size)
+                    path.lineTo(viewport.right, j * size)
                 }
-
-                ctx.drawPath(this.gridPath, this.gridPaint)
+                ctx.drawPath(path, paint)
             } else {
-                // Dots
-                this.gridPaint.setStyle(canvasKit.PaintStyle.Stroke)
-                this.gridPaint.setStrokeWidth(dotSize)
-                this.gridPaint.setStrokeCap(canvasKit.StrokeCap.Round)
-
                 const points: number[] = []
-                for (let x = startX; x <= endX; x += size) {
-                    for (let y = startY; y <= endY; y += size) {
-                        points.push(x, y)
+                for (let i = x0; i <= x1; i++) {
+                    for (let j = y0; j <= y1; j++) {
+                        if (fineLevel && onCoarseLine(i) && onCoarseLine(j))
+                            continue
+                        points.push(i * size, j * size)
                     }
                 }
-                ctx.drawPoints(
-                    canvasKit.PointMode.Points,
-                    points,
-                    this.gridPaint,
-                )
+                ctx.drawPoints(canvasKit.PointMode.Points, points, paint)
             }
-        })
+        }
     }
 
     dispose() {
         window.cancelAnimationFrame(this.frame)
+        this.settings.changed.remove(this.requestRender, this)
         window.removeEventListener('resize', this.onResize)
         this.dprQuery?.removeEventListener('change', this.onResize)
         this.gridPaint?.delete()
