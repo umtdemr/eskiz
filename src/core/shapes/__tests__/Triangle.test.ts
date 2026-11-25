@@ -38,9 +38,7 @@ describe('Triangle', () => {
 
             expect(triangle.shapeType).toBe(ShapeType.TRIANGLE)
             expect(triangle.widgetType).toBe(WidgetType.SHAPE)
-            expect(triangle.properties.strokeColor).toEqual(
-                CANVAS_COLORS.BLACK,
-            )
+            expect(triangle.properties.strokeColor).toEqual(CANVAS_COLORS.BLACK)
             expect(triangle.properties.fillColor).toEqual(
                 CANVAS_COLORS.TRANSPARENT,
             )

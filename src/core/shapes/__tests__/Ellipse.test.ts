@@ -43,9 +43,7 @@ describe('Ellipse', () => {
                 CANVAS_COLORS.TRANSPARENT,
             )
             expect(ellipse.properties.borderStyle).toBe(BorderStyle.SOLID)
-            expect(ellipse.properties.strokeWidth).toBe(
-                DEFAULT_SHAPE_THICKNESS,
-            )
+            expect(ellipse.properties.strokeWidth).toBe(DEFAULT_SHAPE_THICKNESS)
         })
 
         it('does not support roundness', () => {

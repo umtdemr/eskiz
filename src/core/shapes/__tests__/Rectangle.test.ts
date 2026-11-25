@@ -59,17 +59,21 @@ describe('Rectangle', () => {
         })
 
         it('accepts radius within 0-20', () => {
-            expect(makeRect({ properties: { radius: 10 } }).properties.radius)
-                .toBe(10)
-            expect(makeRect({ properties: { radius: 20 } }).properties.radius)
-                .toBe(20)
+            expect(
+                makeRect({ properties: { radius: 10 } }).properties.radius,
+            ).toBe(10)
+            expect(
+                makeRect({ properties: { radius: 20 } }).properties.radius,
+            ).toBe(20)
         })
 
         it('falls back to 0 for out-of-range radius', () => {
-            expect(makeRect({ properties: { radius: 25 } }).properties.radius)
-                .toBe(0)
-            expect(makeRect({ properties: { radius: -5 } }).properties.radius)
-                .toBe(0)
+            expect(
+                makeRect({ properties: { radius: 25 } }).properties.radius,
+            ).toBe(0)
+            expect(
+                makeRect({ properties: { radius: -5 } }).properties.radius,
+            ).toBe(0)
         })
     })
 
@@ -262,9 +266,9 @@ describe('Rectangle', () => {
             expect(isTransparent(sharpPixels.pixelAt(1, 1))).toBe(false)
             expect(isTransparent(roundedPixels.pixelAt(1, 1))).toBe(true)
             // both are filled at the center
-            expect(isColor(sharpPixels.pixelAt(30, 30), CANVAS_COLORS.RED)).toBe(
-                true,
-            )
+            expect(
+                isColor(sharpPixels.pixelAt(30, 30), CANVAS_COLORS.RED),
+            ).toBe(true)
             expect(
                 isColor(roundedPixels.pixelAt(30, 30), CANVAS_COLORS.RED),
             ).toBe(true)

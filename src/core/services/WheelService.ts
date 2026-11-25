@@ -43,13 +43,7 @@ export class WheelService extends Service {
     }
 
     private onPinch({ x, y, scale, dx, dy }: PinchEvent) {
-        this.engine.camera.zoomAt(
-            this.engine.camera.zoom * scale,
-            x,
-            y,
-            dx,
-            dy,
-        )
+        this.engine.camera.zoomAt(this.engine.camera.zoom * scale, x, y, dx, dy)
     }
 
     dispose() {
