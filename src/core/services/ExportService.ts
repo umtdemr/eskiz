@@ -21,10 +21,11 @@ const maxPixels = () => (isIOS() ? 16 : 32) * 1024 * 1024
 export class ExportService extends Service {
     // in z-order, the layer keeps its children sorted
     getWidgets(onlySelected = false) {
-        const widgets = this.engine.stage.widgetsDefaultLayer.childrenArray.filter(
-            (child): child is Widget =>
-                child instanceof Widget && child.visible,
-        )
+        const widgets =
+            this.engine.stage.widgetsDefaultLayer.childrenArray.filter(
+                (child): child is Widget =>
+                    child instanceof Widget && child.visible,
+            )
         if (!onlySelected) return widgets
 
         const { selected } =

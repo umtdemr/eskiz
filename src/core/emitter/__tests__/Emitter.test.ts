@@ -109,9 +109,7 @@ describe('Emitter', () => {
 
     it('keeps dispatching when a listener throws', () => {
         const emitter = new Emitter<Events>()
-        const errorSpy = vi
-            .spyOn(console, 'error')
-            .mockImplementation(() => {})
+        const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
         const after = vi.fn()
         emitter.on('ping', () => {
             throw new Error('boom')

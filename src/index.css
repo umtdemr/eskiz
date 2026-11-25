@@ -104,11 +104,11 @@
     position: absolute;
     left: 0;
     white-space: nowrap;
-    font-family: "Open-Sans", sans-serif !important;
-    color: "#000";
+    font-family: 'Open-Sans', sans-serif !important;
+    color: '#000';
     opacity: 0.3;
 }
 
 .disable-placeholder::before {
-        content: '' !important;
+    content: '' !important;
 }
